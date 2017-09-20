@@ -622,6 +622,8 @@
   <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-database.js"></script>
   <script>
 
+    var __FirebaseAppInstance;
+
 
     function MGCopyObject(o) {
       var out, v, key;
@@ -748,7 +750,8 @@
         '_watchCategoryName(categoryName,categories)',
         '_routePageChanged(routeData.page)',
         '_categoriesDataChanged(categoriesData)',
-        '_productsDataChanged(productsData.splices)'
+        '_productsDataChanged(productsData.splices)',
+        '_onMeChanged(me)',
       ]}
 
       constructor() {
@@ -756,7 +759,13 @@
         window.performance && performance.mark && performance.mark('mg-app.created');
       }
 
+      disconnectedCallback() {
+        console.log("disconnect");
+        super.disconnectedCallback();
+      }
+
       connectedCallback() {
+        console.log("connect", this.appInstance);
         super.connectedCallback();
         // Custom elements polyfill safe way to indicate an element has been upgraded.
         this.removeAttribute('unresolved');
@@ -770,7 +779,9 @@
           messagingSenderId: "1079409265314"
         };
 
-        this.set('appInstance', firebase.initializeApp(config));
+        /* XXX prevent double connectedCallback() calls when 404 redirect happens */
+        __FirebaseAppInstance = __FirebaseAppInstance ? __FirebaseAppInstance : firebase.initializeApp(config);
+        this.set('appInstance', __FirebaseAppInstance);
 
         this.addEventListener('add-cart-item', (e)=>this._onAddCartItem(e));
         this.addEventListener('announce', (e)=>this._onAnnounce(e));
@@ -786,6 +797,10 @@
         });
 
         this._notifyNetworkStatus();
+      }
+
+      _onMeChanged(me) {
+        /*console.log("me", me);*/
       }
 
       _arraySortedByKeys(obj) {
@@ -985,8 +1000,10 @@
       }
 
       _onUserLogin(e) {
+        /*
         this.$.me.setEmail(e.detail.accountEmail);
         this.$.me.setHash(e.detail.accountHash);
+        */
       }
 
       // Elements in the app can notify a change to be a11y announced.
