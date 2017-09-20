@@ -5,6 +5,7 @@
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="mg-input.html">
 <link rel="import" href="mg-button.html">
+<link rel="import" href="mg-image.html">
 
 <dom-module id="mg-user">
   <template strip-whitespace>
@@ -32,16 +33,17 @@
         font-size: 18px;
         font-weight: 500;
         padding: 8px 44px;
-        background-color: floralwhite;
+        background-color: white;
       }
 
       mg-button > *:active {
         background-color: #000;
-        color: #FFF;
+        color: white;
       }
 
       mg-button > *:focus {
-        background-color: snow;
+        background-color: azure;
+        color: #202020;
       }
 
       mg-button.single-button,
@@ -109,7 +111,7 @@
         @apply(--layout-vertical)
         transition: opacity 0.5s;
         background-color: white;
-        box-shadow: 1px 1px 3px var(--app-shadow-color);
+        box-shadow: 1px 1px 5px var(--app-shadow-color);
        /* max-width:300px; */
         border-radius: 10px;
         padding:20px;
@@ -118,6 +120,7 @@
       }
 
       .home-button {
+        margin-bottom: 20px;
         --paper-icon-button: {
           width: 100px;
         };
@@ -138,14 +141,14 @@
         box-shadow: 1px 1px 3px var(--app-shadow-color);
         border-radius: 5px;
         border-radius: 0 0 5px 5px;
-        background:snow;
+        background: var(--booed-contents-background);
         z-index: 0;
         top:10px;
         position:relative;
         @apply(--layout-end-justified);
-        margin-top:-30px;
+        margin-top:-35px;
         padding: 0px;
-        transition: max-height 0.5s ease-out;
+        transition: background-color 0.5s, max-height 0.5s ease-in;
         max-height: 50px;
         overflow: hidden;
       }
@@ -155,6 +158,43 @@
         background: white;
       }
 
+      h3  {
+        padding: 0;
+        margin: 0;
+      }
+
+      .avatar {
+        border-radius: 10px;
+        height: 260px;
+        width: 260px;
+        background-size: cover;
+        margin-top: 0px;
+      }
+
+      .under-photo {
+        /*background: rgba(0,0,0,0.5);*/
+        background: linear-gradient(
+          transparent 0,
+          purple 100px);
+        color: white;
+        text-align: left;
+        text-shadow: 1px 1px 3px #200020;
+        max-height: 40px;
+        line-height: 20px;
+        height: 40px;
+        width: 260px;
+        max-width: 260px;
+        border-radius: 0 0 10px 10px;
+        z-index:1;
+        display: block;
+        position: absolute;
+        margin-top: -40px;
+        overflow: hidden;
+        padding-left: 10px;
+        box-sizing: border-box;
+      }
+
+
       @media (max-width: 767px) {
       }
 
@@ -162,77 +202,126 @@
       </custom-style>
 
     <iron-pages id="pages" selected="[[state]]" attr-for-selected="state" class="center vertical layout">
-      <div state="init" class="center vertical layout">
-        <div class="center vertical layout main-frame">
-          <a href="/">
-            <paper-icon-button class="home-button" src="/images/logo-sat/logo-packed-sat.svg" alt="home" title="octocat"></paper-icon-button>
-          </a>
-          <h3 style="padding-bottom:20px">เข้าสู่ระบบสมาชิก</h3>
-              <mg-input>
-            <input value="{{accountEmail::input}}" type="email" id="accountEmail" name="accountEmail" pattern=".{2,50}"
-                placeholder="email" autofocus
-                aria-labelledby="accountEmailLabel accountInfoHeading">
-            <mg-md-decorator error-message="กรุณากรอกอีเมล" aria-hidden="true">
-              <label id="accountEmailLabel"><iron-icon icon="mail"></iron-icon> อีเมล</label>
-              <mg-underline></mg-underline>
-            </mg-md-decorator>
-              </mg-input>
-
-              <mg-input>
-            <input value="{{accountPassword::input}}" type="password" id="accountPassword" name="accountPassword" pattern=".{2,50}"
-                placeholder="พาสเวิร์ด" autofocus
-                aria-labelledby="accountPasswordLabel accountInfoHeading">
-            <mg-md-decorator error-message="กรอกพาสเวิร์ด" aria-hidden="true">
-              <label id="accountPasswordLabel"><iron-icon icon="key"></iron-icon> พาสเวิร์ด</label>
-              <mg-underline></ball-underline>
-            </mg-md-decorator>
-              </mg-input>
-
-            <div class="loginButtons layout horizontal center center-justified">
-                <mg-button id="loginBB" class="layout vertical center">
-                <input id="loginButton" type="submit" class="submit layout" on-click="_logIn" value="เข้าระบบ">
-                </mg-button>
-
-                <mg-button id="loginGG" class="center justified vertical layout" style="padding:0;">
-                <a style="width:40px;margin:0;padding:0;" on-click="_googleSignIn"><iron-icon style="margin-top:8px;color:white" icon="google" slot="prefix"></iron-icon></a>
-                </mg-button>
-            </div>
-        </div>
-        <div on-click="_toggleInfo" class="center vertical end-justified layout main-info" expand$="[[expand]]">
-          <p style="padding: 20px 20px 0 20px;">
-            หากคุณยังไม่มีบัญชีผู้ใช้ คุณสามารถเข้าสู่ระบบ ด้วยการสมัครกูเกิ้ลแอคเค้าท์ก่อน โดยคุณสามารถคลิกปุ่ม
-            <iron-icon style="color:tomato" icon="google"></iron-icon> เพื่อเข้าสู่ระบบหรือสมัครกูเกิ้ลแอคเค้าท์ได้ทันที
-            การเข้าสู่ระบบสมาชิกจะช่วยให้คุณติดตามการทำรายการ หรือติดต่อเกี่ยวกับสินค้าได้ง่ายขึ้น
-            คุณยังสามารถปรับปรุงข้อมูลส่วนตัว รับการแจ้งเตือนเฉพาะที่คุณสนใจ
-            และยังสามารถสมัครรับบริการข่าวสารและโปรโมชั่นต่างๆ เพิ่มเติมได้อีกด้วย รวมถึงฟีเจ้อร์อื่นๆ เช่นการสร้างร้านของคุณเอง
-          </p>
-          <iron-icon style="display:block;--iron-icon-width:20px" icon="help"></iron-icon>
-          <!--<paper-icon-button class="info-button" icon="help"></paper-icon-button>-->
-        </div>
+      <div state="waiting" class="center vertical layout">
+        <img src="images/logo-bounce.svg">
       </div>
-      <div state="success" class="center vertical layout main-frame">
-        <h3>ยินดีต้อนรับ</h3>
-        <p>[[response.successMessage]]</p>
+      <div state="init" class="center vertical layout">
+        <!-- Begin: init -->
+          <dom-if if="[[!me.User.email]]">
+        <template>
+          <!-- Begin: login panel -->
+          <div class="center vertical layout main-frame">
+            <h3>เข้าสู่ระบบสมาชิก</h3>
+            <a href="/">
+              <paper-icon-button class="home-button" src="/images/logo-sat/logo-packed-sat.svg" alt="home" title="home"></paper-icon-button>
+            </a>
+                <mg-input>
+              <input value="{{accountEmail::input}}" type="email" id="accountEmail" name="accountEmail" pattern=".{2,50}"
+                  placeholder="email" autofocus
+                  aria-labelledby="accountEmailLabel accountInfoHeading">
+              <mg-md-decorator error-message="กรุณากรอกอีเมล" aria-hidden="true">
+                <label id="accountEmailLabel"><iron-icon icon="mail"></iron-icon> อีเมล</label>
+                <mg-underline></mg-underline>
+              </mg-md-decorator>
+                </mg-input>
 
-                  <a href="/">
-                  <mg-button class="upper-button layout vertical center">
-                  <button><iron-icon icon="arrow-back" style="color:#00c300"></iron-icon> กลับหน้าหลัก</button>
+                <mg-input>
+              <input value="{{accountPassword::input}}" type="password" id="accountPassword" name="accountPassword" pattern=".{2,50}"
+                  placeholder="พาสเวิร์ด" autofocus
+                  aria-labelledby="accountPasswordLabel accountInfoHeading">
+              <mg-md-decorator error-message="กรอกพาสเวิร์ด" aria-hidden="true">
+                <label id="accountPasswordLabel"><iron-icon icon="key"></iron-icon> พาสเวิร์ด</label>
+                <mg-underline></ball-underline>
+              </mg-md-decorator>
+                </mg-input>
+
+              <div class="loginButtons layout horizontal center center-justified">
+                  <mg-button id="loginBB" class="layout vertical center">
+                  <input id="loginButton" type="submit" class="submit layout" on-click="_logIn" value="เข้าระบบ">
                   </mg-button>
-                  </a>
-                  <mg-button class="lower-button layout vertical center">
-                  <button on-click="_logOut"><iron-icon icon="coffee" style="color:tomato"></iron-icon> ออกจากระบบ</button>
+
+                  <mg-button id="loginGG" class="center justified vertical layout" style="padding:0;">
+                  <a style="width:40px;margin:0;padding:0;" on-click="_googleSignIn"><iron-icon style="margin-top:8px;color:white" icon="google" slot="prefix"></iron-icon></a>
+                  </mg-button>
+              </div>
+          </div>
+          <div on-click="_toggleInfo" class="center vertical end-justified layout main-info" expand$="[[expand]]">
+            <p style="padding: 20px 10px 0 10px;">
+              <br>
+              หากคุณยังไม่มีบัญชีสมาชิก คุณสามารถเข้าสู่ระบบด้วย <a href="https://accounts.google.com/SignUp">บัญชีกูเกิล</a> ได้ทันที โดยคลิกปุ่ม
+              <iron-icon style="color:tomato;--iron-icon-width:20px;" icon="google"></iron-icon> เพื่อเข้าสู่ระบบสมาชิก (หรือเพื่อสร้างบัญชีกูเกิล)
+              <br><br>
+              การเป็นสมาชิกจะช่วยให้คุณติดตามการทำรายการ หรือติดต่อเกี่ยวกับสินค้าได้ง่ายขึ้น
+              คุณยังสามารถปรับปรุงข้อมูลส่วนตัว รับการแจ้งเตือนเฉพาะที่คุณสนใจ
+              และยังสามารถสมัครหรือยกเลิกบริการข่าวสารและโปรโมชั่นต่างๆ รวมถึงฟีเจ้อร์อื่นๆ เช่นการสร้างร้านของคุณเอง เป็นต้น
+            </p>
+            <iron-icon style="display:block;--iron-icon-width:20px" icon="help"></iron-icon>
+            <!--<paper-icon-button class="info-button" icon="help"></paper-icon-button>-->
+          </div>
+          <!-- End: login panel -->
+        </template>
+          </dom-if>
+
+          <dom-if if="[[me.User.email]]">
+        <template>
+          <!-- begin: user panel -->
+          <div class="center vertical layout main-frame">
+            <a href="/">
+              <paper-icon-button class="home-button" src="/images/logo-sat/logo-packed-sat.svg" alt="home" title="home"></paper-icon-button>
+            </a>
+            <div style="padding-bottom:20px;">
+              <mg-image class="avatar" src="[[me.User.photoURL]]"></mg-image>
+              <div class="under-photo">
+                <h3>[[me.User.email]]<br>[[me.User.displayName]]</h3>
+              </div>
+            </div>
+
+                  <mg-button class="single-button layout vertical center">
+                  <button on-click="_signOut"><iron-icon icon="coffee" style="color:tomato"></iron-icon> ออกจากระบบ</button>
+                  </mg-button>
+          </div>
+          <!-- End: user panel -->
+        </template>
+          </dom-if>
+        <!-- End: init -->
+      </div>
+      <div state="welcome" class="center end-justified vertical layout main-frame">
+        <h3>ยินดีต้อนรับสู่</h3>
+            <a href="/">
+              <paper-icon-button class="home-button" src="/images/logo-sat/logo-packed-sat.svg" alt="home" title="home"></paper-icon-button>
+            </a>
+
+          <dom-if if="[[response]]">
+        <template>
+        <p style="padding:0;margin:0;margin-bottom:10px">[[response.successMessage]]</p>
+        </template>
+          </dom-if>
+
+            <div style="padding-bottom:20px;">
+              <mg-image class="avatar" src="[[me.User.photoURL]]"></mg-image>
+              <div class="under-photo">
+                <h3>[[me.User.email]]<br>[[me.User.displayName]]</h3>
+              </div>
+            </div>
+
+                  <mg-button class="single-button layout vertical center">
+                  <button on-click="_signOut"><iron-icon icon="coffee" style="color:tomato"></iron-icon> ออกจากระบบ</button>
                   </mg-button>
 
       </div>
       <div state="error" class="center vertical layout main-frame">
+            <a href="/">
+              <paper-icon-button class="home-button" src="/images/logo-sat/logo-packed-sat.svg" alt="home" title="home"></paper-icon-button>
+            </a>
         <h3>เกิดความผิดพลาด</h3>
-        <p>[[response.successMessage]]</p>
+        <p style="padding:0;margin:0;margin-bottom:10px">[[response.errorMessage]]</p>
 
                   <a href="/">
                   <mg-button class="single-button layout vertical center">
                   <button><iron-icon icon="error" style="color:tomato"></iron-icon> โปรดลองอีกครั้ง</button>
                   </mg-button>
                   </a>
+        <p style="text-align:center;margin:10px;">หรือ<a href="/contact">แจ้งให้เราทราบทาง</a> เพื่อแก้ไข<br>ขออภัยอย่างยิ่งค่ะ</p>
 
       </div>
     </iron-pages>
@@ -269,6 +358,7 @@
         me: {
           type: Object,
           value: {},
+          notify: true,
         },
 
         admin: {
@@ -285,12 +375,8 @@
 
       static get observers() { return [
         '_appInitialized(firebaseApp)',
-        '_routeDataChanged(routeData)',
+        '_updateState(routeActive, routeData)',
       ]}
-
-      _routeDataChanged(routeData) {
-        console.log("new routeData",routeData);
-      }
 
       _visibleChanged(visible) {
         if (visible) {
@@ -299,43 +385,86 @@
         }
       }
 
-      _toggleInfo(e) {
-        this.expand = !this.expand;
-      }
-
       _appInitialized(firebaseApp) {
         if (firebaseApp) {
+          this.__validWaiting = true;
           firebaseApp.auth().onAuthStateChanged(this._onAuthStateChanged.bind(this));
         }
       }
 
       _onAuthStateChanged(user) {
+        console.log("_onAu");
         this.set('me.User', user);
         if (user) {
           /*
           firebase.database().ref('admins/'+auth.uid).once('value').then(this._onAdminInfo.bind(this));
           firebase.database().ref('home/'+auth.uid+"/registration").once('value').then(this._onUserRegistration.bind(this));
           */
+          /*
+          if (user.photoURL) {
+            this.notifyPath('user.photoURL');
+          }
+          */
+          this._pushState("welcome");
         } else {
           console.log("no user");
+          this._pushState("init");
         }
       }
 
       _googleSignIn(e) {
-          this.firebaseApp.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(
-            function() {
-              var provider = new firebase.auth.GoogleAuthProvider();
-              return firebase.auth().signInWithRedirect(provider);
-            })
-            .catch(function(error) {
-              var errorCode = error.code;
-              var errorMessage = error.message;
-              console.log("Error", error);
-            });
+        this._pushState('waiting');
+
+        this.firebaseApp.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(
+          function() {
+            var provider = new firebase.auth.GoogleAuthProvider();
+            return firebase.auth().signInWithRedirect(provider);
+          })
+          .catch(function(error) {
+            var errorCode = error.code;
+            var errorMessage = error.message;
+            console.log("Error", error);
+          });
+      }
+
+      _pushState(state) {
+        console.log("push", state);
+        if (!this.visible) return;
+        this.set('route.path', "init");
+        this._validState = state;
+        this.set('route.path', state);
+      }
+
+      _updateState(active, routeData) {
+
+        if (active && routeData) {
+          let state = routeData.state;
+
+          if (state == 'waiting' && this.__validWaiting) {
+            this.state = state;
+            this.__validWaiting = false;
+            return;
+          }
+
+          if (this._validState === state) {
+            this.state = state;
+            this._validState = '';
+            return;
+          }
+        }
+        this.state = 'init';
       }
 
       _signOut(e) {
         this.firebaseApp.auth().signOut();
+        this._pushState("init");
+      }
+
+      _calculateAvatarStyle(url) {
+
+      }
+      _toggleInfo(e) {
+        this.expand = !this.expand;
       }
 
 
