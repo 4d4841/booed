@@ -1,0 +1,41 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="mg-ripple-container.html">
+
+<dom-module id="mg-cart">
+  <template strip-whitespace>
+    <style>
+      :host {
+        @apply --layout-horizontal;
+      }
+      .cart-badge {
+        z-index: 1;
+        display: block;
+        opacity: 0.9;
+        margin-left: 20px;
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background-color: gold;
+        border-radius: 50%;
+        color: black;
+        font-size: 12px;
+        font-weight: 500;
+        pointer-events: none;
+        @apply --layout-vertical;
+        @apply --layout-center-center;
+      }
+    </style>
+
+    <div class="cart-badge">x</div>
+    <paper-icon-button icon="shopping-cart"></paper-icon-button>
+
+  </template>
+  <script>
+    class MGCart extends Polymer.Element {
+      static get is() { return 'mg-cart'; }
+    }
+
+    customElements.define(MGCart.is, MGCart);
+  </script>
+</dom-module>

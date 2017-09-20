@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<!--
+ .................................................................................................
+:::BSDB'::BSDB'::BSDB':::::BSDB':::BSDBS'::BSDBS'::BSDB'::::BSD'::BSDBS'::BSDBS'::BSDB'::::::BSD'::
+::BSDBSD BSDBSD :.BSDBS':BSDBS .:BSD ..BSD  ...BSD 'BSDBS':BSD .BSD ..BSD  ...BSD :BSDBS'::BSDB .::
+::COPYRIGHT2017 ::.BS BSDB .BS :BSD .::.BSD :::.BSD :BS .BSDB .BSD .:::BSD ::::BSD :BS BSDB BS .:::
+:::BSDSTYLEBSD .:::BS  BS .:BS :BSD ::::BSD ::::BSD :BS ::BSD :BSD :::::...::::BSD :BS :BS  BS ::::
+::::.LICENSE .::::BSD .:..::BS 'BSD ::::BSD ::::BSD :BS :::BS :BSD ::BSDBS'::::BSD :BS ::..:BS ':::
+:::::::BSD .::::BSDB .::::::BSD 'BSD'::BSD .:::BSD .BSD :::BSD':BSD'::.BSD :::BSD .BSD :::::BSDB'::
+::::::::B .::::::BS .:::::::.BSD ::BSDBS .:BSDBS  :BSD .::::BSD :.BSDBS BS BSDB .:BSD .:::::.BS .::
+`::::::::.::::::::..::::::::::...:::.....:::.....:::...::::::...:::.............:::...::::::::..::'
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../bower_components/app-layout/app-scroll-effects/effects/waterfall.html">
+<link rel="import" href="../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/app-layout/helpers/helpers.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/paper-styles/typography.html">
+<link rel="import" href="mg-cart-button.html">
+<link rel="import" href="mg-user-button.html">
+<link rel="import" href="mg-home.html">
+
+<link href="https://fonts.googleapis.com/css?family=Mitr:300|Gloria+Hallelujah" rel="stylesheet">
+<!-- <link rel="import" href="mg-category-data.html"> -->
+<!-- Since 'home' is the default route, eagerly load it. -->
+<!--
+<link rel="import" href="mg-common-styles.html"><link href="https://fonts.googleapis.com/css?family=Gloria+Hallelujah" rel="stylesheet">
+-->
+
+<dom-module id="mg-app">
+  <template>
+      <custom-style>
+    <style is="custom-style" include="mg-common-styles iron-flex iron-flex-alignment">
+      :host {
+        display: block;
+        position: relative;
+        transition: padding-top 0.5s;
+        padding-bottom: 144px;
+        min-height: 100vh;
+        --app-primary-color: #634;
+        --app-secondary-color: #757575;
+        --app-accent-color: #172C50;
+        --app-shadow-color: rgba(47,27,56,0.5);
+        --booed-header-background: whitesmoke;/*rgba(255,250,250,0.95);var(--app-accent-color);*/ /*#f4eed7;*/
+        --booed-contents-background: var(--booed-header-background);
+        --booed-menu-color: tomato;
+        --booed-header-height: 35px;
+        --booed-logo-margin: 4px;
+        --booed-logo-height: calc(var(--booed-header-height) - var(--booed-logo-margin) * 2);
+        --booed-title-height: 320px;
+        --booed-menu-height: 30px;
+        --primary-text-color: black;
+        --paper-button-ink-color: var(--app-accent-color);
+        --paper-spinner-color: var(--app-accent-color);
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+/*        padding-top: calc(var(--booed-header-height) + var(--booed-title-height) + var(--booed-menu-height) + 50px);*/
+        padding-top: 150px;
+        color: var(--app-primary-color);
+        background-color: var(--booed-contents-background);
+      }
+
+      app-header {
+        z-index: 1;
+        @apply --layout-fixed-top;
+        @apply --layout-horizontal;
+        background-color: var(--booed-header-background);
+        /*
+        background: linear-gradient(
+          var(--booed-header-background) var(--booed-header-height),
+          transparent var(--booed-header-height),
+          transparent calc(var(--booed-header-height) + var(--booed-title-height))),
+          url(/images/season.jpg);
+        */
+
+        /*
+        background: url(/images/season.jpg);
+        background-position: center bottom;
+        background-repeat: no-repeat;
+        */
+        height: calc(var(--booed-header-height) + var(--booed-menu-height));
+        /*
+        --app-header-shadow: {
+          box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.2);
+          height: 10px;
+          bottom: -10px;
+        };
+
+        --app-header-background-rear-layer: {
+          background-color: var(--booed-contents-background);
+          color: var(--app-primary-color);
+        };
+        */
+      }
+
+      .header {
+        background-color: var(--booed-header-background);
+        height: var(--booed-header-height);
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+        @apply(--layout-center-justified);
+        position:absolute;
+        width:100%;
+        padding:0;
+        top:0;
+      }
+
+      .header2 {
+        background-color: var(--booed-header-background);
+/*        height: var(--booed-header-height); */
+        @apply(--layout-horizontal);
+        position:absolute;
+        top:0;
+        width:100%;
+        padding:0;
+        margin:0;
+      }
+
+
+      .title-bar {
+/*        height: var(--booed-title-height); */
+      }
+
+      /*
+      .title-bar-navigator {
+        position:absolute;
+        left:0;
+        font-size: 20px;
+        width: 100%;
+        height:30px;
+      }
+      */
+
+      .videoframe {
+        position: absolute;
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
+        max-width:1440px;
+        height: var(--booed-title-height);
+        overflow:hidden;
+        left:0;
+      }
+
+      .videoframe > video {
+        height: 290px;
+        margin-top:30px;
+      }
+
+      .tool-bar {
+        @apply --layout-vertical;
+      }
+
+      .header-bar {
+        @apply --layout-horizontal;
+        position: relative;
+        height: var(--booed-header-height);
+        /*overflow: hidden;*/
+        width: 100%;
+        padding:0;
+      }
+
+
+      .menu-bar {
+        @apply --layout-horizontal;
+        position: relative;
+        height: var(--booed-menu-height);
+        /*overflow: hidden;*/
+        width: 100%;
+        padding:0;
+        z-index:1;
+      }
+
+      .menu-bar iron-icon {
+        margin-right:8px;
+      }
+
+      div.header-filler {
+        @apply(--layout-flex);
+        min-width: 330px;
+        height: var(--booed-header-height);
+      }
+
+      a.logo {
+        @apply(--layout-flex);
+        @apply(--layout-horizontal);
+        min-width: 100px;
+        max-width: 180px;
+        /*min-width:  calc(var(--booed-logo-height) * 3.7);*/
+        height: var(--booed-header-height);
+
+        background-image: url(/images/logo-sat/logo-B-sat.svg), url(/images/logo-sat/logo-o-sat.svg), url(/images/logo-sat/logo-oo-sat.svg), url(/images/logo-sat/logo-e-sat.svg), url(/images/logo-sat/logo-d-sat.svg);
+        background-size:
+         auto var(--booed-logo-height),
+         auto var(--booed-logo-height),
+         auto var(--booed-logo-height),
+         auto var(--booed-logo-height),
+         auto var(--booed-logo-height);
+        background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+        background-position: 10px var(--booed-logo-margin), calc(20% + 18px) var(--booed-logo-margin), calc(40% + 18px) var(--booed-logo-margin), calc(60% + 18px) var(--booed-logo-margin), calc(80% + 18px) var(--booed-logo-margin);
+      }
+
+      /*
+      div.logo {
+        @apply(--layout-flex);
+        height: var(--booed-header-height);
+        color: transparent;
+      }
+      */
+
+      .left-bar-item {
+        width: 40px;
+      }
+
+      .announcer {
+        position: fixed;
+        height: 0;
+        overflow: hidden;
+      }
+
+      :host(:not([page=detail])) .back-btn {
+        display: none;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      paper-tabs,
+      paper-tab {
+        @apply(--layout-horizontal);
+        padding:0;
+      }
+
+      paper-tabs {
+          /*--paper-tabs-selection-bar-color: var(--app-primary-color);*/
+          --paper-tabs-selection-bar-color: var(--booed-menu-color);
+          height: var(--booed-menu-height);
+          width: 100%;
+          --paper-tabs-selection-bar: {
+            opacity: 0.5;
+            /*height:0.5px;*/
+            /*background-image: linear-gradient(to right, rgba(255,85,85,0), rgba(255,85,85,0.5), rgba(255,85,85,0.5), rgba(255,85,85,0));*/
+            /*background-image: linear-gradient(rgba(255,85,85,0.5) 4px,transparent 4px,  transparent 30px);*/
+          };
+      }
+
+      paper-tab {
+        font-family: 'Mitr', sans-serif;
+        font-size: 16px;
+        color: var(--booed-menu-color);
+        padding:0 8px;
+        height: var(--booed-menu-height);
+        /*border-radius: 20px 20px 0 0;*/
+        overflow: hidden;
+        --paper-tab-ink: var(--booed-menu-color);
+        --paper-tab-content: {
+          transition: opacity 0.5s;
+          --iron-icon-fill-color: var(--booed-menu-color);
+          --iron-icon-stroke-color: transparent;
+        };
+        --paper-tab-content-unselected: {
+          --iron-icon-stroke-color: var(--booed-menu-color);
+          --iron-icon-fill-color: transparent;
+        };
+      }
+
+      .drawer-list {
+        margin: 0 20px;
+      }
+
+      .drawer-list a {
+        display: block;
+        padding: 0 16px;
+        line-height: 40px;
+        text-decoration: none;
+        color: var(--app-secondary-color);
+      }
+
+      .drawer-list a.iron-selected {
+        color: black;
+        font-weight: bold;
+      }
+
+      app-drawer {
+        z-index:2;
+        /*
+        border-radius: 30px;
+        --app-drawer-content-container: {
+          display: inline-block;
+          border-radius:500px;
+          border-radius:0 0 20px 0;
+          bottom: auto;
+        };
+        --app-drawer-scrim-background: {
+        }
+        */
+      }
+
+      iron-pages {
+        max-width: 1440px;
+        margin: 0 auto;
+      }
+
+      footer {
+        color: var(--booed-menu-color);
+        @apply --layout-fixed-bottom;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        text-align: center;
+        margin-top: 20px;
+        line-height: 24px;
+        background-color: var(--booed-header-background);
+        position: absolute;
+      }
+
+      footer > a > span {
+        font-family: 'Gloria Hallelujah', cursive;
+      }
+
+      footer > a :nth-child(1) { color: #ff5555; }
+      footer > a :nth-child(2) { color: #ffb155; }
+      footer > a :nth-child(3) { color: #abc837; }
+      footer > a :nth-child(4) { color: #37c5c8; }
+      footer > a :nth-child(5) { color: #d493ff; }
+
+      footer > a {
+        color: var(--app-primary-color);
+        text-decoration: none;
+      }
+
+      footer > a:hover {
+        text-decoration: underline;
+      }
+
+      #menuButton {
+        padding-left: 16px;
+      }
+
+      /* small screen */
+      @media (max-width: 767px) {
+        :host {
+          /*padding-top: calc(var(--booed-header-height) + var(--booed-title-height) + var(--booed-menu-height));*/
+          padding-top:50px;
+          --booed-title-height: 170px;
+        }
+
+        app-header {
+          height: var(--booed-header-height);
+        }
+
+        a.logo {
+          background-image:  url(/images/logo-sat/logo-packed-sat.svg);
+          background-size: auto var(--booed-logo-height);
+          background-repeat: no-repeat;
+          background-position: center var(--booed-logo-margin);
+        }
+
+        .videoframe {
+          margin-top: var(--booed-menu-height);
+        }
+      }
+
+    </style>
+      </custom-style>
+
+    <app-location route="{{route}}"></app-location>
+    <app-route
+        route="{{route}}"
+        pattern="/:page"
+        data="{{routeData}}"
+        tail="{{subroute}}"></app-route>
+
+    <iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
+
+<!--
+    <mg-category-data categories="{{categories}}"></mg-category-data>
+-->
+
+<!--    <mg-user-data id="user" email="{{email}}" hash="{{hash}}" key-icon="{{keyIcon}}"></mg-user-data>
+    <mg-cart-data
+        id="cart"
+        cart="{{cart}}"
+        num-items="{{numItems}}"
+        total="{{total}}"></mg-cart-data>
+      -->
+
+        <!-- XXX Cannot keep logo and top buttons there for some reasons (wrong location when refreshing )-->
+        <!--
+
+        -->
+
+    <app-header role="navigation" id="header" effects="waterfall" reveals>
+<!--
+            <div class="header2">
+
+          <div class="header-filler">
+          </div>
+          <div class="header-filler">
+          </div>
+
+
+            </div>
+      <app-toolbar class="title-bar">
+
+-->
+
+
+        <!-- XXX Begin: Cannot keep logo and top buttons here for some reasons -->
+        <!-- FIXME Merge with title toolbars -->
+        <!-- XXX End: Cannot keep logo and top buttons here for some reasons -->
+
+
+
+
+
+
+        <!--
+          <audio autoplay loop>
+            <source src="images/piano.mp3" type="audio/mpeg">
+          </audio>
+          <video id="video" autoplay muted loop playsinline poster="videos/head.jpg" class="center">
+            <source src="videos/head.webm" type="video/webm">
+            <source src="videos/head.ogv" type="video/ogv">
+            <source src="videos/head.mp4" type="video/mp4">
+            Your browser does not support this video tag.
+          </video>
+
+      </app-toolbar>
+          -->
+      <div class="tool-bar">
+        <div class="header-bar horizontal layout center-justified">
+          <div class="layout horizontal" style="position:absolute;left:0">
+            <dom-if if="[[_shouldRenderDrawer]]">
+          <template>
+          <mg-badge-button id="menuButton" on-tap="_toggleDrawer" icon="menu" path-style="fill:tomato" value="!"></mg-badge-button>
+          </template>
+            </dom-if>
+          </div>
+
+          <div class="header-filler"></div>
+        <a href="/" page$="[[page]]" class="logo">
+          <div class="logo horizontal layout center-justified">
+          </div>
+        </a>
+          <div class="header-filler"></div>
+
+          <div class="layout horizontal" style="position:fixed;right:8px">
+          <mg-badge-button id="languaeButton" icon="language" path-style="fill:blue" value="ท"></mg-badge-button>
+          <mg-cart-button id="cartButton" cart="{{cart}}" value="8"></mg-cart-button>
+          <mg-user-button id="userButton" on-tap="_onMeButtonClick" me="{{me}}" value=""></mg-user-button>
+          </div>
+
+        </div>
+      <div class="menu-bar" style="border-top: 1px dashed var(--booed-menu-color)" hidden$="[[!_shouldShowTabs]]">
+
+
+            <dom-if if="[[_shouldRenderTabs]]">
+          <template>
+        <paper-tabs scrollable fit-container>
+          <paper-tab>
+            <iron-icon icon="new-releases"></iron-icon> สินค้าใหม่
+          </paper-tab>
+          <paper-tab>
+            <iron-icon icon="best-sellers"></iron-icon> ขายดี
+          </paper-tab>
+          <paper-tab>
+            <iron-icon icon="dresses"></iron-icon> ชุดทั่วไป
+          </paper-tab>
+          <paper-tab>
+            <iron-icon icon="lingeries"></iron-icon> ชุดชั้นใน
+          </paper-tab>
+          <paper-tab>
+            <iron-icon icon="night-dresses"></iron-icon> ชุดนอน
+          </paper-tab>
+          <paper-tab>
+            <iron-icon icon="swimwears"></iron-icon> ชุดว่ายน้ำ
+          </paper-tab>
+          <paper-tab>
+            <iron-icon icon="sales-baht"></iron-icon> เซลส์
+          </paper-tab>
+        </paper-tabs>
+          </template>
+            </dom-if>
+      </div>
+      </div>
+    </app-header>
+
+
+<!--        <div class="logo" main-title><a href="/" tabindex="-1" aria-label="SHOP Home"><img src="[[_computeLogo(smallScreen)]]"></img></a></div> -->
+
+      <!-- Lazy-create the tabs for larger screen sizes. -->
+<!--
+      <div id="tabContainer" sticky$="[[_shouldShowTabs]]" hidden$="[[!_shouldShowTabs]]">
+        <dom-if if="[[_shouldRenderTabs]]">
+              <template>
+            <mg-tabs
+                selected="[[categoryName]]"
+                attr-for-selected="name">
+
+                <dom-repeat id="menubar" items="[[categoryOrder]]" mutable-data>
+              <template>
+
+                    <dom-if if="[[item.title]]">
+                  <template>
+                <mg-tab name="[[item.name]]">
+                <a href="/list/[[item.name]]"><iron-icon icon="[[item.name]]"></iron-icon> [[item.title]]</a>
+                </mg-tab>
+                  </template>
+                    </dom>
+
+              </template>
+                </dom-repeat>
+
+                <mg-tab name="mytab">
+                <a href="/list/[[item.name]]"><iron-icon icon="face"></iron-icon> ล็อกอิน</a>
+                </mg-tab>
+
+            </mg-tabs>
+              </template>
+
+        </dom-if>
+      </div>-->
+
+
+
+
+      <dom-if if="[[_shouldRenderDrawer]]">
+    <template>
+    <app-drawer id="drawer" opened="{{drawerOpened}}" swipe-open tabindex="0">
+      <div><iron-icon icon="new-releases"></iron-icon> สินค้าใหม่</div>
+      <div><iron-icon icon="best-sellers"></iron-icon> ขายดี</div>
+      <div><iron-icon icon="dresses"></iron-icon> ชุดทั่วไป</div>
+      <div><iron-icon icon="lingeries"></iron-icon> ชุดชั้นใน</div>
+      <div><iron-icon icon="night-dresses"></iron-icon> ชุดนอน</div>
+      <div><iron-icon icon="swimwears"></iron-icon> ชุดว่ายน้ำ</div>
+      <div><iron-icon icon="sales-baht"></iron-icon> เซลส์</div>
+    </app-drawer>
+    </template>
+      </dom-if>
+
+<!--    <img width="50px" src="images/logo-bounce.svg">-->
+
+<!--
+    <dom-if if="[[_shouldRenderDrawer]]">
+      <template>
+      <app-drawer opened="{{drawerOpened}}" swipe-open tabindex="0">
+        <iron-selector
+          role="navigation"
+          class="drawer-list"
+          selected="[[categoryName]]"
+          attr-for-selected="name">
+
+          <dom-repeat items="[[categoryOrder]]">
+            <template>
+              <a name="[[item.name]]"href="/list/[[item.name]]">
+                <iron-icon icon="[[item.name]]"></iron-icon>
+                [[item.title]]
+              </a>
+            </template>
+          </dom-repeat>
+
+        </iron-selector>
+      </app-drawer>
+      </template>
+    </dom-if>
+
+    <iron-pages
+      role="main"
+      selected="[[page]]"
+      attr-for-selected="name"
+      selected-attribute="visible"
+      fallback-selection="404">
+
+      <mg-home name="home" categories="[[categoryOrder]]"></mg-home>
+      <mg-list name="list" category-name="{{categoryName}}" category=[[category]] route="[[subroute]]" offline="[[offline]]"></mg-list>
+      <mg-detail name="detail" route="[[subroute]]" products="[[products]]" offline="[[offline]]"></mg-detail>
+      <mg-cart name="cart" cart="[[cart]]" total="[[total]]"></mg-cart>
+      <mg-orders name="orders" authen="[[_computeAuthen(email,hash)]]"></mg-orders>
+      <mg-checkout name="checkout" cart="[[cart]]" total="[[total]]" route="{{subroute}}"></mg-checkout>
+      <mg-user name="user" verified-email="[[email]]" verified-hash="[[hash]]" route="{{subroute}}"></mg-user>
+      <mg-about name="about" full-logo></mg-about>
+
+      <mg-404-warning name="404"></mg-404-warning>
+    </iron-pages>
+-->
+    <iron-pages
+      role="main"
+      selected="[[page]]"
+      attr-for-selected="name"
+      selected-attribute="visible"
+      fallback-selection="404">
+      <mg-home name="home"></mg-home>
+      <mg-user name="user" me="{{me}}" route="{{subroute}}" firebase-app="[[appInstance]]"></mg-user>
+      <mg-404-warning name="404"></mg-404-warning>
+
+    </iron-pages>
+
+    <footer>
+    <a href="about">© 2017 <span>B</span><span>o</span><span>o</span><span>e</span><span>d</span></a>
+    </footer>
+
+    <!-- a11y announcer -->
+    <!--
+    <div class="announcer" aria-live="assertive">[[_a11yLabel]]</div>
+  -->
+
+  </template>
+
+  <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-database.js"></script>
+  <script>
+
+
+    function MGCopyObject(o) {
+      var out, v, key;
+      out = Array.isArray(o) ? [] : {};
+      for (key in o) {
+        v = o[key];
+        out[key] = (typeof v === "object") ? MGCopyObject(v) : v;
+      }
+      return out;
+    }
+
+    function getRandomInt(min, max) {
+      min = Math.ceil(min);
+      max = Math.floor(max);
+      return Math.floor(Math.random() * (max - min)) + min;
+    }
+
+    let seed = 10;
+    function mg_random() {
+      var x = Math.sin(seed++) * 10000;
+      return x - Math.floor(x);
+    }
+
+    function getSeededRandomInt(min, max) {
+      min = Math.ceil(min);
+      max = Math.floor(max);
+      return Math.floor(mg_random() * (max - min)) + min;
+    }
+
+
+    window.performance && performance.mark && performance.mark('mg-app - before register');
+
+    class MGApp extends Polymer.Element {
+
+      static get is() { return 'mg-app'; }
+
+      static get properties() { return {
+        page: {
+          type: String,
+          reflectToAttribute: true,
+          observer: '_pageChanged'
+        },
+
+        category: {
+          type: Object,
+          notify: true
+        },
+
+        categoriesData: {
+          type: Array,
+          notify: true
+        },
+
+      /* XXX Check why we need name in here */
+        categories: {
+          type: Object,
+          value: {"new-products":{name:"best-sellers",
+    "placeholder" : "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD//gATQ3JlYXRlZCB3aXRoIEdJTVD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wgARCAAGABoDAREAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAABQb/xAAWAQEBAQAAAAAAAAAAAAAAAAADBAL/2gAMAwEAAhADEAAAATlEIqEtZj5qf//EABkQAAMBAQEAAAAAAAAAAAAAAAIDBAUBBv/aAAgBAQABBQLBiTsDPErno9uk3yjI3o//xAAgEQACAQIHAQAAAAAAAAAAAAABAgADEQQSEyEyUYHw/9oACAEDAQE/AcY2nRZkNvvJQ4qx3gF3mU9z/8QAGxEAAgIDAQAAAAAAAAAAAAAAAAECAxESISP/2gAIAQIBAT8Bpl6LKLo7NxXCa1RlH//EACIQAAIBAgUFAAAAAAAAAAAAAAECAwBBERIhMVETFCIy8P/aAAgBAQAGPwJ+qoywx4eu+owx5qNSqsvcOGXJpe3FCB7BSoDeFl2+vQIkFf/EABoQAQACAwEAAAAAAAAAAAAAAAERIQAxUUH/2gAIAQEAAT8hjMykWd63iebyp1aNdDTxzBEQaeUJT5YizvWH4CCEuf/aAAwDAQACAAMAAAAQYh//xAAdEQACAgEFAAAAAAAAAAAAAAABIQARMRBRYYHw/9oACAEDAQE/ELGAXJyPH3N7iHYWJcmgzov/xAAdEQABBAIDAAAAAAAAAAAAAAABABEhMUFxUWHw/9oACAECAQE/EK0JnVHfsJ8zCIIM82nGaXUv/8QAGhABAQADAQEAAAAAAAAAAAAAAREAITFBUf/aAAgBAQABPxA2YBsPoPKPxw46IzHVpWoJJFSaFKZJ2KCYCYjPTY50HgCaOZ//2Q==",
+                  products:{}},
+                  "best-sellers":{name:"best-sellers",
+    "placeholder" : "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD//gATQ3JlYXRlZCB3aXRoIEdJTVD/2wBDAAIBAQEBAQIBAQECAgICAgQDAgICAgUEBAMEBgUGBgYFBgYGBwkIBgcJBwYGCAsICQoKCgoKBggLDAsKDAkKCgr/2wBDAQICAgICAgUDAwUKBwYHCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgr/wgARCAAGABoDAREAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAABwUG/8QAGQEAAQUAAAAAAAAAAAAAAAAABQACAwQG/9oADAMBAAIQAxAAAAFBIrLujHjVavmy/wD/xAAcEAABBAMBAAAAAAAAAAAAAAAEAQIDBQAHERL/2gAIAQEAAQUCBBAtlsfbQ4YRX4uvRO//xAAgEQABAwIHAAAAAAAAAAAAAAACAAEDBBEFEhUhMVOR/9oACAEDAQE/AYqkomsjkzDvyqeSQZGcXtZariPaXrr/xAAfEQABAwMFAAAAAAAAAAAAAAACAAERAwQhBRMUUfD/2gAIAQIBAT8B25yqIMxytQAWtyKM+Zcan0v/xAAjEAACAQIEBwAAAAAAAAAAAAABAgMAEQQSEyEiMTVhkZPR/9oACAEBAAY/Ana8lhZCGFu9SR63GAQz5PNqVHjOpMBHLKvPfautYn1p8r//xAAaEAACAwEBAAAAAAAAAAAAAAABEQAhMUFh/9oACAEBAAE/IXcEqB0CEaNbUunVKSwLMeop4/FFDjBWGgbvD6lHT1m//9oADAMBAAIAAwAAABCbL//EAB4RAQACAQQDAAAAAAAAAAAAAAEAESExcYHwUWHB/9oACAEDAQE/EENbNee1Eo5jGPfnfXeO9SsRREzYmZ0L7P/EAB4RAQACAQQDAAAAAAAAAAAAAAEAETEhQWHRgZHw/9oACAECAQE/EGx7SkizNOLUrxbaYeIPRYBayOofticb0dT/xAAZEAEBAQADAAAAAAAAAAAAAAABESEAMVH/2gAIAQEAAT8Qz8Qc6DeDQKs8IzpPu81GDrBEWIFIYYANiIhEomjugyc1UDeP/9k=",
+                  products:{}},
+                  "dresses":{name:"dresses",
+    "placeholder" : "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD//gATQ3JlYXRlZCB3aXRoIEdJTVD/2wBDAAIBAQEBAQIBAQECAgICAgQDAgICAgUEBAMEBgUGBgYFBgYGBwkIBgcJBwYGCAsICQoKCgoKBggLDAsKDAkKCgr/2wBDAQICAgICAgUDAwUKBwYHCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgr/wgARCAAGABoDAREAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAABwMF/8QAFwEBAAMAAAAAAAAAAAAAAAAAAwEEBf/aAAwDAQACEAMQAAABill1fP2zRQkf/8QAGhAAAgIDAAAAAAAAAAAAAAAAAwUEBgcQE//aAAgBAQABBQLH8vsN67BWFtau4Hev/8QAHBEAAgICAwAAAAAAAAAAAAAAAAECEQMSITJB/9oACAEDAQE/AZ9bE+RR2xJr0s//xAAaEQACAgMAAAAAAAAAAAAAAAAAEQECEDFB/9oACAECAQE/Aa7JSO4//8QAIRAAAgEDAwUAAAAAAAAAAAAAAQIEAAMTBRFREBIhQcH/2gAIAQEABj8Ct2FXb0abU5DSMNi0XdIx2LeKaeDLxCJlC3OzngD70//EABsQAAMBAAMBAAAAAAAAAAAAAAERIQAxQXGx/9oACAEBAAE/ITJAw0c0Za5xUuDK++516LUIdKjqphQ9/9oADAMBAAIAAwAAABCtz//EAB0RAAIBBAMAAAAAAAAAAAAAAAERABAhMUFhcYH/2gAIAQMBAT8QNyKxQJ51E6AZbdvTnqj/xAAYEQEAAwEAAAAAAAAAAAAAAAABABARMf/aAAgBAgEBPxAcwALNN5X/xAAZEAEAAwEBAAAAAAAAAAAAAAABABEhMUH/2gAIAQEAAT8QL820HQkM6Ch9wEpTSABfRkNX286IiYJltTauwpHiWT//2Q==",
+                  products:{}},
+                  "lingeries":{name:"lingeries",
+    "placeholder" : "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD//gATQ3JlYXRlZCB3aXRoIEdJTVD/2wBDAAIBAQEBAQIBAQECAgICAgQDAgICAgUEBAMEBgUGBgYFBgYGBwkIBgcJBwYGCAsICQoKCgoKBggLDAsKDAkKCgr/2wBDAQICAgICAgUDAwUKBwYHCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgr/wgARCAAGABoDAREAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAABgcI/8QAFQEBAQAAAAAAAAAAAAAAAAAABQT/2gAMAwEAAhADEAAAARgq9jlW0+sKpuO//8QAGxABAAEFAQAAAAAAAAAAAAAABAIAAwYHExX/2gAIAQEAAQUCKuaLGmkn8zF5G5V//8QAHhEAAgEDBQAAAAAAAAAAAAAAAQIDABESBAUQQUL/2gAIAQMBAT8Bh1TxxtGPVRPIEyU2tW4hwyZHocf/xAAcEQEBAAEFAQAAAAAAAAAAAAACAQADBBASUTH/2gAIAQIBAT8BegWy/MQNvWz7mypsXX3j/8QAIRAAAQMDBAMAAAAAAAAAAAAAAQIEEQADEgUQQaEUUeH/2gAIAQEABj8Ce6ZMBy3wKuQJ+9Vd0W80SoFQg05Q0tYI8pZx9Hnvb//EAB4QAQABAwUBAAAAAAAAAAAAAAERADFxECFRYYGh/9oACAEBAAE/IZKIj2T2M3YUNeugfa4ka4EbOmT7p//aAAwDAQACAAMAAAAQ8A//xAAeEQEBAAEDBQAAAAAAAAAAAAABEQAQMVEhQWFxgf/aAAgBAwEBPxARibnvOD3hhiLJxM6sSFfG5fjNP//EABwRAQABBAMAAAAAAAAAAAAAAAERABAxgSFBsf/aAAgBAgEBPxBAPOJ1unwmRNR2gU7w+W//xAAbEAEBAQACAwAAAAAAAAAAAAABETEhYQAQQf/aAAgBAQABPxAddiOE/BHDehF6RfBKcqDdMkhl8sypQAbiFABmFwCHr//Z",
+                  products:{}},
+                  "night-dresses":{name:"night-dresses",
+    "placeholder" : "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD//gATQ3JlYXRlZCB3aXRoIEdJTVD/2wBDAAIBAQEBAQIBAQECAgICAgQDAgICAgUEBAMEBgUGBgYFBgYGBwkIBgcJBwYGCAsICQoKCgoKBggLDAsKDAkKCgr/2wBDAQICAgICAgUDAwUKBwYHCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgr/wgARCAAGABoDAREAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAABgcI/8QAGAEAAgMAAAAAAAAAAAAAAAAAAgMABAX/2gAMAwEAAhADEAAAAYkDdaDrj5VNEr//xAAZEAACAwEAAAAAAAAAAAAAAAACBgMEBQf/2gAIAQEAAQUCmulDtptG1li7t93MdB7uzxj/AP/EABwRAAICAgMAAAAAAAAAAAAAAAABAhEDExIhUf/aAAgBAwEBPwFO3Q8S1cBznHqzY/T/xAAaEQADAQADAAAAAAAAAAAAAAAAAQIhAxFR/9oACAECAQE/Aetw49ptlRKszw//xAAlEAABAwIGAQUAAAAAAAAAAAABAgMEABIFERMhMUEiNHGBkeL/2gAIAQEABj8COFYM3pa8lIyUrMX8Zn7qPGdWlyTHbDweUsqBcuIV8Hce1PPQyF6YTe2814KVYOgeOO+qDYjQdtvQ/qv/xAAbEAEBAQACAwAAAAAAAAAAAAABESEAQTFRkf/aAAgBAQABPyEW5KUjUM17/XkcIgIJGZE+lkfEz3toJ3IHCtr0EAYxRc4//9oADAMBAAIAAwAAABA93//EAB4RAQACAAcBAAAAAAAAAAAAAAEAETFBUWGRodHw/9oACAEDAQE/EBAFaQJvSFru/cRZyGN+Lv2f/8QAGhEAAgMBAQAAAAAAAAAAAAAAABEBMZEhUf/aAAgBAgEBPxDURvvVg3J0RPhh/8QAGRABAQEBAQEAAAAAAAAAAAAAAREhADFR/9oACAEBAAE/EMSCarryHzGGTes2mVClSQeveOBQi22YDg4q2ZwZhOr0CFZrnw7/2Q==",
+                  products:{}},
+                  "swimwears":{name:"swimwears",
+    "placeholder" : "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD//gATQ3JlYXRlZCB3aXRoIEdJTVD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wgARCAAGABoDAREAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAABAX/xAAWAQEBAQAAAAAAAAAAAAAAAAAFBgf/2gAMAwEAAhADEAAAAbCMcwrQCoQshzP/AP/EABoQAAIDAQEAAAAAAAAAAAAAAAEDAAIEEhT/2gAIAQEAAQUCbUlOTZf0s2h06E//xAAiEQAABAQHAAAAAAAAAAAAAAAAAgMEAQUSUQYRISMxQYH/2gAIAQMBAT8BlDFaWviKK0m5vbwLokfpbsNBiFm2atiGITvIQpsP/8QAGhEAAgMBAQAAAAAAAAAAAAAAAQMAAhEEJP/aAAgBAgEBPwFzqdCzUbD5ztJwuYxhBMyf/8QAHRAAAgICAwEAAAAAAAAAAAAAAQIAEhEhIjEyQf/aAAgBAQAGPwIq+OxsfI4Yl7C24wKcK5Xc8z//xAAaEAEBAQEAAwAAAAAAAAAAAAABESEAMdHw/9oACAEBAAE/Ib4FY0oSYk6A9QrcA+nZq3Pyxm8R9u//2gAMAwEAAgADAAAAEO0v/8QAGxEBAQADAQEBAAAAAAAAAAAAAREAITFBocH/2gAIAQMBAT8QCIPFjaDQcdN6cCoy8KR26RqI7rfmEbIhF3RRXrJ6+9xQfrP/xAAbEQABBQEBAAAAAAAAAAAAAAABABEhMVFB8f/aAAgBAgEBPxAdQVm7KinYmNdcFb+YiT2v/8QAGxABAAIDAQEAAAAAAAAAAAAAAREhADFBgfD/2gAIAQEAAT8QiLA4SJHQOmlMCZdB9AgokNAKKtxk2wpFp98HmLDKz7rP/9k=",
+                  products:{}},
+                  "sales":{name:"sales",
+    "placeholder" : "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD//gATQ3JlYXRlZCB3aXRoIEdJTVD/2wBDAAQCAwMDAgQDAwME BAQEBQkGBQUFBQsICAYJDQsNDQ0LDAwOEBQRDg8TDwwMEhgSExUWFxcXDhEZGxkWGhQWFxb/2wBD AQQEBAUFBQoGBgoWDwwPFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYW FhYWFhYWFhb/wAARCAAFABcDAREAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAACP/EACMQAAIB AwMEAwAAAAAAAAAAAAEDAgQFMQARIQYHEhMUYbH/xAAVAQEBAAAAAAAAAAAAAAAAAAAFBP/EAB8R AAIBBAIDAAAAAAAAAAAAAAECEQADITEFEhVR4f/aAAwDAQACEQMRAD8AUTO4jG2m8SZaYH4KWHYV BAYBHGNxnRCcg1wOCuqU8eBcQdt0Vu7nXl+l1PdrdbK6tt9tU8+qhjVzmpRHB8MGAO2AeBxqByZM ExOqYsXFSFKKTGyM+/lG59wfOTEU7HUyfYZBUHSMQT9H900qAQTk0Hcu9mbrgE6nFf/Z",
+                  products:{}}
+
+          },
+          notify: true
+        },
+
+        categoryOrder: {
+          type: Array,
+          computed: '_arraySortedByKeys(categories)',
+          notify: true
+        },
+
+        products: {
+          type: Object,
+          value: {},
+          notify: true
+        },
+
+        keyIcon: {
+          type: String,
+          value: "key"
+        },
+
+        hash: {
+          type: Boolean,
+          value: false
+        },
+
+        numItems: {
+          type: Number,
+          value: 0
+        },
+
+        _shouldShowTabs: {
+          computed: '_computeShouldShowTabs(page, smallScreen)'
+        },
+
+        _shouldRenderTabs: {
+          computed: '_computeShouldRenderTabs(_shouldShowTabs, loadComplete)'
+        },
+
+        _shouldRenderDrawer: {
+          computed: '_computeShouldRenderDrawer(smallScreen, loadComplete)'
+        }
+      }}
+
+      static get observers() { return [
+        '_watchCategoryName(categoryName,categories)',
+        '_routePageChanged(routeData.page)',
+        '_categoriesDataChanged(categoriesData)',
+        '_productsDataChanged(productsData.splices)'
+      ]}
+
+      constructor() {
+        super();
+        window.performance && performance.mark && performance.mark('mg-app.created');
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        // Custom elements polyfill safe way to indicate an element has been upgraded.
+        this.removeAttribute('unresolved');
+
+        var config = {
+          apiKey: "AIzaSyDyJuzvmpg4jRPs9VE_Mpne8vdysEZGxbo",
+          authDomain: "be-booed.firebaseapp.com",
+          databaseURL: "https://be-booed.firebaseio.com",
+          projectId: "be-booed",
+          storageBucket: "be-booed.appspot.com",
+          messagingSenderId: "1079409265314"
+        };
+
+        this.set('appInstance', firebase.initializeApp(config));
+
+        this.addEventListener('add-cart-item', (e)=>this._onAddCartItem(e));
+        this.addEventListener('announce', (e)=>this._onAnnounce(e));
+        this.addEventListener('change-section', (e)=>this._onChangeSection(e));
+        this.addEventListener('clear-cart', (e)=>this._onClearCart(e));
+        this.addEventListener('dom-change', (e)=>this._domChange(e));
+        this.addEventListener('set-cart-item', (e)=>this._onSetCartItem(e));
+        this.addEventListener('show-invalid-url-warning', (e)=>this._onFallbackSelectionTriggered(e));
+
+        Polymer.RenderStatus.afterNextRender(this, () => {
+          window.addEventListener('online', (e)=>this._notifyNetworkStatus(e));
+          window.addEventListener('offline', (e)=>this._notifyNetworkStatus(e));
+        });
+
+        this._notifyNetworkStatus();
+      }
+
+      _arraySortedByKeys(obj) {
+        if (obj) {
+          return Object.values(obj).sort(function(a,b){ return a.$key - b.$key});
+        }
+        return [];
+      }
+
+      _watchCategoryName(categoryName) {
+        for (let i=0, c; c = this.categoryOrder[i]; ++i) {
+          if (c.name == categoryName) {
+            this.category = MGCopyObject(this.categoryOrder[i]);
+//            this.category = Object.assign({},this.categoryOrder[i]);
+//            console.log("_watchCategoryName set category",this.category.products);
+          }
+        }
+      }
+
+      _productsDataChanged(splices) {
+//        console.log("_productsDataChanged data change", splices);
+        if (splices) {
+          for (let i=0, s; s = splices.indexSplices[i]; ++i) {
+            var p = this.productsData[s.index];
+            this.products[p.$key] = p;
+
+            if (p.sale > 0) {
+              this.categories.sales.products[p.$key] = p;
+            }
+
+            for (let key in p.tags) {
+              let cate = this.categories[key];
+              if (cate) {
+                cate.products = Object.assign( cate.products||{}, {[p.$key]:p} );
+              }
+              else {
+                this.categories[key] = {name:key, products:{[p.$key]:p}};
+              }
+            }
+          }
+
+          this.categories = MGCopyObject(this.categories);
+          this.products = MGCopyObject(this.products);
+        }
+      }
+
+      _categoriesDataChanged(splices) {
+        console.log("_categoriesDataChanged data change", splices);
+        if (splices) {
+          for (let i=0, s; s = splices.indexSplices[i]; ++i) {
+            /* Merge new values into existing category, create if missing */
+            let catdata = this.categoriesData[s.index];
+            if (!catdata) break;
+//            let oldcat = this.categories[catdata.name] || {};
+//            this.notifyPath('categoryOrder.0.name');
+            this.categories[catdata.name] = Object.assign( this.categories[catdata.name] || {}, catdata);
+          }
+
+//XXX find the best way to trigger changes
+          this.categories = MGCopyObject(this.categories);
+        }
+      }
+
+      _routePageChanged(page) {
+        if (this.page === 'list') {
+          this._listScrollTop = window.pageYOffset;
+        }
+
+        this.page = page || 'home';
+
+        // Close the drawer - in case the *route* change came from a link in the drawer.
+        this.drawerOpened = false;
+      }
+
+      _pageChanged(page, oldPage) {
+        if (page != null) {
+          // home route is eagerly loaded
+          if (page == 'home') {
+            this._pageLoaded(Boolean(oldPage));
+          // other routes are lazy loaded
+          } else {
+
+            // When a load failed, it triggered a 404 which means we need to
+            // eagerly load the 404 page definition
+            let cb = this._pageLoaded.bind(this, Boolean(oldPage));
+            Polymer.importHref(
+              this.resolveUrl('mg-' + page + '.html'),
+              cb, cb, true);
+          }
+        }
+      }
+
+      _pageLoaded(shouldResetLayout) {
+        this._ensureLazyLoaded();
+        if (shouldResetLayout) {
+          // The size of the header depends on the page (e.g. on some pages the tabs
+          // do not appear), so reset the header's layout only when switching pages.
+          Polymer.Async.timeOut.run(() => {
+            this.$.header.resetLayout();
+          }, 1);
+        }
+      }
+
+      _ensureLazyLoaded() {
+        // load lazy resources after render and set `loadComplete` when done.
+        if (!this.loadComplete) {
+          Polymer.RenderStatus.afterNextRender(this, () => {
+            Polymer.importHref(this.resolveUrl('lazy-resources.html'), () => {
+              // Register service worker if supported.
+              /*
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('service-worker.js', {scope: '/'});
+              }*/
+              this._notifyNetworkStatus();
+              this.loadComplete = true;
+            });
+          });
+        }
+      }
+
+      _notifyNetworkStatus() {
+        let oldOffline = this.offline;
+        this.offline =  !navigator.onLine;
+        // Show the snackbar if the user is offline when starting a new session
+        // or if the network status changed.
+        if (this.offline || (!this.offline && oldOffline === true)) {
+          if (!this._networkSnackbar) {
+            this._networkSnackbar = document.createElement('mg-snackbar');
+            this.root.appendChild(this._networkSnackbar);
+          }
+          this._networkSnackbar.innerHTML = this.offline ?
+              'You are offline' : 'You are online';
+          this._networkSnackbar.open();
+        }
+      }
+
+      _toggleDrawer() {
+        this.drawerOpened = !this.drawerOpened;
+      }
+
+      // Elements in the app can notify section changes.
+      // Response by a11y announcing the section and syncronizing the category.
+      _onChangeSection(event) {
+        let detail = event.detail;
+
+        // Scroll to the top of the page when navigating to a non-list page. For list view,
+        // scroll to the last saved position only if the category has not changed.
+        let scrollTop = 0;
+        if (this.page === 'list') {
+          if (this.categoryName === detail.category) {
+            scrollTop = this._listScrollTop;
+          } else {
+            // Reset the list view scrollTop if the category changed.
+            this._listScrollTop = 0;
+          }
+        }
+        // Use `Polymer.AppLayout.scroll` with `behavior: 'silent'` to disable header scroll
+        // effects during the scroll.
+        Polymer.AppLayout.scroll({ top: scrollTop, behavior: 'silent' });
+
+        this.categoryName = detail.category || '';
+
+        // Announce the page's title
+        if (detail.title) {
+          document.title = 'La Belle : ' + detail.title;
+          this._announce(detail.title + ', loaded');
+        }
+      }
+
+      _onMeButtonClick(e) {
+        this.set('route.path','user');
+      }
+
+      _onAddCartItem(event) {
+        if (!this._cartModal) {
+          this._cartModal = document.createElement('mg-cart-modal');
+          this.root.appendChild(this._cartModal);
+        }
+        this.$.cart.addItem(event.detail);
+        this._cartModal.open();
+        this._announce('Item added to the cart');
+      }
+
+      _onSetCartItem(event) {
+        let detail = event.detail;
+        this.$.cart.setItem(detail);
+        if (detail.quantity === 0) {
+          this._announce('Item deleted');
+        } else {
+          this._announce('Quantity changed to ' + detail.quantity);
+        }
+      }
+
+      _onClearCart() {
+        this.$.cart.clearCart();
+        this._announce('Cart cleared');
+      }
+
+      _onUserLogin(e) {
+        this.$.me.setEmail(e.detail.accountEmail);
+        this.$.me.setHash(e.detail.accountHash);
+      }
+
+      // Elements in the app can notify a change to be a11y announced.
+      _onAnnounce(e) {
+        this._announce(e.detail);
+      }
+
+      // A11y announce the given message.
+      _announce(message) {
+        this._a11yLabel = '';
+        this._announceDebouncer = Polymer.Debouncer.debounce(this._announceDebouncer,
+          Polymer.Async.timeOut.after(100), () => {
+            this._a11yLabel = message;
+          });
+      }
+
+      // This is for performance logging only.
+      _domChange(e) {
+        if (window.performance && performance.mark && !this.__loggedDomChange) {
+          let target = e.composedPath()[0];
+          let host = target.getRootNode().host;
+          if (host && host.localName.match(this.page)) {
+            this.__loggedDomChange = true;
+            performance.mark(host.localName + '.domChange');
+          }
+        }
+      }
+
+      _onFallbackSelectionTriggered() {
+        this.page = '404';
+      }
+
+      /*
+      _computeAuthen(email, hash) {
+        return "?user="+email+"&hash="+hash
+      }
+      */
+
+      _computeShouldShowTabs(page, smallScreen) {
+        return (page === 'home') && !smallScreen;
+      }
+
+      _computeShouldRenderTabs(_shouldShowTabs, loadComplete) {
+        return _shouldShowTabs && loadComplete;
+      }
+
+      _computeShouldRenderDrawer(smallScreen, loadComplete) {
+        return smallScreen && loadComplete;
+      }
+
+      _computePluralizedQuantity(quantity) {
+        return quantity + ' ' + (quantity === 1 ? 'item' : 'items');
+      }
+
+      _computeLogo(smallScreen) {
+        return smallScreen ? "/images/logo-small.svg": "/images/logo.svg" ;
+      }
+
+      _computeKeyIcon()
+      {
+        return "key";
+      }
+    }
+
+    customElements.define(MGApp.is, MGApp);
+
+  </script>
+</dom-module>

@@ -1,0 +1,62 @@
+<link href="https://fonts.googleapis.com/css?family=Athiti" rel="stylesheet">
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+
+<dom-module id="mg-button">
+  <template>
+    <style>
+
+      mg-button {
+        display: inline-block;
+      }
+
+      mg-button > * {
+        display: inline-block;
+        box-sizing: border-box;
+        border: 1px solid #555;
+        color: var(--app-primary-color);
+        text-align: center;
+        text-decoration: none;
+        outline: none;
+        -webkit-appearance: none;
+      }
+
+      mg-button > *:focus {
+        background-color: #c5cad3;
+      }
+
+      mg-button > *:active {
+        background-color: #000;
+        color: #FFF;
+      }
+
+      @media (max-width: 767px) {
+
+        /* Responsive buttons are used in mg-detail, mg-cart and mg-checkout */
+        mg-button[responsive] {
+          @apply --layout-fixed-bottom;
+          height: 64px;
+          z-index: 1;
+          right: 5%;
+          left: 5%;
+        }
+
+        mg-button[responsive] > * {
+          background-color: rgba(255,255,255,0.9);
+          border-radius: 10px 10px 0 0;
+          border-bottom: none;
+          color: black;
+          padding: 20px;
+          height: 100%;
+          width: 100%;
+          font-size: 15px;
+        }
+
+        mg-button[responsive] > *:focus {
+          background-color: var(--app-accent-color);
+        }
+
+      }
+
+    </style>
+  </template>
+</dom-module>

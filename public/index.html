@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <base href="/">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+  <title>B o o e d 👻</title>
+
+  <link rel="shortcut icon" sizes="32x32" href="images/boo-icon-32.png?v=2">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@actinidine">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="BOOED">
+  <meta name="theme-color" content="#f4eed7">
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+
+    body {
+      margin: 0;
+      font-family: 'Roboto', 'Noto', sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    mg-app[unresolved] {
+      display: block;
+      min-height: 101vh;
+      line-height: 68px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.3em;
+      background-color: whitesmoke;
+      padding: 0 16px;
+      overflow: visible;
+    }
+
+  </style>
+
+</head>
+<body>
+
+  <mg-app unresolved><img src="images/logo-bounce.svg"></mg-app>
+
+  <script src="bower_components/webcomponentsjs/webcomponents-loader.js"></script>
+  <link rel="import" href="src/mg-app.html">
+
+  <script>
+    window.performance && performance.mark && performance.mark('index.html');
+  </script>
+
+</body>
+</html>

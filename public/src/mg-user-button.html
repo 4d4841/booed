@@ -1,0 +1,20 @@
+<link rel="import" href="mg-badge-button.html">
+
+  <script>
+    class MGUserButton extends MGBadgeButton {
+      static get is() { return 'mg-user-button'; }
+
+      static get properties() { return {
+        icon: {
+          type: String,
+          value: "face"
+        },
+        pathStyle: {
+          type: String,
+          value: "fill:tomato;fill-rule:evenodd;opacity:0.9"
+        }
+      }}
+    }
+
+    customElements.define(MGUserButton.is, MGUserButton);
+  </script>

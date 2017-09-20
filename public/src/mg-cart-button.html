@@ -1,0 +1,24 @@
+<link rel="import" href="mg-badge-button.html">
+
+  <script>
+    class MGCartButton extends MGBadgeButton {
+      static get is() { return 'mg-cart-button'; }
+
+      static get properties() { return {
+        icon: {
+          type: String,
+          value: "shopping-cart"
+        },
+        pathStyle: {
+          type: String,
+          value: "fill:gold;fill-rule:evenodd;opacity:0.9"
+        },
+        textStyle: {
+          type: String,
+          value: "fill:black"
+        }
+      }}
+    }
+
+    customElements.define(MGCartButton.is, MGCartButton);
+  </script>

@@ -1,0 +1,96 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="mg-common-styles.html">
+<link rel="import" href="mg-icons.html">
+<link rel="import" href="mg-image.html">
+
+<dom-module id="mg-badge-button">
+  <template strip-whitespace>
+    <style>
+      :host {
+        @apply --layout-horizontal;
+      }
+
+      .badge {
+        z-index: 1;
+        display: inline-block;
+        margin-left: 15px;
+        position: absolute;
+        width: 25px;
+        height: 25px;
+        pointer-events: none;
+      }
+
+      .badge[hidden] {
+        display:none;
+      }
+
+      paper-icon-button {
+        color: var(--app-primary-color);
+        --paper-icon-button-ink-color: var(--booed-header-color);
+        --paper-icon-button : {
+        };
+      }
+
+    </style>
+
+
+    <svg class="badge" hidden$="[[_hideBadge(value)]]">
+      <path id="path" d$="[[path]]" style$="[[pathStyle]]">
+        <animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="5s" repeatCount="2"/>
+      </path>
+      <text
+        id="text" y="17" x="12"
+        style$="[[_computeTextStyle(textStyle)]]">
+        [[value]]
+      </text>
+    </svg>
+
+    <paper-icon-button icon="[[icon]]"></paper-icon-button>
+
+  </template>
+  <script>
+    class MGBadgeButton extends Polymer.Element {
+      static get is() { return 'mg-badge-button'; }
+
+      static get properties() { return {
+        icon: {
+          type: String,
+          value: null
+        },
+        path: {
+          type: String,
+          value: "M 23,12 20.56,9.22 20.9,5.54 17.29,4.72 15.4,1.54 12,3 8.6,1.54 6.71,4.72 3.1,5.53 3.44,9.21 1,12 3.44,14.78 3.1,18.47 6.71,19.29 8.6,22.47 12,21 l 3.4,1.46 1.89,-3.18 3.61,-0.82 -0.34,-3.68 z"
+        },
+        pathStyle: {
+          type: String,
+          value: "fill:tomato;fill-rule:evenodd"
+        },
+        textStyle: {
+          type: String,
+          value: "fill:white"
+        },
+        value: {
+          type: String,
+          value: ""
+        }
+      }}
+
+      static get observers() { return [
+      ]}
+
+      _hideBadge(value) {
+        if (!value || value.length == 0) {
+          return true;
+        }
+        return false;
+      }
+
+      _computeTextStyle(ts) {
+        return ts+";font-style:normal;font-weight:bold;font-size:14px;text-align:center;text-anchor:middle;fill-opacity:1;stroke:none;"
+      }
+    }
+
+    customElements.define(MGBadgeButton.is, MGBadgeButton);
+  </script>
+</dom-module>

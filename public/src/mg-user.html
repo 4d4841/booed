@@ -1,0 +1,346 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="mg-input.html">
+<link rel="import" href="mg-button.html">
+
+<dom-module id="mg-user">
+  <template strip-whitespace>
+      <custom-style>
+    <style is="custom-style" include="mg-common-styles mg-input mg-button iron-flex iron-flex-alignment">
+      :host {
+        @apply --layout-vertical;
+      }
+
+      mg-input {
+        width: 180px;
+        margin:10px;
+      }
+
+      mg-button {
+        height:40px;
+      }
+
+      a:link {
+            text-decoration: none;
+      }
+
+      mg-button > * {
+        font-family: 'Athiti', sans-serif;
+        font-size: 18px;
+        font-weight: 500;
+        padding: 8px 44px;
+        background-color: floralwhite;
+      }
+
+      mg-button > *:active {
+        background-color: #000;
+        color: #FFF;
+      }
+
+      mg-button > *:focus {
+        background-color: snow;
+      }
+
+      mg-button.single-button,
+      mg-button.upper-button,
+      mg-button.lower-button {
+        @apply(--layout-vertical);
+        padding:0;
+        margin:0;
+      }
+
+      mg-button.single-button >*,
+      mg-button.upper-button >*,
+      mg-button.lower-button >* {
+        border-radius: 5px;
+        min-width:200px;
+        padding:0;
+        height:40px;
+        box-shadow: 1px 1px 2px var(--app-shadow-color);
+      }
+
+      mg-button.upper-button >* {
+        border-bottom: 0px;
+        border-radius: 5px 5px 0 0 ;
+      }
+
+      mg-button.lower-button >* {
+        border-top: 1px dotted black;
+        border-radius: 0 0 5px 5px;
+      }
+
+      mg-button#loginBB >* {
+        border-radius: 5px 0 0 5px;
+        height:40px;
+        box-shadow: 1px 1px 2px var(--app-shadow-color);
+        border-right: none;
+      }
+
+      mg-button#loginGG >* {
+        border-radius: 0 5px 5px 0;
+        width:40px;
+        height:40px;
+        box-shadow: 1px 1px 2px var(--app-shadow-color);
+        background-color:tomato;
+      }
+
+      mg-button >*:active {
+        background-color:#202020;
+        color: white;
+      }
+
+      mg-button#loginGG >*:active {
+        background-color:orange;
+      }
+
+      input#loginButton {
+        line-height: 10px; /* adjust text into the center */
+      }
+
+      .loginButtons {
+        margin-top:20px;
+      }
+
+      .main-frame {
+        width:300px;
+        @apply(--layout-vertical)
+        transition: opacity 0.5s;
+        background-color: white;
+        box-shadow: 1px 1px 3px var(--app-shadow-color);
+       /* max-width:300px; */
+        border-radius: 10px;
+        padding:20px;
+        z-index: 1;
+        box-sizing: border-box;
+      }
+
+      .home-button {
+        --paper-icon-button: {
+          width: 100px;
+        };
+      }
+
+      .info-button {
+        --paper-icon-button: {
+          width: 32px;
+          height: 32px;
+        };
+      }
+
+      .main-info {
+        width:280px;
+        box-sizing: border-box;
+        @apply(--layout-vertical)
+        transition: opacity 0.5s;
+        box-shadow: 1px 1px 3px var(--app-shadow-color);
+        border-radius: 5px;
+        border-radius: 0 0 5px 5px;
+        background:snow;
+        z-index: 0;
+        top:10px;
+        position:relative;
+        @apply(--layout-end-justified);
+        margin-top:-30px;
+        padding: 0px;
+        transition: max-height 0.5s ease-out;
+        max-height: 50px;
+        overflow: hidden;
+      }
+
+      .main-info[expand] {
+        max-height: 1000px;
+        background: white;
+      }
+
+      @media (max-width: 767px) {
+      }
+
+    </style>
+      </custom-style>
+
+    <iron-pages id="pages" selected="[[state]]" attr-for-selected="state" class="center vertical layout">
+      <div state="init" class="center vertical layout">
+        <div class="center vertical layout main-frame">
+          <a href="/">
+            <paper-icon-button class="home-button" src="/images/logo-sat/logo-packed-sat.svg" alt="home" title="octocat"></paper-icon-button>
+          </a>
+          <h3 style="padding-bottom:20px">เข้าสู่ระบบสมาชิก</h3>
+              <mg-input>
+            <input value="{{accountEmail::input}}" type="email" id="accountEmail" name="accountEmail" pattern=".{2,50}"
+                placeholder="email" autofocus
+                aria-labelledby="accountEmailLabel accountInfoHeading">
+            <mg-md-decorator error-message="กรุณากรอกอีเมล" aria-hidden="true">
+              <label id="accountEmailLabel"><iron-icon icon="mail"></iron-icon> อีเมล</label>
+              <mg-underline></mg-underline>
+            </mg-md-decorator>
+              </mg-input>
+
+              <mg-input>
+            <input value="{{accountPassword::input}}" type="password" id="accountPassword" name="accountPassword" pattern=".{2,50}"
+                placeholder="พาสเวิร์ด" autofocus
+                aria-labelledby="accountPasswordLabel accountInfoHeading">
+            <mg-md-decorator error-message="กรอกพาสเวิร์ด" aria-hidden="true">
+              <label id="accountPasswordLabel"><iron-icon icon="key"></iron-icon> พาสเวิร์ด</label>
+              <mg-underline></ball-underline>
+            </mg-md-decorator>
+              </mg-input>
+
+            <div class="loginButtons layout horizontal center center-justified">
+                <mg-button id="loginBB" class="layout vertical center">
+                <input id="loginButton" type="submit" class="submit layout" on-click="_logIn" value="เข้าระบบ">
+                </mg-button>
+
+                <mg-button id="loginGG" class="center justified vertical layout" style="padding:0;">
+                <a style="width:40px;margin:0;padding:0;" on-click="_googleSignIn"><iron-icon style="margin-top:8px;color:white" icon="google" slot="prefix"></iron-icon></a>
+                </mg-button>
+            </div>
+        </div>
+        <div on-click="_toggleInfo" class="center vertical end-justified layout main-info" expand$="[[expand]]">
+          <p style="padding: 20px 20px 0 20px;">
+            หากคุณยังไม่มีบัญชีผู้ใช้ คุณสามารถเข้าสู่ระบบ ด้วยการสมัครกูเกิ้ลแอคเค้าท์ก่อน โดยคุณสามารถคลิกปุ่ม
+            <iron-icon style="color:tomato" icon="google"></iron-icon> เพื่อเข้าสู่ระบบหรือสมัครกูเกิ้ลแอคเค้าท์ได้ทันที
+            การเข้าสู่ระบบสมาชิกจะช่วยให้คุณติดตามการทำรายการ หรือติดต่อเกี่ยวกับสินค้าได้ง่ายขึ้น
+            คุณยังสามารถปรับปรุงข้อมูลส่วนตัว รับการแจ้งเตือนเฉพาะที่คุณสนใจ
+            และยังสามารถสมัครรับบริการข่าวสารและโปรโมชั่นต่างๆ เพิ่มเติมได้อีกด้วย รวมถึงฟีเจ้อร์อื่นๆ เช่นการสร้างร้านของคุณเอง
+          </p>
+          <iron-icon style="display:block;--iron-icon-width:20px" icon="help"></iron-icon>
+          <!--<paper-icon-button class="info-button" icon="help"></paper-icon-button>-->
+        </div>
+      </div>
+      <div state="success" class="center vertical layout main-frame">
+        <h3>ยินดีต้อนรับ</h3>
+        <p>[[response.successMessage]]</p>
+
+                  <a href="/">
+                  <mg-button class="upper-button layout vertical center">
+                  <button><iron-icon icon="arrow-back" style="color:#00c300"></iron-icon> กลับหน้าหลัก</button>
+                  </mg-button>
+                  </a>
+                  <mg-button class="lower-button layout vertical center">
+                  <button on-click="_logOut"><iron-icon icon="coffee" style="color:tomato"></iron-icon> ออกจากระบบ</button>
+                  </mg-button>
+
+      </div>
+      <div state="error" class="center vertical layout main-frame">
+        <h3>เกิดความผิดพลาด</h3>
+        <p>[[response.successMessage]]</p>
+
+                  <a href="/">
+                  <mg-button class="single-button layout vertical center">
+                  <button><iron-icon icon="error" style="color:tomato"></iron-icon> โปรดลองอีกครั้ง</button>
+                  </mg-button>
+                  </a>
+
+      </div>
+    </iron-pages>
+
+    <app-route
+        active="{{routeActive}}"
+        data="{{routeData}}"
+        route="[[route]]"
+        pattern="/:state">
+    </app-route>
+  </template>
+  <script>
+    class MGUser extends Polymer.Element {
+      static get is() { return 'mg-user'; }
+
+      static get properties() { return {
+
+        route: {
+          type: Object,
+          notify: true
+        },
+
+        state: {
+          type: String,
+          value: 'init'
+        },
+
+        expand: {
+          type: Boolean,
+          reflectToAttribute: true,
+          value: false
+        },
+
+        me: {
+          type: Object,
+          value: {},
+        },
+
+        admin: {
+          type: Boolean,
+          value: false
+        },
+
+        visible: {
+          type: Boolean,
+          observer: '_visibleChanged'
+        },
+
+      }}
+
+      static get observers() { return [
+        '_appInitialized(firebaseApp)',
+        '_routeDataChanged(routeData)',
+      ]}
+
+      _routeDataChanged(routeData) {
+        console.log("new routeData",routeData);
+      }
+
+      _visibleChanged(visible) {
+        if (visible) {
+          this.dispatchEvent(new CustomEvent('change-section', {
+            bubbles: true, composed: true, detail: {title: 'Home'}}));
+        }
+      }
+
+      _toggleInfo(e) {
+        this.expand = !this.expand;
+      }
+
+      _appInitialized(firebaseApp) {
+        if (firebaseApp) {
+          firebaseApp.auth().onAuthStateChanged(this._onAuthStateChanged.bind(this));
+        }
+      }
+
+      _onAuthStateChanged(user) {
+        this.set('me.User', user);
+        if (user) {
+          /*
+          firebase.database().ref('admins/'+auth.uid).once('value').then(this._onAdminInfo.bind(this));
+          firebase.database().ref('home/'+auth.uid+"/registration").once('value').then(this._onUserRegistration.bind(this));
+          */
+        } else {
+          console.log("no user");
+        }
+      }
+
+      _googleSignIn(e) {
+          this.firebaseApp.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(
+            function() {
+              var provider = new firebase.auth.GoogleAuthProvider();
+              return firebase.auth().signInWithRedirect(provider);
+            })
+            .catch(function(error) {
+              var errorCode = error.code;
+              var errorMessage = error.message;
+              console.log("Error", error);
+            });
+      }
+
+      _signOut(e) {
+        this.firebaseApp.auth().signOut();
+      }
+
+
+    }
+
+    customElements.define(MGUser.is, MGUser);
+  </script>
+</dom-module>
