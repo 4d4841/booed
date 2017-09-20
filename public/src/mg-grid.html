@@ -14,7 +14,6 @@
         @apply --layout-horizontal;
         padding:0;
         margin:0;
-        background:snow;
       }
 
       .item {
@@ -22,12 +21,19 @@
         position: absolute;
         display: block;
         position: absolute;
-        padding: 0;
-        border: 0;
+        padding: 4px;
+        /*border: 1px solid gray;*/
+        /*
+        border-right: 1px dotted tomato;
+        border-bottom: 1px dotted tomato;
+        */
+        box-sizing: border-box;
+        /*box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.5);*/
         --mg-image-img: {
           width:100%;
           height:100%;
           object-fit: cover;
+          object-position: top;
         };
       }
 
@@ -36,7 +42,7 @@
     <dom-repeat id="grid" items="[[items]]" initial-count="5" mutable-data>
   <template strip-whitespace>
     <div class="item" style$="[[_itemStyle(item,unitWidth)]]">
-      <mg-image delay="[[index]]" style="width:100%;height:100%;box-sizing:border-box" src="[[item.photo]]"></mg-image>
+      <mg-image delay="[[index]]" style="border-radius:5px;width:100%;height:100%;box-sizing:border-box" src="[[item.photo]]"></mg-image>
     <!--
 <span>([[item.index]]) x:[[item.x]],y:[[item.y]],w:[[item.w]],h:[[item.h]]</span>
     -->
@@ -300,7 +306,6 @@
       ]}
 
       connectedCallback() {
-        console.log("connectedCallback grid");
         super.connectedCallback();
         this.addEventListener('iron-resize', this._onResizeEvent);
       }
@@ -383,6 +388,9 @@
           }
         }
 
+        /* Collision map */
+        let csmp = [];
+
         /* Moongom Algorithm */
         for ( let i = 0,e; e = items[i]; ++i ) {
           items[i].index = i;
@@ -397,7 +405,26 @@
 
             while ( px2 <= this.columns ) {
 
+              /*Make sure the collision map fits item*/
+              while (csmp.length < py2) csmp.push([]);
+              for ( let ri = 0, r; r = csmp[ri]; ++ri ) {
+                while (r.length < px2) r.push(-1);
+              }
+
               let hasCollision = false;
+
+              /* Collision map */
+              test_collision:
+              for (let ri = py1-1; ri <= py2-1; ++ri)
+              for (let ci = px1-1; ci <= px2-1; ++ci)
+              {
+                if (csmp[ri][ci] > -1) {
+                  hasCollision = true;
+                  break test_collision;
+                }
+              }
+
+              /* No map tester
               for ( let j = i-1; j >= 0 && !hasCollision; --j) {
 
                 let x1 = items[j].x,
@@ -407,12 +434,18 @@
 
                 hasCollision = (px1 > x2 || px2 < x1 || py1 > y2 || py2 < y1) ? false : true;
               }
+              */
               if (!hasCollision) {
                 szmp[e.h-1][e.w-1] = [px2+1,py1];
                 e.x = px1;
                 e.y = py1;
                 e.szmpX = px2+1;
                 e.szmpY = py1;
+
+                /* Fill collision map */
+                for (let ri = py1-1; ri <= py2-1; ++ri)
+                for (let ci = px1-1; ci <= px2-1; ++ci)
+                  csmp[ri][ci] = i;
 
                 break seeking;
               }
