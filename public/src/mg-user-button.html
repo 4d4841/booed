@@ -1,5 +1,67 @@
 <link rel="import" href="mg-badge-button.html">
 
+<dom-module id="mg-user-button">
+  <template strip-whitespace>
+    <style>
+      :host {
+        @apply --layout-horizontal;
+      }
+
+      .badge {
+        z-index: 1;
+        display: inline-block;
+        margin-left: 15px;
+        position: absolute;
+        width: 25px;
+        height: 25px;
+        pointer-events: none;
+      }
+
+      .badge[hidden] {
+        display:none;
+      }
+
+      paper-icon-button {
+        color: var(--app-primary-color);
+        --paper-icon-button-ink-color: var(--booed-header-color);
+        --paper-icon-button : {
+        };
+      }
+
+      mg-image {
+        width:33px;
+        height:33px;
+        border-radius: 50% 50% 0 0;
+        border: 1px dashed tomato;
+        border-bottom: none;
+        position: absolute;
+        bottom:4px;
+        right:4px;
+        box-sizing: border-box;
+      }
+
+    </style>
+
+
+    <svg class="badge" hidden$="[[_hideBadge(value)]]">
+      <path id="path" d$="[[path]]" style$="[[pathStyle]]">
+        <animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="5s" repeatCount="2"/>
+      </path>
+      <text
+        id="text" y="17" x="12"
+        style$="[[_computeTextStyle(textStyle)]]">
+        [[value]]
+      </text>
+    </svg>
+
+    <dom-if if="[[image]]">
+  <template>
+    <mg-image src="[[image]]"></mg-image>
+  </template>
+    </dom-if>
+    <paper-icon-button icon="[[icon]]"></paper-icon-button>
+
+  </template>
   <script>
     class MGUserButton extends MGBadgeButton {
       static get is() { return 'mg-user-button'; }
@@ -9,12 +71,35 @@
           type: String,
           value: "face"
         },
+        image: {
+          type: String,
+        },
         pathStyle: {
           type: String,
           value: "fill:tomato;fill-rule:evenodd;opacity:0.9"
+        },
+        me: {
+          type: Object,
         }
       }}
+
+      static get observers() { return [
+        '_avatarChanged(me.User.photoURL)',
+      ]}
+
+      _avatarChanged(photoURL) {
+        if (photoURL) {
+          this.icon = null;
+          this.image = photoURL;
+        }
+        else {
+          this.icon = "face";
+          this.image = null;
+        }
+      }
+
     }
 
     customElements.define(MGUserButton.is, MGUserButton);
   </script>
+</dom-module>
