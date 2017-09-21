@@ -3,73 +3,52 @@
 <dom-module id="mg-user-button">
   <template strip-whitespace>
     <style>
-      :host {
-        @apply --layout-horizontal;
-      }
-
-      .badge {
-        z-index: 1;
-        display: inline-block;
-        margin-left: 15px;
-        position: absolute;
-        width: 25px;
-        height: 25px;
-        pointer-events: none;
-      }
-
-      .badge[hidden] {
-        display:none;
-      }
-
-      paper-icon-button {
-        color: var(--app-primary-color);
-        --paper-icon-button-ink-color: var(--booed-header-color);
-        --paper-icon-button : {
-        };
-      }
-
-      mg-image {
-        width:33px;
-        height:33px;
-        border-radius: 50% 50% 0 0;
-        border: 1px dashed tomato;
-        border-bottom: none;
-        position: absolute;
-        bottom:4px;
-        right:4px;
+      .avatar {
+        width:28px;
+        height:28px;
+        border-radius: 50% 50%;
+        background-color: rgba(0,0,0,0.1);
+/*        border: 1.2px dashed tomato; */
         box-sizing: border-box;
+        border-top: none;
+        position: absolute;
+        right: 6px;
+        bottom: 6px;
+        padding: 1px;
+        pointer-events: none;
       }
 
     </style>
 
-
-    <svg class="badge" hidden$="[[_hideBadge(value)]]">
-      <path id="path" d$="[[path]]" style$="[[pathStyle]]">
-        <animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="5s" repeatCount="2"/>
-      </path>
-      <text
-        id="text" y="17" x="12"
-        style$="[[_computeTextStyle(textStyle)]]">
-        [[value]]
-      </text>
-    </svg>
-
-    <dom-if if="[[image]]">
+    <dom-if id="avatar" if="[[image]]">
   <template>
-    <mg-image src="[[image]]"></mg-image>
+    <img class="avatar" src="[[image]]"></img>
   </template>
     </dom-if>
-    <paper-icon-button icon="[[icon]]"></paper-icon-button>
+
 
   </template>
   <script>
+  (function() {
+  let memoizedTemplate;
+
     class MGUserButton extends MGBadgeButton {
       static get is() { return 'mg-user-button'; }
+
+      static get template() {
+        if (!memoizedTemplate) {
+          memoizedTemplate = Polymer.DomModule.import(this.is, 'template');
+          let superTemplateContents = document.importNode(MGBadgeButton.template.content, true);
+          let avatar = memoizedTemplate.content.querySelector('#avatar');
+          memoizedTemplate.content.insertBefore(superTemplateContents, avatar);
+        }
+        return memoizedTemplate;
+      }
 
       static get properties() { return {
         icon: {
           type: String,
-          value: "face"
+          value: "ghost"
         },
         image: {
           type: String,
@@ -93,7 +72,7 @@
           this.image = photoURL;
         }
         else {
-          this.icon = "face";
+          this.icon = "ghost";
           this.image = null;
         }
       }
@@ -101,5 +80,6 @@
     }
 
     customElements.define(MGUserButton.is, MGUserButton);
+  })();
   </script>
 </dom-module>

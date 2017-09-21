@@ -3,6 +3,7 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="mg-input.html">
 <link rel="import" href="mg-button.html">
 <link rel="import" href="mg-image.html">
@@ -13,6 +14,7 @@
     <style is="custom-style" include="mg-common-styles mg-input mg-button iron-flex iron-flex-alignment">
       :host {
         @apply --layout-vertical;
+        @apply --layout-center;
       }
 
       mg-input {
@@ -107,7 +109,7 @@
       }
 
       .main-frame {
-        width:300px;
+        width:240px;
         @apply(--layout-vertical)
         transition: opacity 0.5s;
         background-color: white;
@@ -119,11 +121,17 @@
         box-sizing: border-box;
       }
 
-      .home-button {
-        margin-bottom: 20px;
-        --paper-icon-button: {
-          width: 100px;
-        };
+      #home-button {
+        width: 220px;
+        height: 40px;
+        background-size: 90%;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-image: url(/images/logo-bounce-in.svg);
+      }
+
+      #home-button[state=waiting] {
+        display: none;
       }
 
       .info-button {
@@ -134,7 +142,7 @@
       }
 
       .main-info {
-        width:280px;
+        width:220px;
         box-sizing: border-box;
         @apply(--layout-vertical)
         transition: opacity 0.5s;
@@ -161,12 +169,13 @@
       h3  {
         padding: 0;
         margin: 0;
+        padding-bottom: 20px;
       }
 
       .avatar {
         border-radius: 10px;
-        height: 260px;
-        width: 260px;
+        height: 200px;
+        width: 200px;
         background-size: cover;
         margin-top: 0px;
       }
@@ -176,14 +185,15 @@
         background: linear-gradient(
           transparent 0,
           purple 100px);
+        background-repeat: no-repeat;
         color: white;
         text-align: left;
         text-shadow: 1px 1px 3px #200020;
         max-height: 40px;
         line-height: 20px;
         height: 40px;
-        width: 260px;
-        max-width: 260px;
+        width: 200px;
+        max-width: 200px;
         border-radius: 0 0 10px 10px;
         z-index:1;
         display: block;
@@ -194,13 +204,16 @@
         box-sizing: border-box;
       }
 
-
       @media (max-width: 767px) {
       }
 
     </style>
       </custom-style>
 
+      <div class="center vertical layout main-frame">
+        <a href="/" class="center vertical layout">
+          <paper-button id="home-button" alt="home" title="home" state$="[[state]]"></paper-button>
+        </a>
     <iron-pages id="pages" selected="[[state]]" attr-for-selected="state" class="center vertical layout">
       <div state="waiting" class="center vertical layout">
         <img src="images/logo-bounce.svg">
@@ -210,11 +223,8 @@
           <dom-if if="[[!me.User.email]]">
         <template>
           <!-- Begin: login panel -->
-          <div class="center vertical layout main-frame">
             <h3>เข้าสู่ระบบสมาชิก</h3>
-            <a href="/">
-              <paper-icon-button class="home-button" src="/images/logo-sat/logo-packed-sat.svg" alt="home" title="home"></paper-icon-button>
-            </a>
+
                 <mg-input>
               <input value="{{accountEmail::input}}" type="email" id="accountEmail" name="accountEmail" pattern=".{2,50}"
                   placeholder="email" autofocus
@@ -244,20 +254,6 @@
                   <a style="width:40px;margin:0;padding:0;" on-click="_googleSignIn"><iron-icon style="margin-top:8px;color:white" icon="google" slot="prefix"></iron-icon></a>
                   </mg-button>
               </div>
-          </div>
-          <div on-click="_toggleInfo" class="center vertical end-justified layout main-info" expand$="[[expand]]">
-            <p style="padding: 20px 10px 0 10px;">
-              <br>
-              หากคุณยังไม่มีบัญชีสมาชิก คุณสามารถเข้าสู่ระบบด้วย <a href="https://accounts.google.com/SignUp">บัญชีกูเกิล</a> ได้ทันที โดยคลิกปุ่ม
-              <iron-icon style="color:tomato;--iron-icon-width:20px;" icon="google"></iron-icon> เพื่อเข้าสู่ระบบสมาชิก (หรือเพื่อสร้างบัญชีกูเกิล)
-              <br><br>
-              การเป็นสมาชิกจะช่วยให้คุณติดตามการทำรายการ หรือติดต่อเกี่ยวกับสินค้าได้ง่ายขึ้น
-              คุณยังสามารถปรับปรุงข้อมูลส่วนตัว รับการแจ้งเตือนเฉพาะที่คุณสนใจ
-              และยังสามารถสมัครหรือยกเลิกบริการข่าวสารและโปรโมชั่นต่างๆ รวมถึงฟีเจ้อร์อื่นๆ เช่นการสร้างร้านของคุณเอง เป็นต้น
-            </p>
-            <iron-icon style="display:block;--iron-icon-width:20px" icon="help"></iron-icon>
-            <!--<paper-icon-button class="info-button" icon="help"></paper-icon-button>-->
-          </div>
           <!-- End: login panel -->
         </template>
           </dom-if>
@@ -265,10 +261,6 @@
           <dom-if if="[[me.User.email]]">
         <template>
           <!-- begin: user panel -->
-          <div class="center vertical layout main-frame">
-            <a href="/">
-              <paper-icon-button class="home-button" src="/images/logo-sat/logo-packed-sat.svg" alt="home" title="home"></paper-icon-button>
-            </a>
             <div style="padding-bottom:20px;">
               <mg-image class="avatar" src="[[me.User.photoURL]]"></mg-image>
               <div class="under-photo">
@@ -279,18 +271,13 @@
                   <mg-button class="single-button layout vertical center">
                   <button on-click="_signOut"><iron-icon icon="coffee" style="color:tomato"></iron-icon> ออกจากระบบ</button>
                   </mg-button>
-          </div>
           <!-- End: user panel -->
         </template>
           </dom-if>
         <!-- End: init -->
       </div>
-      <div state="welcome" class="center end-justified vertical layout main-frame">
-        <h3>ยินดีต้อนรับสู่</h3>
-            <a href="/">
-              <paper-icon-button class="home-button" src="/images/logo-sat/logo-packed-sat.svg" alt="home" title="home"></paper-icon-button>
-            </a>
-
+      <div state="welcome" class="center end-justified vertical layout">
+        <h3>ยินดีต้อนรับสู่ระบบสมาชิกค่ะ</h3>
           <dom-if if="[[response]]">
         <template>
         <p style="padding:0;margin:0;margin-bottom:10px">[[response.successMessage]]</p>
@@ -309,10 +296,7 @@
                   </mg-button>
 
       </div>
-      <div state="error" class="center vertical layout main-frame">
-            <a href="/">
-              <paper-icon-button class="home-button" src="/images/logo-sat/logo-packed-sat.svg" alt="home" title="home"></paper-icon-button>
-            </a>
+      <div state="error" class="center vertical layout">
         <h3>เกิดความผิดพลาด</h3>
         <p style="padding:0;margin:0;margin-bottom:10px">[[response.errorMessage]]</p>
 
@@ -325,6 +309,20 @@
 
       </div>
     </iron-pages>
+      </div>
+      <div on-click="_toggleInfo" class="center vertical end-justified layout main-info" expand$="[[expand]]" hidden="[[_shouldHideInfoPanel(me.User.email,state)]]">
+        <p style="padding: 20px 10px 0 10px;text-align: center">
+          <br>
+          หากคุณยังไม่มีบัญชีสมาชิก คุณสามารถเข้าสู่ระบบสมาชิกด้วย <a href="https://accounts.google.com/SignUp">บัญชีกูเกิล</a> ของคุณได้ทันที เพียงกด<br>
+          <iron-icon style="color:tomato;--iron-icon-width:20px;" icon="google"></iron-icon> <br>(หรือเพื่อสร้างบัญชีใหม่ถ้ายังไม่มี)
+          <br><br>
+          การเป็นสมาชิกจะช่วยให้คุณติดตามการทำรายการ หรือรับบริการเกี่ยวกับสินค้าได้ง่ายขึ้น
+          คุณยังสามารถปรับปรุงข้อมูลส่วนตัว รับการแจ้งเตือนเฉพาะส่วนที่คุณสนใจ
+          และยังสามารถสมัครหรือยกเลิกบริการข่าวสารและโปรโมชั่นต่างๆ รวมถึงการเข้าใช้งานฟีเจ้อร์อื่นๆ เช่นการสร้างร้านของคุณเอง เป็นต้น
+        </p>
+        <iron-icon style="display:block;--iron-icon-width:20px" icon="help"></iron-icon>
+        <!--<paper-icon-button class="info-button" icon="help"></paper-icon-button>-->
+      </div>
 
     <app-route
         active="{{routeActive}}"
@@ -346,7 +344,12 @@
 
         state: {
           type: String,
+          reflectToAttribute: true,
           value: 'init'
+        },
+
+        menu: {
+          type: Array,
         },
 
         expand: {
@@ -368,7 +371,8 @@
 
         visible: {
           type: Boolean,
-          observer: '_visibleChanged'
+          reflectToAttribute: true,
+          value: false
         },
 
       }}
@@ -376,12 +380,13 @@
       static get observers() { return [
         '_appInitialized(firebaseApp)',
         '_updateState(routeActive, routeData)',
+        '_visualChanged(visible,menu)',
       ]}
 
-      _visibleChanged(visible) {
-        if (visible) {
+      _visualChanged(visible,menu) {
+        if (this.visible) {
           this.dispatchEvent(new CustomEvent('change-section', {
-            bubbles: true, composed: true, detail: {title: 'Home'}}));
+            bubbles: true, composed: true, detail: {title: 'User : 👻', menu:this.menu}}));
         }
       }
 
@@ -406,10 +411,27 @@
           }
           */
           this._pushState("welcome");
+          this.menu = [
+            {name:"profile", icon:"face", title:"บัญชี"},
+            {name:"order", icon:"credit-card", title:"รายการสั่งซื้อ"},
+            {name:"products", icon:"local-mall", title:"สินค้า"},
+            {name:"store", icon:"store", title:"ร้าน"},
+            {name:"inbox", icon:"inbox", title:"อินบอกซ์"},
+            {name:"help", icon:"help", title:"ความช่วยเหลือ"},
+            {name:"policy", icon:"info", title:"นโยบายความเป็นส่วนตัว"},
+          ];
         } else {
           console.log("no user");
           this._pushState("init");
+          this.menu = [
+            {name:"new-releases", icon:"lock", title:"เข้าสู่ระบบ"},
+            {name:"new-releases", icon:"info", title:"นโยบายความเป็นส่วนตัว"},
+          ];
         }
+      }
+
+      _shouldHideInfoPanel(email,state) {
+        return email || state == "waiting";
       }
 
       _googleSignIn(e) {
