@@ -32,7 +32,6 @@
 <link rel="import" href="mg-home.html">
 
 <link href="https://fonts.googleapis.com/css?family=Mitr:300|Gloria+Hallelujah" rel="stylesheet">
-<!-- <link rel="import" href="mg-category-data.html"> -->
 <!-- Since 'home' is the default route, eagerly load it. -->
 <!--
 <link rel="import" href="mg-common-styles.html"><link href="https://fonts.googleapis.com/css?family=Gloria+Hallelujah" rel="stylesheet">
@@ -48,13 +47,15 @@
         transition: padding-top 0.5s;
         padding-bottom: 144px;
         min-height: 100vh;
-        --app-primary-color: #634;
+        --app-primary-color: sienna;
         --app-secondary-color: #757575;
         --app-accent-color: #172C50;
         --app-shadow-color: rgba(47,27,56,0.5);
         --booed-header-background: whitesmoke;/*rgba(255,250,250,0.95);var(--app-accent-color);*/ /*#f4eed7;*/
         --booed-contents-background: var(--booed-header-background);
-        --booed-menu-color: tomato;
+        --booed-menu-color: salmon;
+/*        --booed-menu-focus-color: tomato;*/
+        --booed-menu-focus-color: var(--app-primary-color);
         --booed-header-height: 35px;
         --booed-logo-margin: 4px;
         --booed-logo-height: calc(var(--booed-header-height) - var(--booed-logo-margin) * 2);
@@ -71,7 +72,7 @@
       }
 
       app-header {
-        z-index: 1;
+        z-index: 2;
         @apply --layout-fixed-top;
         @apply --layout-horizontal;
         background-color: var(--booed-header-background);
@@ -169,7 +170,6 @@
         padding:0;
       }
 
-
       .menu-bar {
         @apply --layout-horizontal;
         position: relative;
@@ -186,7 +186,7 @@
 
       div.header-filler {
         @apply(--layout-flex);
-        min-width: 330px;
+        min-width: 320px;
         height: var(--booed-header-height);
       }
 
@@ -242,35 +242,36 @@
       }
 
       paper-tabs {
-          /*--paper-tabs-selection-bar-color: var(--app-primary-color);*/
-          --paper-tabs-selection-bar-color: var(--booed-menu-color);
-          height: var(--booed-menu-height);
-          width: 100%;
-          --paper-tabs-selection-bar: {
-            opacity: 0.5;
-            /*height:0.5px;*/
-            /*background-image: linear-gradient(to right, rgba(255,85,85,0), rgba(255,85,85,0.5), rgba(255,85,85,0.5), rgba(255,85,85,0));*/
-            /*background-image: linear-gradient(rgba(255,85,85,0.5) 4px,transparent 4px,  transparent 30px);*/
-          };
+        /*--paper-tabs-selection-bar-color: var(--app-primary-color);*/
+        --paper-tabs-selection-bar-color: var(--booed-menu-color);
+        height: var(--booed-menu-height);
+        width:100%;
+        --paper-tabs-selection-bar: {
+          opacity: 0.5;
+          /*height:0.5px;*/
+          /*background-image: linear-gradient(to right, rgba(255,85,85,0), rgba(255,85,85,0.5), rgba(255,85,85,0.5), rgba(255,85,85,0));*/
+          /*background-image: linear-gradient(rgba(255,85,85,0.5) 4px,transparent 4px,  transparent 30px);*/
+        };
+        --paper-tabs: {
+        }
       }
 
       paper-tab {
         font-family: 'Mitr', sans-serif;
         font-size: 16px;
-        color: var(--booed-menu-color);
+        color: var(--booed-menu-focus-color);
         padding:0 8px;
         height: var(--booed-menu-height);
         /*border-radius: 20px 20px 0 0;*/
         overflow: hidden;
-        --paper-tab-ink: var(--booed-menu-color);
+        --paper-tab-ink: var(--booed-menu-focus-color);
         --paper-tab-content: {
           transition: opacity 0.5s;
-          --iron-icon-fill-color: var(--booed-menu-color);
-          --iron-icon-stroke-color: transparent;
+          --iron-icon-fill-color: var(--booed-menu-focus-color);
         };
         --paper-tab-content-unselected: {
-          --iron-icon-stroke-color: var(--booed-menu-color);
-          --iron-icon-fill-color: transparent;
+          color: var(--booed-menu-color);
+          --iron-icon-fill-color: var(--booed-menu-color);
         };
       }
 
@@ -357,6 +358,7 @@
 
         app-header {
           height: var(--booed-header-height);
+          min-width: 300px;
         }
 
         a.logo {
@@ -364,10 +366,23 @@
           background-size: auto var(--booed-logo-height);
           background-repeat: no-repeat;
           background-position: center var(--booed-logo-margin);
+          transition: background-position 0.25s;
         }
 
         .videoframe {
           margin-top: var(--booed-menu-height);
+        }
+      }
+
+      @media (max-width: 430px) {
+        :host {
+          --booed-logo-height: 20px;
+        }
+
+        a.logo {
+          background-position: margin var(--booed-logo-margin);
+          margin-left: -50px;
+          margin-top: 6px;
         }
       }
 
@@ -383,47 +398,11 @@
 
     <iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
 
-<!--
-    <mg-category-data categories="{{categories}}"></mg-category-data>
--->
-
-<!--    <mg-user-data id="user" email="{{email}}" hash="{{hash}}" key-icon="{{keyIcon}}"></mg-user-data>
-    <mg-cart-data
-        id="cart"
-        cart="{{cart}}"
-        num-items="{{numItems}}"
-        total="{{total}}"></mg-cart-data>
-      -->
-
-        <!-- XXX Cannot keep logo and top buttons there for some reasons (wrong location when refreshing )-->
-        <!--
-
-        -->
-
     <app-header role="navigation" id="header" effects="waterfall" reveals>
-<!--
-            <div class="header2">
-
-          <div class="header-filler">
-          </div>
-          <div class="header-filler">
-          </div>
-
-
-            </div>
-      <app-toolbar class="title-bar">
-
--->
-
 
         <!-- XXX Begin: Cannot keep logo and top buttons here for some reasons -->
         <!-- FIXME Merge with title toolbars -->
         <!-- XXX End: Cannot keep logo and top buttons here for some reasons -->
-
-
-
-
-
 
         <!--
           <audio autoplay loop>
@@ -435,15 +414,13 @@
             <source src="videos/head.mp4" type="video/mp4">
             Your browser does not support this video tag.
           </video>
-
-      </app-toolbar>
           -->
       <div class="tool-bar">
         <div class="header-bar horizontal layout center-justified">
           <div class="layout horizontal" style="position:absolute;left:0">
             <dom-if if="[[_shouldRenderDrawer]]">
           <template>
-          <mg-badge-button id="menuButton" on-tap="_toggleDrawer" icon="menu" path-style="fill:tomato" value="!"></mg-badge-button>
+          <mg-badge-button id="menuButton" on-tap="_toggleDrawer" icon="menu" path-style="fill:tomato" value=""></mg-badge-button>
           </template>
             </dom-if>
           </div>
@@ -455,8 +432,9 @@
         </a>
           <div class="header-filler"></div>
 
-          <div class="layout horizontal" style="position:fixed;right:8px">
-          <mg-badge-button id="languaeButton" icon="language" path-style="fill:blue" value="ท"></mg-badge-button>
+          <div class="layout horizontal" style="position:fixed;right:10px">
+          <mg-badge-button id="fmPicker" icon="wc" path-style="fill:lightpink" value=""></mg-badge-button>
+          <mg-badge-button id="languaeButton" icon="language" path-style="fill:blue" value=""></mg-badge-button>
           <mg-cart-button id="cartButton" cart="{{cart}}" value="8"></mg-cart-button>
           <mg-user-button id="userButton" on-tap="_onMeButtonClick" me="{{me}}" value=""></mg-user-button>
           </div>
@@ -467,28 +445,14 @@
 
             <dom-if if="[[_shouldRenderTabs]]">
           <template>
-        <paper-tabs scrollable fit-container>
-          <paper-tab>
-            <iron-icon icon="new-releases"></iron-icon> สินค้าใหม่
-          </paper-tab>
-          <paper-tab>
-            <iron-icon icon="best-sellers"></iron-icon> ขายดี
-          </paper-tab>
-          <paper-tab>
-            <iron-icon icon="dresses"></iron-icon> ชุดทั่วไป
-          </paper-tab>
-          <paper-tab>
-            <iron-icon icon="lingeries"></iron-icon> ชุดชั้นใน
-          </paper-tab>
-          <paper-tab>
-            <iron-icon icon="night-dresses"></iron-icon> ชุดนอน
-          </paper-tab>
-          <paper-tab>
-            <iron-icon icon="swimwears"></iron-icon> ชุดว่ายน้ำ
-          </paper-tab>
-          <paper-tab>
-            <iron-icon icon="sales-baht"></iron-icon> เซลส์
-          </paper-tab>
+        <paper-tabs hide-scroll-buttons scrollable fit-container>
+            <dom-repeat items="[[menu]]">
+          <template>
+            <paper-tab on-mouseover="_onTrack" on-mouseout="_onTrack">
+              <iron-icon icon="[[item.icon]]"></iron-icon> [[item.title]]
+            </paper-tab>
+          </template>
+            </dom-repeat>
         </paper-tabs>
           </template>
             </dom-if>
@@ -497,103 +461,18 @@
     </app-header>
 
 
-<!--        <div class="logo" main-title><a href="/" tabindex="-1" aria-label="SHOP Home"><img src="[[_computeLogo(smallScreen)]]"></img></a></div> -->
-
-      <!-- Lazy-create the tabs for larger screen sizes. -->
-<!--
-      <div id="tabContainer" sticky$="[[_shouldShowTabs]]" hidden$="[[!_shouldShowTabs]]">
-        <dom-if if="[[_shouldRenderTabs]]">
-              <template>
-            <mg-tabs
-                selected="[[categoryName]]"
-                attr-for-selected="name">
-
-                <dom-repeat id="menubar" items="[[categoryOrder]]" mutable-data>
-              <template>
-
-                    <dom-if if="[[item.title]]">
-                  <template>
-                <mg-tab name="[[item.name]]">
-                <a href="/list/[[item.name]]"><iron-icon icon="[[item.name]]"></iron-icon> [[item.title]]</a>
-                </mg-tab>
-                  </template>
-                    </dom>
-
-              </template>
-                </dom-repeat>
-
-                <mg-tab name="mytab">
-                <a href="/list/[[item.name]]"><iron-icon icon="face"></iron-icon> ล็อกอิน</a>
-                </mg-tab>
-
-            </mg-tabs>
-              </template>
-
-        </dom-if>
-      </div>-->
-
-
-
-
       <dom-if if="[[_shouldRenderDrawer]]">
     <template>
     <app-drawer id="drawer" opened="{{drawerOpened}}" swipe-open tabindex="0">
-      <div><iron-icon icon="new-releases"></iron-icon> สินค้าใหม่</div>
-      <div><iron-icon icon="best-sellers"></iron-icon> ขายดี</div>
-      <div><iron-icon icon="dresses"></iron-icon> ชุดทั่วไป</div>
-      <div><iron-icon icon="lingeries"></iron-icon> ชุดชั้นใน</div>
-      <div><iron-icon icon="night-dresses"></iron-icon> ชุดนอน</div>
-      <div><iron-icon icon="swimwears"></iron-icon> ชุดว่ายน้ำ</div>
-      <div><iron-icon icon="sales-baht"></iron-icon> เซลส์</div>
+            <dom-repeat items="[[menu]]">
+          <template>
+              <iron-icon icon="[[item.icon]]"></iron-icon> [[item.title]]<br>
+          </template>
+            </dom-repeat>
     </app-drawer>
     </template>
       </dom-if>
 
-<!--    <img width="50px" src="images/logo-bounce.svg">-->
-
-<!--
-    <dom-if if="[[_shouldRenderDrawer]]">
-      <template>
-      <app-drawer opened="{{drawerOpened}}" swipe-open tabindex="0">
-        <iron-selector
-          role="navigation"
-          class="drawer-list"
-          selected="[[categoryName]]"
-          attr-for-selected="name">
-
-          <dom-repeat items="[[categoryOrder]]">
-            <template>
-              <a name="[[item.name]]"href="/list/[[item.name]]">
-                <iron-icon icon="[[item.name]]"></iron-icon>
-                [[item.title]]
-              </a>
-            </template>
-          </dom-repeat>
-
-        </iron-selector>
-      </app-drawer>
-      </template>
-    </dom-if>
-
-    <iron-pages
-      role="main"
-      selected="[[page]]"
-      attr-for-selected="name"
-      selected-attribute="visible"
-      fallback-selection="404">
-
-      <mg-home name="home" categories="[[categoryOrder]]"></mg-home>
-      <mg-list name="list" category-name="{{categoryName}}" category=[[category]] route="[[subroute]]" offline="[[offline]]"></mg-list>
-      <mg-detail name="detail" route="[[subroute]]" products="[[products]]" offline="[[offline]]"></mg-detail>
-      <mg-cart name="cart" cart="[[cart]]" total="[[total]]"></mg-cart>
-      <mg-orders name="orders" authen="[[_computeAuthen(email,hash)]]"></mg-orders>
-      <mg-checkout name="checkout" cart="[[cart]]" total="[[total]]" route="{{subroute}}"></mg-checkout>
-      <mg-user name="user" verified-email="[[email]]" verified-hash="[[hash]]" route="{{subroute}}"></mg-user>
-      <mg-about name="about" full-logo></mg-about>
-
-      <mg-404-warning name="404"></mg-404-warning>
-    </iron-pages>
--->
     <iron-pages
       role="main"
       selected="[[page]]"
@@ -665,6 +544,10 @@
           type: String,
           reflectToAttribute: true,
           observer: '_pageChanged'
+        },
+
+        menu: {
+          type: Array,
         },
 
         category: {
@@ -747,7 +630,6 @@
       }}
 
       static get observers() { return [
-        '_watchCategoryName(categoryName,categories)',
         '_routePageChanged(routeData.page)',
         '_categoriesDataChanged(categoriesData)',
         '_productsDataChanged(productsData.splices)',
@@ -810,16 +692,6 @@
         return [];
       }
 
-      _watchCategoryName(categoryName) {
-        for (let i=0, c; c = this.categoryOrder[i]; ++i) {
-          if (c.name == categoryName) {
-            this.category = MGCopyObject(this.categoryOrder[i]);
-//            this.category = Object.assign({},this.categoryOrder[i]);
-//            console.log("_watchCategoryName set category",this.category.products);
-          }
-        }
-      }
-
       _productsDataChanged(splices) {
 //        console.log("_productsDataChanged data change", splices);
         if (splices) {
@@ -844,23 +716,6 @@
 
           this.categories = MGCopyObject(this.categories);
           this.products = MGCopyObject(this.products);
-        }
-      }
-
-      _categoriesDataChanged(splices) {
-        console.log("_categoriesDataChanged data change", splices);
-        if (splices) {
-          for (let i=0, s; s = splices.indexSplices[i]; ++i) {
-            /* Merge new values into existing category, create if missing */
-            let catdata = this.categoriesData[s.index];
-            if (!catdata) break;
-//            let oldcat = this.categories[catdata.name] || {};
-//            this.notifyPath('categoryOrder.0.name');
-            this.categories[catdata.name] = Object.assign( this.categories[catdata.name] || {}, catdata);
-          }
-
-//XXX find the best way to trigger changes
-          this.categories = MGCopyObject(this.categories);
         }
       }
 
@@ -965,13 +820,23 @@
 
         // Announce the page's title
         if (detail.title) {
-          document.title = 'La Belle : ' + detail.title;
+          document.title = 'B o o e d : ' + detail.title;
           this._announce(detail.title + ', loaded');
         }
+
+        console.log(detail);
+        if (detail.menu) {
+          this.menu = detail.menu;
+        }
+        console.log("menu",this.menu);
       }
 
       _onMeButtonClick(e) {
         this.set('route.path','user');
+      }
+
+      _onTrack(e) {
+        console.log(e);
       }
 
       _onAddCartItem(event) {
@@ -1036,14 +901,8 @@
         this.page = '404';
       }
 
-      /*
-      _computeAuthen(email, hash) {
-        return "?user="+email+"&hash="+hash
-      }
-      */
-
       _computeShouldShowTabs(page, smallScreen) {
-        return (page === 'home') && !smallScreen;
+        return (page === 'home' || page === 'user') && !smallScreen;
       }
 
       _computeShouldRenderTabs(_shouldShowTabs, loadComplete) {

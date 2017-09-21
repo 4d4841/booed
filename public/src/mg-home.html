@@ -21,15 +21,37 @@
       static get is() { return 'mg-home'; }
 
       static get properties() { return {
+
+        menu: {
+          type: Array,
+          value: [
+            {name:"new-releases", icon:"new-releases", title:"สินค้าใหม่"},
+            {name:"best-sellers", icon:"best-sellers", title:"แนะนำ"},
+            {name:"dresses", icon:"dresses", title:"เดรส"},
+            {name:"lingeries", icon:"lingeries", title:"ชุดชั้นใน"},
+            {name:"night-dresses", icon:"night-dresses", title:"ชุดนอน"},
+            {name:"swimwears2", icon:"swimwears", title:"ชุดว่ายน้ำ"},
+            {name:"sales", icon:"sales-baht", title:"เซลส์"},
+          ]
+        },
+
+        visible: {
+          type: Boolean,
+          observer: '_visibleChanged'
+        },
       }}
 
-      static get observers() { return [
-      ]}
-
       connectedCallback() {
-        console.log("connect home");
         super.connectedCallback();
       }
+
+      _visibleChanged(visible) {
+        if (visible) {
+          this.dispatchEvent(new CustomEvent('change-section', {
+            bubbles: true, composed: true, detail: {title: 'Home : 👻', menu:this.menu}}));
+        }
+      }
+
     }
 
     customElements.define(MGHome.is, MGHome);
