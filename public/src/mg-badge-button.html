@@ -25,7 +25,8 @@
         display:none;
       }
 
-      paper-icon-button {
+      #button {
+        transition: color 2s;
         color: var(--app-primary-color);
         /*
         height: 40px;
@@ -51,7 +52,7 @@
       </text>
     </svg>
 
-    <paper-icon-button on-tap="_onButtonClick" icon="[[icon]]"></paper-icon-button>
+    <paper-icon-button id="button" on-tap="_onButtonClick" icon="[[icon]]"></paper-icon-button>
 
   </template>
   <script>

@@ -210,10 +210,12 @@
         if (photoURL) {
           this.icon = null;
           this.image = photoURL;
+          this.$.button.style.color = "rgba(0,0,0,0)";
         }
         else {
           this.icon = "ghost";
           this.image = null;
+          this.$.button.style.color = "var(--app-primary-color)";
         }
       }
 
