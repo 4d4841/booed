@@ -168,6 +168,7 @@
         /*overflow: hidden;*/
         width: 100%;
         padding:0;
+        z-index: 1;
       }
 
       .menu-bar {
@@ -177,7 +178,6 @@
         /*overflow: hidden;*/
         width: 100%;
         padding:0;
-        z-index:1;
       }
 
       .menu-bar iron-icon {
@@ -239,6 +239,7 @@
       paper-tab {
         @apply(--layout-horizontal);
         padding:0;
+        cursor: ew-resize;
       }
 
       paper-tabs {
@@ -293,7 +294,7 @@
       }
 
       app-drawer {
-        z-index:2;
+        z-index:3;
         /*
         border-radius: 30px;
         --app-drawer-content-container: {
@@ -346,6 +347,9 @@
 
       #menuButton {
         padding-left: 16px;
+      }
+
+      #userButton {
       }
 
       /* small screen */
@@ -436,7 +440,7 @@
           <mg-badge-button id="fmPicker" icon="wc" path-style="fill:lightpink" value=""></mg-badge-button>
           <mg-badge-button id="languaeButton" icon="language" path-style="fill:blue" value=""></mg-badge-button>
           <mg-cart-button id="cartButton" cart="{{cart}}" value="8"></mg-cart-button>
-          <mg-user-button id="userButton" on-tap="_onMeButtonClick" me="{{me}}" value=""></mg-user-button>
+          <mg-user-button id="userButton" route="{{route}}" me="{{me}}" firebase-app="[[appInstance]]" value=""></mg-user-button>
           </div>
 
         </div>
@@ -445,7 +449,7 @@
 
             <dom-if if="[[_shouldRenderTabs]]">
           <template>
-        <paper-tabs hide-scroll-buttons scrollable fit-container>
+        <paper-tabs hide-scroll-buttons scrollable fit-container noink>
             <dom-repeat items="[[menu]]">
           <template>
             <paper-tab on-mouseover="_onTrack" on-mouseout="_onTrack">
@@ -831,9 +835,11 @@
         console.log("menu",this.menu);
       }
 
+      /*
       _onMeButtonClick(e) {
         this.set('route.path','user');
       }
+      */
 
       _onTrack(e) {
         console.log(e);

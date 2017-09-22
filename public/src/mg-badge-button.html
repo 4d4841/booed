@@ -51,7 +51,7 @@
       </text>
     </svg>
 
-    <paper-icon-button icon="[[icon]]"></paper-icon-button>
+    <paper-icon-button on-tap="_onButtonClick" icon="[[icon]]"></paper-icon-button>
 
   </template>
   <script>
@@ -93,6 +93,10 @@
 
       _computeTextStyle(ts) {
         return ts+";font-style:normal;font-weight:bold;font-size:14px;text-align:center;text-anchor:middle;fill-opacity:1;stroke:none;"
+      }
+
+      _onButtonClick(e) {
+        console.log("click",e);
       }
     }
 

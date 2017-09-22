@@ -1,9 +1,12 @@
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="mg-badge-button.html">
 
 <dom-module id="mg-user-button">
   <template strip-whitespace>
     <style>
-      .avatar {
+      .photo-icon {
         width:28px;
         height:28px;
         border-radius: 50% 50%;
@@ -18,13 +21,142 @@
         pointer-events: none;
       }
 
+      .arrow {
+        pointer-events: none;
+        position: absolute;
+      }
+
+      /*
+      #pyramid {
+        width: 0;
+        height: 0;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-bottom: 10px solid black;
+        position: absolute;
+        margin-top:30px;
+        margin-left:10px;
+      }
+      */
+
+      .photo {
+        height: 200px;
+        width: 200px;
+        background-size: cover;
+        margin: 0px;
+      }
+
+      h3  {
+        padding: 0;
+        margin: 0;
+        padding-bottom: 20px;
+      }
+
+      .under-photo {
+        background: linear-gradient(
+          transparent 0,
+          purple 100px);
+        background-repeat: no-repeat;
+        color: white;
+        text-align: left;
+        text-shadow: 1px 1px 3px #200020;
+        max-height: 40px;
+        line-height: 20px;
+        height: 40px;
+        width: 200px;
+        z-index:1;
+        display: block;
+        position: absolute;
+        margin-top: -80px;
+        overflow: hidden;
+        padding-left: 10px;
+        box-sizing: border-box;
+      }
+
+      #id-card {
+        width:200px;
+        border-radius: 5px;
+        overflow: hidden;
+        box-sizing: border-box;
+        @apply(--layout-vertical);
+        @apply(--layout-end-justified);
+        position: absolute;
+        top: 40px;
+        right: 0;
+      }
+
+      .button {
+        margin: 0;
+        height: 40px;
+        width: 100%;
+        --paper-button: {
+          @apply(--layout-horizontal);
+          @apply(--layout-start-justified);
+        }
+      }
+
+      .button:not(:last-of-type) {
+        border-bottom: 1px dashed tomato;
+      }
+
+      .button iron-icon {
+        margin-right: 10px;
+      }
+
+      a {
+        color: var(--app-primary-color);
+      }
+      a:link {
+            text-decoration: none;
+      }
+
     </style>
 
-    <dom-if id="avatar" if="[[image]]">
+    <dom-if id="photo-icon" if="[[image]]">
   <template>
-    <img class="avatar" src="[[image]]"></img>
+    <img class="photo-icon" src="[[image]]"></img>
   </template>
     </dom-if>
+
+    <!-- <div id="pyramid"></div> -->
+
+        <dom-if if=[[_shouldShowPanel(route.path,showPanel)]]>
+      <template>
+    <svg class="arrow">
+      <defs id="defs2">
+        <filter id="blurshadow">
+          <feGaussianBlur stdDeviation="1.2" />
+        </filter>
+      </defs>
+      <path
+         id="arrow-shadow"
+         d="M 28,41 12,41 20,31 Z"
+         style="opacity:0.3;fill:#000000;stroke:none;filter:url(#blurshadow);" />
+    </svg>
+
+    <paper-card id="id-card">
+            <mg-image class="photo" src="[[me.User.photoURL]]"></mg-image>
+            <div class="under-photo">
+              <h3>[[me.User.email]]<br>[[me.User.displayName]]</h3>
+            </div>
+
+            <paper-button class="button" on-tap="_openProfile">
+            <iron-icon icon="face"></iron-icon> โพรไฟล์
+            </paper-button>
+
+            <paper-button class="button" on-tap="_signOut">
+            <iron-icon icon="coffee" style="color:tomato"></iron-icon> ออกจากระบบ
+            </paper-button>
+    </paper-card>
+
+    <svg class="arrow">
+      <path
+         id="arrow"
+         d="M 27,40 11,40 19,30 Z"
+         style="fill:#ffffff;stroke:none;" />
+    </svg>
+      </template>
+        </dom-if>
 
 
   </template>
@@ -39,7 +171,7 @@
         if (!memoizedTemplate) {
           memoizedTemplate = Polymer.DomModule.import(this.is, 'template');
           let superTemplateContents = document.importNode(MGBadgeButton.template.content, true);
-          let avatar = memoizedTemplate.content.querySelector('#avatar');
+          let avatar = memoizedTemplate.content.querySelector('#photo-icon');
           memoizedTemplate.content.insertBefore(superTemplateContents, avatar);
         }
         return memoizedTemplate;
@@ -57,9 +189,17 @@
           type: String,
           value: "fill:tomato;fill-rule:evenodd;opacity:0.9"
         },
+        showPanel: {
+          type: Boolean,
+          value: false
+        },
         me: {
           type: Object,
-        }
+        },
+        route: {
+          type: Object,
+          notify: true
+        },
       }}
 
       static get observers() { return [
@@ -76,6 +216,29 @@
           this.image = null;
         }
       }
+
+      _shouldShowPanel(me,path,showPanel) {
+        return this.me && this.me.User && !this.route.path.startsWith("/user") && this.showPanel;
+      }
+
+      _onButtonClick(e) {
+        if (!this.me.User) {
+          this._openProfile(e);
+        } else if (!this.route.path.startsWith("/user")) {
+          this.showPanel = !this.showPanel;
+        }
+      }
+
+      _openProfile(e) {
+        this.showPanel = false;
+        this.set('route.path','user');
+      }
+
+      _signOut(e) {
+        this.showPanel = false;
+        this.firebaseApp.auth().signOut();
+      }
+
 
     }
 

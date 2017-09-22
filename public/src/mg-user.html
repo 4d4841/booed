@@ -2,16 +2,16 @@
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="mg-input.html">
-<link rel="import" href="mg-button.html">
 <link rel="import" href="mg-image.html">
 
 <dom-module id="mg-user">
   <template strip-whitespace>
       <custom-style>
-    <style is="custom-style" include="mg-common-styles mg-input mg-button iron-flex iron-flex-alignment">
+    <style is="custom-style" include="mg-common-styles mg-input iron-flex iron-flex-alignment">
       :host {
         @apply --layout-vertical;
         @apply --layout-center;
@@ -20,10 +20,6 @@
       mg-input {
         width: 180px;
         margin:10px;
-      }
-
-      mg-button {
-        height:40px;
       }
 
       a:link {
@@ -60,7 +56,6 @@
       mg-button.upper-button >*,
       mg-button.lower-button >* {
         border-radius: 5px;
-        min-width:200px;
         padding:0;
         height:40px;
         box-shadow: 1px 1px 2px var(--app-shadow-color);
@@ -76,36 +71,49 @@
         border-radius: 0 0 5px 5px;
       }
 
-      mg-button#loginBB >* {
-        border-radius: 5px 0 0 5px;
-        height:40px;
-        box-shadow: 1px 1px 2px var(--app-shadow-color);
-        border-right: none;
-      }
-
-      mg-button#loginGG >* {
-        border-radius: 0 5px 5px 0;
-        width:40px;
-        height:40px;
-        box-shadow: 1px 1px 2px var(--app-shadow-color);
-        background-color:tomato;
-      }
-
       mg-button >*:active {
         background-color:#202020;
         color: white;
       }
 
-      mg-button#loginGG >*:active {
+      .button {
+        width: 100%;
+      }
+
+      .button iron-icon {
+        margin-right: 10px;
+      }
+
+      #loginBB {
+        border-top: 1px dashed tomato;
+        height: 40px;
+        width: 200px;
+        margin: 0;
+        padding: 0;
+        border-radius: 0;
+      }
+
+      #loginGG {
+        max-width: 50px;
+        min-width: 50px;
+        width: 50px;
+        height: 40px;
+        background-color: tomato;
+        padding: 0;
+        border-radius: 0;
+        margin: 0;
+      }
+
+      #loginGG >*:active {
         background-color:orange;
       }
 
-      input#loginButton {
-        line-height: 10px; /* adjust text into the center */
-      }
-
-      .loginButtons {
-        margin-top:20px;
+      #id-card {
+        width:240px;
+        z-index: 1;
+        border-radius: 10px;
+        overflow: hidden;
+        box-sizing: border-box;
       }
 
       .main-frame {
@@ -122,7 +130,7 @@
       }
 
       #home-button {
-        width: 220px;
+        width: 100%;
         height: 40px;
         background-size: 90%;
         background-repeat: no-repeat;
@@ -172,16 +180,14 @@
         padding-bottom: 20px;
       }
 
-      .avatar {
-        border-radius: 10px;
-        height: 200px;
-        width: 200px;
+      .photo {
+        height: 240px;
+        width: 240px;
         background-size: cover;
-        margin-top: 0px;
+        margin: 0px;
       }
 
       .under-photo {
-        /*background: rgba(0,0,0,0.5);*/
         background: linear-gradient(
           transparent 0,
           purple 100px);
@@ -192,9 +198,7 @@
         max-height: 40px;
         line-height: 20px;
         height: 40px;
-        width: 200px;
-        max-width: 200px;
-        border-radius: 0 0 10px 10px;
+        width: 240px;
         z-index:1;
         display: block;
         position: absolute;
@@ -210,15 +214,16 @@
     </style>
       </custom-style>
 
-      <div class="center vertical layout main-frame">
-        <a href="/" class="center vertical layout">
-          <paper-button id="home-button" alt="home" title="home" state$="[[state]]"></paper-button>
-        </a>
+<!--      <div class="center vertical layout main-frame"> -->
+  <paper-card id="id-card">
+    <a href="/" class="center vertical layout">
+      <paper-button id="home-button" alt="home" title="home" state$="[[state]]"></paper-button>
+    </a>
     <iron-pages id="pages" selected="[[state]]" attr-for-selected="state" class="center vertical layout">
       <div state="waiting" class="center vertical layout">
         <img src="images/logo-bounce.svg">
       </div>
-      <div state="init" class="center vertical layout">
+      <div state="init" class="center end-justified vertical layout">
         <!-- Begin: init -->
           <dom-if if="[[!me.User.email]]">
         <template>
@@ -245,14 +250,14 @@
               </mg-md-decorator>
                 </mg-input>
 
-              <div class="loginButtons layout horizontal center center-justified">
-                  <mg-button id="loginBB" class="layout vertical center">
-                  <input id="loginButton" type="submit" class="submit layout" on-click="_logIn" value="เข้าระบบ">
-                  </mg-button>
+              <div class="card-actions layout horizontal justified" style="margin-top:30px;width:240px;padding:0">
+                  <paper-button id="loginBB" on-click="_signIn" class="layout horizontal center-justified">
+                  เข้าระบบ
+                  </paper-button>
 
-                  <mg-button id="loginGG" class="center justified vertical layout" style="padding:0;">
-                  <a style="width:40px;margin:0;padding:0;" on-click="_googleSignIn"><iron-icon style="margin-top:8px;color:white" icon="google" slot="prefix"></iron-icon></a>
-                  </mg-button>
+                  <paper-button id="loginGG" on-click="_googleSignIn" class="layout horizontal center-justified">
+                  <iron-icon icon="google" style="color:white"></iron-icon>
+                  </paper-button>
               </div>
           <!-- End: login panel -->
         </template>
@@ -261,16 +266,14 @@
           <dom-if if="[[me.User.email]]">
         <template>
           <!-- begin: user panel -->
-            <div style="padding-bottom:20px;">
-              <mg-image class="avatar" src="[[me.User.photoURL]]"></mg-image>
-              <div class="under-photo">
-                <h3>[[me.User.email]]<br>[[me.User.displayName]]</h3>
-              </div>
+            <mg-image class="photo" src="[[me.User.photoURL]]"></mg-image>
+            <div class="under-photo">
+              <h3>[[me.User.email]]<br>[[me.User.displayName]]</h3>
             </div>
 
-                  <mg-button class="single-button layout vertical center">
-                  <button on-click="_signOut"><iron-icon icon="coffee" style="color:tomato"></iron-icon> ออกจากระบบ</button>
-                  </mg-button>
+            <paper-button class="button" on-click="_signOut" class="layout horizontal center-justified">
+            <iron-icon icon="coffee" style="color:tomato"></iron-icon> ออกจากระบบ
+            </paper-button>
           <!-- End: user panel -->
         </template>
           </dom-if>
@@ -284,32 +287,35 @@
         </template>
           </dom-if>
 
-            <div style="padding-bottom:20px;">
-              <mg-image class="avatar" src="[[me.User.photoURL]]"></mg-image>
-              <div class="under-photo">
-                <h3>[[me.User.email]]<br>[[me.User.displayName]]</h3>
-              </div>
+          <dom-if if="[[me.User.email]]">
+        <template>
+          <!-- begin: user panel -->
+            <mg-image class="photo" src="[[me.User.photoURL]]"></mg-image>
+            <div class="under-photo">
+              <h3>[[me.User.email]]<br>[[me.User.displayName]]</h3>
             </div>
 
-                  <mg-button class="single-button layout vertical center">
-                  <button on-click="_signOut"><iron-icon icon="coffee" style="color:tomato"></iron-icon> ออกจากระบบ</button>
-                  </mg-button>
+            <paper-button class="button" on-click="_signOut" class="layout horizontal center-justified">
+            <iron-icon icon="coffee" style="color:tomato"></iron-icon> ออกจากระบบ
+            </paper-button>
+          <!-- End: user panel -->
+        </template>
+          </dom-if>
 
       </div>
-      <div state="error" class="center vertical layout">
+      <div state="error" class="center end-justified vertical layout">
         <h3>เกิดความผิดพลาด</h3>
         <p style="padding:0;margin:0;margin-bottom:10px">[[response.errorMessage]]</p>
 
-                  <a href="/">
-                  <mg-button class="single-button layout vertical center">
-                  <button><iron-icon icon="error" style="color:tomato"></iron-icon> โปรดลองอีกครั้ง</button>
-                  </mg-button>
+                  <a style="width:260px;border-top: 1px dashed lightgray;padding:0;margin:0" href="/">
+            <paper-button class="button" class="layout horizontal center-justified">
+            <iron-icon icon="error" style="color:tomato"></iron-icon> ลองอีกครั้ง?
+            </paper-button>
                   </a>
-        <p style="text-align:center;margin:10px;">หรือ<a href="/contact">แจ้งให้เราทราบทาง</a> เพื่อแก้ไข<br>ขออภัยอย่างยิ่งค่ะ</p>
 
       </div>
     </iron-pages>
-      </div>
+  </paper-card>
       <div on-click="_toggleInfo" class="center vertical end-justified layout main-info" expand$="[[expand]]" hidden="[[_shouldHideInfoPanel(me.User.email,state)]]">
         <p style="padding: 20px 10px 0 10px;text-align: center">
           <br>
@@ -431,7 +437,12 @@
       }
 
       _shouldHideInfoPanel(email,state) {
-        return email || state == "waiting";
+        return email || state == "waiting" || state == "error";
+      }
+
+      _signIn(e) {
+        this._pushState("error");
+        /* XXX */
       }
 
       _googleSignIn(e) {
@@ -450,7 +461,6 @@
       }
 
       _pushState(state) {
-        console.log("push", state);
         if (!this.visible) return;
         this.set('route.path', "init");
         this._validState = state;
