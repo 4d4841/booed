@@ -8,7 +8,24 @@
   <template strip-whitespace>
     <style>
       :host {
-        @apply --layout-horizontal;
+        @apply(--layout-vertical);
+        margin-top:-1px;
+      }
+
+      .photo-icon {
+        width:28px;
+        height:28px;
+        border-radius: 50% 50%;
+        border: 1px solid lightgray;
+        box-sizing: border-box;
+        position: absolute;
+        pointer-events: none;
+        margin-left: 6px;
+        margin-top: 6px;
+        /*
+        margin-left:6px;
+        margin-top:6px;
+        */
       }
 
       .badge {
@@ -40,9 +57,10 @@
 
     </style>
 
+    <img class="photo-icon" src="[[image]]" hidden$="[[_noImage(image)]]">
 
     <svg class="badge" hidden$="[[_hideBadge(value)]]">
-      <path id="path" d$="[[path]]" style$="[[pathStyle]]">
+      <path id="path" d$="[[path]]" style$="[[_computePathStyle(pathStyle)]]">
         <animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="5s" repeatCount="indefinite"/>
       </path>
       <text
@@ -64,6 +82,10 @@
           type: String,
           value: null
         },
+        image: {
+          type: String,
+          value: null
+        },
         path: {
           type: String,
           value: "M 23,12 20.56,9.22 20.9,5.54 17.29,4.72 15.4,1.54 12,3 8.6,1.54 6.71,4.72 3.1,5.53 3.44,9.21 1,12 3.44,14.78 3.1,18.47 6.71,19.29 8.6,22.47 12,21 l 3.4,1.46 1.89,-3.18 3.61,-0.82 -0.34,-3.68 z"
@@ -72,24 +94,36 @@
           type: String,
           value: "fill:tomato;fill-rule:evenodd"
         },
+        badgeOpacity: {
+          type: Number,
+          value: 0.8
+        },
         textStyle: {
           type: String,
           value: "fill:white"
         },
         value: {
           type: String,
-          value: ""
+          value: null
         }
       }}
 
       static get observers() { return [
       ]}
 
+      _noImage(image) {
+        return this.image ? false:true;
+      }
+
       _hideBadge(value) {
-        if (!value || value.length == 0) {
+        if (value === null) {
           return true;
         }
         return false;
+      }
+
+      _computePathStyle(ps) {
+        return "fill-opacity:"+this.badgeOpacity+";"+ps;
       }
 
       _computeTextStyle(ts) {

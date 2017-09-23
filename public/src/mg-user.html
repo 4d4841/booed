@@ -78,6 +78,13 @@
 
       .button {
         width: 100%;
+        height: 40px;
+        --paper-button: {
+          @apply(--layout-horizontal);
+          font-family: 'Mitr', sans-serif;
+          font-size: 16px;
+          font-weight: bold;
+        }
       }
 
       .button iron-icon {
@@ -85,6 +92,9 @@
       }
 
       #loginBB {
+        font-family: 'Athiti', sans-serif;
+        font-size: 16px;
+        font-weight: bold;
         border-top: 1px dashed tomato;
         height: 40px;
         width: 200px;
@@ -153,6 +163,7 @@
         width:220px;
         box-sizing: border-box;
         @apply(--layout-vertical)
+        @apply(--layout-end-justified);
         transition: opacity 0.5s;
         box-shadow: 1px 1px 3px var(--app-shadow-color);
         border-radius: 5px;
@@ -161,7 +172,6 @@
         z-index: 0;
         top:10px;
         position:relative;
-        @apply(--layout-end-justified);
         margin-top:-35px;
         padding: 0px;
         transition: background-color 0.5s, max-height 0.5s ease-in;
@@ -178,6 +188,8 @@
         padding: 0;
         margin: 0;
         padding-bottom: 20px;
+        font-family: 'Mitr', sans-serif;
+        font-size: 16px;
       }
 
       .photo {
@@ -307,7 +319,7 @@
         <h3>เกิดความผิดพลาด</h3>
         <p style="padding:0;margin:0;margin-bottom:10px">[[response.errorMessage]]</p>
 
-                  <a style="width:260px;border-top: 1px dashed lightgray;padding:0;margin:0" href="/">
+                  <a style="width:260px;border-top: 1px dashed lightgray;padding:0;margin:0" href="/user">
             <paper-button class="button" class="layout horizontal center-justified">
             <iron-icon icon="error" style="color:tomato"></iron-icon> ลองอีกครั้ง?
             </paper-button>
@@ -317,14 +329,13 @@
     </iron-pages>
   </paper-card>
       <div on-click="_toggleInfo" class="center vertical end-justified layout main-info" expand$="[[expand]]" hidden="[[_shouldHideInfoPanel(me.User.email,state)]]">
-        <p style="padding: 20px 10px 0 10px;text-align: center">
-          <br>
-          หากคุณยังไม่มีบัญชีสมาชิก คุณสามารถเข้าสู่ระบบสมาชิกด้วย <a href="https://accounts.google.com/SignUp">บัญชีกูเกิล</a> ของคุณได้ทันที เพียงกด<br>
-          <iron-icon style="color:tomato;--iron-icon-width:20px;" icon="google"></iron-icon> <br>(หรือเพื่อสร้างบัญชีใหม่ถ้ายังไม่มี)
+        <p style="font-size:13px; padding: 20px 10px 0 10px;text-align:justify;text-align-last:center">
+          หากคุณยังไม่ลงทะเบียนเป็นสมาชิก คุณสามารถเข้าสู่ระบบสมาชิกด้วย <span style="font-weight:bold">บัญชีกูเกิล</span> ของคุณได้ทันที เพียงกด<br>
+          <iron-icon style="margin:5px;padding:0 5px;background-color:tomato;border-radius:5px;color:white;--iron-icon-width:20px;" icon="google"></iron-icon> <br>(หรือ<a href="https://accounts.google.com/SignUp">สร้างบัญชีใหม่</a>ถ้ายังไม่มี)
           <br><br>
-          การเป็นสมาชิกจะช่วยให้คุณติดตามการทำรายการ หรือรับบริการเกี่ยวกับสินค้าได้ง่ายขึ้น
-          คุณยังสามารถปรับปรุงข้อมูลส่วนตัว รับการแจ้งเตือนเฉพาะส่วนที่คุณสนใจ
-          และยังสามารถสมัครหรือยกเลิกบริการข่าวสารและโปรโมชั่นต่างๆ รวมถึงการเข้าใช้งานฟีเจ้อร์อื่นๆ เช่นการสร้างร้านของคุณเอง เป็นต้น
+          การเป็นสมาชิกจะช่วยให้คุณติดตามสถานะรายการ หรือรับบริการอื่นๆ ได้สะดวกรวดเร็วยิ่งขึ้น
+          นอกจากนี้คุณยังสามารถปรับปรุงข้อมูลส่วนตัว รับการแจ้งเตือนเฉพาะสิ่งที่น่าสนใจ
+          สมัครหรือยกเลิกบริการข่าวสารและโปรโมชั่นต่างๆ ตลอดจนถึงการเข้าใช้งานฟีเจ้อร์อื่นๆ เช่นการสร้างร้านของคุณเอง เป็นต้น
         </p>
         <iron-icon style="display:block;--iron-icon-width:20px" icon="help"></iron-icon>
         <!--<paper-icon-button class="info-button" icon="help"></paper-icon-button>-->

@@ -1,29 +1,15 @@
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="mg-badge-button.html">
+<link rel="import" href="mg-badge-button.html?version=v2">
 
 <dom-module id="mg-user-button">
   <template strip-whitespace>
     <style>
-      .photo-icon {
-        width:28px;
-        height:28px;
-        border-radius: 50% 50%;
-        background-color: rgba(0,0,0,0.1);
-/*        border: 1.2px dashed tomato; */
-        box-sizing: border-box;
-        border-top: none;
-        position: absolute;
-        right: 6px;
-        bottom: 6px;
-        padding: 1px;
-        pointer-events: none;
-      }
-
       .arrow {
         pointer-events: none;
         position: absolute;
+        top: -4px;
       }
 
       /*
@@ -67,7 +53,7 @@
         z-index:1;
         display: block;
         position: absolute;
-        margin-top: -80px;
+        top: 160px;
         overflow: hidden;
         padding-left: 10px;
         box-sizing: border-box;
@@ -81,7 +67,7 @@
         @apply(--layout-vertical);
         @apply(--layout-end-justified);
         position: absolute;
-        top: 40px;
+        top: 36px;
         right: 0;
       }
 
@@ -92,6 +78,8 @@
         --paper-button: {
           @apply(--layout-horizontal);
           @apply(--layout-start-justified);
+          font-family: 'Mitr', sans-serif;
+          font-size: 16px;
         }
       }
 
@@ -112,15 +100,17 @@
 
     </style>
 
+    <!--
     <dom-if id="photo-icon" if="[[image]]">
   <template>
-    <img class="photo-icon" src="[[image]]"></img>
+    <div class="photo-icon" hidden$="[[!image]]"></div>
   </template>
     </dom-if>
+  -->
 
     <!-- <div id="pyramid"></div> -->
 
-        <dom-if if=[[_shouldShowPanel(route.path,showPanel)]]>
+        <dom-if id="panel" if=[[_shouldShowPanel(route.path,showPanel)]]>
       <template>
     <svg class="arrow">
       <defs id="defs2">
@@ -130,15 +120,15 @@
       </defs>
       <path
          id="arrow-shadow"
-         d="M 28,41 12,41 20,31 Z"
+         d="M 29,41 13,41 21,31 Z"
          style="opacity:0.3;fill:#000000;stroke:none;filter:url(#blurshadow);" />
     </svg>
 
     <paper-card id="id-card">
-            <mg-image class="photo" src="[[me.User.photoURL]]"></mg-image>
             <div class="under-photo">
               <h3>[[me.User.email]]<br>[[me.User.displayName]]</h3>
             </div>
+            <mg-image class="photo" src="[[me.User.photoURL]]"></mg-image>
 
             <paper-button class="button" on-tap="_openProfile">
             <iron-icon icon="face"></iron-icon> โพรไฟล์
@@ -152,7 +142,7 @@
     <svg class="arrow">
       <path
          id="arrow"
-         d="M 27,40 11,40 19,30 Z"
+         d="M 28,40 12,40 20,30 Z"
          style="fill:#ffffff;stroke:none;" />
     </svg>
       </template>
@@ -171,8 +161,8 @@
         if (!memoizedTemplate) {
           memoizedTemplate = Polymer.DomModule.import(this.is, 'template');
           let superTemplateContents = document.importNode(MGBadgeButton.template.content, true);
-          let avatar = memoizedTemplate.content.querySelector('#photo-icon');
-          memoizedTemplate.content.insertBefore(superTemplateContents, avatar);
+          let insert = memoizedTemplate.content.querySelector('#panel');
+          memoizedTemplate.content.insertBefore(superTemplateContents, insert);
         }
         return memoizedTemplate;
       }
@@ -182,16 +172,13 @@
           type: String,
           value: "ghost"
         },
-        image: {
-          type: String,
-        },
         pathStyle: {
           type: String,
           value: "fill:tomato;fill-rule:evenodd;opacity:0.9"
         },
         showPanel: {
           type: Boolean,
-          value: false
+          value: false,
         },
         me: {
           type: Object,
