@@ -1,7 +1,7 @@
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="mg-badge-button.html?version=v2">
+<link rel="import" href="mg-badge-button.html">
 
 <dom-module id="mg-user-button">
   <template strip-whitespace>
@@ -110,7 +110,7 @@
 
     <!-- <div id="pyramid"></div> -->
 
-        <dom-if id="panel" if=[[_shouldShowPanel(route.path,showPanel)]]>
+        <dom-if id="panel" if="[[_shouldShowPanel(route.path,showPanel)]]">
       <template>
     <svg class="arrow">
       <defs id="defs2">
@@ -193,6 +193,11 @@
         '_avatarChanged(me.User.photoURL)',
       ]}
 
+      connectedCallback() {
+        super.connectedCallback();
+        window.addEventListener('close-contextual-menu', this._closeSubmenu.bind(this));
+      }
+
       _avatarChanged(photoURL) {
         if (photoURL) {
           this.icon = null;
@@ -206,6 +211,13 @@
         }
       }
 
+      _closeSubmenu(e) {
+        console.log("rec",e.detail);
+        if (e.detail.sender != this) {
+          this.showPanel = false;
+        }
+      }
+
       _shouldShowPanel(me,path,showPanel) {
         return this.me && this.me.User && !this.route.path.startsWith("/user") && this.showPanel;
       }
@@ -215,6 +227,10 @@
           this._openProfile(e);
         } else if (!this.route.path.startsWith("/user")) {
           this.showPanel = !this.showPanel;
+          if (this.showPanel) {
+            this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+              bubbles: true, composed: true, detail:{sender:this}}));
+          }
         }
       }
 

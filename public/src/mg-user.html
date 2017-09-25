@@ -119,11 +119,15 @@
       }
 
       #id-card {
-        width:240px;
+        width: 240px;
         z-index: 1;
         border-radius: 10px;
         overflow: hidden;
         box-sizing: border-box;
+      }
+
+      #id-card[state=waiting] {
+        border-radius: 50%;
       }
 
       .main-frame {
@@ -227,12 +231,12 @@
       </custom-style>
 
 <!--      <div class="center vertical layout main-frame"> -->
-  <paper-card id="id-card">
+  <paper-card id="id-card" state$="[[state]]">
     <a href="/" class="center vertical layout">
       <paper-button id="home-button" alt="home" title="home" state$="[[state]]"></paper-button>
     </a>
     <iron-pages id="pages" selected="[[state]]" attr-for-selected="state" class="center vertical layout">
-      <div state="waiting" class="center vertical layout">
+      <div state="waiting" style="width:200px;height:150px;margin-top:50px" class="layout horizontal center center-justified">
         <img src="images/logo-bounce.svg">
       </div>
       <div state="init" class="center end-justified vertical layout">
@@ -410,6 +414,7 @@
       _appInitialized(firebaseApp) {
         if (firebaseApp) {
           this.__validWaiting = true;
+          this._pushState("waiting");
           firebaseApp.auth().onAuthStateChanged(this._onAuthStateChanged.bind(this));
         }
       }
@@ -431,11 +436,31 @@
           this.menu = [
             {name:"profile", icon:"face", title:"บัญชี"},
             {name:"order", icon:"credit-card", title:"รายการสั่งซื้อ"},
-            {name:"products", icon:"local-mall", title:"สินค้า"},
-            {name:"store", icon:"store", title:"ร้าน"},
+            {name:"products", icon:"local-mall", title:"ขายสินค้า"},
+            {name:"store", icon:"store", title:"ร้าน", submenu:[
+              {name:"hyun", icon:"info", title:"ฮยอนอา"},
+              {name:"moon", icon:"info", title:"มูน "},
+            ]},
             {name:"inbox", icon:"inbox", title:"อินบอกซ์"},
-            {name:"help", icon:"help", title:"ความช่วยเหลือ"},
-            {name:"policy", icon:"info", title:"นโยบายความเป็นส่วนตัว"},
+            {name:"help", icon:"help", title:"ความช่วยเหลือ", submenu:[
+              {name:"tos", icon:"info", title:"เงื่อนไขการให้บริการ", submenu:[
+              {name:"tos", icon:"info", title:"เงื่อนไขการให้บริการ"},
+              {name:"policy", icon:"info", title:"นโยบายความเป็นส่วนตัวนโยบายความเป็นส่วนตัว", submenu:[
+              {name:"tos", icon:"info", title:"เงื่อนไขการให้บริการ"},
+              {name:"policy", icon:"info", title:"นโยบายความเป็นส่วนตัวนโยบายความเป็นส่วนตัว"},
+            ]},
+            ]},
+              {name:"policy", icon:"info", title:"นโยบายความเป็นส่วนตัวนโยบายความเป็นส่วนตัว", submenu:[
+              {name:"tos", icon:"info", title:"เงื่อนไขการให้บริการ"},
+              {name:"policy", icon:"info", title:"นโยบายความเป็นส่วนตัวนโยบายความเป็นส่วนตัว", submenu:[
+              {name:"tos", icon:"info", title:"เงื่อนไขการให้บริการ"},
+              {name:"policy", icon:"info", title:"นโยบายความเป็นส่วนตัวนโยบายความเป็นส่วนตัว", submenu:[
+              {name:"tos", icon:"info", title:"เงื่อนไขการให้บริการ"},
+              {name:"policy", icon:"info", title:"นโยบายความเป็นส่วนตัวนโยบายความเป็นส่วนตัว"},
+            ]},
+            ]},
+            ]},
+            ]},
           ];
         } else {
           console.log("no user");

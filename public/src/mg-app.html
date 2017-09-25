@@ -26,10 +26,15 @@
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-icon-item.html">
 <link rel="import" href="../bower_components/paper-styles/typography.html">
 <link rel="import" href="mg-cart-button.html">
 <link rel="import" href="mg-user-button.html">
+<link rel="import" href="mg-balloon.html">
 <link rel="import" href="mg-home.html">
+<link rel="import" href="mg-menu.html">
 
 <link href="https://fonts.googleapis.com/css?family=Mitr:300|Gloria+Hallelujah" rel="stylesheet">
 <!-- Since 'home' is the default route, eagerly load it. -->
@@ -40,7 +45,7 @@
 <dom-module id="mg-app">
   <template>
       <custom-style>
-    <style is="custom-style" include="mg-common-styles iron-flex iron-flex-alignment">
+    <style is="custom-style" include="paper-item-shared-styles mg-common-styles iron-flex iron-flex-alignment">
       :host {
         display: block;
         position: relative;
@@ -264,7 +269,7 @@
         padding:0 8px;
         height: var(--booed-menu-height);
         /*border-radius: 20px 20px 0 0;*/
-        overflow: hidden;
+        /*overflow: hidden;*/
         --paper-tab-ink: var(--booed-menu-focus-color);
         --paper-tab-content: {
           transition: opacity 0.5s;
@@ -274,6 +279,11 @@
           color: var(--booed-menu-color);
           --iron-icon-fill-color: var(--booed-menu-color);
         };
+      }
+
+      paper-tab iron-icon {
+        pointer-events: none;
+
       }
 
       .drawer-list {
@@ -350,6 +360,13 @@
       }
 
       #userButton {
+      }
+
+      #submenu {
+        display: none;
+        z-index: 10;
+        margin: 0;
+        --paper-item-icon-width: 30px;
       }
 
       /* small screen */
@@ -429,12 +446,12 @@
             </dom-if>
           </div>
 
-          <div class="header-filler"></div>
-        <a href="/" page$="[[page]]" class="logo">
-          <div class="logo horizontal layout center-justified">
-          </div>
-        </a>
-          <div class="header-filler"></div>
+              <div class="header-filler"></div>
+            <a href="/" page$="[[page]]" class="logo">
+              <div class="logo horizontal layout center-justified">
+              </div>
+            </a>
+              <div class="header-filler"></div>
 
           <div class="layout horizontal" style="position:fixed;right:10px">
           <mg-badge-button id="fmPicker" icon="wc" path-style="fill:lightpink" value=""></mg-badge-button>
@@ -444,35 +461,75 @@
           </div>
 
         </div>
-      <div class="menu-bar" style="border-top: 1px dashed var(--booed-menu-color)" hidden$="[[!_shouldShowTabs]]">
+        <div class="menu-bar" style="border-top: 1px dashed var(--booed-menu-color)" hidden$="[[!_shouldShowTabs]]">
+              <dom-if if="[[_shouldRenderTabs]]">
+            <template>
 
+          <paper-tabs hide-scroll-buttons scrollable fit-container noink>
+              <dom-repeat items="[[menu]]">
+            <template>
+              <paper-tab name="[[item.name]]"
+                on-tap="_onMenuTap">
+                <iron-icon icon="[[item.icon]]"></iron-icon> [[item.title]]
+              </paper-tab>
+            </template>
+              </dom-repeat>
+          </paper-tabs>
 
-            <dom-if if="[[_shouldRenderTabs]]">
-          <template>
-        <paper-tabs hide-scroll-buttons scrollable fit-container noink>
-            <dom-repeat items="[[menu]]">
-          <template>
-            <paper-tab on-mouseover="_onTrack" on-mouseout="_onTrack">
-              <iron-icon icon="[[item.icon]]"></iron-icon> [[item.title]]
-            </paper-tab>
-          </template>
-            </dom-repeat>
-        </paper-tabs>
-          </template>
-            </dom-if>
-      </div>
+  <!--
+
+                    <dom-if if="[[item.submenu]]">
+                  <template>
+                    <div style="z-index:2;width:200px;height:200px;background:red;position:absolute;">
+                      something
+                      something
+                      something
+                      something
+                    </div>
+                  </template>
+                    </dom-if>
+  -->
+            </template>
+              </dom-if>
+        </div>
       </div>
     </app-header>
+
+          <mg-balloon id="submenu" no-overlap vertical-align="top" horizontal-align="auto">
+
+            <mg-menu style="min-width:200px; padding:0" menu="[[submenu]]"></mg-menu>
+
+            <!--
+            <paper-listbox style="min-width:200px; padding:0">
+              <dom-repeat items="[[submenu]]">
+            <template>
+              <paper-icon-item style="white-space:nowrap">
+                <iron-icon slot="item-icon" icon="[[item.icon]]"></iron-icon>
+                [[item.title]]
+
+                <dom-if if="[[item.submenu]]">
+              <template>
+                <div class="layout horizontal flex end-justified" style="background:red;"><iron-icon slot="item-icon" icon="expand-more"></iron-icon></div>
+              </template>
+                </dom-if>
+
+              </paper-icon-item>
+
+
+            </template>
+              </dom-repeat>
+            </paper-listbox>
+          -->
+
+          </mg-balloon>
 
 
       <dom-if if="[[_shouldRenderDrawer]]">
     <template>
     <app-drawer id="drawer" opened="{{drawerOpened}}" swipe-open tabindex="0">
-            <dom-repeat items="[[menu]]">
-          <template>
-              <iron-icon icon="[[item.icon]]"></iron-icon> [[item.title]]<br>
-          </template>
-            </dom-repeat>
+
+          <mg-menu menu="[[menu]]"></mg-menu>
+
     </app-drawer>
     </template>
       </dom-if>
@@ -489,6 +546,8 @@
 
     </iron-pages>
 
+
+
     <footer>
     <a href="about">© 2017 <span>B</span><span>o</span><span>o</span><span>e</span><span>d</span></a>
     </footer>
@@ -504,6 +563,21 @@
   <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-database.js"></script>
   <script>
+
+  /*
+  window.addEventListener('resize', refit);
+  window.addEventListener('scroll', refit);
+  var _raf = null;
+  var subsub;
+  function refit() {
+    _raf && window.cancelAnimationFrame(_raf);
+    _raf = window.requestAnimationFrame(function() {
+      _raf = null;
+      subsub.refit();
+      console.log(subsub,"xxx");
+    });
+  }
+  */
 
     var __FirebaseAppInstance;
 
@@ -554,6 +628,11 @@
           type: Array,
         },
 
+        submenu: {
+          type: Array,
+        },
+
+      /*
         category: {
           type: Object,
           notify: true
@@ -564,7 +643,7 @@
           notify: true
         },
 
-      /* XXX Check why we need name in here */
+      // XXX Check why we need name in here
         categories: {
           type: Object,
           value: {"new-products":{name:"best-sellers",
@@ -619,6 +698,7 @@
           type: Number,
           value: 0
         },
+        */
 
         _shouldShowTabs: {
           computed: '_computeShouldShowTabs(page, smallScreen)'
@@ -635,7 +715,7 @@
 
       static get observers() { return [
         '_routePageChanged(routeData.page)',
-        '_categoriesDataChanged(categoriesData)',
+//        '_categoriesDataChanged(categoriesData)',
         '_productsDataChanged(productsData.splices)',
         '_onMeChanged(me)',
       ]}
@@ -653,6 +733,7 @@
       connectedCallback() {
         console.log("connect", this.appInstance);
         super.connectedCallback();
+        //subsub = this.$.submenu;
         // Custom elements polyfill safe way to indicate an element has been upgraded.
         this.removeAttribute('unresolved');
 
@@ -677,11 +758,14 @@
         this.addEventListener('set-cart-item', (e)=>this._onSetCartItem(e));
         this.addEventListener('show-invalid-url-warning', (e)=>this._onFallbackSelectionTriggered(e));
 
+        this.addEventListener('close-contextual-menu', this._closeSubmenu.bind(this));
+
         Polymer.RenderStatus.afterNextRender(this, () => {
           window.addEventListener('online', (e)=>this._notifyNetworkStatus(e));
           window.addEventListener('offline', (e)=>this._notifyNetworkStatus(e));
         });
 
+        this.$.submenu.style.display = "none";
         this._notifyNetworkStatus();
       }
 
@@ -696,8 +780,8 @@
         return [];
       }
 
+      /*
       _productsDataChanged(splices) {
-//        console.log("_productsDataChanged data change", splices);
         if (splices) {
           for (let i=0, s; s = splices.indexSplices[i]; ++i) {
             var p = this.productsData[s.index];
@@ -722,6 +806,7 @@
           this.products = MGCopyObject(this.products);
         }
       }
+      */
 
       _routePageChanged(page) {
         if (this.page === 'list') {
@@ -820,7 +905,7 @@
         // effects during the scroll.
         Polymer.AppLayout.scroll({ top: scrollTop, behavior: 'silent' });
 
-        this.categoryName = detail.category || '';
+//        this.categoryName = detail.category || '';
 
         // Announce the page's title
         if (detail.title) {
@@ -828,11 +913,10 @@
           this._announce(detail.title + ', loaded');
         }
 
-        console.log(detail);
         if (detail.menu) {
           this.menu = detail.menu;
+          this._closeSubmenu(event);
         }
-        console.log("menu",this.menu);
       }
 
       /*
@@ -841,8 +925,62 @@
       }
       */
 
-      _onTrack(e) {
-        console.log(e);
+      _willRefit() {
+        this.$.submenu.style.display = "block";
+        this.$.submenu.refit();
+      }
+
+      _openSubmenu(e) {
+        console.log("dispatch");
+        this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+          bubbles: true, composed: true, detail:{sender:this}}));
+
+        for(let i = 0, sub; sub = this.menu[i]; ++i) {
+          if (this.menu[i].name == e.target.name && this.menu[i].submenu) {
+            if (this.submenu == this.menu[i].submenu) {
+              this._closeSubmenu(e);
+              return;
+            }
+
+            var target = e.composedPath()[0];
+            this.$.submenu.positionTarget = target;
+            this.$.submenu.positionTarget = target;
+            this.submenu = this.menu[i].submenu;
+            this.__WillRefitSubmenuDebouncer = Polymer.Debouncer.debounce(this.__WillRefitSubmenuDebouncer,
+              Polymer.Async.timeOut.after(10),
+              this._willRefit.bind(this));
+            return;
+          }
+        }
+        this._closeSubmenu(e);
+      }
+
+      _closeSubmenu(e) {
+        if (e.detail.sender != this) {
+          this.submenu = [];
+          this.$.submenu.style.display = "none";
+        }
+      }
+
+      _onMenuTap(e) {
+        if(e.target && e.target.name) {
+
+            this._openSubmenu(e);
+
+              /*
+              if (e.type == "mouseover") {
+                this.submenu = this.menu[i].submenu;
+                this._openSubmenu(e);
+
+              } else if (e.type == "mouseout") {
+
+                this.__WillCloseSubmenu = Polymer.Debouncer.debounce(this._closeDebouncer,
+                  Polymer.Async.timeOut.after(1000),
+                  this._closeSubmenu.bind(this,e));
+
+              } else console.log("WTF",e.type);
+              */
+        }
       }
 
       _onAddCartItem(event) {

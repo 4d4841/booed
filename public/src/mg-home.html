@@ -12,7 +12,7 @@
       }
     </style>
 
-    <mg-grid style="width:100%" columns="7"></mg-grid>
+    <mg-grid style="width:100%" columns="6"></mg-grid>
 
 
   </template>
@@ -27,10 +27,17 @@
           value: [
             {name:"new-releases", icon:"new-releases", title:"สินค้าใหม่"},
             {name:"best-sellers", icon:"best-sellers", title:"แนะนำ"},
-            {name:"dresses", icon:"dresses", title:"เดรส"},
+            {name:"dresses", icon:"dresses", title:"เดรส", submenu:[
+              {name:"hyun", icon:"dresses", title:"ฮยอนอา"},
+              {name:"moon", icon:"info", title:"มูน ", submenu:[
+                {name:"tos", icon:"face", title:"เงื่อนไขการให้บริการ"},
+                {name:"policy", icon:"face", title:"นโยบายความเป็นส่วนตัว"},
+              ]},
+              {name:"hyun2", icon:"info", title:"ฮยอนอา"},
+            ]},
             {name:"lingeries", icon:"lingeries", title:"ชุดชั้นใน"},
             {name:"night-dresses", icon:"night-dresses", title:"ชุดนอน"},
-            {name:"swimwears2", icon:"swimwears2", title:"ชุดว่ายน้ำ"},
+            {name:"swimwears", icon:"swimwears", title:"ชุดว่ายน้ำ"},
             {name:"sales", icon:"sales-baht", title:"เซลส์"},
           ]
         },
