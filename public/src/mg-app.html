@@ -24,7 +24,6 @@
 <link rel="import" href="../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
-<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
@@ -471,6 +470,11 @@
               <paper-tab name="[[item.name]]"
                 on-tap="_onMenuTap">
                 <iron-icon icon="[[item.icon]]"></iron-icon> [[item.title]]
+                  <dom-if if="[[item.submenu]]">
+                <template>
+                <iron-icon icon="expand-more"></iron-icon>
+                </template>
+                  </dom-if>
               </paper-tab>
             </template>
               </dom-repeat>
