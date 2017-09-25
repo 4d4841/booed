@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<!--
+ .................................................................................................
+:::BSDB'::BSDB'::BSDB':::::BSDB':::BSDBS'::BSDBS'::BSDB'::::BSD'::BSDBS'::BSDBS'::BSDB'::::::BSD'::
+::BSDBSD BSDBSD :.BSDBS':BSDBS .:BSD ..BSD  ...BSD 'BSDBS':BSD .BSD ..BSD  ...BSD :BSDBS'::BSDB .::
+::COPYRIGHT2017 ::.BS BSDB .BS :BSD .::.BSD :::.BSD :BS .BSDB .BSD .:::BSD ::::BSD :BS BSDB BS .:::
+:::BSDSTYLEBSD .:::BS  BS .:BS :BSD ::::BSD ::::BSD :BS ::BSD :BSD :::::...::::BSD :BS :BS  BS ::::
+::::.LICENSE .::::BSD .:..::BS 'BSD ::::BSD ::::BSD :BS :::BS :BSD ::BSDBS'::::BSD :BS ::..:BS ':::
+:::::::BSD .::::BSDB .::::::BSD 'BSD'::BSD .:::BSD .BSD :::BSD':BSD'::.BSD :::BSD .BSD :::::BSDB'::
+::::::::B .::::::BS .:::::::.BSD ::BSDBS .:BSDBS  :BSD .::::BSD :.BSDBS BS BSDB .:BSD .:::::.BS .::
+`::::::::.::::::::..::::::::::...:::.....:::.....:::...::::::...:::.............:::...::::::::..::'
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/iron-fit-behavior/iron-fit-behavior.html">
+
+<dom-module id="mg-balloon-content">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      #balloon {
+        display: block;
+        border-radius: 5px;
+        overflow: hidden;
+        box-sizing: border-box;
+        width: fit-content;
+        height: fit-content;
+        padding: 0;
+        padding-top: 10px;
+
+        transition: all 1s;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+    </style>
+
+    <paper-card id="balloon">
+      <slot></slot>
+    </paper-card>
+  </template>
+
+  <script>
+    class MGBalloonContent extends Polymer.mixinBehaviors([Polymer.IronFitBehavior], Polymer.Element) {
+      static get is() { return 'mg-balloon-content'; }
+    }
+    customElements.define(MGBalloonContent.is, MGBalloonContent);
+  </script>
+</dom-module>
