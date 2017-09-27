@@ -27,7 +27,6 @@
 <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
-<link rel="import" href="../bower_components/paper-item/paper-icon-item.html">
 <link rel="import" href="../bower_components/paper-styles/typography.html">
 <link rel="import" href="mg-cart-button.html">
 <link rel="import" href="mg-user-button.html">
@@ -44,13 +43,13 @@
 <dom-module id="mg-app">
   <template>
       <custom-style>
-    <style is="custom-style" include="paper-item-shared-styles mg-common-styles iron-flex iron-flex-alignment">
+    <style include="mg-common-styles iron-flex iron-flex-alignment">
       :host {
         display: block;
         position: relative;
         transition: padding-top 0.5s;
         padding-bottom: 144px;
-        min-height: 100vh;
+        min-height: 80vh;
         --app-primary-color: sienna;
         --app-secondary-color: #757575;
         --app-accent-color: #172C50;
@@ -336,7 +335,11 @@
         margin-top: 20px;
         line-height: 24px;
         background-color: var(--booed-header-background);
-        position: absolute;
+        position: fixed;
+        --iron-icon-fill-color: var(--app-primary-color);
+        @apply(--layout-horizontal);
+        @apply(--layout-around-justified);
+        @apply(--layout-end);
       }
 
       footer > a > span {
@@ -369,7 +372,6 @@
         display: none;
         z-index: 10;
         margin: 0;
-        --paper-item-icon-width: 30px;
       }
 
       /* small screen */
@@ -457,9 +459,9 @@
               <div class="header-filler"></div>
 
           <div class="layout horizontal" style="position:fixed;right:10px">
-          <mg-badge-button id="fmPicker" icon="wc" path-style="fill:lightpink" value=""></mg-badge-button>
-          <mg-badge-button id="languaeButton" icon="language" path-style="fill:blue" value=""></mg-badge-button>
-          <mg-cart-button id="cartButton" cart="{{cart}}" value="8"></mg-cart-button>
+          <mg-badge-button id="fmPicker" icon="wc" path-style="fill:lightpink" ></mg-badge-button>
+          <mg-badge-button id="languaeButton" icon="language" path-style="fill:blue" ></mg-badge-button>
+          <mg-cart-button id="cartButton" cart="{{cart}}" ></mg-cart-button>
           <mg-user-button id="userButton" route="{{route}}" me="{{me}}" firebase-app="[[appInstance]]"></mg-user-button>
           </div>
 
@@ -557,7 +559,8 @@
 
 
     <footer>
-    <a href="about">© 2017 <span>B</span><span>o</span><span>o</span><span>e</span><span>d</span></a>
+    <a href="about">© 2017 <img style="height:10px" src="/images/logo-sat/logo-packed-sat.svg"></a>
+    <a class="horizontal layout end" href="https://www.polymer-project.org/">Made with <iron-icon style="--iron-icon-width:15px;padding-left: 3px" icon="polymer"></iron-icon></a>
     </footer>
 
     <!-- a11y announcer -->
