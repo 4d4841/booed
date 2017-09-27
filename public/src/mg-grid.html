@@ -2,18 +2,26 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/iron-scroll-threshold/iron-scroll-threshold.html">
+<link rel="import" href="../bower_components/iron-list/iron-list.html">
+
 <link rel="import" href="mg-common-styles.html">
 <link rel="import" href="mg-image.html">
 
 <dom-module id="mg-grid">
   <template>
-    <style>
+      <custom-style>
+    <style include="iron-flex iron-flex-alignment">
       :host {
         display: block;
         position: relative;
-        @apply --layout-horizontal;
+        @apply --layout-vertical;
         padding:0;
         margin:0;
+        /*
+        border: 1px solid red;
+        background: yellow;
+        */
       }
 
       .item {
@@ -21,7 +29,6 @@
         position: absolute;
         display: block;
         position: absolute;
-        padding: 4px;
         /*border: 1px solid gray;*/
         /*
         border-right: 1px dotted tomato;
@@ -37,36 +44,66 @@
         };
       }
 
-    </style>
+      .grid-image {
+        padding: 4px;
+        border-radius: 10px;
+        @apply --layout-fit;
+        max-width: 100%;
+        max-height: 100%;
+        margin: 0 auto;
+        width:100%;
+        height:100%;
+        object-fit: cover;
+        object-position: top;
+        box-sizing: border-box;
+      }
 
-    <dom-repeat id="grid" items="[[items]]" initial-count="5" mutable-data>
-  <template strip-whitespace>
-    <div class="item" style$="[[_itemStyle(item,unitWidth)]]">
-      <mg-image delay="[[index]]" style="border-radius:5px;width:100%;height:100%;box-sizing:border-box" src="[[item.photo]]"></mg-image>
-    <!--
-<span>([[item.index]]) x:[[item.x]],y:[[item.y]],w:[[item.w]],h:[[item.h]]</span>
-    -->
+      .grid-image2 {
+        position: absolute;
+        overflow: hidden;
+        box-sizing: border-box;
+        border: 4px solid transparent;
+        border-radius: 10px;
+      }
+
+      iron-list {
+      }
+
+      #grid {
+      }
+
+    </style>
+      </custom-style>
+
+      <!--
+    <div style="display:block;color:blue;font-size:30px;position:fixed;top:150px;right:10px;z-index:1000">
+      XXX[[lowerTriggered]]XXX
     </div>
-  </template>
-    </dom-repeat>
+      -->
+
+      <!-- TODO Use iron-list with a line height equals to the max height of highest item (too prevent being pulled out as an off-screen list entry) -->
+      <dom-repeat
+        id="grid"
+        items="[[gridItems]]"
+        mutable-data>
+    <template strip-whitespace>
+    <iron-image sizing="cover" style$="[[_computeItemStyle(item,unitWidth,index)]]" class="grid-image2" src="[[item.photo]]"></iron-image>
+    </template>
+      </dom-repeat>
+
+    <iron-scroll-threshold
+      style="display:none"
+      id="scrollThreshold"
+      scroll-target="document"
+      lower-threshold="500"
+      lower-triggered="{{lowerTriggered}}"
+      on-lower-threshold="_load">
+    </iron-scroll-threshold>
 
   </template>
   <script>
 
-    class MGGrid extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element) {
-      static get is() { return 'mg-grid'; }
-
-      static get properties() { return {
-        columns: {
-          type: Number,
-          value: 1
-        },
-        unitWidth: {
-          type: Number,
-        },
-        photos: {
-          type: Array,
-          value: [
+var moon_photos = [
 "/moon_images/12724705_858580810930604_1171443477_n.jpg",
 "/moon_images/13651703_561490057370896_707793474_n.jpg",
 "/moon_images/13694754_512991945578208_711387289_n.jpg",
@@ -261,46 +298,130 @@
 "/moon_images/18645231_103629346890465_8014473729557921792_n.jpg",
 "/moon_images/18646203_1815443122117752_3221954671547514880_n.jpg",
 "/moon_images/18722170_240805926402516_4871263787279187968_n.jpg",
-"/moon_images/18722607_230319197471388_860786354643009536_n.jpg"]
+"/moon_images/18722607_230319197471388_860786354643009536_n.jpg"];
 
+    class MGGrid extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element) {
+      static get is() { return 'mg-grid'; }
 
-
+      static get properties() { return {
+        unitWidth: {
+          type: Number,
         },
-        items: {
+
+        gridItems: {
           type: Array,
-          observer: '_itemsChanged',
-          /*
-          value: [
-            {x:0,y:0,w:1,h:1},
-          ]
-          */
-          value: function() {
-
-            let ret = [];
-
-            for(let i = 0; i < 20; i++) {
-              let x = getRandomInt(0,3);
-              let a = getRandomInt(2,5);
-              let b = getRandomInt(2,5);
-//              if (a*b <= 4) {a*=2;b*=2}
-
-              if (x != 0) a = b = 1;
-
-              ret.push({x:0,y:0,w:a,h:b});
-              ret.push({x:0,y:0,w:1,h:1});
-
-              if (a!=b)
-              ret.push({x:0,y:0,w:b,h:a});
-            }
-            /*
-            for(let i = 0; i < 300; i++) {
-            }
-            */
-
-            return ret;
-          }
+          value: [],
         },
+
+        _sizeMap: {
+          type: Object,
+          value: {}
+        },
+
+        /* TODO change collisionMap to an object and only keep row with -1 */
+        collisionMap: {
+          type: Array,
+          value: [],
+          notify: true
+        },
+
+        numberOfColumns: {
+          type: Number,
+          value: 30,
+          observer: '_numberOfColumnsChanged'
+        },
+
+
       }}
+
+      _numberOfColumnsChanged(newNumColumns) {
+        if (newNumColumns == this.numberOfColumns) return;
+        this._sizeMap = {};
+        this.collisionMap = [];
+        this.gridItems = [];
+        this.$.grid.items = [];
+      }
+
+      _appendItem(anItem, rtl) {
+        rtl = rtl ? true : false;
+
+        let ew = anItem.width ? Math.ceil(anItem.width * this.numberOfColumns) : anItem.w;
+        let eh = anItem.height ? Math.ceil(anItem.height * this.numberOfColumns) : anItem.h;
+        let szmpKey = ew+','+eh;
+
+        anItem.w = ew;
+        anItem.h = eh;
+
+        let szmp = this._sizeMap;
+        let clmp = this.collisionMap;
+
+        if (! szmp[szmpKey]) {
+          szmp[szmpKey] = 1;
+        }
+
+        let py1 = szmp[szmpKey];
+        let py2 = py1 + eh - 1;
+        let px2 = rtl ? this.numberOfColumns : ew;
+        let px1 = rtl ? px2 - ew + 1 : 1;
+
+        seeking:
+        while (true) {
+          while (px2 <= this.numberOfColumns && px1 >= 1) {
+
+            while (clmp.length < py2) {
+              let r = [];
+              while (r.length < this.numberOfColumns) r.push(0);
+              this.push('collisionMap',r);
+            }
+
+            let hasCollision = false;
+            test_collision:
+
+            for (let ri = py1; ri <= py2; ++ri) {
+            for (let ci = px1; ci <= px2; ++ci) {
+              if (clmp[ri-1][ci-1] != 0) {
+                hasCollision = true;
+                break test_collision;
+              }
+            }
+            }
+
+            if (!hasCollision) {
+              szmp[szmpKey] = py1;
+              anItem.x = px1;
+              anItem.y = py1;
+
+              /* Fill collision map */
+              for (let ri = py1; ri <= py2; ++ri) {
+              for (let ci = px1; ci <= px2; ++ci) {
+                clmp[ri-1][ci-1] = ri+ci;
+              }
+              }
+              clmp[py1-1][px1-1] = anItem;
+
+              break seeking;
+            }
+
+            if (rtl) {
+              --px1;
+              --px2;
+            } else {
+              ++px1;
+              ++px2;
+            }
+          }
+
+          px2 = rtl ? this.numberOfColumns : ew;
+          px1 = rtl ? px2 - ew + 1 : 1;
+          ++py1;
+          ++py2;
+        }
+
+        this.push('gridItems',anItem);
+        this.style.height = (this.collisionMap.length * this.unitWidth)+"px";
+        //this.$.grid.push('items', anItem);
+        //this.$.griditems.push(anItem);
+      }
 
       static get observers() { return [
       ]}
@@ -308,6 +429,87 @@
       connectedCallback() {
         super.connectedCallback();
         this.addEventListener('iron-resize', this._onResizeEvent);
+
+//        this._load();
+//        this._appender()
+      }
+
+      _load(what) {
+
+        if (this.collisionMap.length > 3000) return;
+
+        if (this._loading) this._loading.cancel();
+        this._loading = Polymer.Debouncer.debounce(this._loading,
+                  Polymer.Async.timeOut.after(1000),
+                  this._loadSome.bind(this));
+      }
+
+      _loadSome() {
+        for (let i = 0; i < 5; i++) {
+
+          for (let j = 0; j < 5; j++)
+          this._appendItem({
+            x: 0,
+            y: 0,
+            w: getRandomInt(1,4),
+            h: getRandomInt(1,4),
+            photo: moon_photos[getRandomInt(0,moon_photos.length)],
+          });
+
+          this._appendItem({
+            x: 0,
+            y: 0,
+            w: getRandomInt(2,10),
+            h: getRandomInt(2,10),
+            photo: moon_photos[getRandomInt(0,moon_photos.length)],
+          });
+
+          for (let j = 0; j < 5; j++)
+          this._appendItem({
+            x: 0,
+            y: 0,
+            w: getRandomInt(1,4),
+            h: getRandomInt(1,4),
+            photo: moon_photos[getRandomInt(0,moon_photos.length)],
+          },true);
+
+          this._appendItem({
+            x: 0,
+            y: 0,
+            w: getRandomInt(2,10),
+            h: getRandomInt(2,10),
+            photo: moon_photos[getRandomInt(0,moon_photos.length)],
+          },true);
+        }
+        this.$.scrollThreshold.clearTriggers();
+      }
+
+
+      _appender() {
+
+        if (this.gridItems.length > 100) return;
+
+        for (let i = 0; i < 1; i++) {
+
+          this._appendItem({
+            x: 0,
+            y: 0,
+            w: getRandomInt(1,2),
+            h: getRandomInt(1,2),
+            photo: moon_photos[getRandomInt(0,moon_photos.length)],
+          });
+          this._appendItem({
+            x: 0,
+            y: 0,
+            w: getRandomInt(2,5),
+            h: getRandomInt(2,5),
+            photo: moon_photos[getRandomInt(0,moon_photos.length)],
+          });
+
+        }
+        this._appending = Polymer.Debouncer.debounce(this._appending,
+                  Polymer.Async.timeOut.after(1000),
+                  this._appender.bind(this));
       }
 
       disconnectedCallback() {
@@ -316,153 +518,33 @@
       }
 
       _onResizeEvent(e) {
-          this.unitWidth = this.offsetWidth/this.columns;
+          this.unitWidth = this.offsetWidth/this.numberOfColumns;
           let maxH = 1,
               maxW = 1;
-          for (let i = 0, it; it = this.items[i]; ++i) {
+          for (let i = 0, it; it = this.gridItems[i]; ++i) {
             let mh = it.y + it.h - 1;
             if (mh > maxH) maxH = mh;
             let mw = it.x + it.w - 1;
             if (mw > maxW) maxW = mw;
           }
-          this.style.height = (maxH * this.unitWidth)+"px";
+//          this.style.height = (maxH * this.unitWidth)+"px";
 //          this.style.width = (maxW * this.unitWidth)+"px";
       }
 
-      _itemStyle(item, blockSize) {
-        if (!blockSize) {
-          blockSize = Math.round(this.offsetWidth/this.columns);
-        }
-
-
+      _computeItemStyle(item, blockSize, index) {
+        if (!blockSize) blockSize = this.offsetWidth/this.numberOfColumns;
         let unit = "px";
-
-        let v = 255-Math.floor(item.index/this.items.length*255);
-
-        /*
-        if (item.w ==1 && item.h==1)
-        return "width:"+ item.w*blockSize + unit +";" +
-               "height:"+ item.h*blockSize + unit +";" +
-               "margin-top:"+ (item.y-1)*blockSize + unit +";" +
-               "margin-left:"+ (item.x-1)*blockSize + unit +";" +
-               "background:lightgray";
-               */
-
-        return "width:"+ (item.w*blockSize) + unit +";" +
-               "height:"+ (item.h*blockSize) + unit +";" +
-               "margin-top:"+ (item.y-1)*blockSize + unit +";" +
-               "margin-left:"+ (item.x-1)*blockSize + unit +";" +
-//               "background:url("+item.photo+");background-size:cover;background-position:center;"+
-
-//               "background:rgb("+v+","+v+","+v+");"+
-
-               "";
-
-
+        let x = item.x - 1;
+        let y = item.y - 1;
+        let ret = "display: block;position: absolute;border: 0";
+        ret += "padding: 4px;box-sizing: border-box";
+        ret += ";width: "+ (blockSize * item.w) + unit;
+        ret += ";height: "+ (blockSize * item.h) + unit;
+        ret += ";left: "+ (blockSize * x) + unit;
+        ret += ";top: "+ (blockSize * y) + unit;
+        return ret;
       }
 
-      _itemsChanged(items) {
-        /*
-          items[n]
-          {
-            x: xi,
-            y: yi,
-            w: wi,
-            h: hi
-          }
-        */
-
-        let maxW = 1,
-            maxH = 1;
-        for ( let i = 0, e; e = items[i]; ++i ) {
-          if (e.h > maxH) maxH = e.h;
-          if (e.w > maxW) maxW = e.w;
-        }
-        if (maxW > this.columns) this.columns = maxW;
-
-        let szmp = [];
-        for ( let i = maxH; i; --i ) {
-          szmp.unshift([]);
-          for ( let j = maxW,r = szmp[0]; j; --j ) {
-            r.push([1,1]);
-          }
-        }
-
-        /* Collision map */
-        let csmp = [];
-
-        /* Moongom Algorithm */
-        for ( let i = 0,e; e = items[i]; ++i ) {
-          items[i].index = i;
-          items[i].photo = this.photos[getRandomInt(0,195)];
-
-          let [px1,py1] = szmp[e.h-1][e.w-1];
-          let px2 = px1 + e.w - 1;
-          let py2 = py1 + e.h - 1;
-
-          seeking:
-          while (true) {
-
-            while ( px2 <= this.columns ) {
-
-              /*Make sure the collision map fits item*/
-              while (csmp.length < py2) csmp.push([]);
-              for ( let ri = 0, r; r = csmp[ri]; ++ri ) {
-                while (r.length < px2) r.push(-1);
-              }
-
-              let hasCollision = false;
-
-              /* Collision map */
-              test_collision:
-              for (let ri = py1-1; ri <= py2-1; ++ri)
-              for (let ci = px1-1; ci <= px2-1; ++ci)
-              {
-                if (csmp[ri][ci] > -1) {
-                  hasCollision = true;
-                  break test_collision;
-                }
-              }
-
-              /* No map tester
-              for ( let j = i-1; j >= 0 && !hasCollision; --j) {
-
-                let x1 = items[j].x,
-                x2 = items[j].x + items[j].w - 1,
-                y1 = items[j].y,
-                y2 = items[j].y + items[j].h - 1;
-
-                hasCollision = (px1 > x2 || px2 < x1 || py1 > y2 || py2 < y1) ? false : true;
-              }
-              */
-              if (!hasCollision) {
-                szmp[e.h-1][e.w-1] = [px2+1,py1];
-                e.x = px1;
-                e.y = py1;
-                e.szmpX = px2+1;
-                e.szmpY = py1;
-
-                /* Fill collision map */
-                for (let ri = py1-1; ri <= py2-1; ++ri)
-                for (let ci = px1-1; ci <= px2-1; ++ci)
-                  csmp[ri][ci] = i;
-
-                break seeking;
-              }
-
-              ++px1;
-              ++px2;
-            }
-
-            px1 = 1;
-            ++py1;
-
-            px2 = px1 + e.w -1;
-            ++py2;
-          }
-
-        }
-      }
     }
 
     customElements.define(MGGrid.is, MGGrid);
