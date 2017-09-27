@@ -80,11 +80,10 @@
 
       _refit() {
         _raf && window.cancelAnimationFrame(_raf);
-        let app = this;
         _raf = window.requestAnimationFrame(function(){
           _raf = null;
-          app.refit();
-        });
+          this.refit();
+        }.bind(this));
       }
 
       refit() {
