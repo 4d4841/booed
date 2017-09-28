@@ -331,19 +331,12 @@
         bottom: 0;
         left: 0;
         right: 0;
-        text-align: center;
-        margin-top: 20px;
         line-height: 24px;
         background-color: var(--booed-header-background);
         position: fixed;
         --iron-icon-fill-color: var(--app-primary-color);
         @apply(--layout-horizontal);
         @apply(--layout-around-justified);
-        @apply(--layout-end);
-      }
-
-      footer > a > span {
-        font-family: 'Gloria Hallelujah', cursive;
       }
 
       footer > a :nth-child(1) { color: #ff5555; }
@@ -397,6 +390,10 @@
 
         .videoframe {
           margin-top: var(--booed-menu-height);
+        }
+
+        footer {
+          display: none;
         }
       }
 
@@ -469,13 +466,14 @@
         <div class="menu-bar" style="border-top: 1px dashed var(--booed-menu-color)" hidden$="[[!_shouldShowTabs]]">
               <dom-if if="[[_shouldRenderTabs]]">
             <template>
-
-          <paper-tabs hide-scroll-buttons scrollable fit-container noink>
+          <paper-tabs selected="{{selectedMenu}}" hide-scroll-buttons scrollable fit-container noink>
               <dom-repeat items="[[menu]]">
             <template>
-              <paper-tab name="[[item.name]]"
+              <paper-tab
+                name="[[item.name]]"
                 on-tap="_onMenuTap">
-                <iron-icon icon="[[item.icon]]"></iron-icon> [[item.title]]
+                <iron-icon icon="[[item.icon]]"></iron-icon>
+                [[item.title]]
                   <dom-if if="[[item.submenu]]">
                 <template>
                 <iron-icon icon="expand-more"></iron-icon>
@@ -485,20 +483,6 @@
             </template>
               </dom-repeat>
           </paper-tabs>
-
-  <!--
-
-                    <dom-if if="[[item.submenu]]">
-                  <template>
-                    <div style="z-index:2;width:200px;height:200px;background:red;position:absolute;">
-                      something
-                      something
-                      something
-                      something
-                    </div>
-                  </template>
-                    </dom-if>
-  -->
             </template>
               </dom-if>
         </div>
@@ -506,31 +490,7 @@
     </app-header>
 
           <mg-balloon id="submenu" no-overlap vertical-align="top" horizontal-align="auto">
-
             <mg-menu style="min-width:200px; padding:0" menu="[[submenu]]"></mg-menu>
-
-            <!--
-            <paper-listbox style="min-width:200px; padding:0">
-              <dom-repeat items="[[submenu]]">
-            <template>
-              <paper-icon-item style="white-space:nowrap">
-                <iron-icon slot="item-icon" icon="[[item.icon]]"></iron-icon>
-                [[item.title]]
-
-                <dom-if if="[[item.submenu]]">
-              <template>
-                <div class="layout horizontal flex end-justified" style="background:red;"><iron-icon slot="item-icon" icon="expand-more"></iron-icon></div>
-              </template>
-                </dom-if>
-
-              </paper-icon-item>
-
-
-            </template>
-              </dom-repeat>
-            </paper-listbox>
-          -->
-
           </mg-balloon>
 
 
@@ -559,8 +519,8 @@
 
 
     <footer>
-    <a href="about">© 2017 <img style="height:10px" src="/images/logo-sat/logo-packed-sat.svg"></a>
-    <a class="horizontal layout end" href="https://www.polymer-project.org/">Made with <iron-icon style="--iron-icon-width:15px;padding-left: 3px" icon="polymer"></iron-icon></a>
+    <a class="horizontal layout center" href="about"><iron-icon class="self-start" style="--iron-icon-width:15px;" icon="copyright"></iron-icon> 2017 <img style="padding: 0; margin: -2px 0 0 5px; vertical-align: middle; height:14px" src="/images/logo-sat/logo-packed-sat.svg"></a>
+    <a class="horizontal layout" href="https://www.polymer-project.org/">Made with <iron-icon class="self-start" style="--iron-icon-width:15px;padding-left: 3px" icon="polymer"></iron-icon></a>
     </footer>
 
     <!-- a11y announcer -->
@@ -742,7 +702,6 @@
       }
 
       connectedCallback() {
-        console.log("connect", this.appInstance);
         super.connectedCallback();
         //subsub = this.$.submenu;
         // Custom elements polyfill safe way to indicate an element has been upgraded.
@@ -865,10 +824,9 @@
           Polymer.RenderStatus.afterNextRender(this, () => {
             Polymer.importHref(this.resolveUrl('lazy-resources.html'), () => {
               // Register service worker if supported.
-              /*
               if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('service-worker.js', {scope: '/'});
-              }*/
+              }
               this._notifyNetworkStatus();
               this.loadComplete = true;
             });
@@ -926,6 +884,7 @@
 
         if (detail.menu) {
           this.menu = detail.menu;
+          this.selectedMenu = detail.menu.selected ? detail.menu.selected : 0;
           this._closeSubmenu(event);
         }
       }

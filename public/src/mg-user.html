@@ -230,7 +230,6 @@
     </style>
       </custom-style>
 
-<!--      <div class="center vertical layout main-frame"> -->
   <paper-card id="id-card" state$="[[state]]">
     <a href="/" class="center vertical layout">
       <paper-button id="home-button" alt="home" title="home" state$="[[state]]"></paper-button>
@@ -420,7 +419,6 @@
       }
 
       _onAuthStateChanged(user) {
-        console.log("_onAu");
         this.set('me.User', user);
         if (user) {
           /*
@@ -434,7 +432,7 @@
           */
           this._pushState("welcome");
           this.menu = [
-            {name:"profile", icon:"face", title:"บัญชี"},
+            {name:"profile", icon:"face", title:"โพรไฟล์"},
             {name:"order", icon:"credit-card", title:"รายการสั่งซื้อ"},
             {name:"products", icon:"local-mall", title:"ขายสินค้า"},
             {name:"store", icon:"store", title:"ร้าน", submenu:[
