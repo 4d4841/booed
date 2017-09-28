@@ -8,11 +8,12 @@
   <template strip-whitespace>
     <style>
       :host {
-        @apply --layout-horizontal;
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
       }
     </style>
 
-    <mg-grid style="width:100%"></mg-grid>
+    <mg-grid style="width: calc(100% - 10px)"></mg-grid>
 
 
   </template>
