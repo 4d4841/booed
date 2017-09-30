@@ -280,6 +280,9 @@
 
       #drawer {
         z-index:3;
+        --app-drawer-content-container: {
+          background: white;
+        }
       }
 
       #drawer-contents {
@@ -297,8 +300,8 @@
         --mg-menu-collapse: {
           border-radius: 5px 0 0 5px;
           background-image:
-            linear-gradient( to left, rgba(255,255,255,1) 0px, rgba(255,255,255,0) 10px ) ,
-            linear-gradient( to right, rgba(255,99,71,0.05) 100px, rgba(255,255,255,0.1) 300px );
+            /*linear-gradient( to left, rgba(255,255,255,1) 0px, rgba(255,255,255,0) 10px ) ,*/
+            linear-gradient( to right, rgba(0,0,0,0.05) 100px, rgba(0,0,0,0.02) 300px );
         };
         /*
         --mg-menu-button: {
@@ -308,7 +311,7 @@
         */
       }
 
-      #drawer-contents #user-menu{
+      #drawer-contents #user-menu {
         border-bottom: 1px dashed tomato;
       }
 
@@ -394,8 +397,8 @@
       }
 
       #submenu mg-menu {
-        --mg-menu-item : { border-bottom: 1px dashed tomato };
-        --mg-menu-last-item : { border-bottom: none };
+/*        --mg-menu-item : { border-bottom: 1px dotted tomato };
+        --mg-menu-last-item : { border-bottom: none };*/
       }
 
       /* small screen */
@@ -791,7 +794,6 @@
       }
 
       _onMyPhotoChanged(photo) {
-        console.log("mod",this.$.drawerUserButton);
         /*console.log("me", me);*/
       }
 
@@ -958,7 +960,6 @@
       }
 
       _openSubmenu(e) {
-        console.log("dispatch");
         this.dispatchEvent(new CustomEvent('close-contextual-menu', {
           bubbles: true, composed: true, detail:{sender:this}}));
 
