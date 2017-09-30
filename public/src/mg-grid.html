@@ -539,10 +539,10 @@ var moon_photos = [
         let x = item.x - 1;
         let y = item.y - 1;
         let ret = "display: block;position: absolute";
-        ret += ";width: "+ (blockSize * item.w - inset * 2) + unit;
-        ret += ";height: "+ (blockSize * item.h - inset * 2) + unit;
-        ret += ";left: "+ (blockSize * x + inset) + unit;
-        ret += ";top: "+ (blockSize * y + inset) + unit;
+        ret += ";width: "+ Math.floor(blockSize * item.w - inset * 2) + unit;
+        ret += ";height: "+ Math.floor(blockSize * item.h - inset * 2) + unit;
+        ret += ";left: "+ Math.floor(blockSize * x + inset) + unit;
+        ret += ";top: "+ Math.floor(blockSize * y + inset) + unit;
         return ret;
       }
 
