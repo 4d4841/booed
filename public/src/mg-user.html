@@ -143,6 +143,7 @@
         box-sizing: border-box;
       }
 
+      /*
       #home-button {
         width: 100%;
         height: 40px;
@@ -155,6 +156,7 @@
       #home-button[state=waiting] {
         display: none;
       }
+      */
 
       .info-button {
         --paper-icon-button: {
@@ -189,11 +191,16 @@
       }
 
       h3  {
-        padding: 0;
         margin: 0;
-        padding-bottom: 20px;
+        padding: 5px 0;
         font-family: 'Mitr', sans-serif;
         font-size: 16px;
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+      }
+
+      h3 iron-icon {
+        margin-right: 10px;
       }
 
       .photo {
@@ -224,6 +231,10 @@
         box-sizing: border-box;
       }
 
+      .under-photo h3  {
+        padding: 0;
+      }
+
       @media (max-width: 767px) {
       }
 
@@ -231,9 +242,11 @@
       </custom-style>
 
   <paper-card id="id-card" state$="[[state]]">
+    <!--
     <a href="/" class="center vertical layout">
       <paper-button id="home-button" alt="home" title="home" state$="[[state]]"></paper-button>
     </a>
+    -->
     <iron-pages id="pages" selected="[[state]]" attr-for-selected="state" class="center vertical layout">
       <div state="waiting" style="width:200px;height:150px;margin-top:50px" class="layout horizontal center center-justified">
         <img src="images/logo-bounce.svg">
@@ -370,6 +383,12 @@
 
         menu: {
           type: Array,
+          notify: true
+        },
+
+        userMenu: {
+          type: Array,
+          notify: true
         },
 
         expand: {
@@ -432,34 +451,25 @@
           */
           this._pushState("welcome");
           this.menu = [
-            {name:"profile", icon:"face", title:"โพรไฟล์"},
-            {name:"order", icon:"credit-card", title:"รายการสั่งซื้อ"},
-            {name:"products", icon:"local-mall", title:"ขายสินค้า"},
-            {name:"store", icon:"store", title:"ร้าน", submenu:[
-                {name:"hyun", icon:"info", title:"ฮยอนอา"},
-                {name:"moon", icon:"info", title:"มูน "},
-              ]},
-            {name:"inbox", icon:"inbox", title:"อินบอกซ์"},
+            {name:"/user/profile", icon:"face", title:"โพรไฟล์"},
+            {name:"/user/order", icon:"credit-card", title:"รายการสั่งซื้อ"},
+            {name:"/user/products", icon:"local-mall", title:"ขายสินค้า"},
+            {name:"/user/store", icon:"store", title:"ร้าน"},
+            {name:"/user/inbox", icon:"inbox", title:"อินบอกซ์"},
             {name:"help", icon:"help", title:"ความช่วยเหลือ", submenu:[
-              {name:"tos", icon:"info", title:"เงื่อนไขการให้บริการ", submenu:[
-                {name:"tos", icon:"info", title:"เงื่อนไขการให้บริการ"},
-                {name:"policy", icon:"info", title:"นโยบายความเป็นส่วนตัวนโยบายความเป็นส่วนตัว", submenu:[
-                  {name:"tos", icon:"info", title:"เงื่อนไขการให้บริการ"},
-                  {name:"policy", icon:"info", title:"นโยบายความเป็นส่วนตัว"},
+              {name:"tos", icon:"info", title:"เงื่อนไขการให้บริการ", },
+              {name:"policy", icon:"info", title:"นโยบายความเป็นส่วนตัว"},
             ]},
-            ]},
-              {name:"policy", icon:"info", title:"นโยบายความเป็นส่วนตัว", submenu:[
-                  {name:"tos", icon:"info", title:"เงื่อนไขการให้บริการ"},
-                  {name:"policy", icon:"info", title:"นโยบายความเป็นส่วนตัว", submenu:[
-                      {name:"tos", icon:"info", title:"เงื่อนไขการให้บริการ"},
-                      {name:"policy", icon:"info", title:"นโยบายความเป็นส่วนตัว", submenu:[
-                          {name:"tos", icon:"info", title:"เงื่อนไขการให้บริการ"},
-                          {name:"policy", icon:"info", title:"นโยบายความเป็นส่วนตัว"},
-                        ]},
-                    ]},
-                ]},
-                {name:"inbox", icon:"inbox", title:"อินบอกซ์"},
-            ]},
+          ];
+          this.userMenu = [
+            { name: "/user/profile",
+              title: this.me.User.email,
+              icon: "account-box",
+              submenu: [
+                {name:"/user/profile", icon:"face", title:"โพรไฟล์"},
+                {name:"/user/signout", icon:"coffee", color:"tomato", title:"ออกจากระบบ"},
+              ]
+            }
           ];
         } else {
           console.log("no user");
@@ -468,6 +478,17 @@
             {name:"new-releases", icon:"lock", title:"เข้าสู่ระบบ"},
             {name:"new-releases", icon:"info", title:"นโยบายความเป็นส่วนตัว"},
           ];
+          this.userMenu = null; /*[
+            { name: "/user/profile",
+              icon: "face",
+              title: "สมาชิก",
+              submenu: [
+                {name:"/user/profile", icon:"key", title:"เข้าสู่ระบบสมาชิก", },
+                {name:"tos", icon:"info", title:"เงื่อนไขการให้บริการ", },
+                {name:"policy", icon:"info", title:"นโยบายความเป็นส่วนตัว"},
+              ]
+            }
+          ];*/
         }
       }
 

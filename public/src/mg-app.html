@@ -111,6 +111,7 @@
         */
       }
 
+      /*
       .header {
         background-color: var(--booed-header-background);
         height: var(--booed-header-height);
@@ -122,18 +123,7 @@
         padding:0;
         top:0;
       }
-
-      .header2 {
-        background-color: var(--booed-header-background);
-/*        height: var(--booed-header-height); */
-        @apply(--layout-horizontal);
-        position:absolute;
-        top:0;
-        width:100%;
-        padding:0;
-        margin:0;
-      }
-
+      */
 
       .title-bar {
 /*        height: var(--booed-title-height); */
@@ -288,36 +278,75 @@
 
       }
 
-      .drawer-list {
-        margin: 0 20px;
-      }
-
-      .drawer-list a {
-        display: block;
-        padding: 0 16px;
-        line-height: 40px;
-        text-decoration: none;
-        color: var(--app-secondary-color);
-      }
-
-      .drawer-list a.iron-selected {
-        color: black;
-        font-weight: bold;
-      }
-
-      app-drawer {
+      #drawer {
         z-index:3;
-        /*
-        border-radius: 30px;
-        --app-drawer-content-container: {
-          display: inline-block;
-          border-radius:500px;
-          border-radius:0 0 20px 0;
-          bottom: auto;
+      }
+
+      #drawer-contents {
+        @apply(--layout-vertical);
+        overflow: hidden;
+      }
+
+      #drawer-contents #profile-container {
+        @apply(--layout-vertical);
+        background: tomato;
+        color: white;
+      }
+
+      #drawer-contents #app-menu {
+        --mg-menu-collapse: {
+          border-radius: 5px 0 0 5px;
+          background-image:
+            linear-gradient( to left, rgba(255,255,255,1) 0px, rgba(255,255,255,0) 10px ) ,
+            linear-gradient( to right, rgba(255,99,71,0.05) 100px, rgba(255,255,255,0.1) 300px );
         };
-        --app-drawer-scrim-background: {
+        /*
+        --mg-menu-button: {
+          overflow: hidden;
+          border-radius: 8px 0 0 8px;
         }
         */
+      }
+
+      #drawer-contents #user-menu{
+        border-bottom: 1px dashed tomato;
+      }
+
+      #drawer-contents #user-menu[page=user]{
+        display: none;
+      }
+
+      #drawer-contents .photo-button[icon=ghost] {
+        border: none;
+      }
+
+      #drawer-contents .photo-button {
+        margin: 20px 0 10px 0;
+        @apply(--layout-self-center);
+        height: 120px;
+        width: 120px;
+        border: 2px solid white;
+        box-sizing: border-box;
+        --paper-icon-button-ink-color: tomato;
+        --paper-icon-button : {
+          overflow: hidden;
+          border-radius: 50%;
+          margin: 0;
+          padding: 0px;
+        };
+      }
+
+      #drawer-contents h3  {
+        margin: 0;
+        padding: 5px 0;
+        font-family: 'Mitr', sans-serif;
+        font-size: 16px;
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+      }
+
+      #drawer-contents h3 iron-icon {
+        margin-right: 10px;
       }
 
       iron-pages {
@@ -354,11 +383,8 @@
         text-decoration: underline;
       }
 
-      #menuButton {
+      #menu-button {
         padding-left: 16px;
-      }
-
-      #userButton {
       }
 
       #submenu {
@@ -367,12 +393,21 @@
         margin: 0;
       }
 
+      #submenu mg-menu {
+        --mg-menu-item : { border-bottom: 1px dashed tomato };
+        --mg-menu-last-item : { border-bottom: none };
+      }
+
       /* small screen */
       @media (max-width: 767px) {
         :host {
           /*padding-top: calc(var(--booed-header-height) + var(--booed-title-height) + var(--booed-menu-height));*/
           padding-top:50px;
           --booed-title-height: 170px;
+        }
+
+        #user-button {
+          display: none;
         }
 
         app-header {
@@ -443,7 +478,7 @@
           <div class="layout horizontal" style="position:absolute;left:0">
             <dom-if if="[[_shouldRenderDrawer]]">
           <template>
-          <mg-badge-button id="menuButton" on-tap="_toggleDrawer" icon="menu" path-style="fill:tomato" value=""></mg-badge-button>
+          <mg-badge-button id="menu-button" on-tap="_toggleDrawer" icon="menu" path-style="fill:tomato" value=""></mg-badge-button>
           </template>
             </dom-if>
           </div>
@@ -457,9 +492,9 @@
 
           <div class="layout horizontal" style="position:fixed;right:10px">
           <mg-badge-button id="fmPicker" icon="wc" path-style="fill:lightpink" ></mg-badge-button>
-          <mg-badge-button id="languaeButton" icon="language" path-style="fill:blue" ></mg-badge-button>
-          <mg-cart-button id="cartButton" cart="{{cart}}" ></mg-cart-button>
-          <mg-user-button id="userButton" route="{{route}}" me="{{me}}" firebase-app="[[appInstance]]"></mg-user-button>
+          <mg-badge-button id="languae-button" icon="language" path-style="fill:blue" ></mg-badge-button>
+          <mg-cart-button id="cart-button" cart="{{cart}}" ></mg-cart-button>
+          <mg-user-button id="user-button" route="{{route}}" me="{{me}}" firebase-app="[[appInstance]]"></mg-user-button>
           </div>
 
         </div>
@@ -497,9 +532,15 @@
       <dom-if if="[[_shouldRenderDrawer]]">
     <template>
     <app-drawer id="drawer" opened="{{drawerOpened}}" swipe-open tabindex="0">
-
-          <mg-menu menu="[[menu]]"></mg-menu>
-
+      <div id="drawer-contents">
+        <!--<div id="profile-container" style$="[[_computeProfileContainerStyleWithPhoto(me.User.photoURL)]]">-->
+        <div id="profile-container">
+          <paper-icon-button class="photo-button" on-tap="_openProfile" icon$="[[_computeMeIcon(me.User.photoURL)]]" src="[[me.User.photoURL]]"></paper-icon-button>
+          <h3 class="self-center">[[me.User.displayName]]</h3>
+        </div>
+        <mg-menu id="user-menu" menu="[[userMenu]]" page$="[[page]]"></mg-menu>
+        <mg-menu id="app-menu" menu="[[menu]]"></mg-menu>
+      </div>
     </app-drawer>
     </template>
       </dom-if>
@@ -511,7 +552,7 @@
       selected-attribute="visible"
       fallback-selection="404">
       <mg-home name="home"></mg-home>
-      <mg-user name="user" me="{{me}}" route="{{subroute}}" firebase-app="[[appInstance]]"></mg-user>
+      <mg-user id="user" user-menu="{{userMenu}}" name="user" me="{{me}}" route="{{subroute}}" firebase-app="[[appInstance]]"></mg-user>
       <mg-404-warning name="404"></mg-404-warning>
 
     </iron-pages>
@@ -688,7 +729,7 @@
         '_routePageChanged(routeData.page)',
 //        '_categoriesDataChanged(categoriesData)',
         '_productsDataChanged(productsData.splices)',
-        '_onMeChanged(me)',
+        '_onMyPhotoChanged(me.User.photoURL)',
       ]}
 
       constructor() {
@@ -739,8 +780,24 @@
         this._notifyNetworkStatus();
       }
 
-      _onMeChanged(me) {
+      _computeProfileContainerStyleWithPhoto(photo) {
+        if (photo) return "background-image:url("+photo+");background-size:cover";
+        return "";
+      }
+
+      _computeMeIcon(photo) {
+        if (photo) return null;
+        return "ghost";
+      }
+
+      _onMyPhotoChanged(photo) {
+        console.log("mod",this.$.drawerUserButton);
         /*console.log("me", me);*/
+      }
+
+      _openProfile(e) {
+        this.showPanel = false;
+        this.set('route.path','user');
       }
 
       _arraySortedByKeys(obj) {
@@ -825,7 +882,7 @@
             Polymer.importHref(this.resolveUrl('lazy-resources.html'), () => {
               // Register service worker if supported.
               if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('service-worker.js', {scope: '/'});
+//                navigator.serviceWorker.register('service-worker.js', {scope: '/'});
               }
               this._notifyNetworkStatus();
               this.loadComplete = true;

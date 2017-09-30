@@ -10,45 +10,56 @@
 <dom-module id="mg-menu">
   <template strip-whitespace>
       <custom-style>
-    <style include="mg-common-styles iron-flex iron-flex-alignment">
+    <style include="iron-flex iron-flex-alignment">
       :host {
         padding: 0;
         margin: 0;
+        --mg-menu-height: 30px;
       }
 
       paper-listbox {
         padding: 0;
+        margin: 0;
       }
 
       iron-collapse {
         /*background-color: rgba(255,99,71,0.05);*/
+        /*
         background-image:
           linear-gradient( to left, rgba(255,255,255,1) 0px, rgba(255,255,255,0) 10px ) ,
           linear-gradient( to right, rgba(255,99,71,0.1) 100px, rgba(255,255,255,0.1) 300px )
           ;
-
+        border-left: 1px dashed tomato;
         border-radius: 5px 0 0 5px;
+          */
+
         padding: 0;
         margin: 0;
         width: 100%;
+        @apply(--mg-menu-collapse);
       }
 
       .menu-item,
       .submenu-item {
         @apply(--booed-menu-font);
-        --paper-item-selected: { background: transparent; };
+        --paper-item-selected: { background: transparent };
         --paper-item-focused-before: { opacity: 0 };
         --paper-item-selected-weight: normal;
-        background-color:transparent;
+        background: none;
         margin: 0;
         --paper-item-min-height: 30px;
         padding:5px 0 5px 14px;
-
+        min-height: var(--mg-menu-height);
+        @apply(--mg-menu-item);
       }
 
+      .submenu-item:last-of-type,
+      .menu-item:last-of-type {
+        @apply(--mg-menu-last-item);
+      }
 
       paper-listbox {
-        background-color:transparent;
+        background: none;
       }
 
       .menu-item
@@ -58,6 +69,7 @@
         border-radius: 0;
         padding: 0 10px 0 0;
         margin: 0;
+        @apply(--mg-menu-button);
         --paper-button: {
           @apply(--layout-horizontal);
           @apply(--layout-start-justified);
@@ -76,7 +88,7 @@
       .toggle-line {
         pointer-events: none;
         width: 100%;
-        min-height: 30px;
+        min-height: var(--mg-menu-height);
       }
 
       .opened-indicator {
@@ -94,7 +106,7 @@
     </style>
       </custom-style>
 
-    <paper-listbox style="min-width:200px;border-radius:5px;">
+    <paper-listbox>
         <dom-repeat items="[[menu]]">
       <template>
       <!-- has submenu -->
@@ -102,8 +114,8 @@
         <template>
 
           <paper-item tabindex="-1" class="submenu-item vertical layout start" on-tap="_onTap">
-            <div class="toggle-line horizontal layout start">
-              <iron-icon class="menu-item-icon" icon="[[item.icon]]"></iron-icon>
+            <div class="toggle-line horizontal layout center">
+              <iron-icon class="menu-item-icon" icon="[[item.icon]]" style="[[_computeIconColorStyle(item)]]"></iron-icon>
                 [[item.title]]
               <div class="opened-indicator layout horizontal flex end-justified">
                 <iron-icon icon="expand-more"></iron-icon>
@@ -120,9 +132,9 @@
       <!-- no submenu -->
           <dom-if if="[[!item.submenu]]">
         <template>
-          <paper-item tabindex="-1" class="menu-item horizontal layout start start-justified" on-tap="_onTap">
+          <paper-item tabindex="-1" class="menu-item horizontal layout center start-justified" on-tap="_onTap">
             <paper-button class="horizontal layout start">
-              <iron-icon class="menu-item-icon" icon="[[item.icon]]"></iron-icon>
+              <iron-icon class="menu-item-icon" icon="[[item.icon]]" style="[[_computeIconColorStyle(item)]]"></iron-icon>
                 [[item.title]]
             </paper-button>
           </paper-item>
@@ -150,6 +162,11 @@
       static get observers() { return [
         '_transitioningChanged(trans)'
       ]}
+
+      _computeIconColorStyle(item) {
+        if (item.color) return "color:"+item.color;
+        return "";
+      }
 
       _transitioningChanged(t) {
         this.dispatchEvent(new CustomEvent('mg-menu-toggle-opened', {
