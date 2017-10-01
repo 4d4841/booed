@@ -1,0 +1,81 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="mg-button.html">
+<link rel="import" href="mg-icons.html">
+
+<dom-module id="mg-about">
+  <template>
+    <style include="mg-button">
+
+      :host {
+        display: block;
+        color: var(--app-secondary-color);
+        @apply(--layout-vertical);
+        @apply(--layout-center);
+      }
+
+      iron-icon {
+        display: block;
+        width: 80px;
+        height: 80px;
+      }
+
+      h1 {
+        font-weight: 300;
+      }
+
+      paper-card {
+        margin-top: 50px;
+        width: 240px;
+        height: 240px;
+        border-radius: 50%;
+        padding: 20px;
+        overflow: hidden;
+        @apply(--layout-vertical);
+        @apply(--layout-center);
+      }
+
+      .button {
+        width: 80px;
+        height: 80px;
+        --paper-button: {
+          @apply(--layout-vertical);
+          @apply(--layout-start-justified);
+          font-family: 'Mitr', sans-serif;
+          font-size: 16px;
+          font-weight: bold;
+          background: lime;
+          color: white;
+          padding: 20px;
+        }
+      }
+
+      a:link {
+            text-decoration: none;
+      }
+
+    </style>
+
+  <paper-card>
+      <a href="/">
+    <img style="padding:20px;margin:0;margin-left:12px;" src="/images/logo-bounce-in.svg">
+      </a>
+      <a href="https://github.com/4d4841/booed">
+    <paper-icon-button src="https://assets-cdn.github.com/images/modules/logos_page/Octocat.png" class="button layout vertical center-justified">
+    </paper-icon-button>
+      </a>
+  </paper-card>
+
+  </template>
+  <script>
+
+    class MGAbout extends Polymer.Element {
+      static get is() { return 'mg-about'; }
+    }
+
+    customElements.define(MGAbout.is, MGAbout);
+
+  </script>
+</dom-module>

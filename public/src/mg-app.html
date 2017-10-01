@@ -390,15 +390,21 @@
         padding-left: 16px;
       }
 
-      #submenu {
+      #balloon {
         display: none;
         z-index: 10;
         margin: 0;
       }
 
-      #submenu mg-menu {
+      #balloon mg-menu {
 /*        --mg-menu-item : { border-bottom: 1px dotted tomato };
         --mg-menu-last-item : { border-bottom: none };*/
+        --mg-menu-collapse: {
+          border-radius: 5px 0 0 5px;
+          background-image:
+            /*linear-gradient( to left, rgba(255,255,255,1) 0px, rgba(255,255,255,0) 10px ) ,*/
+            linear-gradient( to right, rgba(0,0,0,0.05) 100px, rgba(0,0,0,0.02) 300px );
+        };
       }
 
       /* small screen */
@@ -497,7 +503,7 @@
           <mg-badge-button id="fmPicker" icon="wc" path-style="fill:lightpink" ></mg-badge-button>
           <mg-badge-button id="languae-button" icon="language" path-style="fill:blue" ></mg-badge-button>
           <mg-cart-button id="cart-button" cart="{{cart}}" ></mg-cart-button>
-          <mg-user-button id="user-button" route="{{route}}" me="{{me}}" firebase-app="[[appInstance]]"></mg-user-button>
+          <mg-user-button id="user-button" route="{{route}}" me="{{me}}" menu="[[userMenu.0.submenu]]" firebase-app="[[appInstance]]"></mg-user-button>
           </div>
 
         </div>
@@ -527,7 +533,7 @@
       </div>
     </app-header>
 
-          <mg-balloon id="submenu" no-overlap vertical-align="top" horizontal-align="auto">
+          <mg-balloon id="balloon" no-overlap vertical-align="top" dynamic-align horizontal-align="auto" hidden$="[[smallScreen]]">
             <mg-menu style="min-width:200px; padding:0" menu="[[submenu]]"></mg-menu>
           </mg-balloon>
 
@@ -747,7 +753,7 @@
 
       connectedCallback() {
         super.connectedCallback();
-        //subsub = this.$.submenu;
+        //subsub = this.$.balloon;
         // Custom elements polyfill safe way to indicate an element has been upgraded.
         this.removeAttribute('unresolved');
 
@@ -779,7 +785,7 @@
           window.addEventListener('offline', (e)=>this._notifyNetworkStatus(e));
         });
 
-        this.$.submenu.style.display = "none";
+        this.$.balloon.style.display = "none";
         this._notifyNetworkStatus();
       }
 
@@ -849,6 +855,9 @@
       }
 
       _pageChanged(page, oldPage) {
+        this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+          bubbles: true, composed: true, detail:{sender:null}}));
+          
         if (page != null) {
           // home route is eagerly loaded
           if (page == 'home') {
@@ -942,9 +951,9 @@
         }
 
         if (detail.menu) {
+          this._closeSubmenu(event);
           this.menu = detail.menu;
           this.selectedMenu = detail.menu.selected ? detail.menu.selected : 0;
-          this._closeSubmenu(event);
         }
       }
 
@@ -955,8 +964,8 @@
       */
 
       _willRefit() {
-        this.$.submenu.style.display = "block";
-        this.$.submenu.refit();
+        this.$.balloon.style.display = "block";
+        this.$.balloon.refit();
       }
 
       _openSubmenu(e) {
@@ -971,8 +980,8 @@
             }
 
             var target = e.composedPath()[0];
-            this.$.submenu.positionTarget = target;
-            this.$.submenu.positionTarget = target;
+            this.$.balloon.positionTarget = target;
+            this.$.balloon.positionTarget = target;
             this.submenu = this.menu[i].submenu;
             this.__WillRefitSubmenuDebouncer = Polymer.Debouncer.debounce(this.__WillRefitSubmenuDebouncer,
               Polymer.Async.timeOut.after(10),
@@ -986,7 +995,7 @@
       _closeSubmenu(e) {
         if (e.detail.sender != this) {
           this.submenu = [];
-          this.$.submenu.style.display = "none";
+          this.$.balloon.style.display = "none";
         }
       }
 

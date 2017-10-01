@@ -2,6 +2,7 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="mg-badge-button.html">
+<link rel="import" href="mg-menu.html">
 
 <dom-module id="mg-user-button">
   <template strip-whitespace>
@@ -131,13 +132,7 @@
             </div>
             <mg-image class="photo" src="[[me.User.photoURL]]" on-tap="_openProfile"></mg-image>
 
-            <paper-button class="button" on-tap="_openProfile">
-            <iron-icon icon="face"></iron-icon> โพรไฟล์
-            </paper-button>
-
-            <paper-button class="button" on-tap="_signOut">
-            <iron-icon icon="coffee" style="color:tomato"></iron-icon> ออกจากระบบ
-            </paper-button>
+            <mg-menu menu="[[menu]]"></mg-menu>
     </paper-card>
 
     <svg class="arrow">

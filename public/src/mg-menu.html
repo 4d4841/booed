@@ -14,7 +14,7 @@
       :host {
         padding: 0;
         margin: 0;
-        --mg-menu-height: 30px;
+        --mg-menu-height: 40px;
       }
 
       paper-listbox {
@@ -35,7 +35,10 @@
 
         padding: 0;
         margin: 0;
-        width: 100%;
+        margin-left: 14px;
+        width: calc(100% - 14px);
+        overflow:hidden;
+        border: 1px solid rgba(255,255,255,0.5);
         @apply(--mg-menu-collapse);
       }
 
@@ -47,8 +50,7 @@
         --paper-item-selected-weight: normal;
         background: none;
         margin: 0;
-        --paper-item-min-height: 30px;
-        padding:5px 0 5px 14px;
+        padding:0;
         min-height: var(--mg-menu-height);
         @apply(--mg-menu-item);
       }
@@ -67,13 +69,14 @@
         height: 100%;
         width: 100%;
         border-radius: 0;
-        padding: 0 10px 0 0;
+        padding: 0 10px 0 14px;
         margin: 0;
         @apply(--mg-menu-button);
         --paper-button: {
           @apply(--layout-horizontal);
           @apply(--layout-start-justified);
           @apply(--booed-menu-font);
+          @apply(--layout-end);
           --paper-button-ink-color: red;
         }
       }
@@ -89,11 +92,12 @@
         pointer-events: none;
         width: 100%;
         min-height: var(--mg-menu-height);
+        padding-left: 14px;
       }
 
       .opened-indicator {
         pointer-events: none;
-        margin-right: 10px;
+        margin-right: 20px;
       }
 
       .opened-indicator iron-icon {
@@ -133,7 +137,7 @@
           <dom-if if="[[!item.submenu]]">
         <template>
           <paper-item tabindex="-1" class="menu-item horizontal layout center start-justified" on-tap="_onTap">
-            <paper-button class="horizontal layout start">
+            <paper-button style="min-height:var(--mg-menu-height)" class="horizontal layout center" on-tap="_onMenuButtonTap">
               <iron-icon class="menu-item-icon" icon="[[item.icon]]" style="[[_computeIconColorStyle(item)]]"></iron-icon>
                 [[item.title]]
             </paper-button>
@@ -171,6 +175,10 @@
       _transitioningChanged(t) {
         this.dispatchEvent(new CustomEvent('mg-menu-toggle-opened', {
           bubbles: true, composed: true, detail:{sender:this}}));
+      }
+
+      _onMenuButtonTap(e) {
+        console.log("_onMenu",e.target);
       }
 
       _onTap(e) {

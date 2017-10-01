@@ -22,6 +22,8 @@
     <style>
       :host {
         height:10px;
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
       }
 
       .hidden {
@@ -31,13 +33,11 @@
       .arrow {
         pointer-events: none;
         position: absolute;
-        top: 0px;
-        margin-left: -10px;
+        left: calc(50% - 8px);
       }
     </style>
 
-    <center>
-      <svg class="arrow">
+      <svg id="arrow" class="arrow">
         <defs id="defs2">
           <filter id="blurshadow">
             <feGaussianBlur stdDeviation="1.2" />
@@ -45,7 +45,7 @@
         </defs>
         <path
            id="arrow-shadow"
-           d="M 17,11 1,11 9,1 Z"
+           d="M 16,10 0,10 8,0 Z"
            style="opacity:0.3;fill:#000000;stroke:none;filter:url(#blurshadow);" />
       </svg>
       <svg class="arrow" style="z-index:10">
@@ -54,7 +54,6 @@
            d="M 16,10 0,10 8,0 Z"
            style="fill:#ffffff;stroke:none;" />
       </svg>
-    </center>
 
       <mg-balloon-content id="bc" no-overlap vertical-align="top" dynamic-align horizontal-align="auto">
         <slot></slot>
@@ -76,6 +75,8 @@
         window.addEventListener('resize', this._refit.bind(this));
         window.addEventListener('scroll', this._refit.bind(this));
         this.addEventListener('mg-menu-toggle-opened', this._refit.bind(this));
+        this.$.bc.positionTarget = this.$.arrow;
+        this.$.bc.horizontalOffset = -10;
       }
 
       _refit() {
@@ -88,9 +89,11 @@
 
       refit() {
         this.style.width = this.positionTarget.offsetWidth+"px";
+        /*
         if(!this.positionTarget.offsetParent) {
           this.style.display = "none";
         }
+        */
         super.refit();
         this.$.bc.refit();
       }
