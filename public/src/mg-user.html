@@ -451,34 +451,38 @@
           */
           this._pushState("welcome");
           this.menu = [
-            {name:"/user/profile", icon:"face", title:"โพรไฟล์"},
-            {name:"/user/order", icon:"credit-card", title:"รายการสั่งซื้อ"},
-            {name:"/user/products", icon:"local-mall", title:"ขายสินค้า"},
-            {name:"/user/store", icon:"store", title:"ร้าน"},
-            {name:"/user/inbox", icon:"inbox", title:"อินบอกซ์"},
+            {name:"profile", path:"/user/profile", icon:"face", title:"โพรไฟล์"},
+            {name:"order", path:"/user/order", icon:"credit-card", title:"รายการสั่งซื้อ"},
+            {name:"products", path:"/user/products", icon:"local-mall", title:"ขายสินค้า"},
+            {name:"store", path:"/user/store", icon:"store", title:"ร้าน"},
+            {name:"inbox", path:"/user/inbox", icon:"inbox", title:"อินบอกซ์"},
             {name:"help", icon:"help", title:"ความช่วยเหลือ", submenu:[
-              {name:"tos", icon:"info", title:"เงื่อนไขการให้บริการ", },
-              {name:"policy", icon:"info", title:"นโยบายความเป็นส่วนตัว"},
+              {name:"tos", path:"/about/tos", icon:"info", title:"เงื่อนไขการให้บริการ", },
+              {name:"policy", path:"/about/policy", icon:"info", title:"นโยบายความเป็นส่วนตัว"},
             ]},
           ];
           this.userMenu = [
-            { name: "/user/profile",
+            { name:"user-menu",
               title: this.me.User.email,
               icon: "account-box",
               submenu: [
-                {name:"/user/profile", icon:"face", title:"โพรไฟล์"},
-                {name:"/user/signout", icon:"coffee", color:"tomato", title:"ออกจากระบบ"},
+                {name:"profile", path:"/user/profile", icon:"face", title:"โพรไฟล์"},
+                {name:"signout", action:"_signOut", icon:"coffee", color:"tomato", title:"ออกจากระบบ"},
               ]
             }
           ];
         } else {
-          console.log("no user");
           this._pushState("init");
           this.menu = [
-            {name:"new-releases", icon:"lock", title:"เข้าสู่ระบบ"},
-            {name:"new-releases", icon:"info", title:"นโยบายความเป็นส่วนตัว"},
+            {name:"signin", icon:"lock", title:"เข้าสู่ระบบ"},
+            {name:"help", icon:"help", title:"ความช่วยเหลือ", submenu:[
+              {name:"tos", path:"/about/tos", icon:"info", title:"เงื่อนไขการให้บริการ", },
+              {name:"policy", path:"/about/policy", icon:"info", title:"นโยบายความเป็นส่วนตัว"},
+            ]},
           ];
-          this.userMenu = null; /*[
+          this.userMenu = null;
+
+           /*[
             { name: "/user/profile",
               icon: "face",
               title: "สมาชิก",
