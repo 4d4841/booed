@@ -30,27 +30,31 @@
         margin-top: 50px;
         width: 240px;
         height: 240px;
-        border-radius: 50%;
-        padding: 20px;
+        border-radius: 20%;
+        padding: 10px;
         overflow: hidden;
         @apply(--layout-vertical);
         @apply(--layout-center);
+        --paper-card-content: {
+          box-shadow: inset 0px 5px 6px -3px rgba(255, 0, 0, 1.0);
+        }
       }
 
       .button {
         width: 80px;
         height: 80px;
+      }
+
+      .logo-button {
+        width: 400px;
+        height: 100px;
+        margin-left: 15px;
+          border-radius: 0;
         --paper-button: {
-          @apply(--layout-vertical);
-          @apply(--layout-start-justified);
-          font-family: 'Mitr', sans-serif;
-          font-size: 16px;
-          font-weight: bold;
-          background: lime;
-          color: white;
-          padding: 20px;
+          border-radius: 0;
         }
       }
+
 
       a:link {
             text-decoration: none;
@@ -59,13 +63,13 @@
     </style>
 
   <paper-card>
-      <a href="/">
-    <img style="padding:20px;margin:0;margin-left:12px;" src="/images/logo-bounce-in.svg">
-      </a>
-      <a href="https://github.com/4d4841/booed">
-    <paper-icon-button src="https://assets-cdn.github.com/images/modules/logos_page/Octocat.png" class="button layout vertical center-justified">
-    </paper-icon-button>
-      </a>
+        <a href="/">
+      <paper-icon-button src="/images/logo-bounce-in.svg" class="logo-button layout vertical center-justified" noink>
+        </a>
+        <a href="https://github.com/4d4841/booed">
+      <paper-icon-button src="https://assets-cdn.github.com/images/modules/logos_page/Octocat.png" class="button layout vertical center-justified" noink>
+      </paper-icon-button>
+        </a>
   </paper-card>
 
   </template>
