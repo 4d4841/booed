@@ -1,3 +1,16 @@
+<!DOCTYPE html>
+<!--
+ .................................................................................................
+:::BSDB'::BSDB'::BSDB':::::BSDB':::BSDBS'::BSDBS'::BSDB'::::BSD'::BSDBS'::BSDBS'::BSDB'::::::BSD'::
+::BSDBSD BSDBSD :.BSDBS':BSDBS .:BSD ..BSD  ...BSD 'BSDBS':BSD .BSD ..BSD  ...BSD :BSDBS'::BSDB .::
+::COPYRIGHT2017 ::.BS BSDB .BS :BSD .::.BSD :::.BSD :BS .BSDB .BSD .:::BSD ::::BSD :BS BSDB BS .:::
+:::BSDSTYLEBSD .:::BS  BS .:BS :BSD ::::BSD ::::BSD :BS ::BSD :BSD :::::...::::BSD :BS :BS  BS ::::
+::::.LICENSE .::::BSD .:..::BS 'BSD ::::BSD ::::BSD :BS :::BS :BSD ::BSDBS'::::BSD :BS ::..:BS ':::
+:::::::BSD .::::BSDB .::::::BSD 'BSD'::BSD .:::BSD .BSD :::BSD':BSD'::.BSD :::BSD .BSD :::::BSDB'::
+::::::::B .::::::BS .:::::::.BSD ::BSDBS .:BSDBS  :BSD .::::BSD :.BSDBS BS BSDB .:BSD .:::::.BS .::
+`::::::::.::::::::..::::::::::...:::.....:::.....:::...::::::...:::.............:::...::::::::..::'
+-->
+
 <link rel="import" href="../bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
@@ -272,16 +285,13 @@
       }
 
       _getPhotoIndex() {
-        this.__photoIndex++;
-        return 1+this.__photoIndex%10;
-        /*
-        this.__photoIndex+=getRandomInt(1,5);
-        return 1+this.__photoIndex%102;
-        */
+        this.__photoIndex+=getRandomInt(1,2);
+        return 1+this.__photoIndex%100;
       }
 
       _loadSome(rows) {
         let originalOffset = this.collisionOffset;
+        let u = this.unitWidth*0.75;
         while (this.collisionOffset < originalOffset + rows) {
 
           for (let j = 0; j < 5; j++) {
@@ -294,7 +304,8 @@
               y: 0,
               w: w,
               h: h,
-              photo: "https://lorempixel.com/"+(w*100)+"/"+(h*100)+"/cats/"+this._getPhotoIndex(),
+              photo: "/moon-images/moon-"+this._getPhotoIndex()+".jpg",
+              //photo: "https://unsplash.it/"+(w*u)+"/"+(h*u)+"/?random="+this.__photoIndex++,
 
             });
           }
@@ -306,7 +317,8 @@
             y: 0,
             w: w,
             h: h,
-              photo: "https://lorempixel.com/"+(w*100)+"/"+(h*100)+"/cats/"+this._getPhotoIndex(),
+              photo: "/moon-images/moon-"+this._getPhotoIndex()+".jpg",
+              //photo: "https://unsplash.it/"+(w*u)+"/"+(h*u)+"/?random="+this.__photoIndex++,
           });
 
         }
