@@ -21,10 +21,10 @@
         margin: 0;
         /*
         border: 1px solid red;
-        background: yellow;
         */
       }
 
+      /*
       .grid-image {
         position: absolute;
         overflow: hidden;
@@ -32,6 +32,7 @@
         border: 4px solid transparent;
         border-radius: 10px;
       }
+      */
 
       iron-list {
       }
@@ -39,9 +40,12 @@
       #grid {
       }
 
-      mg-image {
+      .grid-image {
+        display: block;
+        position: absolute;
         --mg-image: {
           box-sizing: border-box;
+          border-radius: 5px;
         };
       }
 
@@ -74,7 +78,12 @@
     <paper-card image="[[item.photo]]" style$="[[_computePaperCardItemStyle(item,unitWidth,index,4)]]">
     </paper-card>
       -->
-      <mg-image src="[[item.photo]]" style$="[[_computeItemStyle(item,unitWidth,index,2)]]"></mg-image>
+      <dom-if if="[[_itemInOffsetRange(item)]]">
+    <template>
+      <mg-image class="grid-image" src="[[item.photo]]" style$="[[_computeItemStyle(item,unitWidth,index,2)]]"></mg-image>
+    </template>
+      </dom-if>
+
     </template>
       </dom-repeat>
 
@@ -300,16 +309,20 @@ var moon_photos = [
           value: [],
         },
 
-        _sizeMap: {
+        sizeMap: {
           type: Object,
           value: {}
         },
 
-        /* TODO change collisionMap to an object and only keep row with -1 */
+        /* 2D-Array of boolens,once first rows are all-true
+        then they will be shifted out then ++offset */
         collisionMap: {
           type: Array,
-          value: [],
-          notify: true
+          value: []
+        },
+        collisionOffset: {
+          type: Number,
+          value: 0
         },
 
         numberOfColumns: {
@@ -322,10 +335,24 @@ var moon_photos = [
 
       _numberOfColumnsChanged(newNumColumns) {
         if (newNumColumns == this.numberOfColumns) return;
-        this._sizeMap = {};
+        this.sizeMap = {};
         this.collisionMap = [];
+        this.collisionOffset = 0;
         this.gridItems = [];
         this.$.grid.items = [];
+      }
+
+      /* row and col starts at 1 1 */
+      _testCollision(row,col) {
+        if (row <= this.collisionOffset) {
+          return true;
+        }
+        return this.collisionMap[row-1-this.collisionOffset][col-1];
+      }
+
+      _itemInOffsetRange(item) {
+        if (item.y <= this.collisionOffset+1) return true;
+        return false;
       }
 
       _appendItem(anItem, rtl) {
@@ -333,7 +360,7 @@ var moon_photos = [
 
         let ew = anItem.width ? Math.ceil(anItem.width * this.numberOfColumns) : anItem.w;
         let eh = anItem.height ? Math.ceil(anItem.height * this.numberOfColumns) : anItem.h;
-        let szmpKey = ew+','+eh;
+        let sizeMapKey = ew+','+eh;
 
         anItem.w = ew;
         anItem.h = eh;
@@ -343,14 +370,11 @@ var moon_photos = [
           return;
         }
 
-        let szmp = this._sizeMap;
-        let clmp = this.collisionMap;
-
-        if (! szmp[szmpKey]) {
-          szmp[szmpKey] = 1;
+        if (! this.sizeMap[sizeMapKey]) {
+          this.sizeMap[sizeMapKey] = 1;
         }
 
-        let py1 = szmp[szmpKey];
+        let py1 = this.sizeMap[sizeMapKey];
         let py2 = py1 + eh - 1;
         let px2 = rtl ? this.numberOfColumns : ew;
         let px1 = rtl ? px2 - ew + 1 : 1;
@@ -359,10 +383,10 @@ var moon_photos = [
         while (true) {
           while (px2 <= this.numberOfColumns && px1 >= 1) {
 
-            while (clmp.length < py2) {
+            while ((this.collisionMap.length+this.collisionOffset) < py2) {
               let r = [];
-              while (r.length < this.numberOfColumns) r.push(0);
-              this.push('collisionMap',r);
+              while (r.length < this.numberOfColumns) r.push(false);
+              this.collisionMap.push(r);
             }
 
             let hasCollision = false;
@@ -370,7 +394,7 @@ var moon_photos = [
 
             for (let ri = py1; ri <= py2; ++ri) {
             for (let ci = px1; ci <= px2; ++ci) {
-              if (clmp[ri-1][ci-1] != 0) {
+              if (this._testCollision(ri,ci)) {
                 hasCollision = true;
                 break test_collision;
               }
@@ -378,17 +402,31 @@ var moon_photos = [
             }
 
             if (!hasCollision) {
-              szmp[szmpKey] = py1;
+              this.sizeMap[sizeMapKey] = py1;
               anItem.x = px1;
               anItem.y = py1;
 
               /* Fill collision map */
               for (let ri = py1; ri <= py2; ++ri) {
               for (let ci = px1; ci <= px2; ++ci) {
-                clmp[ri-1][ci-1] = ri+ci;
+                this.collisionMap[ri-1-this.collisionOffset][ci-1] = true;
               }
               }
-              clmp[py1-1][px1-1] = anItem;
+
+              let firstRowFilled;
+              do {
+                firstRowFilled = true;
+                for (let ci = this.numberOfColumns-1; ci >= 0; --ci) {
+                  if (!this.collisionMap[0][ci]) {
+                    firstRowFilled = false;
+                    break;
+                  }
+                }
+                if (firstRowFilled) {
+                  this.collisionOffset++;
+                  this.collisionMap.shift();
+                }
+              } while (firstRowFilled && this.collisionMap.length);
 
               break seeking;
             }
@@ -409,7 +447,8 @@ var moon_photos = [
         }
 
         this.push('gridItems',anItem);
-        this.style.height = (this.collisionMap.length * this.unitWidth)+"px";
+        this.style.height = (this.collisionOffset*this.unitWidth)+"px";
+        //this.style.height = ((this.collisionMap.length+this.collisionOffset)*this.unitWidth)+"px";
         //this.$.grid.push('items', anItem);
         //this.$.griditems.push(anItem);
       }
@@ -422,13 +461,14 @@ var moon_photos = [
         this.addEventListener('iron-resize', this._onResizeEvent);
 
         this.photoIndex = 0;
-//        this._load();
+        this._load();
 //        this._appender()
       }
 
       _load(what) {
 
-        if (this.collisionMap.length > 3000) return;
+        if (this.collisionMap.length+this.collisionOffset > 3000) return;
+
 
         if (this._loading) this._loading.cancel();
         this._loading = Polymer.Debouncer.debounce(this._loading,
@@ -442,7 +482,8 @@ var moon_photos = [
       }
 
       _loadSome() {
-        for (let i = 0; i < 2; i++) {
+        let originalOffset = this.collisionOffset;
+        while (this.collisionOffset < originalOffset + 10) {
 
           for (let j = 0; j < 5; j++)
           this._appendItem({
@@ -461,22 +502,6 @@ var moon_photos = [
             photo: moon_photos[this._getIndex()%moon_photos.length],
           });
 
-          for (let j = 0; j < 5; j++)
-          this._appendItem({
-            x: 0,
-            y: 0,
-            w: getRandomInt(1,3),
-            h: getRandomInt(1,3),
-            photo: moon_photos[this._getIndex()%moon_photos.length],
-          },true);
-
-          this._appendItem({
-            x: 0,
-            y: 0,
-            w: getRandomInt(2,7),
-            h: getRandomInt(2,7),
-            photo: moon_photos[this._getIndex()%moon_photos.length],
-          },true);
         }
         this.$.scrollThreshold.clearTriggers();
       }
@@ -538,7 +563,7 @@ var moon_photos = [
         let unit = "px";
         let x = item.x - 1;
         let y = item.y - 1;
-        let ret = "display: block;position: absolute";
+        let ret = "";
         ret += ";width: "+ Math.floor(blockSize * item.w - inset * 2) + unit;
         ret += ";height: "+ Math.floor(blockSize * item.h - inset * 2) + unit;
         ret += ";left: "+ Math.floor(blockSize * x + inset) + unit;

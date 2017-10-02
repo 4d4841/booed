@@ -858,7 +858,7 @@
       _pageChanged(page, oldPage) {
         this.dispatchEvent(new CustomEvent('close-contextual-menu', {
           bubbles: true, composed: true, detail:{sender:null}}));
-          
+
         if (page != null) {
           // home route is eagerly loaded
           if (page == 'home') {
