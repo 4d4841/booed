@@ -309,6 +309,7 @@
 
       _onResizeEvent(e) {
           this.unitWidth = this.offsetWidth/this.numberOfColumns;
+          /*
           let maxH = 1,
               maxW = 1;
           for (let i = 0, it; it = this.gridItems[i]; ++i) {
@@ -317,8 +318,9 @@
             let mw = it.x + it.w;
             if (mw > maxW) maxW = mw;
           }
-//          this.style.height = (maxH * this.unitWidth)+"px";
-//          this.style.width = (maxW * this.unitWidth)+"px";
+          this.style.height = (maxH * this.unitWidth)+"px";
+          this.style.width = (maxW * this.unitWidth)+"px";
+          */
       }
 
       _computePaperCardItemStyle(item, blockSize, index, inset) {
