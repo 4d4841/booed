@@ -487,7 +487,13 @@
           <div class="layout horizontal" style="position:absolute;left:0">
             <dom-if if="[[_shouldRenderDrawer]]">
           <template>
-          <mg-badge-button id="menu-button" on-tap="_toggleDrawer" icon="menu" path-style="fill:tomato" value=""></mg-badge-button>
+          <mg-badge-button
+            id="menu-button"
+            on-tap="_toggleDrawer"
+            icon="menu"
+            path-style="fill:tomato"
+            value="">
+          </mg-badge-button>
           </template>
             </dom-if>
           </div>
@@ -503,29 +509,40 @@
           <mg-badge-button id="fmPicker" icon="wc" path-style="fill:lightpink" ></mg-badge-button>
           <mg-badge-button id="languae-button" icon="language" path-style="fill:blue" ></mg-badge-button>
           <mg-cart-button id="cart-button" cart="{{cart}}" ></mg-cart-button>
-          <mg-user-button id="user-button" route="{{route}}" me="{{me}}" menu="[[userMenu.0.submenu]]" firebase-app="[[appInstance]]"></mg-user-button>
+          <mg-user-button id="user-button" route="{{route}}" me="[[me]]" menu="[[userMenu.0.submenu]]" firebase-app="[[appInstance]]"></mg-user-button>
           </div>
 
         </div>
         <div class="menu-bar" style="border-top: 1px dashed var(--booed-menu-color)" hidden$="[[!_shouldShowTabs]]">
               <dom-if if="[[_shouldRenderTabs]]">
             <template>
-          <paper-tabs selected="{{selectedMenu}}" hide-scroll-buttons scrollable fit-container noink>
-              <dom-repeat items="[[menu]]">
+          <paper-tabs
+            attr-for-selected="name"
+            selected="{{menuTarget.page}}"
+            hide-scroll-buttons
+            scrollable
+            fit-container
+            noink>
+
+              <dom-repeat items="[[menuTarget.menu]]">
             <template>
               <paper-tab
                 name="[[item.name]]"
                 on-tap="_onMenuTap">
                 <iron-icon icon="[[item.icon]]"></iron-icon>
+
                 [[item.title]]
+
                   <dom-if if="[[item.submenu]]">
                 <template>
                 <iron-icon icon="expand-more"></iron-icon>
                 </template>
                   </dom-if>
+
               </paper-tab>
             </template>
               </dom-repeat>
+
           </paper-tabs>
             </template>
               </dom-if>
@@ -548,7 +565,7 @@
           <h3 class="self-center">[[me.User.displayName]]</h3>
         </div>
         <mg-menu id="user-menu" menu="[[userMenu]]" page$="[[page]]"></mg-menu>
-        <mg-menu id="app-menu" menu="[[menu]]"></mg-menu>
+        <mg-menu id="app-menu" menu="[[menuTarget.menu]]"></mg-menu>
       </div>
     </app-drawer>
     </template>
@@ -640,14 +657,24 @@
       static get is() { return 'mg-app'; }
 
       static get properties() { return {
+        route: {
+          type: Object,
+          notify: true
+        },
+
+        subroute: {
+          type: Object,
+          notify: true
+        },
+
         page: {
           type: String,
           reflectToAttribute: true,
           observer: '_pageChanged'
         },
 
-        menu: {
-          type: Array,
+        menuTarget: {
+          type: Object,
         },
 
         submenu: {
@@ -739,7 +766,6 @@
         '_routePageChanged(routeData.page)',
 //        '_categoriesDataChanged(categoriesData)',
         '_productsDataChanged(productsData.splices)',
-        '_onMyPhotoChanged(me.User.photoURL)',
       ]}
 
       constructor() {
@@ -747,10 +773,11 @@
         window.performance && performance.mark && performance.mark('mg-app.created');
       }
 
+      /*
       disconnectedCallback() {
-        console.log("disconnect");
         super.disconnectedCallback();
       }
+      */
 
       connectedCallback() {
         super.connectedCallback();
@@ -798,10 +825,6 @@
       _computeMeIcon(photo) {
         if (photo) return null;
         return "ghost";
-      }
-
-      _onMyPhotoChanged(photo) {
-        /*console.log("me", me);*/
       }
 
       _openProfile(e) {
@@ -931,7 +954,7 @@
         // Scroll to the top of the page when navigating to a non-list page. For list view,
         // scroll to the last saved position only if the category has not changed.
         let scrollTop = 0;
-        if (this.page === 'list') {
+        if (this.page === 'home') {
           if (this.categoryName === detail.category) {
             scrollTop = this._listScrollTop;
           } else {
@@ -947,14 +970,15 @@
 
         // Announce the page's title
         if (detail.title) {
-          document.title = 'B o o e d : ' + detail.title;
+          document.title = detail.title + " - Booed";
           this._announce(detail.title + ', loaded');
         }
 
-        if (detail.menu) {
+        if (detail.target) {
           this._closeSubmenu(event);
-          this.menu = detail.menu;
-          this.selectedMenu = detail.menu.selected ? detail.menu.selected : 0;
+          this.menuTarget = detail.target;
+          this.notifyPath('menuTarget.menu');
+//          this.page = detail.target.selected ? detail.target.selected : 0;
         }
       }
 
@@ -973,17 +997,16 @@
         this.dispatchEvent(new CustomEvent('close-contextual-menu', {
           bubbles: true, composed: true, detail:{sender:this}}));
 
-        for(let i = 0, sub; sub = this.menu[i]; ++i) {
-          if (this.menu[i].name == e.target.name && this.menu[i].submenu) {
-            if (this.submenu == this.menu[i].submenu) {
+        for(let i = 0, sub; sub = this.menuTarget.menu[i]; ++i) {
+          if (this.menuTarget.menu[i].name == e.target.name && this.menuTarget.menu[i].submenu) {
+            if (this.submenu == this.menuTarget.menu[i].submenu) {
               this._closeSubmenu(e);
               return;
             }
 
             var target = e.composedPath()[0];
             this.$.balloon.positionTarget = target;
-            this.$.balloon.positionTarget = target;
-            this.submenu = this.menu[i].submenu;
+            this.submenu = this.menuTarget.menu[i].submenu;
             this.__WillRefitSubmenuDebouncer = Polymer.Debouncer.debounce(this.__WillRefitSubmenuDebouncer,
               Polymer.Async.timeOut.after(10),
               this._willRefit.bind(this));
@@ -1007,7 +1030,7 @@
 
               /*
               if (e.type == "mouseover") {
-                this.submenu = this.menu[i].submenu;
+                this.submenu = this.menuTarget.menu[i].submenu;
                 this._openSubmenu(e);
 
               } else if (e.type == "mouseout") {

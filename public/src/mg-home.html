@@ -8,13 +8,12 @@
   <template strip-whitespace>
     <style>
       :host {
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
+        @apply(--layout-vertical);
+        @apply(--layout-center);
       }
     </style>
 
     <mg-grid style="width: calc(100% - 10px)"></mg-grid>
-
 
   </template>
   <script>
@@ -57,14 +56,10 @@
         },
       }}
 
-      connectedCallback() {
-        super.connectedCallback();
-      }
-
       _visibleChanged(visible) {
         if (visible) {
           this.dispatchEvent(new CustomEvent('change-section', {
-            bubbles: true, composed: true, detail: {title: 'Home : 👻', menu:this.menu}}));
+            bubbles: true, composed: true, detail: {title: 'Home : 👻', target:this}}));
         }
       }
 

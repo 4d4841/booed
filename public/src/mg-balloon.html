@@ -19,9 +19,9 @@
 
 <dom-module id="mg-balloon">
   <template>
-    <style>
+      <custom-style>
+    <style include="iron-flex iron-flex-alignment">
       :host {
-        height:10px;
       }
 
       .hidden {
@@ -29,8 +29,6 @@
       }
 
       #arrow {
-        width: 100%;
-        height: 10px;
         @apply(--layout-vertical);
         @apply(--layout-center);
       }
@@ -41,6 +39,7 @@
         left: calc(50% - 8px);
       }
     </style>
+      </custom-style>
 
     <div id="arrow">
       <svg class="arrow-element">

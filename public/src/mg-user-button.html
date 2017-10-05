@@ -121,9 +121,10 @@
         </filter>
       </defs>
       <path
-         id="arrow-shadow"
-         d="M 29,41 13,41 21,31 Z"
-         style="opacity:0.3;fill:#000000;stroke:none;filter:url(#blurshadow);" />
+        transform="translate(13,31)"
+        id="arrow-shadow"
+        d="M 16,10 0,10 8,0 Z"
+        style="opacity:0.3;fill:#000000;stroke:none;filter:url(#blurshadow);" />
     </svg>
 
     <paper-card id="id-card">
@@ -137,9 +138,10 @@
 
     <svg class="arrow">
       <path
-         id="arrow"
-         d="M 28,40 12,40 20,30 Z"
-         style="fill:#ffffff;stroke:none;" />
+        transform="translate(13,31)"
+        id="arrow"
+        d="M 16,10 0,10 8,0 Z"
+        style="fill:#ffffff;stroke:none;" />
     </svg>
       </template>
         </dom-if>
@@ -208,7 +210,6 @@
       }
 
       _closeSubmenu(e) {
-        console.log("rec",e.detail);
         if (e.detail.sender != this) {
           this.showPanel = false;
         }
@@ -219,7 +220,7 @@
       }
 
       _onButtonClick(e) {
-        if (!this.me.User) {
+        if (!this.me || !this.me.User) {
           this._openProfile(e);
         } else if (!this.route.path.startsWith("/user")) {
           this.showPanel = !this.showPanel;
@@ -232,14 +233,8 @@
 
       _openProfile(e) {
         this.showPanel = false;
-        this.set('route.path','user');
+        this.set('route.path','/user/');
       }
-
-      _signOut(e) {
-        this.showPanel = false;
-        this.firebaseApp.auth().signOut();
-      }
-
 
     }
 
