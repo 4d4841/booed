@@ -261,8 +261,8 @@
 
             if (!hasCollision) {
               this.sizeMap[eh][ew] = pN;
-              anItem.x = pW+1;
-              anItem.y = pN+1;
+              anItem.x = pW;
+              anItem.y = pN;
 
               /* Fill collision map */
               for (let ri = pN; ri <= pS; ++ri) {
@@ -312,9 +312,9 @@
           let maxH = 1,
               maxW = 1;
           for (let i = 0, it; it = this.gridItems[i]; ++i) {
-            let mh = it.y + it.h - 1;
+            let mh = it.y + it.h;
             if (mh > maxH) maxH = mh;
-            let mw = it.x + it.w - 1;
+            let mw = it.x + it.w;
             if (mw > maxW) maxW = mw;
           }
 //          this.style.height = (maxH * this.unitWidth)+"px";
@@ -329,8 +329,8 @@
         if (!inset) inset = 0;
         if (!blockSize) blockSize = this.offsetWidth/this.numberOfColumns;
         let unit = "px";
-        let x = item.x - 1;
-        let y = item.y - 1;
+        let x = item.x;
+        let y = item.y;
         let ret = "";
         ret += ";width: "+ Math.floor(blockSize * item.w - inset * 2) + unit;
         ret += ";height: "+ Math.floor(blockSize * item.h - inset * 2) + unit;
