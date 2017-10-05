@@ -32,20 +32,7 @@
         @apply --layout-vertical;
         padding: 0;
         margin: 0;
-        /*
-        border: 1px solid red;
-        */
       }
-
-      /*
-      .grid-image {
-        position: absolute;
-        overflow: hidden;
-        box-sizing: border-box;
-        border: 4px solid transparent;
-        border-radius: 10px;
-      }
-      */
 
       iron-list {
       }
@@ -61,13 +48,6 @@
           border-radius: 5px;
         };
       }
-
-      /*
-      paper-card {
-        border-radius: 5px;
-        overflow: hidden;
-      }
-      */
 
     </style>
       </custom-style>
@@ -119,6 +99,8 @@
           value: [],
         },
 
+        /* This is for marking the last tested row (for each type of item)
+           to avoid testing from the top rows. */
         sizeMap: {
           type: Object,
           value: {}
@@ -130,6 +112,8 @@
           type: Array,
           value: []
         },
+
+        /* marking top rows that are continuously filled */
         collisionOffset: {
           type: Number,
           value: 0
@@ -143,126 +127,6 @@
 
       }}
 
-      _numberOfColumnsChanged(newNumColumns) {
-        if (newNumColumns == this.numberOfColumns) return;
-        this.sizeMap = {};
-        this.collisionMap = [];
-        this.collisionOffset = 0;
-        this.gridItems = [];
-        this.$.grid.items = [];
-      }
-
-      /* row and col starts at 1 1 */
-      _testCollision(row,col) {
-        if (row <= this.collisionOffset) {
-          return true;
-        }
-        return this.collisionMap[row-1-this.collisionOffset][col-1];
-      }
-
-      _itemInOffsetRange(item) {
-        if (item.y <= this.collisionOffset+1) return true;
-        return false;
-      }
-
-      _appendItem(anItem, rtl) {
-        rtl = rtl ? true : false;
-
-        let ew = anItem.width ? Math.ceil(anItem.width * this.numberOfColumns) : anItem.w;
-        let eh = anItem.height ? Math.ceil(anItem.height * this.numberOfColumns) : anItem.h;
-        let sizeMapKey = ew+','+eh;
-
-        anItem.w = ew;
-        anItem.h = eh;
-
-        if (ew > this.numberOfColumns) {
-          console.log(anItem, "is too wide").
-          return;
-        }
-
-        if (! this.sizeMap[sizeMapKey]) {
-          this.sizeMap[sizeMapKey] = 1;
-        }
-
-        let py1 = this.sizeMap[sizeMapKey];
-        let py2 = py1 + eh - 1;
-        let px2 = rtl ? this.numberOfColumns : ew;
-        let px1 = rtl ? px2 - ew + 1 : 1;
-
-        seeking:
-        while (true) {
-          while (px2 <= this.numberOfColumns && px1 >= 1) {
-
-            while ((this.collisionMap.length+this.collisionOffset) < py2) {
-              let r = [];
-              while (r.length < this.numberOfColumns) r.push(false);
-              this.collisionMap.push(r);
-            }
-
-            let hasCollision = false;
-            test_collision:
-
-            for (let ri = py1; ri <= py2; ++ri) {
-            for (let ci = px1; ci <= px2; ++ci) {
-              if (this._testCollision(ri,ci)) {
-                hasCollision = true;
-                break test_collision;
-              }
-            }
-            }
-
-            if (!hasCollision) {
-              this.sizeMap[sizeMapKey] = py1;
-              anItem.x = px1;
-              anItem.y = py1;
-
-              /* Fill collision map */
-              for (let ri = py1; ri <= py2; ++ri) {
-              for (let ci = px1; ci <= px2; ++ci) {
-                this.collisionMap[ri-1-this.collisionOffset][ci-1] = true;
-              }
-              }
-
-              let firstRowFilled;
-              do {
-                firstRowFilled = true;
-                for (let ci = this.numberOfColumns-1; ci >= 0; --ci) {
-                  if (!this.collisionMap[0][ci]) {
-                    firstRowFilled = false;
-                    break;
-                  }
-                }
-                if (firstRowFilled) {
-                  this.collisionOffset++;
-                  this.collisionMap.shift();
-                }
-              } while (firstRowFilled && this.collisionMap.length);
-
-              break seeking;
-            }
-
-            if (rtl) {
-              --px1;
-              --px2;
-            } else {
-              ++px1;
-              ++px2;
-            }
-          }
-
-          px2 = rtl ? this.numberOfColumns : ew;
-          px1 = rtl ? px2 - ew + 1 : 1;
-          ++py1;
-          ++py2;
-        }
-
-        this.push('gridItems',anItem);
-        this.style.height = (this.collisionOffset*this.unitWidth)+"px";
-        //this.style.height = ((this.collisionMap.length+this.collisionOffset)*this.unitWidth)+"px";
-        //this.$.grid.push('items', anItem);
-        //this.$.griditems.push(anItem);
-      }
-
       static get observers() { return [
       ]}
 
@@ -272,6 +136,11 @@
 
         this.__photoIndex = getRandomInt(0,1000);
         this._load();
+      }
+
+      disconnectedCallback() {
+        this.removeEventListener('iron-resize', this._onResizeEvent);
+        super.disconnectedCallback();
       }
 
       _load(what) {
@@ -325,10 +194,118 @@
         this.$.scrollThreshold.clearTriggers();
       }
 
-      disconnectedCallback() {
-        this.removeEventListener('iron-resize', this._onResizeEvent);
-        super.disconnectedCallback();
+      _numberOfColumnsChanged(newNumColumns) {
+        if (newNumColumns == this.numberOfColumns) return;
+        this.sizeMap = {};
+        this.collisionMap = [];
+        this.collisionOffset = 0;
+        this.gridItems = [];
+        this.$.grid.items = [];
       }
+
+      _testCollision(row,col) {
+        if (row < this.collisionOffset) {
+          return true;
+        }
+        return this.collisionMap[row-this.collisionOffset][col];
+      }
+
+      _itemInOffsetRange(item) {
+        if (item.y <= this.collisionOffset+1) return true;
+        return false;
+      }
+
+      _appendItem(anItem, rtl) {
+        rtl = rtl ? true : false;
+
+        let ew = anItem.width ? Math.ceil(anItem.width * this.numberOfColumns) : anItem.w;
+        let eh = anItem.height ? Math.ceil(anItem.height * this.numberOfColumns) : anItem.h;
+
+        anItem.w = ew;
+        anItem.h = eh;
+
+        if (ew > this.numberOfColumns) {
+          console.log(anItem, "is too wide").
+          return;
+        }
+
+        this.sizeMap[eh] = this.sizeMap[eh] || {[ew]:0};
+        this.sizeMap[eh][ew] = this.sizeMap[eh][ew] || 0;
+
+        let pN = this.sizeMap[eh][ew];
+        let pS = pN + eh - 1;
+        let pE = (rtl ? this.numberOfColumns : ew) - 1;
+        let pW = rtl ? pE - ew + 1 : 0;
+
+        seeking:
+        while (true) {
+          while (pE < this.numberOfColumns && pW >= 0) {
+
+            while ((this.collisionMap.length+this.collisionOffset) <= pS) {
+              let r = [];
+              while (r.length < this.numberOfColumns) r.push(false);
+              this.collisionMap.push(r);
+            }
+
+            let hasCollision = false;
+            test_collision:
+
+            for (let ri = pN; ri <= pS; ++ri) {
+            for (let ci = pW; ci <= pE; ++ci) {
+              if (this._testCollision(ri,ci)) {
+                hasCollision = true;
+                break test_collision;
+              }
+            }
+            }
+
+            if (!hasCollision) {
+              this.sizeMap[eh][ew] = pN;
+              anItem.x = pW+1;
+              anItem.y = pN+1;
+
+              /* Fill collision map */
+              for (let ri = pN; ri <= pS; ++ri) {
+              for (let ci = pW; ci <= pE; ++ci) {
+                this.collisionMap[ri-this.collisionOffset][ci] = true;
+              }
+              }
+
+              let firstRowFilled;
+              do {
+                firstRowFilled = true;
+                for (let ci = this.numberOfColumns-1; ci >= 0; --ci) {
+                  if (!this.collisionMap[0][ci]) {
+                    firstRowFilled = false;
+                    break;
+                  }
+                }
+                if (firstRowFilled) {
+                  this.collisionOffset++;
+                  this.collisionMap.shift();
+                }
+              } while (firstRowFilled && this.collisionMap.length);
+
+              break seeking;
+            }
+
+            pW += rtl ? -1 : 1;
+            pE += rtl ? -1 : 1;
+          }
+
+          pE = (rtl ? this.numberOfColumns : ew) - 1;
+          pW = rtl ? pE - ew + 1 : 0;
+          ++pN;
+          ++pS;
+        }
+
+        this.push('gridItems',anItem);
+        this.style.height = (this.collisionOffset*this.unitWidth)+"px";
+        //this.style.height = ((this.collisionMap.length+this.collisionOffset)*this.unitWidth)+"px";
+        //this.$.grid.push('items', anItem);
+        //this.$.griditems.push(anItem);
+      }
+
 
       _onResizeEvent(e) {
           this.unitWidth = this.offsetWidth/this.numberOfColumns;
