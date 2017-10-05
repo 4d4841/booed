@@ -2,6 +2,8 @@
 
 WIP A simple shop app aims to provide an example which allows collaborations from small & medium size shops by letting anyone to join & sell their products with a single mall front-end.
 
+* [Live Demo](https://be-booed.firebaseapp.com/)
+
 ## Built With
 
 * Polymer
@@ -10,10 +12,6 @@ WIP A simple shop app aims to provide an example which allows collaborations fro
 ## Contributing
 
 ...
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags).
 
 ## Author
 
