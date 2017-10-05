@@ -1,6 +1,9 @@
 # Booed Shop
 
-WIP A simple shop app aims to provide an example which allows collaborations from small & medium size shops by letting anyone to join & sell their products with a single mall front-end.
+A simple shop app aims to provide an example which allows collaborations from small & medium size shops by letting anyone to join & sell their products with a single mall front-end.
+
+This is still a work in progress.
+
 
 * [Live Demo](https://be-booed.firebaseapp.com/)
 
@@ -11,7 +14,7 @@ WIP A simple shop app aims to provide an example which allows collaborations fro
 
 ## Contributing
 
-...
+Not so sure... May be a pull request? You can also let me know at 4d4841@gmail.com.
 
 ## Author
 
@@ -19,10 +22,10 @@ WIP A simple shop app aims to provide an example which allows collaborations fro
 
 ## License
 
-This project is licensed under the FreeBSD License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the FreeBSD License. Please see the [LICENSE.md](LICENSE.md) for details.
 
 ## Acknowledgments
 
-* For some reasons this project was made with the author's love for Moon HyunA, for her 3 cats, for her husband for all her friends and fans with hopes that everybody else will also love and keep supporting her.
+* For some reasons this project was simply made by the author's love for Moon HyunA, for her 3 cats, for her husband, for all her friends and fans with a hope that everybody will also love her. So if you find this project helpful in anyway, please consider stanning Moon HyunA.
 
 [![집으로 들어가는 길이 좋아](http://img.youtube.com/vi/aGaXvPU8dT4/0.jpg)](http://www.youtube.com/watch?v=aGaXvPU8dT4 "집으로 들어가는 길이 좋아")
