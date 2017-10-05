@@ -72,7 +72,7 @@
     </style>
       </custom-style>
 
-      <!-- TODO Use iron-list with a line height equals to the max height of highest item (too prevent being pulled out as an off-screen list entry) -->
+      <!-- TODO Use iron-list with a line height equals to the max height of highest item (to prevent being pulled out as an off-screen list entry) -->
       <dom-repeat
         id="grid"
         items="[[gridItems]]"
@@ -270,7 +270,7 @@
         super.connectedCallback();
         this.addEventListener('iron-resize', this._onResizeEvent);
 
-        this.__photoIndex = 0;
+        this.__photoIndex = getRandomInt(0,1000);
         this._load();
       }
 
@@ -285,7 +285,7 @@
       }
 
       _getPhotoIndex() {
-        this.__photoIndex+=getRandomInt(1,2);
+        this.__photoIndex+=getRandomInt(1,3);
         return 1+this.__photoIndex%100;
       }
 
