@@ -22,7 +22,7 @@
 <link rel="import" href="mg-common-styles.html">
 <link rel="import" href="mg-image.html">
 
-<dom-module id="mg-grid">
+<dom-module id="mg-quilt">
   <template>
       <custom-style>
     <style include="iron-flex iron-flex-alignment">
@@ -37,10 +37,10 @@
       iron-list {
       }
 
-      #grid {
+      #quilt {
       }
 
-      .grid-image {
+      .quilt-image {
         display: block;
         position: absolute;
         --mg-image: {
@@ -54,12 +54,12 @@
 
       <!-- TODO Use iron-list with a line height equals to the max height of highest item (to prevent being pulled out as an off-screen list entry) -->
       <dom-repeat
-        id="grid"
-        items="[[gridItems]]"
+        id="quilt"
+        items="[[quiltItems]]"
         mutable-data>
     <template strip-whitespace>
       <!--
-    <iron-image sizing="cover" style$="[[_computeItemStyle(item,unitWidth,index)]]" class="grid-image" src="[[item.photo]]"></iron-image>
+    <iron-image sizing="cover" style$="[[_computeItemStyle(item,unitWidth,index)]]" class="quilt-image" src="[[item.photo]]"></iron-image>
       -->
       <!--
     <paper-card image="[[item.photo]]" style$="[[_computePaperCardItemStyle(item,unitWidth,index,4)]]">
@@ -67,7 +67,7 @@
       -->
       <dom-if if="[[_itemInOffsetRange(item)]]">
     <template>
-      <mg-image class="grid-image" src="[[item.photo]]" style$="[[_computeItemStyle(item,unitWidth,index,2)]]"></mg-image>
+      <mg-image class="quilt-image" src="[[item.photo]]" style$="[[_computeItemStyle(item,unitWidth,index,2)]]"></mg-image>
     </template>
       </dom-if>
 
@@ -86,15 +86,15 @@
   </template>
   <script>
 
-    class MGGrid extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element) {
-      static get is() { return 'mg-grid'; }
+    class MGQuilt extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element) {
+      static get is() { return 'mg-quilt'; }
 
       static get properties() { return {
         unitWidth: {
           type: Number,
         },
 
-        gridItems: {
+        quiltItems: {
           type: Array,
           value: [],
         },
@@ -143,8 +143,9 @@
         super.disconnectedCallback();
       }
 
-      _load(what) {
+      _load() {
 
+        /* XXX Could use a pagination */
         if (this.collisionMap.length+this.collisionOffset > 3000) return;
 
         if (this._loading) this._loading.cancel();
@@ -196,11 +197,13 @@
 
       _numberOfColumnsChanged(newNumColumns) {
         if (newNumColumns == this.numberOfColumns) return;
+        let existingItems = this.quiltItems;
         this.sizeMap = {};
         this.collisionMap = [];
         this.collisionOffset = 0;
-        this.gridItems = [];
-        this.$.grid.items = [];
+        this.quiltItems = [];
+        this.$.quilt.items = [];
+        existingItems.forEach(this._appendItem, this);
       }
 
       _testCollision(row,col) {
@@ -216,7 +219,7 @@
       }
 
       _appendItem(anItem, rtl) {
-        rtl = rtl ? true : false;
+        rtl = rtl || false;
 
         let ew = anItem.width ? Math.ceil(anItem.width * this.numberOfColumns) : anItem.w;
         let eh = anItem.height ? Math.ceil(anItem.height * this.numberOfColumns) : anItem.h;
@@ -299,11 +302,11 @@
           ++pS;
         }
 
-        this.push('gridItems',anItem);
+        this.push('quiltItems',anItem);
         this.style.height = (this.collisionOffset*this.unitWidth)+"px";
         //this.style.height = ((this.collisionMap.length+this.collisionOffset)*this.unitWidth)+"px";
-        //this.$.grid.push('items', anItem);
-        //this.$.griditems.push(anItem);
+        //this.$.quilt.push('items', anItem);
+        //this.$.quiltItems.push(anItem);
       }
 
 
@@ -312,7 +315,7 @@
           /*
           let maxH = 1,
               maxW = 1;
-          for (let i = 0, it; it = this.gridItems[i]; ++i) {
+          for (let i = 0, it; it = this.quiltItems[i]; ++i) {
             let mh = it.y + it.h;
             if (mh > maxH) maxH = mh;
             let mw = it.x + it.w;
@@ -343,6 +346,6 @@
 
     }
 
-    customElements.define(MGGrid.is, MGGrid);
+    customElements.define(MGQuilt.is, MGQuilt);
   </script>
 </dom-module>
