@@ -52,7 +52,7 @@
     </style>
       </custom-style>
 
-      <!-- TODO Use iron-list with a line height equals to the max height of highest item (to prevent being pulled out as an off-screen list entry) -->
+      <!-- XXX Use iron-list with a line height equals to the max height of highest item (to prevent being pulled out as an off-screen list entry) -->
       <dom-repeat
         id="quilt"
         items="[[quiltItems]]"
@@ -304,6 +304,7 @@
 
         this.push('quiltItems',anItem);
         this.style.height = (this.collisionOffset*this.unitWidth)+"px";
+
         //this.style.height = ((this.collisionMap.length+this.collisionOffset)*this.unitWidth)+"px";
         //this.$.quilt.push('items', anItem);
         //this.$.quiltItems.push(anItem);
@@ -312,6 +313,8 @@
 
       _onResizeEvent(e) {
           this.unitWidth = this.offsetWidth/this.numberOfColumns;
+
+        //XXX If not done properly scroll may disappear
           /*
           let maxH = 1,
               maxW = 1;

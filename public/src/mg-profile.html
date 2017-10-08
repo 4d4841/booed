@@ -272,7 +272,7 @@
 
                   <mg-input>
                 <input value="{{accountEmail::input}}" type="email" id="accountEmail" name="accountEmail" pattern=".{2,50}"
-                    placeholder="email" autofocus
+                    placeholder="email"
                     aria-labelledby="accountEmailLabel accountInfoHeading">
                 <mg-md-decorator error-message="กรุณากรอกอีเมล" aria-hidden="true">
                   <label id="accountEmailLabel"><iron-icon icon="mail"></iron-icon> อีเมล</label>
@@ -282,7 +282,7 @@
 
                   <mg-input>
                 <input value="{{accountPassword::input}}" type="password" id="accountPassword" name="accountPassword" pattern=".{2,50}"
-                    placeholder="พาสเวิร์ด" autofocus
+                    placeholder="พาสเวิร์ด"
                     aria-labelledby="accountPasswordLabel accountInfoHeading">
                 <mg-md-decorator error-message="กรอกพาสเวิร์ด" aria-hidden="true">
                   <label id="accountPasswordLabel"><iron-icon icon="key"></iron-icon> พาสเวิร์ด</label>
@@ -312,7 +312,7 @@
               </div>
 
               <paper-button class="button" on-click="_signOut" class="layout horizontal center-justified">
-              <iron-icon icon="coffee" style="color:tomato"></iron-icon> ออกจากระบบ
+              <iron-icon icon="local-cafe" style="color:tomato"></iron-icon> ออกจากระบบ
               </paper-button>
             <!-- End: user panel -->
           </template>
@@ -399,17 +399,11 @@
           value: false
         },
 
-        visible: {
-          type: Boolean,
-          reflectToAttribute: true,
-          value: false
-        },
-
       }}
 
       static get observers() { return [
         '_appInitialized(firebaseApp)',
-        '_visualChanged(visible)',
+        '_visibleChanged(visible)',
         '_waitingChanged(me.waiting)',
       ]}
 
@@ -421,7 +415,8 @@
         }
       }
 
-      _visualChanged(visible) {
+      _visibleChanged(visible) {
+        console.log("visible");
         if (this.visible) {
           this.dispatchEvent(new CustomEvent('change-section', {
             bubbles: true, composed: true, detail: {title: 'Profile'}}));
@@ -454,7 +449,6 @@
       }
 
       _googleSignIn(e) {
-        //this._pushState('waiting');
         this.state = 'waiting';
 
         this.firebaseApp.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(
@@ -471,7 +465,7 @@
 
       _signOut(e) {
         this.firebaseApp.auth().signOut();
-        this._pushState("init");
+        this.state = "init";
       }
 
       _calculateAvatarStyle(url) {
