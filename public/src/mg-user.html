@@ -15,17 +15,14 @@
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="../bower_components/paper-card/paper-card.html">
-<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="mg-input.html">
-<link rel="import" href="mg-image.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="mg-profile.html">
+<link rel="import" href="mg-items.html">
 
 <dom-module id="mg-user">
   <template strip-whitespace>
       <custom-style>
-    <style is="custom-style" include="mg-common-styles mg-input iron-flex iron-flex-alignment">
+    <style is="custom-style" include="mg-common-styles iron-flex iron-flex-alignment">
       :host {
       }
 
@@ -52,9 +49,9 @@
       <div name="order">
         show order
       </div>
-      <div name="products">
+      <mg-items id="items" name="items">
         show products
-      </div>
+      </mg-items>
       <div name="store">
         show store
       </div>
@@ -102,6 +99,7 @@
         page: {
           type: String,
           reflectToAttribute: true,
+          notify: true,
           observer: '_pageChanged'
         },
 
@@ -142,13 +140,23 @@
 
       _routeDataChanged( routeData, page ) {
         this.page = routeData.page || 'profile';
-        if (routeData.page != 'profile') {
+        
+        if (this.routeData.page != this.page) {
           this.set('routeData.page', this.page);
         }
+
+        this._pageChanged(page);
       }
 
       _pageChanged( pg ) {
-        console.log("pg is", pg,this.route.prefix,this.route.path);
+        if (this.routeData.page != this.page) {
+          this.set('routeData.page', this.page);
+        }
+        this.dispatchEvent(new CustomEvent('change-section', {
+          bubbles: true,
+          composed: true,
+          detail: {title: pg && pg[0].toUpperCase() + pg.slice(1)}
+         }));
       }
 
       _tabSelected(tab) {
@@ -160,7 +168,12 @@
           this.menu = [
             {name:"profile", path:"/user/profile", icon:"face", title:"โพรไฟล์"},
             {name:"order", path:"/user/order", icon:"credit-card", title:"รายการสั่งซื้อ"},
-            {name:"products", path:"/user/products", icon:"local-mall", title:"ขายสินค้า"},
+            {name:"items", path:"/user/items", icon:"widgets", title:"ไอเท็ม", submenu:[
+              {name:"products", path:"/user/items/products", icon:"local-mall", title:"สินค้า" },
+              {name:"articles", path:"/user/items/articles", icon:"local-library", title:"อาร์ติเคิล" },
+              {name:"collections", path:"/user/items/collections", icon:"group-work", title:"คอลเลคชั่น" },
+              {name:"galleries", path:"/user/items/galleries", icon:"photo-library", title:"แกลเลอรี่" },
+            ]},
             {name:"store", path:"/user/store", icon:"store", title:"ร้าน"},
             {name:"inbox", path:"/user/inbox", icon:"inbox", title:"อินบอกซ์"},
             {name:"help", icon:"help", title:"ความช่วยเหลือ", submenu:[
@@ -174,13 +187,13 @@
               icon: "account-box",
               submenu: [
                 {name:"profile", path:"/user/profile", icon:"face", title:"โพรไฟล์"},
-                {name:"signout", action:"_signOut", icon:"coffee", color:"tomato", title:"ออกจากระบบ"},
+                {name:"signout", action:"_signOut", icon:"local-cafe", color:"tomato", title:"ออกจากระบบ"},
               ]
             }
           ];
         } else {
           this.menu = [
-            {name:"signin", icon:"lock", title:"เข้าสู่ระบบ"},
+            {name:"profile", path:"/user/profile", icon:"lock", title:"เข้าสู่ระบบ"},
             {name:"help", icon:"help", title:"ความช่วยเหลือ", submenu:[
               {name:"tos", path:"/about/tos", icon:"info", title:"เงื่อนไขการให้บริการ", },
               {name:"policy", path:"/about/policy", icon:"info", title:"นโยบายความเป็นส่วนตัว"},
