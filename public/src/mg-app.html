@@ -785,6 +785,8 @@
         // Custom elements polyfill safe way to indicate an element has been upgraded.
         this.removeAttribute('unresolved');
 
+        window.addEventListener('scroll', this._onScroll.bind(this));
+
         var config = {
           apiKey: "AIzaSyDyJuzvmpg4jRPs9VE_Mpne8vdysEZGxbo",
           authDomain: "be-booed.firebaseapp.com",
@@ -806,14 +808,13 @@
         this.addEventListener('set-cart-item', (e)=>this._onSetCartItem(e));
         this.addEventListener('show-invalid-url-warning', (e)=>this._onFallbackSelectionTriggered(e));
 
-        this.addEventListener('close-contextual-menu', this._closeSubmenu.bind(this));
+        this.addEventListener('close-contextual-menu', this._onCloseContextualMenu.bind(this));
 
         Polymer.RenderStatus.afterNextRender(this, () => {
           window.addEventListener('online', (e)=>this._notifyNetworkStatus(e));
           window.addEventListener('offline', (e)=>this._notifyNetworkStatus(e));
         });
 
-        this.$.balloon.style.display = "none";
         this._notifyNetworkStatus();
       }
 
@@ -944,6 +945,8 @@
 
       _toggleDrawer() {
         this.drawerOpened = !this.drawerOpened;
+        this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+          bubbles: true, composed: true, detail:{sender:null}}));
       }
 
       // Elements in the app can notify section changes.
@@ -975,7 +978,7 @@
         }
 
         if (detail.target) {
-          this._closeSubmenu(event);
+          this._closeSubmenu();
           this.menuTarget = detail.target;
           this.notifyPath('menuTarget.menu');
 //          this.page = detail.target.selected ? detail.target.selected : 0;
@@ -994,13 +997,10 @@
       }
 
       _openSubmenu(e) {
-        this.dispatchEvent(new CustomEvent('close-contextual-menu', {
-          bubbles: true, composed: true, detail:{sender:this}}));
-
         for(let i = 0, sub; sub = this.menuTarget.menu[i]; ++i) {
           if (this.menuTarget.menu[i].name == e.target.name && this.menuTarget.menu[i].submenu) {
-            if (this.submenu == this.menuTarget.menu[i].submenu) {
-              this._closeSubmenu(e);
+            if (this.submenu === this.menuTarget.menu[i].submenu) {
+              this._closeSubmenu();
               return;
             }
 
@@ -1013,35 +1013,30 @@
             return;
           }
         }
-        this._closeSubmenu(e);
+        this._closeSubmenu();
       }
 
-      _closeSubmenu(e) {
+      _onScroll(e) {
+        this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+          bubbles: true, composed: true, detail:{sender:null}}));
+      }
+
+      _closeSubmenu() {
+        this.submenu = [];
+        this.$.balloon.style.display = "none";
+      }
+
+      _onCloseContextualMenu(e) {
         if (e.detail.sender != this) {
-          this.submenu = [];
-          this.$.balloon.style.display = "none";
+          this._closeSubmenu();
         }
       }
 
       _onMenuTap(e) {
-        if(e.target && e.target.name) {
+        this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+          bubbles: true, composed: true, detail:{sender:this}}));
 
-            this._openSubmenu(e);
-
-              /*
-              if (e.type == "mouseover") {
-                this.submenu = this.menuTarget.menu[i].submenu;
-                this._openSubmenu(e);
-
-              } else if (e.type == "mouseout") {
-
-                this.__WillCloseSubmenu = Polymer.Debouncer.debounce(this._closeDebouncer,
-                  Polymer.Async.timeOut.after(1000),
-                  this._closeSubmenu.bind(this,e));
-
-              } else console.log("WTF",e.type);
-              */
-        }
+        this._openSubmenu(e);
       }
 
       _onAddCartItem(event) {
