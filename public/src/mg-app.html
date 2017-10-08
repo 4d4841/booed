@@ -509,7 +509,7 @@
           <mg-badge-button id="fmPicker" icon="wc" path-style="fill:lightpink" ></mg-badge-button>
           <mg-badge-button id="languae-button" icon="language" path-style="fill:blue" ></mg-badge-button>
           <mg-cart-button id="cart-button" cart="{{cart}}" ></mg-cart-button>
-          <mg-profile-button id="profile-button" route="{{route}}" me="[[me]]" menu="[[userMenu.0.submenu]]" firebase-app="[[appInstance]]"></mg-profile-button>
+          <mg-profile-button id="profile-button" route="{{route}}" me="[[me]]" menu="[[userMenu]]" firebase-app="[[appInstance]]"></mg-profile-button>
           </div>
 
         </div>
@@ -524,7 +524,7 @@
             fit-container
             noink>
 
-              <dom-repeat items="[[menuTarget.menu]]">
+              <dom-repeat items="[[menuTarget.menu.entries]]">
             <template>
               <paper-tab
                 name="[[item.name]]"
@@ -678,7 +678,7 @@
         },
 
         submenu: {
-          type: Array,
+          type: Object,
         },
 
       /*
@@ -997,16 +997,16 @@
       }
 
       _openSubmenu(e) {
-        for(let i = 0, sub; sub = this.menuTarget.menu[i]; ++i) {
-          if (this.menuTarget.menu[i].name == e.target.name && this.menuTarget.menu[i].submenu) {
-            if (this.submenu === this.menuTarget.menu[i].submenu) {
+        for(let i = 0, sub; sub = this.menuTarget.menu.entries[i]; ++i) {
+          if (this.menuTarget.menu.entries[i].name == e.target.name && this.menuTarget.menu.entries[i].submenu) {
+            if (this.submenu === this.menuTarget.menu.entries[i].submenu) {
               this._closeSubmenu();
               return;
             }
 
             var target = e.composedPath()[0];
             this.$.balloon.positionTarget = target;
-            this.submenu = this.menuTarget.menu[i].submenu;
+            this.submenu = this.menuTarget.menu.entries[i].submenu;
             this.__WillRefitSubmenuDebouncer = Polymer.Debouncer.debounce(this.__WillRefitSubmenuDebouncer,
               Polymer.Async.timeOut.after(10),
               this._willRefit.bind(this));
@@ -1022,7 +1022,7 @@
       }
 
       _closeSubmenu() {
-        this.submenu = [];
+        this.submenu = {};
         this.$.balloon.style.display = "none";
       }
 

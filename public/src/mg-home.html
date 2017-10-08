@@ -23,8 +23,8 @@
       static get properties() { return {
 
         menu: {
-          type: Array,
-          value: [
+          type: Object,
+          value: { entries: [
               /*
             {name:"dresses2", icon:"dresses", title:"เดรส2", submenu:[
               {name:"Xhyun", icon:"dresses", title:"Xฮยอนอา"},
@@ -47,7 +47,7 @@
             {path:"/home/night-dresses", name:"night-dresses", icon:"night-dresses", title:"ชุดนอน"},
             {path:"/home/swimwears", name:"swimwears", icon:"swimwears", title:"ชุดว่ายน้ำ"},
             {path:"/home/sales", name:"sales", icon:"sales-baht", title:"เซลส์"},
-          ]
+          ]}
         },
 
         visible: {
