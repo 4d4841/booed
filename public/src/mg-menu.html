@@ -17,6 +17,11 @@
         --mg-menu-height: 40px;
       }
 
+      a:link {
+        text-decoration: none;
+        color: var(--app-primary-color);
+      }
+
       paper-listbox {
         padding: 0;
         margin: 0;
@@ -73,6 +78,7 @@
         margin: 0;
         @apply(--mg-menu-button);
         --paper-button: {
+          color: var(--app-primary-color);
           @apply(--layout-horizontal);
           @apply(--layout-start-justified);
           @apply(--booed-menu-font);
@@ -110,14 +116,14 @@
     </style>
       </custom-style>
 
-    <paper-listbox>
-        <dom-repeat items="[[menu]]">
+    <paper-listbox selected-item="{{selectedItem}}">
+        <dom-repeat items="[[menu.entries]]">
       <template>
       <!-- has submenu -->
           <dom-if if="[[item.submenu]]">
         <template>
 
-          <paper-item tabindex="-1" class="submenu-item vertical layout start" on-tap="_onTap">
+          <paper-item tabindex="-1" class="submenu-item vertical layout start" on-tap="_onSubmenu">
             <div class="toggle-line horizontal layout center">
               <iron-icon class="menu-item-icon" icon="[[item.icon]]" style="[[_computeIconColorStyle(item)]]"></iron-icon>
                 [[item.title]]
@@ -136,11 +142,28 @@
       <!-- no submenu -->
           <dom-if if="[[!item.submenu]]">
         <template>
-          <paper-item tabindex="-1" class="menu-item horizontal layout center start-justified" on-tap="_onTap">
+          <paper-item tabindex="-1" class="menu-item horizontal layout center start-justified">
+
+              <dom-if if="[[item.path]]">
+            <template>
+            <a href="[[item.path]]">
+            <paper-button style="min-height:var(--mg-menu-height)" class="horizontal layout center">
+              <iron-icon class="menu-item-icon" icon="[[item.icon]]" style="[[_computeIconColorStyle(item)]]"></iron-icon>
+                [[item.title]]
+            </paper-button>
+            </a>
+            </template>
+              </dom-if>
+
+              <dom-if if="[[!item.path]]">
+            <template>
             <paper-button style="min-height:var(--mg-menu-height)" class="horizontal layout center" on-tap="_onMenuButtonTap">
               <iron-icon class="menu-item-icon" icon="[[item.icon]]" style="[[_computeIconColorStyle(item)]]"></iron-icon>
                 [[item.title]]
             </paper-button>
+            </template>
+              </dom-if>
+
           </paper-item>
         </template>
           </dom-if>
@@ -156,11 +179,15 @@
       static get is() { return 'mg-menu'; }
 
       static get properties() { return {
+        selectedItem: {
+          type: Object,
+          notify: true
+        },
 
         menu: {
-          type: Array,
+          type: Object,
           notify: true,
-        }
+        },
       }}
 
       static get observers() { return [
@@ -178,12 +205,13 @@
       }
 
       _onMenuButtonTap(e) {
-        console.log("_onMenu",e.target);
+        if (this.menu.action) {
+          this.menu.action(e);
+        }
       }
 
-      _onTap(e) {
+      _onSubmenu(e) {
         let collapse = e.target.getElementsByTagName("IRON-COLLAPSE")[0];
-//        let collapse = e.target.nextSibling;
         if (collapse && collapse.nodeName == "IRON-COLLAPSE") {
           collapse.toggle();
           let icons = e.target.getElementsByTagName("IRON-ICON");
