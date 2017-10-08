@@ -29,7 +29,7 @@
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-styles/typography.html">
 <link rel="import" href="mg-cart-button.html">
-<link rel="import" href="mg-user-button.html">
+<link rel="import" href="mg-profile-button.html">
 <link rel="import" href="mg-balloon.html">
 <link rel="import" href="mg-home.html">
 <link rel="import" href="mg-menu.html">
@@ -415,7 +415,7 @@
           --booed-title-height: 170px;
         }
 
-        #user-button {
+        #profile-button {
           display: none;
         }
 
@@ -509,7 +509,7 @@
           <mg-badge-button id="fmPicker" icon="wc" path-style="fill:lightpink" ></mg-badge-button>
           <mg-badge-button id="languae-button" icon="language" path-style="fill:blue" ></mg-badge-button>
           <mg-cart-button id="cart-button" cart="{{cart}}" ></mg-cart-button>
-          <mg-user-button id="user-button" route="{{route}}" me="[[me]]" menu="[[userMenu.0.submenu]]" firebase-app="[[appInstance]]"></mg-user-button>
+          <mg-profile-button id="profile-button" route="{{route}}" me="[[me]]" menu="[[userMenu.0.submenu]]" firebase-app="[[appInstance]]"></mg-profile-button>
           </div>
 
         </div>

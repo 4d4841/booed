@@ -4,7 +4,7 @@
 <link rel="import" href="mg-badge-button.html">
 <link rel="import" href="mg-menu.html">
 
-<dom-module id="mg-user-button">
+<dom-module id="mg-profile-button">
   <template strip-whitespace>
     <style>
       .arrow {
@@ -152,8 +152,8 @@
   (function() {
   let memoizedTemplate;
 
-    class MGUserButton extends MGBadgeButton {
-      static get is() { return 'mg-user-button'; }
+    class MGProfileButton extends MGBadgeButton {
+      static get is() { return 'mg-profile-button'; }
 
       static get template() {
         if (!memoizedTemplate) {
@@ -238,7 +238,7 @@
 
     }
 
-    customElements.define(MGUserButton.is, MGUserButton);
+    customElements.define(MGProfileButton.is, MGProfileButton);
   })();
   </script>
 </dom-module>
