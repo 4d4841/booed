@@ -145,8 +145,9 @@
       }
 
       _pageChanged( pg ) {
+        if (!this.visible) return;
         if (this.routeData.page != this.page) {
-          this.set('routeData.page', this.page);
+          this.set('route.path','/'+this.page+'/');
         }
         this.dispatchEvent(new CustomEvent('change-section', {
           bubbles: true,
