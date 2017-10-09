@@ -4,7 +4,7 @@
 <link rel="import" href="mg-quilt.html">
 
 
-<dom-module id="mg-home">
+<dom-module id="mg-list">
   <template strip-whitespace>
     <style>
       :host {
@@ -18,8 +18,8 @@
 
   </template>
   <script>
-    class MGHome extends Polymer.Element {
-      static get is() { return 'mg-home'; }
+    class MGList extends Polymer.Element {
+      static get is() { return 'mg-list'; }
 
       static get properties() { return {
 
@@ -60,12 +60,12 @@
       _visibleChanged(visible) {
         if (visible) {
           this.dispatchEvent(new CustomEvent('change-section', {
-            bubbles: true, composed: true, detail: {title: 'Home', target:this}}));
+            bubbles: true, composed: true, detail: {title: 'List', target:this}}));
         }
       }
 
     }
 
-    customElements.define(MGHome.is, MGHome);
+    customElements.define(MGList.is, MGList);
   </script>
 </dom-module>
