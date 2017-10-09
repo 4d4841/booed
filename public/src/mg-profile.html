@@ -17,6 +17,7 @@
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="mg-input.html">
 <link rel="import" href="mg-image.html">
 
@@ -188,18 +189,9 @@
         border-radius: 0 0 5px 5px;
         background: var(--booed-contents-background);
         z-index: 0;
-        top:10px;
-        position:relative;
-        margin-top:-35px;
         padding: 0px;
         transition: background-color 0.5s, max-height 0.5s ease-in;
-        max-height: 50px;
         overflow: hidden;
-      }
-
-      .main-info[expand] {
-        max-height: 1000px;
-        background: white;
       }
 
       h3  {
@@ -356,8 +348,11 @@
         </div>
       </iron-pages>
     </paper-card>
-        <div on-click="_toggleInfo" class="center vertical end-justified layout main-info" expand$="[[expand]]" hidden="[[_shouldHideInfoPanel(me.User.email,state)]]">
-          <p style="font-size:13px; padding: 20px 10px 0 10px;text-align:justify;text-align-last:center">
+        <div on-click="_toggleInfo" class="main-info center enter vertical end-justified layout" hidden="[[_shouldHideInfoPanel(me.User.email,state)]]">
+
+          <iron-collapse opened="[[expand]]">
+
+          <p style="font-size:13px; padding: 0 10px 0 10px;text-align:justify;text-align-last:center">
             หากคุณยังไม่ลงทะเบียนเป็นสมาชิก คุณสามารถเข้าสู่ระบบสมาชิกด้วย <span style="font-weight:bold">บัญชีกูเกิล</span> ของคุณได้ทันที เพียงกด<br>
             <iron-icon style="margin:5px;padding:0 5px;background-color:tomato;border-radius:5px;color:white;--iron-icon-width:20px;" icon="google"></iron-icon> <br>(หรือ<a href="https://accounts.google.com/SignUp">สร้างบัญชีใหม่</a>ถ้ายังไม่มี)
             <br><br>
@@ -365,9 +360,12 @@
             นอกจากนี้คุณยังสามารถปรับปรุงข้อมูลส่วนตัว รับการแจ้งเตือนเฉพาะสิ่งที่น่าสนใจ
             สมัครหรือยกเลิกบริการข่าวสารและโปรโมชั่นต่างๆ ตลอดจนถึงการเข้าใช้งานฟีเจ้อร์อื่นๆ เช่นการสร้างร้านของคุณเอง เป็นต้น
           </p>
+
+          </iron-collapse>
+
           <iron-icon style="display:block;--iron-icon-width:20px" icon="help"></iron-icon>
-          <!--<paper-icon-button class="info-button" icon="help"></paper-icon-button>-->
         </div>
+
 
   </template>
   <script>
@@ -471,6 +469,7 @@
       _calculateAvatarStyle(url) {
 
       }
+
       _toggleInfo(e) {
         this.expand = !this.expand;
       }
