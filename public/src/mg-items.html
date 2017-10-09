@@ -58,10 +58,10 @@
         menu: {
           type: Object,
           value: { entries: [
-            {name:"products", path:"/user/items/products", icon:"local-mall", title:"สินค้า" },
-            {name:"articles", path:"/user/items/articles", icon:"local-library", title:"อาร์ติเคิล" },
-            {name:"collections", path:"/user/items/collections", icon:"group-work", title:"คอลเลคชั่น" },
-            {name:"galleries", path:"/user/items/galleries", icon:"photo-library", title:"แกลเลอรี่" },
+            {name:"products", icon:"local-mall", title:"สินค้า" },
+            {name:"articles", icon:"local-library", title:"อาร์ติเคิล" },
+            {name:"collections", icon:"group-work", title:"คอลเลคชั่น" },
+            {name:"galleries", icon:"photo-library", title:"แกลเลอรี่" },
           ]}
         },
         newMenu: {
@@ -81,6 +81,17 @@
 //        '_onNewItemSelected(newItemSelected)',
       ]}
 
+      connectedCallback() {
+        super.connectedCallback();
+        window.addEventListener('close-contextual-menu', this._closeSubmenu.bind(this));
+        this.menu.action = this._onSelectedItemType.bind(this);
+        this.newMenu.action = this._onNewItemTap.bind(this);
+      }
+
+      _onSelectedItemType(e) {
+        console.log("should display only", e.model.item.name);
+      }
+
       _onNewItemTap(e) {
         this._closeSubmenu(e);
         if (e.model.item.name == 'gallery') {
@@ -99,12 +110,6 @@
       _onNewItemSelected(newItemSelected) {
       }
       */
-
-      connectedCallback() {
-        super.connectedCallback();
-        window.addEventListener('close-contextual-menu', this._closeSubmenu.bind(this));
-        this.newMenu.action = this._onNewItemTap.bind(this);
-      }
 
       disconnectedCallback() {
         delete this.newMenu.target;

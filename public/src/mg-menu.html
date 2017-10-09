@@ -31,6 +31,14 @@
         margin: 0;
       }
 
+      .expand-button {
+        width: 40px;
+        height: 40px;
+        --paper-icon-button: {
+          border-radius: 5px;
+        };
+      }
+
       iron-collapse {
         /*background-color: rgba(255,99,71,0.05);*/
         /*
@@ -74,6 +82,10 @@
         background: none;
       }
 
+      .menu-item {
+        width: 100%;
+      }
+
       .menu-item
       paper-button {
         height: 100%;
@@ -83,12 +95,14 @@
         margin: 0;
         @apply(--mg-menu-button);
         --paper-button: {
+          text-transform: none;
           color: var(--app-primary-color);
           @apply(--layout-horizontal);
           @apply(--layout-start-justified);
           @apply(--booed-menu-font);
           @apply(--layout-end);
           --paper-button-ink-color: red;
+          overflow: hidden;
         }
       }
 
@@ -99,23 +113,8 @@
         pointer-events: none;
       }
 
-      .toggle-line {
-        pointer-events: none;
-        width: 100%;
-        min-height: var(--mg-menu-height);
-        padding-left: 14px;
-      }
-
-      .opened-indicator {
-        pointer-events: none;
-        margin-right: 20px;
-      }
-
-      .opened-indicator iron-icon {
-        color: tomato;
-        width: 20px;
-        min-width: 20px;
-        padding-left: 5px;
+      div.filler {
+        background-color: red;
       }
 
     </style>
@@ -128,15 +127,28 @@
           <dom-if if="[[item.submenu]]">
         <template>
 
-          <paper-item tabindex="-1" class="submenu-item vertical layout start" on-tap="_onSubmenu">
-            <div class="toggle-line horizontal layout center">
-              <iron-icon class="menu-item-icon" icon="[[item.icon]]" style="[[_computeIconColorStyle(item)]]"></iron-icon>
-                [[item.title]]
-              <div class="opened-indicator layout horizontal flex end-justified">
-                <iron-icon icon="expand-more"></iron-icon>
-              </div>
+          <paper-item tabindex="-1" class="submenu-item vertical layout start">
+
+            <div class="menu-item horizontal layout center" style="width:100%;">
+
+                <dom-if if="[[item]]">
+              <template>
+              <paper-button style="min-height:var(--mg-menu-height)" class="horizontal layout center" on-tap="_onMenuButtonTap">
+                <iron-icon class="menu-item-icon" icon="[[item.icon]]" style="[[_computeIconColorStyle(item)]]"></iron-icon>
+                  [[item.title]]
+              </paper-button>
+              </template>
+                </dom-if>
+
+              <div class="flex filler"></div>
+
+              <paper-icon-button class="expand-button" icon="[[_computeOpenedIcon(item.opened)]]" on-tap="_onSubmenu" noink>
+              </paper-icon-button>
+
             </div>
-            <iron-collapse transitioning="{{trans}}">
+
+
+            <iron-collapse opened="[[item.opened]]" transitioning="{{trans}}">
                 <mg-menu menu="[[item.submenu]]"></mg-menu>
             </iron-collapse>
           </paper-item>
@@ -219,13 +231,21 @@
         }
       }
 
+      _computeOpenedIcon(opened) {
+        return opened ? "expand-less" : "expand-more";
+      }
+
       _onSubmenu(e) {
+        e.model.item.opened = e.model.item.opened || false;
+        e.model.set('item.opened', !e.model.item.opened);
+          /*
         let collapse = e.target.getElementsByTagName("IRON-COLLAPSE")[0];
         if (collapse && collapse.nodeName == "IRON-COLLAPSE") {
           collapse.toggle();
           let icons = e.target.getElementsByTagName("IRON-ICON");
           icons[icons.length-1].icon = collapse.opened ? "expand-less" : "expand-more";
         }
+          */
       }
     }
 
