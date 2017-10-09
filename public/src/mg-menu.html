@@ -17,6 +17,10 @@
         --mg-menu-height: 40px;
       }
 
+      a {
+        width: 100%;
+      }
+
       a:link {
         text-decoration: none;
         color: var(--app-primary-color);
@@ -58,6 +62,7 @@
         padding:0;
         min-height: var(--mg-menu-height);
         @apply(--mg-menu-item);
+        color: var(--app-primary-color);
       }
 
       .submenu-item:last-of-type,
@@ -205,7 +210,11 @@
       }
 
       _onMenuButtonTap(e) {
-        if (this.menu.action) {
+        this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+          bubbles: true, composed: true, detail:{sender:null}}));
+        if (e.model.item.action) {
+          e.model.item.action(e);
+        } else if (this.menu.action) {
           this.menu.action(e);
         }
       }

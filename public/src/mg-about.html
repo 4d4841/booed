@@ -77,6 +77,30 @@
 
     class MGAbout extends Polymer.Element {
       static get is() { return 'mg-about'; }
+
+      static get properties() { return {
+
+        menu: {
+          type: Object,
+          value: { entries: [
+            { name:"tos", path:"/about/tos", icon:"info", title:"เงื่อนไขการให้บริการ", },
+            { name:"policy", path:"/about/policy", icon:"info", title:"นโยบายความเป็นส่วนตัว"},
+          ]}
+        },
+
+        visible: {
+          type: Boolean,
+          observer: '_visibleChanged'
+        },
+      }}
+
+      _visibleChanged(visible) {
+        if (visible) {
+          this.dispatchEvent(new CustomEvent('change-section', {
+            bubbles: true, composed: true, detail: {title: 'About', target:this}}));
+        }
+      }
+
     }
 
     customElements.define(MGAbout.is, MGAbout);

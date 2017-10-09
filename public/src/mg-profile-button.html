@@ -210,7 +210,7 @@
       }
 
       _closeSubmenu(e) {
-        if (e.detail.sender != this) {
+        if (e.detail && e.detail.sender != this) {
           this.showPanel = false;
         }
       }

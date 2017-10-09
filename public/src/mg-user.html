@@ -45,7 +45,7 @@
       <div name="order">
         show order
       </div>
-      <mg-items id="items" name="items">
+      <mg-items id="items" name="items" me="[[me]]" firebase-app="[[firebaseApp]]">
         show products
       </mg-items>
       <div name="store">
@@ -186,8 +186,12 @@
               title: this.me.User.email,
               icon: "account-box",
               submenu: { entries:[
-                { name:"profile", path:"/user/profile", icon:"face", title:"โพรไฟล์"},
-                { name:"signout", action:"_signOut", icon:"local-cafe", color:"tomato", title:"ออกจากระบบ"},
+                { name: "profile", path:"/user/profile", icon:"face", title:"โพรไฟล์"},
+                { name: "signout",
+                  action: this._onUserMenu.bind(this),
+                  icon: "local-cafe",
+                  color: "tomato",
+                  title: "ออกจากระบบ"},
               ]}
             }
           ]};
@@ -203,6 +207,10 @@
           ]};
           this.userMenu = null;
         }
+      }
+
+      _onUserMenu (e) {
+        this.firebaseApp.auth().signOut();
       }
 
       /*

@@ -315,10 +315,6 @@
         border-bottom: 1px dashed tomato;
       }
 
-      #drawer-contents #user-menu[page=user]{
-        display: none;
-      }
-
       #drawer-contents .photo-button[icon=ghost] {
         border: none;
       }
@@ -564,7 +560,7 @@
           <paper-icon-button class="photo-button" on-tap="_openProfile" icon$="[[_computeMeIcon(me.User.photoURL)]]" src="[[me.User.photoURL]]"></paper-icon-button>
           <h3 class="self-center">[[me.User.displayName]]</h3>
         </div>
-        <mg-menu id="user-menu" menu="[[userMenu]]" page$="[[page]]"></mg-menu>
+        <mg-menu id="user-menu" menu="[[userMenu]]"></mg-menu>
         <mg-menu id="app-menu" menu="[[menuTarget.menu]]"></mg-menu>
       </div>
     </app-drawer>
@@ -1027,7 +1023,7 @@
       }
 
       _onCloseContextualMenu(e) {
-        if (e.detail.sender != this) {
+        if (e.detail && e.detail.sender != this) {
           this._closeSubmenu();
         }
       }
