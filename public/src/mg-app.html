@@ -31,7 +31,7 @@
 <link rel="import" href="mg-cart-button.html">
 <link rel="import" href="mg-profile-button.html">
 <link rel="import" href="mg-balloon.html">
-<link rel="import" href="mg-home.html">
+<link rel="import" href="mg-list.html">
 <link rel="import" href="mg-menu.html">
 
 <link href="https://fonts.googleapis.com/css?family=Mitr:300|Gloria+Hallelujah" rel="stylesheet">
@@ -573,7 +573,7 @@
       attr-for-selected="name"
       selected-attribute="visible"
       fallback-selection="404">
-      <mg-home name="home"></mg-home>
+      <mg-list name="home"></mg-list>
       <mg-user id="user" user-menu="{{userMenu}}" name="user" me="{{me}}" route="{{subroute}}" firebase-app="[[appInstance]]"></mg-user>
       <mg-about name="about"></mg-about>
       <mg-404-warning name="404"></mg-404-warning>
@@ -782,6 +782,7 @@
         this.removeAttribute('unresolved');
 
         window.addEventListener('scroll', this._onScroll.bind(this));
+        window.addEventListener('resize', this._onResize.bind(this));
 
         var config = {
           apiKey: "AIzaSyDyJuzvmpg4jRPs9VE_Mpne8vdysEZGxbo",
@@ -1013,6 +1014,11 @@
       }
 
       _onScroll(e) {
+        this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+          bubbles: true, composed: true, detail:{sender:null}}));
+      }
+
+      _onResize(e) {
         this.dispatchEvent(new CustomEvent('close-contextual-menu', {
           bubbles: true, composed: true, detail:{sender:null}}));
       }

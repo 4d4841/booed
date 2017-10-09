@@ -1,0 +1,148 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="mg-icons.html">
+<link rel="import" href="mg-balloon.html">
+<link rel="import" href="mg-menu.html">
+
+
+<dom-module id="mg-items">
+  <template strip-whitespace>
+    <style>
+      :host {
+        @apply --layout-vertical;
+      }
+
+      #new-item {
+        margin-left: 30px;
+        width: 100px;
+        padding:0;
+        height:40px;
+        box-shadow: 1px 1px 2px var(--app-shadow-color);
+        --paper-button: {
+          font-family: 'Mitr', sans-serif;
+          font-size: 16px;
+          background-color: tomato;
+          color: white;
+        }
+      }
+
+      #new-item-balloon {
+        display: none;
+        z-index: 10;
+        margin: 0;
+      }
+    </style>
+
+    <paper-button id="new-item" on-tap="_openNewItemMenu">
+      <iron-icon icon="add"></iron-icon> สร้าง
+    </paper-button>
+    <img height="40px" src="images/logo-bounce.svg">
+
+    <mg-balloon id="new-item-balloon" no-overlap vertical-align="top" dynamic-align horizontal-align="auto">
+      <mg-menu selected-item="{{newItemSelected}}" menu="[[newMenu]]"></mg-menu>
+    </mg-balloon>
+
+
+  </template>
+  <script>
+    class MGItems extends Polymer.Element {
+      static get is() { return 'mg-items'; }
+      static get properties() { return {
+        selectedItem: Number,
+        items: {
+          type: Array,
+          value: []
+        },
+        menu: {
+          type: Object,
+          value: { entries: [
+            {name:"products", path:"/user/items/products", icon:"local-mall", title:"สินค้า" },
+            {name:"articles", path:"/user/items/articles", icon:"local-library", title:"อาร์ติเคิล" },
+            {name:"collections", path:"/user/items/collections", icon:"group-work", title:"คอลเลคชั่น" },
+            {name:"galleries", path:"/user/items/galleries", icon:"photo-library", title:"แกลเลอรี่" },
+          ]}
+        },
+        newMenu: {
+          type: Object,
+          value: {
+            entries: [
+              {name:"product", icon:"local-mall", title:"สินค้า" },
+              {name:"article", icon:"local-library", title:"อาร์ติเคิล" },
+              {name:"collection", icon:"group-work", title:"คอลเลคชั่น" },
+              {name:"gallery", icon:"photo-library", title:"แกลเลอรี่" },
+            ],
+          }
+        },
+      }}
+
+      static get observers() { return [
+//        '_onNewItemSelected(newItemSelected)',
+      ]}
+
+      _onNewItemTap(e) {
+        this._closeSubmenu(e);
+        if (e.model.item.name == 'gallery') {
+          console.log("_onNewItemTap",e.model.item,this,this.firebaseApp,this.me.User.uid);
+          let itemsRef = firebase.database().ref().child('home').child(this.me.User.uid).child('items');
+          let key = itemsRef.push().key;
+          let data = {name:"Untitled gallery"};
+          itemsRef.child(key).update(data, function(error){
+            if (error) {}
+
+          }.bind(this));
+        }
+      }
+
+      /*
+      _onNewItemSelected(newItemSelected) {
+      }
+      */
+
+      connectedCallback() {
+        super.connectedCallback();
+        window.addEventListener('close-contextual-menu', this._closeSubmenu.bind(this));
+        this.newMenu.action = this._onNewItemTap.bind(this);
+      }
+
+      disconnectedCallback() {
+        delete this.newMenu.target;
+        super.disconnectedCallback();
+      }
+
+      _closeSubmenu(e) {
+        if (e.detail && e.detail.sender != this) {
+          this.$['new-item-balloon'].style.display = "none";
+        }
+      }
+
+      _willRefit() {
+        this.$['new-item-balloon'].style.display = "block";
+        this.$['new-item-balloon'].refit();
+      }
+
+      /* XXX addd contextual behavior */
+      _openNewItemMenu(e) {
+        this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+          bubbles: true, composed: true, detail:{sender:this}}));
+
+        if (this.$['new-item-balloon'].style.display == "block") {
+          this.$['new-item-balloon'].style.display = "none";
+          return;
+        }
+
+        this.$['new-item-balloon'].positionTarget = this.$['new-item'];
+        this.__WillRefitSubmenuDebouncer = Polymer.Debouncer.debounce(this.__WillRefitSubmenuDebouncer,
+          Polymer.Async.timeOut.after(10),
+          this._willRefit.bind(this));
+
+      }
+
+      addPhoto(photo) {
+
+      }
+    }
+    customElements.define(MGItems.is, MGItems);
+  </script>
+</dom-module>
