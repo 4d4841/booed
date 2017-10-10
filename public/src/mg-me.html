@@ -1,0 +1,62 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+
+<dom-module id="mg-list">
+  <script>
+  (function(){
+    class MGMe extends Polymer.Element {
+      static get is() { return 'mg-me'; }
+
+      static get properties() { return {
+
+        user: {
+          type: Object,
+          notify: true,
+        },
+
+        firebaseApp: {
+          type: Object
+        },
+
+        photoURL: {
+          type: String,
+          computed: '_photoURL(user)'
+        },
+
+        waiting: {
+          type: Boolean,
+          value: false,
+          notify: true,
+        },
+      }}
+
+      _photoURL(user) {
+        if (user) {
+          return user.photoURL;
+        }
+        return null; //XXX placeholder
+      }
+
+      googleSignIn() {
+        this.waiting = true;
+        this.firebaseApp.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(
+          function() {
+            var provider = new firebase.auth.GoogleAuthProvider();
+            return firebase.auth().signInWithRedirect(provider);
+          })
+          .catch(function(error) {
+            var errorCode = error.code;
+            var errorMessage = error.message;
+            console.log("Error", error);
+          });
+      }
+
+      signOut() {
+        this.firebaseApp.auth().signOut();
+        this.state = "init";
+      }
+    }
+
+    customElements.define(MGMe.is, MGMe);
+  })();
+  </script>
+</dom-module>
