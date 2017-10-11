@@ -10,6 +10,7 @@
     <style>
 
       :host {
+        overflow: hidden;
       }
 
       iron-image {
@@ -19,7 +20,9 @@
       }
     </style>
 
-    <iron-image id="img" src$="[[src]]" sizing="cover"></iron-image>
+    <div style="border-radius:5px 5px 0 0;color:white;position:absolute;z-index:1;background:rgba(255,40,40,0.8);width:100%">[[_getTags(tags)]]</div>
+    <iron-image id="img" src$="[[src]]" sizing="cover">
+    </iron-image>
     <!--<img id="img" alt$="[[alt]]" on-load="_onImgLoad" on-error="_onImgError">-->
 
   </template>
@@ -56,6 +59,13 @@
       }
 
       _handleTap(e) {
+      }
+
+      _getTags(tags) {
+        if (tags) {
+          return Object.keys(tags).join(',');
+        }
+        return "";
       }
 
       _srcChanged(src) {
