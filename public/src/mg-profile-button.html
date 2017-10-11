@@ -129,9 +129,9 @@
 
     <paper-card id="id-card">
             <div class="under-photo">
-              <h3>[[me.User.email]]<br>[[me.User.displayName]]</h3>
+              <h3>[[me.user.email]]<br>[[me.user.displayName]]</h3>
             </div>
-            <mg-image class="photo" src="[[me.User.photoURL]]" on-tap="_openProfile"></mg-image>
+            <mg-image class="photo" src="[[me.user.photoURL]]" on-tap="_openProfile"></mg-image>
 
             <mg-menu menu="[[menu.entries.0.submenu]]"></mg-menu>
     </paper-card>
@@ -168,7 +168,7 @@
       static get properties() { return {
         icon: {
           type: String,
-          value: "ghost"
+          value: "pumpkin"
         },
         pathStyle: {
           type: String,
@@ -188,7 +188,7 @@
       }}
 
       static get observers() { return [
-        '_avatarChanged(me.User.photoURL)',
+        '_avatarChanged(me.user.photoURL)',
       ]}
 
       connectedCallback() {
@@ -203,7 +203,7 @@
           this.$.button.style.color = "rgba(0,0,0,0)";
         }
         else {
-          this.icon = "ghost";
+          this.icon = "pumpkin";
           this.image = null;
           this.$.button.style.color = "var(--app-primary-color)";
         }
@@ -216,11 +216,11 @@
       }
 
       _shouldShowPanel(me,path,showPanel) {
-        return this.me && this.me.User && !this.route.path.startsWith("/user") && this.showPanel;
+        return this.me && this.me.user && !this.route.path.startsWith("/user") && this.showPanel;
       }
 
       _onButtonClick(e) {
-        if (!this.me || !this.me.User) {
+        if (!this.me || !this.me.user) {
           this._openProfile(e);
         } else if (!this.route.path.startsWith("/user")) {
           this.showPanel = !this.showPanel;

@@ -257,50 +257,52 @@
         </div>
         <div state="init" class="center end-justified vertical layout">
           <!-- Begin: init -->
-            <dom-if if="[[!me.User.email]]">
+            <dom-if if="[[!me.user.email]]">
           <template>
             <!-- Begin: login panel -->
-              <h3>เข้าสู่ระบบสมาชิก</h3>
 
-                  <mg-input>
-                <input value="{{accountEmail::input}}" type="email" id="accountEmail" name="accountEmail" pattern=".{2,50}"
-                    placeholder="email"
-                    aria-labelledby="accountEmailLabel accountInfoHeading">
-                <mg-md-decorator error-message="กรุณากรอกอีเมล" aria-hidden="true">
-                  <label id="accountEmailLabel"><iron-icon icon="mail"></iron-icon> อีเมล</label>
-                  <mg-underline></mg-underline>
-                </mg-md-decorator>
-                  </mg-input>
+            <iron-icon style="color:tomato;margin-top:20px;--iron-icon-height: 50px; --iron-icon-width: 50px;" icon="pumpkin"></iron-icon>
+            <h3>เข้าสู่ระบบสมาชิก</h3>
 
-                  <mg-input>
-                <input value="{{accountPassword::input}}" type="password" id="accountPassword" name="accountPassword" pattern=".{2,50}"
-                    placeholder="พาสเวิร์ด"
-                    aria-labelledby="accountPasswordLabel accountInfoHeading">
-                <mg-md-decorator error-message="กรอกพาสเวิร์ด" aria-hidden="true">
-                  <label id="accountPasswordLabel"><iron-icon icon="key"></iron-icon> พาสเวิร์ด</label>
-                  <mg-underline></ball-underline>
-                </mg-md-decorator>
-                  </mg-input>
+              <mg-input>
+            <input value="{{accountEmail::input}}" type="email" id="accountEmail" name="accountEmail" pattern=".{2,50}"
+                placeholder="email"
+                aria-labelledby="accountEmailLabel accountInfoHeading">
+            <mg-md-decorator error-message="กรุณากรอกอีเมล" aria-hidden="true">
+              <label id="accountEmailLabel"><iron-icon icon="mail"></iron-icon> อีเมล</label>
+              <mg-underline></mg-underline>
+            </mg-md-decorator>
+              </mg-input>
 
-                <div class="card-actions layout horizontal justified" style="margin-top:30px;width:240px;padding:0">
-                    <paper-button id="loginBB" on-click="_signIn" class="layout horizontal center-justified">
-                    เข้าระบบ
-                    </paper-button>
+              <mg-input>
+            <input value="{{accountPassword::input}}" type="password" id="accountPassword" name="accountPassword" pattern=".{2,50}"
+                placeholder="พาสเวิร์ด"
+                aria-labelledby="accountPasswordLabel accountInfoHeading">
+            <mg-md-decorator error-message="กรอกพาสเวิร์ด" aria-hidden="true">
+              <label id="accountPasswordLabel"><iron-icon icon="key"></iron-icon> พาสเวิร์ด</label>
+              <mg-underline></ball-underline>
+            </mg-md-decorator>
+              </mg-input>
 
-                    <paper-button id="loginGG" on-click="_googleSignIn" class="layout horizontal center-justified">
-                    <iron-icon icon="google" style="color:white"></iron-icon>
-                    </paper-button>
-                </div>
+            <div class="card-actions layout horizontal justified" style="margin-top:30px;width:240px;padding:0">
+                <paper-button id="loginBB" on-click="_signIn" class="layout horizontal center-justified">
+                เข้าระบบ
+                </paper-button>
+
+                <paper-button id="loginGG" on-click="_googleSignIn" class="layout horizontal center-justified">
+                <iron-icon icon="google" style="color:white"></iron-icon>
+                </paper-button>
+            </div>
             <!-- End: login panel -->
           </template>
             </dom-if>
 
-            <dom-if if="[[me.User.email]]">
+            <dom-if if="[[me.user.email]]">
           <template>
             <!-- begin: user panel -->
-              <mg-image class="photo" src="[[me.User.photoURL]]"></mg-image>
+              <mg-image class="photo" src="[[me.user.photoURL]]"></mg-image>
               <div class="under-photo">
-                <h3>[[me.User.email]]<br>[[me.User.displayName]]</h3>
+                <h3>[[me.user.email]]<br>[[me.user.displayName]]</h3>
               </div>
 
               <paper-button class="button" on-click="_signOut" class="layout horizontal center-justified">
@@ -319,12 +321,12 @@
           </template>
             </dom-if>
 
-            <dom-if if="[[me.User.email]]">
+            <dom-if if="[[me.user.email]]">
           <template>
             <!-- begin: user panel -->
-              <mg-image class="photo" src="[[me.User.photoURL]]"></mg-image>
+              <mg-image class="photo" src="[[me.user.photoURL]]"></mg-image>
               <div class="under-photo">
-                <h3>[[me.User.email]]<br>[[me.User.displayName]]</h3>
+                <h3>[[me.user.email]]<br>[[me.user.displayName]]</h3>
               </div>
 
               <paper-button class="button" on-click="_signOut" class="layout horizontal center-justified">
@@ -348,7 +350,7 @@
         </div>
       </iron-pages>
     </paper-card>
-        <div on-click="_toggleInfo" class="main-info center enter vertical end-justified layout" hidden="[[_shouldHideInfoPanel(me.User.email,state)]]">
+        <div on-click="_toggleInfo" class="main-info center enter vertical end-justified layout" hidden="[[_shouldHideInfoPanel(me.user.email,state)]]">
 
           <iron-collapse opened="[[expand]]">
 
@@ -434,7 +436,7 @@
       }
 
       _onAuthStateChanged(user) {
-        this.set('me.User', user);
+        this.set('me.user', user);
         this.set('me.waiting',false);
       }
 

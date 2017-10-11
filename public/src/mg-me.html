@@ -17,6 +17,11 @@
           type: Object
         },
 
+        displayName: {
+          type: String,
+          computed: '_displayName(user)'
+        },
+
         photoURL: {
           type: String,
           computed: '_photoURL(user)'
@@ -29,6 +34,32 @@
         },
       }}
 
+      static get observers() { return [
+        '_appInitialized(firebaseApp)',
+        '_visibleChanged(visible)',
+        '_waitingChanged(me.waiting)',
+      ]}
+
+      _appInitialized(firebaseApp) {
+        if (firebaseApp) {
+          this.set('waiting', true);
+          firebaseApp.auth().onAuthStateChanged(this._onAuthStateChanged.bind(this));
+        }
+      }
+
+      _onAuthStateChanged(user) {
+        console.log("me",user);
+        this.set('user',user);
+        this.set('waiting', false);
+      }
+
+      _displayName(user) {
+        if (user) {
+          return user.displayName;
+        }
+        return '👻';
+      }
+
       _photoURL(user) {
         if (user) {
           return user.photoURL;
@@ -37,7 +68,7 @@
       }
 
       googleSignIn() {
-        this.waiting = true;
+        this.set('waiting', true);
         this.firebaseApp.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(
           function() {
             var provider = new firebase.auth.GoogleAuthProvider();
@@ -52,7 +83,7 @@
 
       signOut() {
         this.firebaseApp.auth().signOut();
-        this.state = "init";
+        this.set('waiting', false);
       }
     }
 

@@ -95,8 +95,8 @@
       _onNewItemTap(e) {
         this._closeSubmenu(e);
         if (e.model.item.name == 'gallery') {
-          console.log("_onNewItemTap",e.model.item,this,this.firebaseApp,this.me.User.uid);
-          let itemsRef = firebase.database().ref().child('home').child(this.me.User.uid).child('items');
+          console.log("_onNewItemTap",e.model.item,this,this.firebaseApp,this.me.user.uid);
+          let itemsRef = firebase.database().ref().child('home').child(this.me.user.uid).child('items');
           let key = itemsRef.push().key;
           let data = {name:"Untitled gallery"};
           itemsRef.child(key).update(data, function(error){

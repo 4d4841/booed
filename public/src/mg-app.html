@@ -28,6 +28,7 @@
 <link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-styles/typography.html">
+<link rel="import" href="mg-me.html">
 <link rel="import" href="mg-cart-button.html">
 <link rel="import" href="mg-profile-button.html">
 <link rel="import" href="mg-balloon.html">
@@ -331,7 +332,6 @@
         @apply(--layout-self-center);
         height: 120px;
         width: 120px;
-        border: 2px solid white;
         box-sizing: border-box;
         --paper-icon-button-ink-color: tomato;
         --paper-icon-button : {
@@ -607,6 +607,10 @@
     <div class="announcer" aria-live="assertive">[[_a11yLabel]]</div>
   -->
 
+    <mg-me
+      id="me"
+      firebase-app="[[appInstance]]"
+      ></mg-me>
   </template>
 
   <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-app.js"></script>
@@ -684,8 +688,9 @@
           observer: '_pageChanged'
         },
 
-        menuTarget: {
+        menu: {
           type: Object,
+          notify: true
         },
 
         submenu: {
@@ -837,7 +842,7 @@
 
       _computeMeIcon(photo) {
         if (photo) return null;
-        return "ghost";
+        return "pumpkin";
       }
 
       _openProfile(e) {
