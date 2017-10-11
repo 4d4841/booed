@@ -521,13 +521,13 @@
             <template>
           <paper-tabs
             attr-for-selected="name"
-            selected="{{menuTarget.page}}"
+            selected="{{menu.selected}}"
             hide-scroll-buttons
             scrollable
             fit-container
             noink>
 
-              <dom-repeat items="[[menuTarget.menu.entries]]">
+              <dom-repeat items="[[menu.entries]]">
             <template>
               <paper-tab
                 name="[[item.name]]"
@@ -562,13 +562,13 @@
     <template>
     <app-drawer id="drawer" opened="{{drawerOpened}}" swipe-open tabindex="0">
       <div id="drawer-contents">
-        <!--<div id="profile-container" style$="[[_computeProfileContainerStyleWithPhoto(me.User.photoURL)]]">-->
+        <!--<div id="profile-container" style$="[[_computeProfileContainerStyleWithPhoto(me.user.photoURL)]]">-->
         <div id="profile-container">
-          <paper-icon-button class="photo-button" on-tap="_openProfile" icon$="[[_computeMeIcon(me.User.photoURL)]]" src="[[me.User.photoURL]]"></paper-icon-button>
-          <h3 class="self-center">[[me.User.displayName]]</h3>
+          <paper-icon-button class="photo-button" on-tap="_openProfile" icon$="[[_computeMeIcon(me.user.photoURL)]]" src="[[me.user.photoURL]]"></paper-icon-button>
+          <h3 class="self-center">[[me.user.displayName]]</h3>
         </div>
         <mg-menu id="user-menu" menu="[[userMenu]]"></mg-menu>
-        <mg-menu id="app-menu" menu="[[menuTarget.menu]]"></mg-menu>
+        <mg-menu id="app-menu" menu="[[menu]]"></mg-menu>
       </div>
     </app-drawer>
     </template>
@@ -580,8 +580,16 @@
       attr-for-selected="name"
       selected-attribute="visible"
       fallback-selection="404">
-      <mg-list name="home"></mg-list>
-      <mg-user id="user" user-menu="{{userMenu}}" name="user" me="{{me}}" route="{{subroute}}" firebase-app="[[appInstance]]"></mg-user>
+      <mg-list menu="{{menu}}" name="home"></mg-list>
+      <mg-user
+        id="user"
+        menu="{{menu}}"
+        user-menu="{{userMenu}}"
+        name="user"
+        me="{{me}}"
+        route="{{subroute}}"
+        firebase-app="[[appInstance]]"
+        ></mg-user>
       <mg-about name="about"></mg-about>
       <mg-404-warning name="404"></mg-404-warning>
 
@@ -981,12 +989,12 @@
           this._announce(detail.title + ', loaded');
         }
 
-        if (detail.target) {
+        /*
+        if (detail.menu) {
           this._closeSubmenu();
-          this.menuTarget = detail.target;
-          this.notifyPath('menuTarget.menu');
-//          this.page = detail.target.selected ? detail.target.selected : 0;
+          this.set('menu', detail.menu);
         }
+        */
       }
 
       /*
@@ -1001,16 +1009,16 @@
       }
 
       _openSubmenu(e) {
-        for(let i = 0, sub; sub = this.menuTarget.menu.entries[i]; ++i) {
-          if (this.menuTarget.menu.entries[i].name == e.target.name && this.menuTarget.menu.entries[i].submenu) {
-            if (this.submenu === this.menuTarget.menu.entries[i].submenu) {
+        for(let i = 0, sub; sub = this.menu.entries[i]; ++i) {
+          if (this.menu.entries[i].name == e.target.name && this.menu.entries[i].submenu) {
+            if (this.submenu === this.menu.entries[i].submenu) {
               this._closeSubmenu();
               return;
             }
 
             var target = e.composedPath()[0];
             this.$.balloon.positionTarget = target;
-            this.submenu = this.menuTarget.menu.entries[i].submenu;
+            this.submenu = this.menu.entries[i].submenu;
             this.__WillRefitSubmenuDebouncer = Polymer.Debouncer.debounce(this.__WillRefitSubmenuDebouncer,
               Polymer.Async.timeOut.after(10),
               this._willRefit.bind(this));

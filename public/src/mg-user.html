@@ -69,6 +69,52 @@
 
   </template>
   <script>
+  (function(){
+    var _MGUserAppMenu = { selected: "", entries: [
+            { name:"profile", path:"/user/profile", icon:"face", title:"โพรไฟล์"},
+            { name:"order", path:"/user/order", icon:"credit-card", title:"รายการสั่งซื้อ"},
+            { name:"items", path:"/user/items", icon:"widgets", title:"ไอเท็ม",
+              submenu: { entries:[
+                  { name:"products", path:"/user/items/products", icon:"local-mall", title:"สินค้า" },
+                  { name:"articles", path:"/user/items/articles", icon:"local-library", title:"อาร์ติเคิล" },
+                  { name:"collections", path:"/user/items/collections", icon:"group-work", title:"คอลเลคชั่น" },
+                  { name:"galleries", path:"/user/items/galleries", icon:"photo-library", title:"แกลเลอรี่" },
+              ]}
+            },
+            { name:"store", path:"/user/store", icon:"store", title:"ร้าน"},
+            { name:"inbox", path:"/user/inbox", icon:"inbox", title:"อินบอกซ์"},
+            { name:"help", icon:"help", title:"ความช่วยเหลือ",
+              submenu: { entries:[
+                  { name:"tos", path:"/about/tos", icon:"info", title:"เงื่อนไขการให้บริการ", },
+                  { name:"policy", path:"/about/policy", icon:"info", title:"นโยบายความเป็นส่วนตัว"},
+              ]}
+            },
+          ]};
+
+    var _MGUserMenu = { entries: [
+            { name: "user-menu",
+              icon: "account-box",
+              submenu: { entries:[
+                { name: "profile", path:"/user/profile", icon:"face", title:"โพรไฟล์"},
+                { name: "signout",
+                  icon: "local-cafe",
+                  color: "tomato",
+                  title: "ออกจากระบบ"},
+              ]}
+            }
+          ]};
+
+
+    var _MGUserAppSignInMenu = { entries: [
+            { name: "profile", path: "/user/profile", icon: "lock", title: "เข้าสู่ระบบ"},
+            { name: "help", icon: "help", title: "ความช่วยเหลือ",
+              submenu: { entries: [
+                  { name: "tos", path: "/about/tos", icon: "info", title: "เงื่อนไขการให้บริการ", },
+                  { name:"policy", path:"/about/policy", icon:"info", title:"นโยบายความเป็นส่วนตัว" },
+              ]}
+            },
+          ]};
+
     class MGUser extends Polymer.Element {
       static get is() { return 'mg-user'; }
 
@@ -105,12 +151,12 @@
         },
 
         menu: {
-          type: Array,
+          type: Object,
           notify: true
         },
 
         userMenu: {
-          type: Array,
+          type: Object,
           notify: true
         },
 
@@ -123,15 +169,48 @@
 
       static get observers() { return [
         '_routeDataChanged(routeData, routeData.page)',
-        '_userChanged(me.User)',
-        '_visibleChanged(visible,menu)',
+        '_userChanged(me.user)',
+        '_visibleChanged(visible)',
+        '_selectedChanged(menu.selected)',
       ]}
+
+      _selectedChanged(selected) {
+        this.set('page', selected);
+      }
 
       _visibleChanged( visible, menu ) {
         if (visible) {
-          this.dispatchEvent(new CustomEvent('change-section', {
-            bubbles: true, composed: true, detail: {target:this}}));
+          if (this.me.user) {
+            this.set('menu', _MGUserAppMenu);
+          }
+          else {
+            this.set('menu', _MGUserAppSignInMenu);
+          }
         }
+      }
+
+      _setMenu(menu) {
+        if (this.visible) {
+          this.set('menu', menu);
+        }
+      }
+
+      _userChanged(user) {
+        if (user) {
+          _MGUserMenu.entries[0].title = this.me.user.email;
+          _MGUserMenu.entries[0].submenu.action = this._onUserMenu.bind(this);
+          this._setMenu(_MGUserAppMenu);
+          this.set('userMenu', _MGUserMenu);
+        } else {
+          this._setMenu(_MGUserAppSignInMenu);
+          this.set('userMenu', { entries: [
+            { action:this._signGoogle.bind(this), name: "profile", icon: "google", title: "เข้าสู่ระบบด้วยบัญชีกูเกิ้ล"},
+          ]});
+        }
+      }
+
+      _signGoogle(){
+        console.log("sign g");
       }
 
       _routeDataChanged( routeData, page ) {
@@ -147,7 +226,9 @@
       _pageChanged( pg ) {
         if (!this.visible) return;
         if (this.routeData.page != this.page) {
-          this.set('route.path','/'+this.page+'/');
+          let page = this.page || "";
+          page = "" ? '/' : '/'+page+'/';
+          this.set('route.path', page);
         }
         this.dispatchEvent(new CustomEvent('change-section', {
           bubbles: true,
@@ -158,56 +239,6 @@
 
       _tabSelected(tab) {
         console.log("user-tab",tab);
-      }
-
-      _userChanged(user) {
-        if (user) {
-          this.menu = { entries: [
-            { name:"profile", path:"/user/profile", icon:"face", title:"โพรไฟล์"},
-            { name:"order", path:"/user/order", icon:"credit-card", title:"รายการสั่งซื้อ"},
-            { name:"items", path:"/user/items", icon:"widgets", title:"ไอเท็ม",
-              submenu: { entries:[
-                  { name:"products", path:"/user/items/products", icon:"local-mall", title:"สินค้า" },
-                  { name:"articles", path:"/user/items/articles", icon:"local-library", title:"อาร์ติเคิล" },
-                  { name:"collections", path:"/user/items/collections", icon:"group-work", title:"คอลเลคชั่น" },
-                  { name:"galleries", path:"/user/items/galleries", icon:"photo-library", title:"แกลเลอรี่" },
-              ]}
-            },
-            { name:"store", path:"/user/store", icon:"store", title:"ร้าน"},
-            { name:"inbox", path:"/user/inbox", icon:"inbox", title:"อินบอกซ์"},
-            { name:"help", icon:"help", title:"ความช่วยเหลือ",
-              submenu: { entries:[
-                  { name:"tos", path:"/about/tos", icon:"info", title:"เงื่อนไขการให้บริการ", },
-                  { name:"policy", path:"/about/policy", icon:"info", title:"นโยบายความเป็นส่วนตัว"},
-              ]}
-            },
-          ]};
-          this.userMenu = { entries: [
-            { name: "user-menu",
-              title: this.me.User.email,
-              icon: "account-box",
-              submenu: { entries:[
-                { name: "profile", path:"/user/profile", icon:"face", title:"โพรไฟล์"},
-                { name: "signout",
-                  action: this._onUserMenu.bind(this),
-                  icon: "local-cafe",
-                  color: "tomato",
-                  title: "ออกจากระบบ"},
-              ]}
-            }
-          ]};
-        } else {
-          this.menu = { entries: [
-            { name: "profile", path: "/user/profile", icon: "lock", title: "เข้าสู่ระบบ"},
-            { name: "help", icon: "help", title: "ความช่วยเหลือ",
-              submenu: { entries: [
-                  { name: "tos", path: "/about/tos", icon: "info", title: "เงื่อนไขการให้บริการ", },
-                  { name:"policy", path:"/about/policy", icon:"info", title:"นโยบายความเป็นส่วนตัว" },
-              ]}
-            },
-          ]};
-          this.userMenu = null;
-        }
       }
 
       _onUserMenu (e) {
@@ -225,5 +256,6 @@
     }
 
     customElements.define(MGUser.is, MGUser);
+  })();
   </script>
 </dom-module>

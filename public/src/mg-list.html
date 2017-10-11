@@ -18,29 +18,8 @@
 
   </template>
   <script>
-    class MGList extends Polymer.Element {
-      static get is() { return 'mg-list'; }
-
-      static get properties() { return {
-
-        menu: {
-          type: Object,
-          value: { entries: [
-              /*
-            {name:"dresses2", icon:"dresses", title:"เดรส2", submenu:[
-              {name:"Xhyun", icon:"dresses", title:"Xฮยอนอา"},
-              {name:"Xhyun2", icon:"info", title:"Xฮยอนอา"},
-              {name:"Xhyun3", icon:"info", title:"Xฮยอนอา"},
-              {name:"Xhyun4", icon:"info", title:"Xฮยอนอา"},
-              {name:"Xhyun5", icon:"info", title:"Xฮยอนอา"},
-              {name:"Xmoon", icon:"info", title:"Xมูน ", submenu:[
-                {name:"tos", icon:"face", title:"Xเงื่อนไขการให้บริการ"},
-                {name:"policy", icon:"face", title:"Xนโยบายความเป็นส่วนตัว"},
-              ]},
-              {name:"Xhyun6", icon:"info", title:"Xฮยอนอา"},
-              {name:"Xhyun7", icon:"info", title:"Xฮยอนอา"},
-            ]},
-            */
+  (function(){
+    var _MGListAppMenu = { entries: [
             {path:"/home/new-releases", name:"new-releases", icon:"new-releases", title:"สินค้าใหม่"},
             {path:"/home/best-sellers", name:"best-sellers", icon:"best-sellers", title:"แนะนำ"},
             {path:"/home/dresses", name:"dresses", icon:"dresses", title:"เดรส" },
@@ -48,7 +27,16 @@
             {path:"/home/night-dresses", name:"night-dresses", icon:"night-dresses", title:"ชุดนอน"},
             {path:"/home/swimwears", name:"swimwears", icon:"swimwears", title:"ชุดว่ายน้ำ"},
             {path:"/home/sales", name:"sales", icon:"sales-baht", title:"เซลส์"},
-          ]}
+          ]};
+
+    class MGList extends Polymer.Element {
+      static get is() { return 'mg-list'; }
+
+      static get properties() { return {
+
+        menu: {
+          type: Object,
+          notify: true,
         },
 
         visible: {
@@ -57,15 +45,26 @@
         },
       }}
 
+      static get observers() { return [
+        '_onMenuSelected(menu.selected)',
+      ]}
+
+      _onMenuSelected(selected) {
+        if (!this.visible) {console.log("not visible");return;}
+        console.log("sel", selected);
+      }
+
       _visibleChanged(visible) {
         if (visible) {
-          this.dispatchEvent(new CustomEvent('change-section', {
-            bubbles: true, composed: true, detail: {title: 'List', target:this}}));
+          delete _MGListAppMenu.selected;
+          this.set('menu', _MGListAppMenu);
         }
+        else console.log("not vis");
       }
 
     }
 
     customElements.define(MGList.is, MGList);
+  })();
   </script>
 </dom-module>
