@@ -54,7 +54,6 @@
 
       <!-- XXX Do something like iron-list -->
       <dom-repeat
-        id="quilt"
         items="[[quiltItems]]"
         mutable-data>
     <template strip-whitespace>
@@ -67,7 +66,7 @@
       -->
       <dom-if if="[[_itemInOffsetRange(item)]]">
     <template>
-      <mg-image class="quilt-image" src="[[item.photo]]" style$="[[_computeItemStyle(item,unitWidth,index,2)]]"></mg-image>
+      <mg-image class="quilt-image" tags="[[item.tags]]" src="[[item.photo]]" style$="[[_computeItemStyle(item,unitWidth,index,2)]]"></mg-image>
     </template>
       </dom-if>
 
@@ -94,6 +93,11 @@
           type: Number,
         },
 
+        allItems: {
+          type: Array,
+          value: [],
+        },
+
         quiltItems: {
           type: Array,
           value: [],
@@ -116,7 +120,8 @@
         /* marking top rows that are continuously filled */
         collisionOffset: {
           type: Number,
-          value: 0
+          observer: '_collisionOffsetChanged',
+          value: 0,
         },
 
         numberOfColumns: {
@@ -124,6 +129,11 @@
           value: 6,
           observer: '_numberOfColumnsChanged'
         },
+
+        selected: {
+          type: String,
+          observer: '_selectedChanged'
+        }
 
       }}
 
@@ -162,48 +172,76 @@
       _loadSome(rows) {
         let originalOffset = this.collisionOffset;
         let u = this.unitWidth*0.75;
+        let alts = [
+            "new-releases",
+            "best-sellers",
+            "dresses",
+            "lingeries",
+            "night-dresses",
+            "swimwears",
+            "sales",
+        ];
+
         while (this.collisionOffset < originalOffset + rows) {
 
           for (let j = 0; j < 5; j++) {
 
             let w = getRandomInt(1,3);
             let h = getRandomInt(1,3);
-
-            this._appendItem({
+            let newItem = {
               x: 0,
               y: 0,
               w: w,
               h: h,
               photo: "/moon-images/moon-"+this._getPhotoIndex()+".jpg",
+              tags: {[alts[getRandomInt(0,alts.length)]]:true},
               //photo: "https://unsplash.it/"+(w*u)+"/"+(h*u)+"/?random="+this.__photoIndex++,
 
-            });
+            };
+
+            this.push('allItems',newItem);
+            this._appendItemToQuilt(newItem);
           }
 
           let w = getRandomInt(2,7);
           let h = getRandomInt(2,7);
-          this._appendItem({
+          let newItem = {
             x: 0,
             y: 0,
             w: w,
             h: h,
-              photo: "/moon-images/moon-"+this._getPhotoIndex()+".jpg",
+            photo: "/moon-images/moon-"+this._getPhotoIndex()+".jpg",
+            tags: {[alts[getRandomInt(0,alts.length)]]:true,[alts[getRandomInt(0,alts.length)]]:true},
               //photo: "https://unsplash.it/"+(w*u)+"/"+(h*u)+"/?random="+this.__photoIndex++,
-          });
+          };
+          this.push('allItems',newItem);
+          this._appendItemToQuilt(newItem);
 
         }
         this.$.scrollThreshold.clearTriggers();
       }
 
+      _collisionOffsetChanged(collisionOffset) {
+        this.unitWidth = this.offsetWidth/this.numberOfColumns;
+        this.style.height = (collisionOffset*this.unitWidth)+"px";
+      }
+
       _numberOfColumnsChanged(newNumColumns) {
         if (newNumColumns == this.numberOfColumns) return;
-        let existingItems = this.quiltItems;
         this.sizeMap = {};
         this.collisionMap = [];
-        this.collisionOffset = 0;
-        this.quiltItems = [];
-        this.$.quilt.items = [];
-        existingItems.forEach(this._appendItem, this);
+        this.set('collisionOffset',0);
+        this.set('quiltItems',[]);
+        this.allItems.forEach(this._appendItemToQuilt, this);
+      }
+
+      _selectedChanged(selected) {
+        this.sizeMap = {};
+        this.collisionMap = [];
+        this.set('collisionOffset',0);
+        this.set('quiltItems',[]);
+        this.allItems.forEach(this._appendItemToQuilt, this);
+        this._load();
       }
 
       _testCollision(row,col) {
@@ -214,11 +252,17 @@
       }
 
       _itemInOffsetRange(item) {
-        if (item.y <= this.collisionOffset+1) return true;
+        if (item.y < this.collisionOffset) return true;
         return false;
       }
 
-      _appendItem(anItem, rtl) {
+      _appendItemToQuilt(anItem, rtl) {
+        if (this.selected) {
+          if (!anItem.tags[this.selected]) {
+            return;
+          }
+        }
+
         rtl = rtl || false;
 
         let ew = anItem.width ? Math.ceil(anItem.width * this.numberOfColumns) : anItem.w;
@@ -284,7 +328,7 @@
                   }
                 }
                 if (firstRowFilled) {
-                  this.collisionOffset++;
+                  this.set('collisionOffset',this.collisionOffset+1);
                   this.collisionMap.shift();
                 }
               } while (firstRowFilled && this.collisionMap.length);
@@ -303,7 +347,6 @@
         }
 
         this.push('quiltItems',anItem);
-        this.style.height = (this.collisionOffset*this.unitWidth)+"px";
 
         //this.style.height = ((this.collisionMap.length+this.collisionOffset)*this.unitWidth)+"px";
         //this.$.quilt.push('items', anItem);
