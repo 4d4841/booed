@@ -1,4 +1,5 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="mg-common-styles.html">
 <link rel="import" href="mg-quilt.html">
@@ -12,9 +13,16 @@
         @apply(--layout-center);
       }
     </style>
-
-    <span style="white-space:nowrap">For now, a collection of <a href="https://ko.wikipedia.org/wiki/%EB%AC%B8%ED%98%84%EC%95%84">Moon HyunA</a>'s photos are used as test subjects<br>to demonstrate <a href="https://github.com/4d4841/booed/blob/master/public/src/mg-quilt.html">mg-quilt</a> with no intention for any copyright infringement.</span>
-    <mg-quilt selected="{{menu.selected}}" style="width: calc(100% - 10px)"></mg-quilt>
+<!--
+    <app-route
+        route="{{route}}"
+        pattern="/:tag"
+        data="{{routeData}}"
+        tail="{{subroute}}">
+    </app-route>
+-->
+    <!--<span style="white-space:nowrap">For now, a collection of <a href="https://ko.wikipedia.org/wiki/%EB%AC%B8%ED%98%84%EC%95%84">Moon HyunA</a>'s photos are used as test subjects<br>to demonstrate <a href="https://github.com/4d4841/booed/blob/master/public/src/mg-quilt.html">mg-quilt</a> with no intention for any copyright infringement.</span>-->
+    <mg-quilt selected="{{selected}}" style="width: calc(100% - 10px)"></mg-quilt>
 
   </template>
   <script>
@@ -46,21 +54,19 @@
       }}
 
       static get observers() { return [
-//        '_onMenuSelected(menu.selected)',
+        '_onMenuSelected(menu.selected)',
       ]}
 
-      /*
       _onMenuSelected(selected) {
-        if (!this.visible) {console.log("not visible");return;}
+        if (this.visible) {
+          this.set('selected', selected);
+        }
       }
-      */
 
       _visibleChanged(visible) {
         if (visible) {
-          delete _MGListAppMenu.selected;
           this.set('menu', _MGListAppMenu);
         }
-        else console.log("not vis");
       }
 
     }

@@ -160,7 +160,7 @@
 
         if (this._loading) this._loading.cancel();
         this._loading = Polymer.Debouncer.debounce(this._loading,
-                  Polymer.Async.timeOut.after(100),
+                  Polymer.Async.timeOut.after(1000),
                   this._loadSome.bind(this,10));
       }
 
@@ -170,6 +170,7 @@
       }
 
       _loadSome(rows) {
+        console.log("loading for", this.selected);
         let originalOffset = this.collisionOffset;
         let u = this.unitWidth*0.75;
         let alts = [
@@ -182,7 +183,7 @@
             "sales",
         ];
 
-        while (this.collisionOffset < originalOffset + rows) {
+        while (this.collisionOffset < originalOffset + rows && this.allItems.length < 2000) {
 
           for (let j = 0; j < 5; j++) {
 
@@ -241,7 +242,9 @@
         this.set('collisionOffset',0);
         this.set('quiltItems',[]);
         this.allItems.forEach(this._appendItemToQuilt, this);
-        this._load();
+        if (this.collisionOffset < 10) {
+          this._load();
+        }
       }
 
       _testCollision(row,col) {
@@ -356,6 +359,7 @@
 
       _onResizeEvent(e) {
           this.unitWidth = this.offsetWidth/this.numberOfColumns;
+          this.style.height = (this.collisionOffset*this.unitWidth)+"px";
 
         //XXX If not done properly scroll may disappear
           /*
