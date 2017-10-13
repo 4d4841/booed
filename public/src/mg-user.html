@@ -36,18 +36,21 @@
       selected="[[page]]"
       attr-for-selected="name"
       selected-attribute="visible"
-      fallback-selection="404">
+      fallback-selection="404"
+      >
       <mg-profile
         name="profile"
         me="{{me}}"
-        firebase-app="[[firebaseApp]]">
-      </mg-profile>
+      ></mg-profile>
       <div name="order">
-        show order
+        show order<br>
       </div>
-      <mg-items id="items" name="items" me="[[me]]" firebase-app="[[firebaseApp]]">
-        show products
-      </mg-items>
+      <mg-items
+        id="items"
+        name="items"
+        me="[[me]]"
+        route="{{subroute}}"
+      ></mg-items>
       <div name="store">
         show store
       </div>

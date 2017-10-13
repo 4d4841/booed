@@ -379,7 +379,7 @@
         state: {
           type: String,
           reflectToAttribute: true,
-          value: 'init'
+          value: 'waiting'
         },
 
         expand: {
@@ -390,7 +390,7 @@
 
         me: {
           type: Object,
-          value: {},
+          value: {waiting: true},
           notify: true,
         },
 
@@ -402,7 +402,6 @@
       }}
 
       static get observers() { return [
-        '_appInitialized(firebaseApp)',
         '_visibleChanged(visible)',
         '_waitingChanged(me.waiting)',
       ]}
@@ -426,13 +425,10 @@
         }
       }
 
-      _appInitialized(firebaseApp) {
-        if (firebaseApp) {
-          this.me.waiting = true;
-          this.__validWaiting = true;
-          this.state = 'waiting';
-          firebaseApp.auth().onAuthStateChanged(this._onAuthStateChanged.bind(this));
-        }
+      connectedCallback() {
+        super.connectedCallback();
+        this.__validWaiting = true;
+        MGFIRE.auth().onAuthStateChanged(this._onAuthStateChanged.bind(this));
       }
 
       _onAuthStateChanged(user) {
@@ -451,10 +447,10 @@
       _googleSignIn(e) {
         this.state = 'waiting';
 
-        this.firebaseApp.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(
+        MGFIRE.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(
           function() {
             var provider = new firebase.auth.GoogleAuthProvider();
-            return firebase.auth().signInWithRedirect(provider);
+            return MGFIRE.auth().signInWithRedirect(provider);
           })
           .catch(function(error) {
             var errorCode = error.code;
@@ -464,7 +460,7 @@
       }
 
       _signOut(e) {
-        this.firebaseApp.auth().signOut();
+        MGFIRE.auth().signOut();
         this.state = "init";
       }
 

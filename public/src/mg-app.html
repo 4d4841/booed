@@ -28,7 +28,6 @@
 <link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-styles/typography.html">
-<link rel="import" href="mg-me.html">
 <link rel="import" href="mg-cart-button.html">
 <link rel="import" href="mg-profile-button.html">
 <link rel="import" href="mg-balloon.html">
@@ -512,7 +511,7 @@
           <mg-badge-button id="fmPicker" icon="wc" path-style="fill:lightpink" ></mg-badge-button>
           <mg-badge-button id="languae-button" icon="language" path-style="fill:blue" ></mg-badge-button>
           <mg-cart-button id="cart-button" cart="{{cart}}" ></mg-cart-button>
-          <mg-profile-button id="profile-button" route="{{route}}" me="[[me]]" menu="[[userMenu]]" firebase-app="[[appInstance]]"></mg-profile-button>
+          <mg-profile-button id="profile-button" route="{{route}}" me="[[me]]" menu="[[userMenu]]"></mg-profile-button>
           </div>
 
         </div>
@@ -588,7 +587,6 @@
         name="user"
         me="{{me}}"
         route="{{subroute}}"
-        firebase-app="[[appInstance]]"
         ></mg-user>
       <mg-about name="about"></mg-about>
       <mg-404-warning name="404"></mg-404-warning>
@@ -606,16 +604,12 @@
     <!--
     <div class="announcer" aria-live="assertive">[[_a11yLabel]]</div>
   -->
-
-    <mg-me
-      id="me"
-      firebase-app="[[appInstance]]"
-      ></mg-me>
   </template>
 
   <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-storage.js"></script>
   <script>
 
   /*
@@ -633,8 +627,7 @@
   }
   */
 
-    var __FirebaseAppInstance;
-
+    var MGFIRE;
 
     function MGCopyObject(o) {
       var out, v, key;
@@ -814,8 +807,7 @@
         };
 
         /* XXX prevent double connectedCallback() calls when 404 redirect happens */
-        __FirebaseAppInstance = __FirebaseAppInstance ? __FirebaseAppInstance : firebase.initializeApp(config);
-        this.set('appInstance', __FirebaseAppInstance);
+        MGFIRE = MGFIRE ? MGFIRE : firebase.initializeApp(config);
 
         this.addEventListener('add-cart-item', (e)=>this._onAddCartItem(e));
         this.addEventListener('announce', (e)=>this._onAnnounce(e));

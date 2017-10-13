@@ -8,23 +8,20 @@
 
       static get properties() { return {
 
-        user: {
+        me: {
           type: Object,
           notify: true,
         },
 
-        firebaseApp: {
-          type: Object
-        },
-
         displayName: {
           type: String,
-          computed: '_displayName(user)'
+          notify: true,
         },
 
         photoURL: {
           type: String,
-          computed: '_photoURL(user)'
+          readOnly: true,
+          notify: true,
         },
 
         waiting: {
@@ -35,44 +32,36 @@
       }}
 
       static get observers() { return [
-        '_appInitialized(firebaseApp)',
-        '_visibleChanged(visible)',
-        '_waitingChanged(me.waiting)',
+        '_photoURLChanged(user.photoURL)',
+        '_displayNameChanged(user.displayName)',
       ]}
 
-      _appInitialized(firebaseApp) {
-        if (firebaseApp) {
-          this.set('waiting', true);
-          firebaseApp.auth().onAuthStateChanged(this._onAuthStateChanged.bind(this));
-        }
+      connectedCallback() {
+        super.connectedCallback();
+        MGFIRE.auth().onAuthStateChanged(this._onAuthStateChanged.bind(this));
       }
 
       _onAuthStateChanged(user) {
-        console.log("me",user);
-        this.set('user',user);
-        this.set('waiting', false);
+        this.set('me.user',user);
+        this.set('me.waiting', false);
       }
 
-      _displayName(user) {
-        if (user) {
-          return user.displayName;
-        }
-        return '👻';
+      _displayNameChanged(name) {
+        name = name || '👻';
+        this.set('me.displayName', name);
       }
 
-      _photoURL(user) {
-        if (user) {
-          return user.photoURL;
-        }
-        return null; //XXX placeholder
+      _photoURLChanged(photoURL) {
+        this._setPhotoURL(photoURL);
+//        this.set('me.photoURL', photoURL);
       }
 
       googleSignIn() {
-        this.set('waiting', true);
-        this.firebaseApp.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(
+        this.set('me.waiting', true);
+        MGFIRE.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(
           function() {
             var provider = new firebase.auth.GoogleAuthProvider();
-            return firebase.auth().signInWithRedirect(provider);
+            return MGFIRE.auth().signInWithRedirect(provider);
           })
           .catch(function(error) {
             var errorCode = error.code;
@@ -82,8 +71,8 @@
       }
 
       signOut() {
-        this.firebaseApp.auth().signOut();
-        this.set('waiting', false);
+        MGFIRE.auth().signOut();
+        this.set('me.waiting', false);
       }
     }
 
