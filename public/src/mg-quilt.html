@@ -133,8 +133,7 @@
         selected: {
           type: String,
           observer: '_selectedChanged'
-        }
-
+        },
       }}
 
       static get observers() { return [
@@ -170,7 +169,7 @@
       }
 
       _loadSome(rows) {
-        console.log("loading for", this.selected);
+        if (this.visible === false) {return;}
         let originalOffset = this.collisionOffset;
         let u = this.unitWidth*0.75;
         let alts = [
