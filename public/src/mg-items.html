@@ -1,21 +1,25 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="mg-icons.html">
 <link rel="import" href="mg-balloon.html">
 <link rel="import" href="mg-menu.html">
+<link rel="import" href="mg-item.html">
+<link rel="import" href="mg-image.html">
 
 
 <dom-module id="mg-items">
   <template strip-whitespace>
     <style>
       :host {
-        @apply --layout-vertical;
+        @apply --layout-horizontal;
       }
 
       #new-item {
-        margin-left: 30px;
+        margin-left: 25px;
         width: 100px;
         padding:0;
         height:40px;
@@ -33,17 +37,105 @@
         z-index: 10;
         margin: 0;
       }
+
+      .items-container {
+        @apply(--layout-vertical);
+        padding: 20px;
+        height: 100%;
+      }
+
+      .item {
+        width:100px;
+        text-decoration: none;
+        padding: 0;
+        margin: 5px;
+        border-radius: 5px;
+        @apply(--layout-vertical);
+        box-shadow: 1px 1px 2px var(--app-shadow-color);
+        background-color: white;
+        overflow: hidden;
+        border: 2px solid white;
+      }
+
+      .item.iron-selected {
+        border: 2px solid tomato;
+      }
+
+      .item-thumbnail {
+        display: block;
+        width: 100px;
+        height: 100px;
+      }
+
+      .icon-thumbnail {
+        --iron-icon-width:15px;
+        --iron-icon-height:15px;
+        --iron-icon-fill-color: black;
+        position: absolute;
+        z-index:2;
+        top: 5px;
+        left: 5px;
+      }
+
+      .icon-thumbnail-shadow {
+        --iron-icon-width:15px;
+        --iron-icon-height:15px;
+        --iron-icon-stroke-color: white;
+        position: absolute;
+        z-index:1;
+        top: 5px;
+        left: 5px;
+      }
+
+      #editor {
+        margin-left: 20px
+      }
+
+      a {
+        text-decoration: none;
+      }
+
     </style>
 
-    <paper-button id="new-item" on-tap="_openNewItemMenu">
-      <iron-icon icon="add"></iron-icon> สร้าง
-    </paper-button>
-    <img height="40px" src="images/logo-bounce.svg">
+    <div class="vertical layout" style="min-width:150px;height:100vh; border-right:1px dashed tomato">
+
+      <paper-button id="new-item" on-tap="_openNewItemMenu">
+        <iron-icon icon="add"></iron-icon> สร้าง
+      </paper-button>
+
+      <iron-selector class="items-container" attr-for-selected="name" selected="[[itemId]]">
+        <dom-repeat items="[[itemList]]" mutable-data>
+      <template>
+      <paper-button name="[[item.key]]" class="item" on-click="_onThumbClick">
+        <iron-icon class="icon-thumbnail" icon="[[_iconForRole(item.role)]]"></iron-icon>
+        <iron-icon class="icon-thumbnail-shadow" icon="[[_iconForRole(item.role)]]"></iron-icon>
+        <iron-image class="item-thumbnail" src="[[item.thumbnail]]" sizing="cover"></iron-image>
+          [[item.name]]
+      </paper-button>
+      </template>
+        </dom-repeat>
+      </iron-selector>
+
+    </div>
+
 
     <mg-balloon id="new-item-balloon" no-overlap vertical-align="top" dynamic-align horizontal-align="auto">
       <mg-menu selected-item="{{newItemSelected}}" menu="[[newMenu]]"></mg-menu>
     </mg-balloon>
 
+    <mg-item
+      id="editor"
+      me="[[me]]"
+      item-id="{{itemId}}"
+      items={{items}}
+    ></mg-item>
+
+    <app-route
+        route="{{route}}"
+        pattern="/:itemId"
+        data="{{routeData}}"
+        tail="{{subroute}}">
+    </app-route>
 
   </template>
   <script>
@@ -52,8 +144,12 @@
       static get properties() { return {
         selectedItem: Number,
         items: {
+          type: Object,
+          value: {},
+        },
+        itemList: {
           type: Array,
-          value: []
+          value: [],
         },
         menu: {
           type: Object,
@@ -75,9 +171,17 @@
             ],
           }
         },
+        visible: {
+          type: Boolean,
+          value: false,
+        }
       }}
 
       static get observers() { return [
+        '_itemIdChanged(itemId)',
+        '_routeDataChanged(routeData)',
+        '_userChanged(me.user.uid)',
+        '_visibleChanged(visible)',
 //        '_onNewItemSelected(newItemSelected)',
       ]}
 
@@ -88,6 +192,72 @@
         this.newMenu.action = this._onNewItemTap.bind(this);
       }
 
+      _visibleChanged(visible) {
+        if (!visible) {
+          this.set('itemId',null);
+        }
+      }
+
+      _iconForRole(role) {
+        switch(role) {
+          case "product": return "local-mall";
+          case "article": return "local-library";
+          case "collection": return "group-work";
+          case "gallery": return "photo-library";
+          default: return "help";
+        }
+      }
+
+      _userChanged(uid) {
+        if (uid) {
+          MGFIRE.database().ref('home').child(uid).child('items').on('child_added', function(keysnap){
+            if (!this.items[keysnap.key]) {
+              this.items[keysnap.key] = {};
+            }
+            MGFIRE.database().ref('items').child(keysnap.key).once('value',function(datasnap){
+              let val = datasnap.val();
+              this.items[keysnap.key].name = val.name;
+              this.push('itemList',{key: keysnap.key, role:val.role, name:val.name});
+              let last = this.itemList.length - 1;
+              let images = val.images;
+              if (images) {
+                let keys = Object.keys(val.images);
+                if (keys.length && !images[keys[0]].uploading) {
+                  MGFIRE.storage().ref('home').child(uid).child('items')
+                  .child(keysnap.key).child(keys[0])
+                  .getDownloadURL().then(function(url){
+                      this.set('itemList.'+last+".thumbnail",url);
+                  }.bind(this));
+                }
+              }
+              else {
+                this.set('itemList.'+last+".thumbnail",'images/logo-pumpkin-grayout.svg');
+              }
+
+              MGFIRE.database().ref('items').child(keysnap.key).on('child_changed', function(keysnap){
+                let key = keysnap.key;
+                let parentKey = keysnap.ref.parent.key;
+                if (key == 'name') {
+                  for(let i = 0,item; item = this.itemList[i]; ++i) {
+                    if (item.key == parentKey) {
+                      this.set('itemList.'+i+"."+key,keysnap.val());
+                      break;
+                    }
+                  }
+                }
+              }.bind(this));
+
+            }.bind(this));
+          }.bind(this));
+        }
+      }
+
+      _onThumbClick(e) {
+        this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+          bubbles: true, composed: true, detail:{sender:this}}));
+        this.set('route.path',"/"+e.model.item.key);
+      }
+
       _onSelectedItemType(e) {
         console.log("should display only", e.model.item.name);
       }
@@ -95,14 +265,17 @@
       _onNewItemTap(e) {
         this._closeSubmenu(e);
         if (e.model.item.name == 'gallery') {
-          console.log("_onNewItemTap",e.model.item,this,this.firebaseApp,this.me.user.uid);
-          let itemsRef = firebase.database().ref().child('home').child(this.me.user.uid).child('items');
-          let key = itemsRef.push().key;
-          let data = {name:"Untitled gallery"};
-          itemsRef.child(key).update(data, function(error){
-            if (error) {}
+          this.$.editor.newItem('gallery','แกลเลอรี่ไม่มีชื่อ'); //XXX add date:time
+        }
+      }
 
-          }.bind(this));
+      _itemIdChanged(newItemId) {
+        this.set('route.path', newItemId ? "/"+newItemId : "");
+      }
+
+      _routeDataChanged(routeData) {
+        if (routeData.itemId) {
+          this.set('itemId', routeData.itemId);
         }
       }
 
