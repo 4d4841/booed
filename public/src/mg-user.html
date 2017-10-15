@@ -60,10 +60,9 @@
       <div name="help">
         show help
       </div>
-    </iron-page>
+    </iron-pages>
 
     <app-route
-        active="{{routeActive}}"
         route="{{route}}"
         pattern="/:page"
         data="{{routeData}}"
@@ -150,12 +149,12 @@
 
         me: {
           type: Object,
-          notify: true
+          notify: true,
         },
 
         menu: {
           type: Object,
-          notify: true
+          notify: true,
         },
 
         userMenu: {
@@ -171,18 +170,14 @@
       }}
 
       static get observers() { return [
-        '_routeDataChanged(routeData, routeData.page)',
+        '_routeDataChanged(routeData)',
         '_userChanged(me.user)',
-        '_visibleChanged(visible)',
+        '_visibleChanged(visible, menu, me)',
         '_selectedChanged(menu.selected)',
       ]}
 
-      _selectedChanged(selected) {
-        this.set('page', selected);
-      }
-
-      _visibleChanged( visible, menu ) {
-        if (visible) {
+      _visibleChanged( visible , menu, me) {
+        if (visible && menu && me) {
           if (this.me.user) {
             this.set('menu', _MGUserAppMenu);
           }
@@ -194,6 +189,9 @@
 
       _setMenu(menu) {
         if (this.visible) {
+          if (this.menu && menu) {
+            menu.selected = this.menu.selected;
+          }
           this.set('menu', menu);
         }
       }
@@ -202,8 +200,9 @@
         if (user) {
           _MGUserMenu.entries[0].title = this.me.user.email;
           _MGUserMenu.entries[0].submenu.action = this._onUserMenu.bind(this);
-          this._setMenu(_MGUserAppMenu);
           this.set('userMenu', _MGUserMenu);
+
+          this._setMenu(_MGUserAppMenu);
         } else {
           this._setMenu(_MGUserAppSignInMenu);
           this.set('userMenu', { entries: [
@@ -216,23 +215,27 @@
         console.log("sign g");
       }
 
-      _routeDataChanged( routeData, page ) {
-        this.page = routeData.page || 'profile';
+      _selectedChanged(selected) {
+        if (this.visible) {
+          for(let i = 0; i < this.menu.entries.length; ++i) {
+            if (this.menu.entries[i].name == selected) {
 
-        if (this.routeData.page != this.page) {
-          this.set('routeData.page', this.page);
+              this.set('routeData.page', selected);
+              this.set('page', selected);
+              return;
+            }
+          }
+          this.set('page', 'profile');
         }
+      }
 
-        this._pageChanged(page);
+      _routeDataChanged( routeData ) {
+        if (this.visible) {
+          this.set('menu.selected', routeData.page || 'profile');
+        }
       }
 
       _pageChanged( pg ) {
-        if (!this.visible) return;
-        if (this.routeData.page != this.page) {
-          let page = this.page || "";
-          page = "" ? '/' : '/'+page+'/';
-          this.set('route.path', page);
-        }
         this.dispatchEvent(new CustomEvent('change-section', {
           bubbles: true,
           composed: true,
@@ -240,12 +243,8 @@
          }));
       }
 
-      _tabSelected(tab) {
-        console.log("user-tab",tab);
-      }
-
       _onUserMenu (e) {
-        this.firebaseApp.auth().signOut();
+        MGFIRE.auth().signOut();
       }
 
       /*
