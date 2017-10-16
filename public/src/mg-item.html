@@ -89,7 +89,7 @@
             always-float-label="[[focusedName]]"
             value="{{itemName}}"
           >
-            <iron-icon icon="[[_iconForRole(_ItemRole)]]" slot="prefix"></iron-icon>
+            <iron-icon icon="[[_iconForRole(itemRole)]]" slot="prefix"></iron-icon>
           </paper-input>
 
 <!--
@@ -141,19 +141,22 @@
 
         itemId: {
           type: String,
-          observer: "_itemIdChanged",
           notify: true,
+        },
+
+        itemRole: {
+          type: String,
         },
 
         itemName: {
           type: String,
-          observer: "_itemNameChanged",
           notify: true,
         },
 
-        items: {
+        images: {
           type: Object,
           notify: true,
+          value: {},
         },
 
         photoList: {
@@ -164,16 +167,9 @@
       }}
 
       static get observers() { return [
+        '_itemIdChanged(me.user, itemId)',
+        '_itemNameChanged(me.user, itemName, itemRole)',
       ]}
-
-      _computePhotoList(items) {
-        let ret = [];
-        return ret;
-        Object.values(this.items[this.itemId]).forEach(function(item){
-//          ret.push('a');
-        },this);
-        return ret;
-      }
 
       _filesSelected(e) {
         if (!this.itemId) {
@@ -181,35 +177,38 @@
           return;
         }
 
-        let itemId = this.itemId;
         let files = e.target.files;
-        let uid = this.me.user.uid;
 
         if (files && files.length) {
+
+          let itemId = this.itemId;
+          let images = this.images;
+          let uid = this.me.user.uid;
+          let role = this.itemRole;
           let storage = MGFIRE.storage();
           let database = MGFIRE.database();
           let imagesRef = database.ref('items').child(itemId).child('images');
+
           for (let i = 0,img; img = files[i]; ++i) {
             let imgKey = imagesRef.push().key;
             let imgRef = storage.ref('home').child(uid)
             .child('items').child(itemId).child(imgKey);
 
             imgRef.put(img).on('state_changed', function(snapshot){
-
-            }.bind(this), function(error){
+            }, function(error){
               console.error("ERR",error);
-            }.bind(this), function(){
+            }, function() {
               var registerData = {};
 
               registerData["items/"+itemId+"/images/"+imgKey] = {name:img.name};
-              registerData["items/"+itemId+"/role"] = this._ItemRole;
+              registerData["items/"+itemId+"/role"] = this.itemRole;
               registerData["home/"+uid+"/items/"+itemId+"/time"] = firebase.database.ServerValue.TIMESTAMP;
 
               MGFIRE.database().ref().update(registerData, function(error){
                 if (!error) {
                   imgRef.getDownloadURL().then(function(url){
-                    Object.assign(this.items, {[itemId]:{images:{[imgKey]:{url:url}}}});
-                  }.bind(this));
+                    Object.assign(images, {images:{[imgKey]:{url:url}}});
+                  });
                 } else {
                   console.error("ERR",error);
                 }
@@ -251,30 +250,32 @@
         return false;
       }
 
-      _itemIdChanged(itemId) {
-        if (itemId) {
-          this.set('loading', true);
-          this.set('photoList',[]);
-          let database = MGFIRE.database();
-          database.ref('items').child(itemId).once('value', this._getItemSnapshot, this._getDataError, this);
+      _itemIdChanged(user, itemId) {
+        if (!user && itemId) {
+          return;
         }
+
+        this._ItemName = '';
+        this.set('itemName',this._ItemName);
+        this.set('images',{});
+        this.set('photoList',[]);
+        this.set('loading', true);
+        let database = MGFIRE.database();
+        database.ref('items').child(itemId).once('value', this._getItemSnapshot, this._getDataError, this);
       }
 
       _getItemSnapshot(snapshot) {
         this.set('loading', false);
+        let itemId = this.itemId;
         let v = snapshot.val();
 
-        if (this._ItemRole == "gallery") {
-          this.items[snapshot.key] = {role: "gallery", name: this.itemName, images: {}};
-          Object.assign(this.items, {[snapshot.key]:{role:"gallery", name:this.itemName}});
-        } else {
-          this.items[snapshot.key] = {role: this._ItemRole, name: this.itemName};
-          Object.assign(this.items, {[snapshot.key]:{role:this._ItemRole, name:this.itemName}});
+        if (snapshot.key != itemId) {
+          return;
         }
 
         if (v) {
-          this.set('_ItemRole',v.role);
-          let itemId = this.itemId;
+          this.set('itemRole',v.role);
+          this.set('itemName',this._ItemName = v.name);
           if (v.images) {
             let itemRef = MGFIRE.storage().ref('home').child(this.me.user.uid).child('items').child(snapshot.key);
             for (let key in v.images) {
@@ -282,20 +283,8 @@
                 if (itemId == this.itemId) {
                   this.push('photoList', {url:url, key:key, data:v.images[key]});
                 }
-
-                Object.assign(this.items, {[snapshot.key]:{images:{[key]:{url:url, data:v.images[key]}}}});
               }.bind(this));
             }
-            this.items[snapshot.key].role = v.role;
-          }
-
-          if (v.name) {
-            this.items[snapshot.key].name = v.name;
-          }
-
-          if (snapshot.key == this.itemId) {
-            this._ItemName = this.items[snapshot.key].name;
-            this.set('itemName', this._ItemName);
           }
         }
       }
@@ -304,7 +293,11 @@
         console.error("ERR", error);
       }
 
-      _itemNameChanged(itemName) {
+      _itemNameChanged(user, itemName, itemRole) {
+        if (!user || !itemRole) {
+          return;
+        }
+
         if (!itemName) {
           delete this._ItemName;
           itemName = "แกลเลอรี่ไม่มีชื่อ";
@@ -315,7 +308,7 @@
           delete this._ItemName;
           var registerData = {};
           registerData["items/"+this.itemId+"/name"] = itemName;
-          registerData["items/"+this.itemId+"/role"] = this.items[this.itemId].role || this._ItemRole;
+          registerData["items/"+this.itemId+"/role"] = this.itemRole;
           registerData["home/"+this.me.user.uid+"/items/"+this.itemId+"/time"] = firebase.database.ServerValue.TIMESTAMP;
 
           MGFIRE.database().ref().update(registerData, function(error){
@@ -328,10 +321,10 @@
 
       newItem(role,name) {
         let key = MGFIRE.database().ref('items').push().key;
-        this.set('_ItemRole', role);
-        this._ItemName = name || "แกลเลอรี่ไม่มีชื่อ";
-        this.set('itemName', this._ItemName); /* Only update UI name without server registration */
         this.set("itemId", key);
+        this.set('itemRole', role);
+         /* Only update UI name without server registration */
+        this.set('itemName', this._ItemName = name || "แกลเลอรี่ไม่มีชื่อ");
       }
 
     }
