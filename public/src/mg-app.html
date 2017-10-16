@@ -1013,13 +1013,16 @@
               return;
             }
 
-            var target = e.composedPath()[0];
-            this.$.balloon.positionTarget = target;
-            this.submenu = this.menu.entries[i].submenu;
-            this.__WillRefitSubmenuDebouncer = Polymer.Debouncer.debounce(this.__WillRefitSubmenuDebouncer,
-              Polymer.Async.timeOut.after(10),
-              this._willRefit.bind(this));
-            return;
+            /* Only show submenu if it's already selected. */
+            if (e.model.item.name == this.menu.selected) {
+              var target = e.composedPath()[0];
+              this.$.balloon.positionTarget = target;
+              this.submenu = this.menu.entries[i].submenu;
+              this.__WillRefitSubmenuDebouncer = Polymer.Debouncer.debounce(this.__WillRefitSubmenuDebouncer,
+                Polymer.Async.timeOut.after(10),
+                this._willRefit.bind(this));
+              return;
+            }
           }
         }
         this._closeSubmenu();
