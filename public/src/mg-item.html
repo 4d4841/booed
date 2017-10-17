@@ -124,6 +124,11 @@
       <template>
       <paper-button name="[[item.key]]" class="photo" on-click="_onThumbClick">
         <iron-image class="photo-thumbnail" src="[[item.url]]" sizing="contain"></iron-image>
+        <paper-progress
+          style="width:180px; pointer-events:none;position:absolute;bottom:5px"
+          value="[[item.progress]]"
+          hidden="[[_hideProgress(item.progress)]]"
+        ></paper-progress>
       </paper-button>
       </template>
         </dom-repeat>
@@ -155,7 +160,6 @@
 
         images: {
           type: Object,
-          notify: true,
           value: {},
         },
 
@@ -164,57 +168,185 @@
           value: [],
         },
 
+        previousItems: {
+          type: Object,
+          value: {},
+        },
+
       }}
 
       static get observers() { return [
         '_itemIdChanged(me.user, itemId)',
-        '_itemNameChanged(me.user, itemName, itemRole)',
+        '_itemNameChanged(me.user, itemRole, itemName)',
+        '_imagesChanged(images.*)',
       ]}
 
-      _filesSelected(e) {
-        if (!this.itemId) {
-          console.error("ERR WHY");
-          return;
+      _imagesChanged(imgChanges) {
+        if (imgChanges.path.startsWith("images.")) {
+          for (let i = 0, photo; photo = this.photoList[i]; ++i) {
+            if (imgChanges.path == "images."+photo.key) {
+              for (let key in imgChanges.value) {
+                this.set('photoList.'+i+'.'+key, imgChanges.value[key]);
+              }
+              return;
+            }
+            if (imgChanges.path == "images."+photo.key+".progress") {
+                let percent = Math.floor(imgChanges.value);
+                this.set('photoList.'+i+'.progress', percent);
+                return;
+            }
+          }
+          if (imgChanges.value.key && imgChanges.path == "images."+imgChanges.value.key) {
+            console.log("push?",imgChanges.path, imgChanges.value);
+            this.push('photoList', imgChanges.value);
+          }
+        } else if (imgChanges.path == "images") {
+          this.set('photoList', []);
+          for (let key in imgChanges.value) {
+            this.push('photoList', imgChanges.value[key]);
+          }
         }
+      }
 
+      _filesSelected(e) {
         let files = e.target.files;
 
         if (files && files.length) {
 
           let itemId = this.itemId;
-          let images = this.images;
           let uid = this.me.user.uid;
           let role = this.itemRole;
           let storage = MGFIRE.storage();
           let database = MGFIRE.database();
           let imagesRef = database.ref('items').child(itemId).child('images');
 
-          for (let i = 0,img; img = files[i]; ++i) {
+          for (let i = 0,imgFile; imgFile = files[i]; ++i) {
             let imgKey = imagesRef.push().key;
             let imgRef = storage.ref('home').child(uid)
             .child('items').child(itemId).child(imgKey);
 
-            imgRef.put(img).on('state_changed', function(snapshot){
-            }, function(error){
+            let imgData = {url: "/images/logo-bounce.svg", key:imgKey, name:imgFile.name};
+
+//            this.push('photoList',imgData);
+            this.set('appImages.'+imgKey, imgData);
+            this.set('images.'+imgKey, imgData);
+
+            /* upload image onto storage */
+            imgRef.put(imgFile).on(firebase.storage.TaskEvent.STATE_CHANGED, function(snapshot){
+              let percent = snapshot.bytesTransferred / snapshot.totalBytes * 100;
+              if (this.itemId == itemId) {
+//                this.set('images.'+imgKey, {url: "/images/logo-bounce.svg", key:imgKey, name:imgFile.name, progress:percent});
+                this.set('images.'+imgKey+'.progress', percent);
+              }
+              else {
+                this.set('appImages.'+imgKey+'.progress', percent);
+              }
+            }.bind(this), function(error){
               console.error("ERR",error);
             }, function() {
+              /* image uploaded, register file id into the database */
               var registerData = {};
 
-              registerData["items/"+itemId+"/images/"+imgKey] = {name:img.name};
+              registerData["items/"+itemId+"/images/"+imgKey] = {name:imgFile.name};
               registerData["items/"+itemId+"/role"] = this.itemRole;
               registerData["home/"+uid+"/items/"+itemId+"/time"] = firebase.database.ServerValue.TIMESTAMP;
 
               MGFIRE.database().ref().update(registerData, function(error){
                 if (!error) {
                   imgRef.getDownloadURL().then(function(url){
-                    Object.assign(images, {images:{[imgKey]:{url:url}}});
-                  });
+                    let imgData = {url:url, key:imgKey, name:imgFile.name};
+                    this.set('appImages.'+imgKey, Object.assign(this.appImages.imgKey||{},imgData));
+
+                    if (itemId == this.itemId) {
+                      this.set('images.'+imgKey, imgData);
+                    }
+                  }.bind(this));
                 } else {
                   console.error("ERR",error);
                 }
               }.bind(this));
             }.bind(this));
           }
+        }
+      }
+
+      _hideProgress(progress) {
+        if (!progress || progress == 100) return true;
+        return false;
+      }
+
+      _getItemSnapshot(snapshot) {
+        this.set('loading', false);
+        let itemId = this.itemId;
+        let v = snapshot.val();
+
+        if (snapshot.key != itemId) {
+          return;
+        }
+
+        if (v) {
+          this.set('itemRole',v.role);
+          this.set('itemName',this._ItemName = v.name);
+          if (v.images) {
+            let itemRef = MGFIRE.storage().ref('home').child(this.me.user.uid).child('items').child(snapshot.key);
+            for (let key in v.images) {
+              let imgData = this.appImages[key];
+
+              this.set('images.'+key, imgData || {url: "/images/logo-bounce.svg", key:key});
+              /* data with URL exists */
+              if (imgData && imgData.url) {
+                continue;
+              }
+              itemRef.child(key).getDownloadURL().then(function(url){
+                let imgData = {url:url, key:key, name:v.images[key].name};
+                this.set('appImages.'+key, Object.assign(this.appImages.key||{},imgData))
+                if (itemId == this.itemId) {
+                  this.set('images.'+key, imgData);
+                }
+              }.bind(this));
+            }
+          }
+        }
+      }
+
+      _getDataError(error) {
+        console.error("ERR", error);
+      }
+
+      _itemIdChanged(user, itemId) {
+        if (!user || !itemId) {
+          return;
+        }
+
+        this.previousItems[itemId] = this.previousItems[itemId] || {};
+
+        this._ItemName = "ไอเท็มไม่มีชื่อ";
+        this.set('itemName',this._ItemName);
+        this.set('photoList',[]);
+        this.set('images', this.previousItems[itemId]);
+        this.set('loading', true);
+        let database = MGFIRE.database();
+        database.ref('items').child(itemId).once('value', this._getItemSnapshot, this._getDataError, this);
+      }
+
+      _itemNameChanged(user, itemRole, itemName) {
+        if (!user || !itemRole || (itemName == this._ItemName)) {
+          return;
+        }
+
+        if (itemName) {
+
+          delete this._ItemName;
+          var registerData = {};
+          registerData["items/"+this.itemId+"/name"] = itemName;
+          registerData["items/"+this.itemId+"/role"] = this.itemRole;
+          registerData["home/"+this.me.user.uid+"/items/"+this.itemId+"/time"] = firebase.database.ServerValue.TIMESTAMP;
+
+          MGFIRE.database().ref().update(registerData, function(error){
+            if (error) {
+              console.error("ERR",error);
+            }
+          }.bind(this));
         }
       }
 
@@ -248,75 +380,6 @@
       _shouldOpen(id) {
         if (id) return true;
         return false;
-      }
-
-      _itemIdChanged(user, itemId) {
-        if (!user && itemId) {
-          return;
-        }
-
-        this._ItemName = '';
-        this.set('itemName',this._ItemName);
-        this.set('images',{});
-        this.set('photoList',[]);
-        this.set('loading', true);
-        let database = MGFIRE.database();
-        database.ref('items').child(itemId).once('value', this._getItemSnapshot, this._getDataError, this);
-      }
-
-      _getItemSnapshot(snapshot) {
-        this.set('loading', false);
-        let itemId = this.itemId;
-        let v = snapshot.val();
-
-        if (snapshot.key != itemId) {
-          return;
-        }
-
-        if (v) {
-          this.set('itemRole',v.role);
-          this.set('itemName',this._ItemName = v.name);
-          if (v.images) {
-            let itemRef = MGFIRE.storage().ref('home').child(this.me.user.uid).child('items').child(snapshot.key);
-            for (let key in v.images) {
-              itemRef.child(key).getDownloadURL().then(function(url){
-                if (itemId == this.itemId) {
-                  this.push('photoList', {url:url, key:key, data:v.images[key]});
-                }
-              }.bind(this));
-            }
-          }
-        }
-      }
-
-      _getDataError(error) {
-        console.error("ERR", error);
-      }
-
-      _itemNameChanged(user, itemName, itemRole) {
-        if (!user || !itemRole) {
-          return;
-        }
-
-        if (!itemName) {
-          delete this._ItemName;
-          itemName = "แกลเลอรี่ไม่มีชื่อ";
-        }
-
-        if (itemName && itemName != this._ItemName) {
-
-          delete this._ItemName;
-          var registerData = {};
-          registerData["items/"+this.itemId+"/name"] = itemName;
-          registerData["items/"+this.itemId+"/role"] = this.itemRole;
-          registerData["home/"+this.me.user.uid+"/items/"+this.itemId+"/time"] = firebase.database.ServerValue.TIMESTAMP;
-
-          MGFIRE.database().ref().update(registerData, function(error){
-            if (error) {
-              console.error("ERR",error);
-            }
-          }.bind(this));
-        }
       }
 
       newItem(role,name) {
