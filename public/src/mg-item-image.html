@@ -1,0 +1,106 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="mg-common-styles.html">
+
+<dom-module id="mg-item-image">
+  <template strip-whitespace>
+      <custom-style>
+    <style include="mg-common-styles iron-flex iron-flex-alignment">
+      :host {
+        margin: 5px;
+      }
+
+      .photo-thumbnail {
+        width: 100%;
+        height: 100%;
+        background-color: whitesmoke;
+      }
+
+      .photo {
+        width: 100%;
+        height: 100%;
+        text-decoration: none;
+        padding: 0;
+        margin: 5px;
+        border-radius: 5px;
+        @apply(--layout-vertical);
+        box-shadow: 1px 1px 2px var(--app-shadow-color);
+        background-color: white;
+        overflow: hidden;
+        border: 2px solid white;
+      }
+
+      paper-progress {
+        width: 90%;
+        pointer-events: none;
+        position: absolute;
+        bottom: 5px;
+      }
+
+      paper-button div {
+        text-transform: none;
+        white-space: nowrap;
+      }
+
+    </style>
+      </custom-style>
+
+    <paper-button class="photo" on-click="_onThumbClick">
+      <iron-image
+        class="photo-thumbnail"
+        src="[[src]]"
+        sizing="cover"
+        placeholder="images/logo-pumpkin-grayout.svg"
+        preload
+        fade
+      ></iron-image>
+      <template is="dom-if" if="{{showProgress}}">
+        <paper-progress
+          value="[[progress]]"
+        ></paper-progress>
+      </template>
+
+      <div>[[name]]</div>
+    </paper-button>
+
+  </template>
+  <script>
+    class MGItemImage extends Polymer.Element {
+      static get is() { return 'mg-item-image'; }
+
+      static get properties() { return {
+        src: {
+          type: String,
+          value: "",
+          observer: "_srcChanged",
+        },
+
+        progress: {
+          type: Number,
+        },
+
+        showProgress: {
+          type: Boolean,
+          computed: '_computeShowProgress(progress)',
+        },
+      }}
+
+      static get observers() { return [
+      ]}
+
+      _srcChanged(src) {
+        console.log("src",src);
+      }
+
+      _computeShowProgress(progress) {
+        if (typeof(progress) == "undefined") return false;
+        if (progress == 100) return false;
+        return true;
+      }
+    }
+
+    customElements.define(MGItemImage.is, MGItemImage);
+  </script>
+</dom-module>
