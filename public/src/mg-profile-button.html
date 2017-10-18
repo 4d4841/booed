@@ -112,7 +112,7 @@
 
     <!-- <div id="pyramid"></div> -->
 
-        <dom-if id="panel" if="[[_shouldShowPanel(route.path,showPanel)]]">
+        <dom-if id="panel" if="[[_canShowPanel(me,showPanel)]]">
       <template>
     <svg class="arrow">
       <defs id="defs2">
@@ -215,19 +215,20 @@
         }
       }
 
-      _shouldShowPanel(me,path,showPanel) {
-        return this.me && this.me.user && !this.route.path.startsWith("/user") && this.showPanel;
+      _canShowPanel(me,showPanel) {
+        return me && me.user && this.showPanel;
       }
 
       _onButtonClick(e) {
         if (!this.me || !this.me.user) {
           this._openProfile(e);
-        } else if (!this.route.path.startsWith("/user")) {
+        } else if (!this.route.path.startsWith("/user/profile")) {
           this.showPanel = !this.showPanel;
-          if (this.showPanel) {
-            this.dispatchEvent(new CustomEvent('close-contextual-menu', {
-              bubbles: true, composed: true, detail:{sender:this}}));
-          }
+        }
+        
+        if (this.showPanel) {
+          this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+            bubbles: true, composed: true, detail:{sender:this}}));
         }
       }
 
