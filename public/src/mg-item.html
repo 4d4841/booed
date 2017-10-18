@@ -55,6 +55,19 @@
         height:200px;
       }
 
+      .loading-thumbnail {
+        display: block;
+        width:50px;
+        height:50px;
+      }
+
+      .progress-thumbnail {
+          width: 90%;
+          pointer-events: none;
+          position: absolute;
+          bottom: 5px
+      }
+
       .photo {
         text-decoration: none;
         padding: 0;
@@ -92,22 +105,6 @@
             <iron-icon icon="[[_iconForRole(itemRole)]]" slot="prefix"></iron-icon>
           </paper-input>
 
-<!--
-            <dom-repeat items="[[photoList]]">
-          <template>
-            <div class="file-item">
-              <paper-progress style="pointer-events:none;position:absolute;bottom:5px" value="40"></paper-progress>
-              <div class="horizontal layout center">
-                <paper-icon-button icon="close" on-tap="_onDeletePhoto">
-                </paper-icon-button>
-                <div class="flex">aname</div>
-                <div>[[_formatSize(100)]]</div>
-              </div>
-            </div>
-          </template>
-            </dom-repeat>
--->
-
           <paper-button on-tap="_onAddButtonTap">
             <iron-icon icon="add-to-photos"></iron-icon> เพิ่มรูป
           </paper-button>
@@ -122,14 +119,23 @@
       <iron-selector class="photos-container horizontal layout wrap" attr-for-selected="name">
         <dom-repeat items="[[photoList]]" mutable-data>
       <template>
+
       <paper-button name="[[item.key]]" class="photo" on-click="_onThumbClick">
-        <iron-image class="photo-thumbnail" src="[[item.url]]" sizing="contain"></iron-image>
+        <template is="dom-if" if="[[item.src]]">
+          <iron-image class="photo-thumbnail" src="[[item.src]]" sizing="contain"></iron-image>
+        </template>
+        <template is="dom-if" if="[[!item.src]]">
+          <div class="vertical layout center center-justified photo-thumbnail">
+          <iron-image class="loading-thumbnail" src="images/logo-bounce.svg" sizing="contain"></iron-image>
+          </div>
+        </template>
         <paper-progress
-          style="width:180px; pointer-events:none;position:absolute;bottom:5px"
+          class="progress-thumbnail"
           value="[[item.progress]]"
-          hidden="[[_hideProgress(item.progress)]]"
+          hidden$="[[!item.progress]]"
         ></paper-progress>
       </paper-button>
+
       </template>
         </dom-repeat>
       </iron-selector>
@@ -182,22 +188,27 @@
       ]}
 
       _imagesChanged(imgChanges) {
+
         if (imgChanges.path.startsWith("images.")) {
+
           for (let i = 0, photo; photo = this.photoList[i]; ++i) {
             if (imgChanges.path == "images."+photo.key) {
-              for (let key in imgChanges.value) {
-                this.set('photoList.'+i+'.'+key, imgChanges.value[key]);
-              }
+              this.set('photoList.'+i, Object.assign({},this.photoList[i], imgChanges.value));
               return;
             }
             if (imgChanges.path == "images."+photo.key+".progress") {
-                let percent = Math.floor(imgChanges.value);
-                this.set('photoList.'+i+'.progress', percent);
-                return;
+              let progress = Math.round(imgChanges.value * 10)/10;
+              if (progress == 100) {
+                delete this.photoList[i].progress;
+                this.set('photoList.'+i, Object.assign({},this.photoList[i]));
+              } else {
+                this.set('photoList.'+i+'.progress', progress);
+              }
+              return;
             }
           }
-          if (imgChanges.value.key && imgChanges.path == "images."+imgChanges.value.key) {
-            console.log("push?",imgChanges.path, imgChanges.value);
+          if (imgChanges.value.key
+              && imgChanges.path == "images."+imgChanges.value.key) {
             this.push('photoList', imgChanges.value);
           }
         } else if (imgChanges.path == "images") {
@@ -220,12 +231,17 @@
           let database = MGFIRE.database();
           let imagesRef = database.ref('items').child(itemId).child('images');
 
+          let reader = new FileReader();
+          reader.onload = function(e) {
+
+          }.bind(this);
+
           for (let i = 0,imgFile; imgFile = files[i]; ++i) {
             let imgKey = imagesRef.push().key;
             let imgRef = storage.ref('home').child(uid)
             .child('items').child(itemId).child(imgKey);
 
-            let imgData = {url: "/images/logo-bounce.svg", key:imgKey, name:imgFile.name};
+            let imgData = {key:imgKey, name:imgFile.name};
 
 //            this.push('photoList',imgData);
             this.set('appImages.'+imgKey, imgData);
@@ -234,44 +250,49 @@
             /* upload image onto storage */
             imgRef.put(imgFile).on(firebase.storage.TaskEvent.STATE_CHANGED, function(snapshot){
               let percent = snapshot.bytesTransferred / snapshot.totalBytes * 100;
-              if (this.itemId == itemId) {
-//                this.set('images.'+imgKey, {url: "/images/logo-bounce.svg", key:imgKey, name:imgFile.name, progress:percent});
-                this.set('images.'+imgKey+'.progress', percent);
+              if (percent == 100) {
+                percent = null;
+              }
+              if (this.item.itemId == itemId) {
+                this.item.set('images.'+this.key+'.progress', percent);
               }
               else {
-                this.set('appImages.'+imgKey+'.progress', percent);
+                this.item.set('appImages.'+this.key+'.progress', percent);
               }
-            }.bind(this), function(error){
+            }.bind({item:this,key:imgKey}), function(error){
               console.error("ERR",error);
             }, function() {
+              let key = this.key;
               /* image uploaded, register file id into the database */
               var registerData = {};
 
-              registerData["items/"+itemId+"/images/"+imgKey] = {name:imgFile.name};
-              registerData["items/"+itemId+"/role"] = this.itemRole;
+              registerData["items/"+itemId+"/images/"+imgKey] = {name:this.name};
+              registerData["items/"+itemId+"/role"] = this.role;
               registerData["home/"+uid+"/items/"+itemId+"/time"] = firebase.database.ServerValue.TIMESTAMP;
 
               MGFIRE.database().ref().update(registerData, function(error){
                 if (!error) {
                   imgRef.getDownloadURL().then(function(url){
-                    let imgData = {url:url, key:imgKey, name:imgFile.name};
-                    this.set('appImages.'+imgKey, Object.assign(this.appImages.imgKey||{},imgData));
+                    let dataWithUrl = {src:url, key:key, name:this.name};
+                    this.item.set('appImages.'+key, Object.assign(this.item.appImages[key]||{},dataWithUrl));
 
-                    if (itemId == this.itemId) {
-                      this.set('images.'+imgKey, imgData);
+                    if (itemId == this.item.itemId) {
+                      console.log("set",this.item,key);
+                      this.item.set('images.'+key, dataWithUrl);
                     }
                   }.bind(this));
                 } else {
                   console.error("ERR",error);
                 }
               }.bind(this));
-            }.bind(this));
+            }.bind({item:this, key:imgKey, name:imgFile.name, role:role}));
           }
         }
       }
 
       _hideProgress(progress) {
-        if (!progress || progress == 100) return true;
+        console.log("p",progress);
+        if (typeof(progress) ==  "undefined" || progress == 100) return true;
         return false;
       }
 
@@ -292,18 +313,18 @@
             for (let key in v.images) {
               let imgData = this.appImages[key];
 
-              this.set('images.'+key, imgData || {url: "/images/logo-bounce.svg", key:key});
+              this.set('images.'+key, imgData || {key:key});
               /* data with URL exists */
               if (imgData && imgData.url) {
                 continue;
               }
               itemRef.child(key).getDownloadURL().then(function(url){
-                let imgData = {url:url, key:key, name:v.images[key].name};
-                this.set('appImages.'+key, Object.assign(this.appImages.key||{},imgData))
-                if (itemId == this.itemId) {
-                  this.set('images.'+key, imgData);
+                let imgData = {src:url, key:this.key, name:v.images[this.key].name};
+                this.item.set('appImages.'+key, Object.assign(this.item.appImages.key||{},imgData))
+                if (itemId == this.item.itemId) {
+                  this.item.set('images.'+this.key, imgData);
                 }
-              }.bind(this));
+              }.bind({item:this, key:key}));
             }
           }
         }
@@ -346,7 +367,7 @@
             if (error) {
               console.error("ERR",error);
             }
-          }.bind(this));
+          });
         }
       }
 

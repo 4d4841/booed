@@ -239,7 +239,7 @@
                 let key = keysnap.key;
                 let parentKey = keysnap.ref.parent.key;
                 if (key == 'name') {
-                  for(let i = 0,item; item = this.itemList[i]; ++i) {
+                  for (let i = 0,item; item = this.itemList[i]; ++i) {
                     if (item.key == parentKey) {
                       this.set('itemList.'+i+"."+key,keysnap.val());
                       break;
