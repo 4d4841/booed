@@ -21,6 +21,7 @@
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="mg-common-styles.html">
 <link rel="import" href="mg-input.html">
+<link rel="import" href="mg-item-image.html">
 
 
 <dom-module id="mg-item">
@@ -87,14 +88,11 @@
 
       <div class="horizontal layout end">
 
-          <dom-if if="[[loading]]">
-        <template>
+        <template is="dom-if" if="{{loading}}">
         <img height="62px" src="images/logo-bounce.svg">
         </template>
-          </dom-if>
 
-          <dom-if if="[[!loading]]">
-        <template>
+        <template is="dom-if" if="{{!loading}}">
 
           <paper-input
             label="ชื่อแกลเลอรี่"
@@ -110,34 +108,38 @@
           </paper-button>
 
         </template>
-          </dom-if>
 
         <input type="file" id="fileInput" on-change="_filesSelected" hidden multiple>
 
       </div>
 
       <iron-selector class="photos-container horizontal layout wrap" attr-for-selected="name">
-        <dom-repeat items="[[photoList]]" mutable-data>
-      <template>
 
-      <paper-button name="[[item.key]]" class="photo" on-click="_onThumbClick">
-        <template is="dom-if" if="[[item.src]]">
-          <iron-image class="photo-thumbnail" src="[[item.src]]" sizing="contain"></iron-image>
-        </template>
-        <template is="dom-if" if="[[!item.src]]">
-          <div class="vertical layout center center-justified photo-thumbnail">
-          <iron-image class="loading-thumbnail" src="images/logo-bounce.svg" sizing="contain"></iron-image>
-          </div>
-        </template>
-        <paper-progress
-          class="progress-thumbnail"
-          value="[[item.progress]]"
-          hidden$="[[!item.progress]]"
-        ></paper-progress>
-      </paper-button>
+      <template is="dom-repeat" items="{{photoList}}" mutable-data>
+        <paper-button name="[[item.key]]" class="photo" on-click="_onThumbClick">
 
+          <template is="dom-if" if="{{item.src}}">
+            <iron-image class="photo-thumbnail" src="[[item.src]]" sizing="contain"></iron-image>
+          </template>
+
+          <template is="dom-if" if="{{!item.src}}">
+            <div class="vertical layout center center-justified photo-thumbnail">
+              <iron-image
+                class="loading-thumbnail"
+                src="images/logo-bounce.svg"
+                sizing="contain"
+              ></iron-image>
+            </div>
+          </template>
+
+          <paper-progress
+            class="progress-thumbnail"
+            value="[[item.progress]]"
+            hidden$="[[!item.progress]]"
+          ></paper-progress>
+        </paper-button>
       </template>
-        </dom-repeat>
+
       </iron-selector>
 
     </iron-collapse>
@@ -188,21 +190,28 @@
       ]}
 
       _imagesChanged(imgChanges) {
-
         if (imgChanges.path.startsWith("images.")) {
 
           for (let i = 0, photo; photo = this.photoList[i]; ++i) {
             if (imgChanges.path == "images."+photo.key) {
-              this.set('photoList.'+i, Object.assign({},this.photoList[i], imgChanges.value));
+              for (let key in imgChanges.value) {
+                this.set('photoList.'+i+'.'+key, imgChanges.value[key]);
+                //this.notifyPath('photoList.'+i+'.'+key);
+              }
+              return;
+            }
+            if (imgChanges.path == "images."+photo.key+".src") {
+              //this.set('photoList.'+i, Object.assign({},this.photoList[i], {src:imgChanges.value}));
+              this.set('photoList.'+i+'.src', imgChanges.value);
+              this.notifyPath('photoList.'+i+'.src');
               return;
             }
             if (imgChanges.path == "images."+photo.key+".progress") {
-              let progress = Math.round(imgChanges.value * 10)/10;
-              if (progress == 100) {
+              if (imgChanges.value == null) {
                 delete this.photoList[i].progress;
                 this.set('photoList.'+i, Object.assign({},this.photoList[i]));
               } else {
-                this.set('photoList.'+i+'.progress', progress);
+                this.set('photoList.'+i+'.progress', imgChanges.value.toFixed(2));
               }
               return;
             }
@@ -226,15 +235,10 @@
 
           let itemId = this.itemId;
           let uid = this.me.user.uid;
-          let role = this.itemRole;
+          let role = this.itemRole || "gallery";
           let storage = MGFIRE.storage();
           let database = MGFIRE.database();
           let imagesRef = database.ref('items').child(itemId).child('images');
-
-          let reader = new FileReader();
-          reader.onload = function(e) {
-
-          }.bind(this);
 
           for (let i = 0,imgFile; imgFile = files[i]; ++i) {
             let imgKey = imagesRef.push().key;
@@ -243,12 +247,21 @@
 
             let imgData = {key:imgKey, name:imgFile.name};
 
-//            this.push('photoList',imgData);
             this.set('appImages.'+imgKey, imgData);
             this.set('images.'+imgKey, imgData);
 
+            let bindTarget = {item:this, key:imgKey, name:imgFile.name, role:role};
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+              this.item.set('images.'+this.key+'.src', e.target.result);
+            }.bind(bindTarget);
+            reader.readAsDataURL(imgFile);
+
             /* upload image onto storage */
             imgRef.put(imgFile).on(firebase.storage.TaskEvent.STATE_CHANGED, function(snapshot){
+
+
               let percent = snapshot.bytesTransferred / snapshot.totalBytes * 100;
               if (percent == 100) {
                 percent = null;
@@ -259,7 +272,7 @@
               else {
                 this.item.set('appImages.'+this.key+'.progress', percent);
               }
-            }.bind({item:this,key:imgKey}), function(error){
+            }.bind(bindTarget), function(error){
               console.error("ERR",error);
             }, function() {
               let key = this.key;
@@ -277,7 +290,6 @@
                     this.item.set('appImages.'+key, Object.assign(this.item.appImages[key]||{},dataWithUrl));
 
                     if (itemId == this.item.itemId) {
-                      console.log("set",this.item,key);
                       this.item.set('images.'+key, dataWithUrl);
                     }
                   }.bind(this));
@@ -285,15 +297,9 @@
                   console.error("ERR",error);
                 }
               }.bind(this));
-            }.bind({item:this, key:imgKey, name:imgFile.name, role:role}));
+            }.bind(bindTarget));
           }
         }
-      }
-
-      _hideProgress(progress) {
-        console.log("p",progress);
-        if (typeof(progress) ==  "undefined" || progress == 100) return true;
-        return false;
       }
 
       _getItemSnapshot(snapshot) {
@@ -305,7 +311,8 @@
           return;
         }
 
-        if (v) {
+        /* role must be set in the database */
+        if (v && v.role) {
           this.set('itemRole',v.role);
           this.set('itemName',this._ItemName = v.name);
           if (v.images) {
@@ -327,6 +334,11 @@
               }.bind({item:this, key:key}));
             }
           }
+        } else if (!this.itemRole){
+          /* No data and the role isn't set then the path should be reset back */
+          this.set('itemId', null);
+        } else {
+          console.log("new item");
         }
       }
 
