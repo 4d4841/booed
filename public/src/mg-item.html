@@ -117,29 +117,27 @@
           notify: true,
         },
 
-        images: {
-          type: Object,
-          value: {},
-        },
-
         photoList: {
           type: Array,
           value: [],
         },
 
+        /*
         previousItems: {
           type: Object,
           value: {},
         },
+        */
 
       }}
 
       static get observers() { return [
         '_itemIdChanged(me.user, itemId)',
         '_itemNameChanged(me.user, itemRole, itemName)',
-        '_imagesChanged(images.*)',
+       // '_imagesChanged(images.*)',
       ]}
 
+      /*
       _imagesChanged(imgChanges) {
         if (imgChanges.path.startsWith("images.")) {
 
@@ -173,6 +171,22 @@
           }
         }
       }
+      */
+
+      _indexId(imageId) {
+        let appData = this.appImages[imageId];
+        if (!appData) {
+          return -1;
+        }
+
+        for (let i = 0, data; data = this.photoList[i]; ++i) {
+          if (data === appData) {
+            return i;
+          }
+        }
+
+        return -1;
+      }
 
       _filesSelected(e) {
         let files = e.target.files;
@@ -195,24 +209,25 @@
           .child('items').child(itemId).child(imgKey);
 
           let imgData = {key:imgKey, name:imgFile.name};
+          let lastIndex = this.push('photoList',imgData) - 1;
 
           this.set('appImages.'+imgKey, imgData);
-          this.set('images.'+imgKey, imgData);
-
-          //let bindTarget = {item:this, key:imgKey, name:imgFile.name, role:role};
 
           var reader = new FileReader();
           reader.onload = function(e) {
-            this.set('images.'+imgKey+'.src', e.target.result);
+
+            this.set('appImages.'+imgKey+'.src', e.target.result);
+            let idx = this._indexId(imgKey);
+            if (idx > -1) { this.notifyPath('photoList.'+idx+'.src'); }
+
           }.bind(this);
           reader.readAsDataURL(imgFile);
 
           imgRef.put(imgFile).on(firebase.storage.TaskEvent.STATE_CHANGED, function(snapshot){
-            let percent = snapshot.bytesTransferred / snapshot.totalBytes * 100;
-            if (this.itemId == itemId) {
-              this.set('images.'+imgKey+'.progress', percent);
-            }
-            this.set('appImages.'+imgKey+'.progress', percent);
+
+            this.set('appImages.'+imgKey+'.progress', (snapshot.bytesTransferred / snapshot.totalBytes * 100).toFixed(2));
+            let idx = this._indexId(imgKey);
+            if (idx > -1) { this.notifyPath('photoList.'+idx+'.progress'); }
 
           }.bind(this), function(error){
             console.error("ERR",error);
@@ -226,14 +241,15 @@
 
             MGFIRE.database().ref().update(registerData, function(error){
               if (!error) {
+                /*
                 imgRef.getDownloadURL().then(function(url){
-                  let dataWithUrl = {src:url, key:imgKey, name:imgFile.name};
-                  this.set('appImages.'+imgKey, Object.assign(this.appImages[imgKey]||{},dataWithUrl));
 
-                  if (itemId == this.itemId) {
-                    this.set('images.'+imgKey, dataWithUrl);
-                  }
+                  this.set('appImages.'+imgKey+'.src', url);
+                  let idx = this._indexId(imgKey);
+                  if (idx > -1) { this.notifyPath('photoList.'+idx+'.src'); }
+
                 }.bind(this));
+                */
               } else {
                 console.error("ERR",error);
               }
@@ -247,28 +263,43 @@
         let itemId = this.itemId;
         let v = snapshot.val();
 
-        if (snapshot.key != itemId) {
-          return;
-        }
-
-        /* role must be set in the database */
+        /* XXX role must already be set in the database */
         if (v && v.role) {
-          this.set('itemRole',v.role);
-          this.set('itemName',this._ItemName = v.name);
+          if (snapshot.key == itemId) {
+            this.set('itemRole',v.role);
+            this.set('itemName',this._ItemName = v.name);
+          }
+
           if (v.images) {
             let itemRef = MGFIRE.storage().ref('home').child(this.me.user.uid).child('items').child(snapshot.key);
 
             Object.keys(v.images).forEach(function(imgKey){
               let imgData = this.appImages[imgKey];
-              this.set('images.'+imgKey, imgData || {key:imgKey});
+              let idx = this._indexId(imgKey);
 
-              if (!imgData || !imgData.url) {
+              if (!imgData) {
+                imgData = {key:imgKey, name:v.images[imgKey].name};
+                this.set('appImages.'+imgKey,imgData);
+              } else {
+                if (v.images[imgKey].name) {
+                  this.set('appImages.'+imgKey+'.name', v.images[imgKey].name);
+                  if (idx > -1) { this.notifyPath('photoList.'+idx+'.name'); }
+                }
+              }
+
+              if (snapshot.key == itemId) {
+                if (idx < 0) {
+                  this.push('photoList',imgData);
+                }
+              }
+
+              if (!imgData.src) {
                 itemRef.child(imgKey).getDownloadURL().then(function(url){
-                  let imgData = {src:url, key:imgKey, name:v.images[imgKey].name};
-                  this.set('appImages.'+imgKey, Object.assign(this.appImages[imgKey]||{},imgData))
-                  if (itemId == this.itemId) {
-                    this.set('images.'+imgKey, imgData);
-                  }
+
+                  this.set('appImages.'+imgKey+'.src', url);
+                  let idx = this._indexId(imgKey);
+                  if (idx > -1) { this.notifyPath('photoList.'+idx+'.src'); }
+
                 }.bind(this));
               }
             }, this);
@@ -277,9 +308,9 @@
         } else if (!this.itemRole){
           /* No data and the role isn't set then the path should be reset back */
           this.set('itemId', null);
-        } else {
+        }/* else {
           console.log("new item");
-        }
+        }*/
       }
 
       _getDataError(error) {
@@ -291,12 +322,11 @@
           return;
         }
 
-        this.previousItems[itemId] = this.previousItems[itemId] || {};
+//        this.previousItems[itemId] = this.previousItems[itemId] || {};
 
         this._ItemName = "ไอเท็มไม่มีชื่อ";
         this.set('itemName',this._ItemName);
         this.set('photoList',[]);
-        this.set('images', this.previousItems[itemId]);
         this.set('loading', true);
         let database = MGFIRE.database();
         database.ref('items').child(itemId).once('value', this._getItemSnapshot, this._getDataError, this);
