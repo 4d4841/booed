@@ -2,6 +2,8 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../bower_components/neon-animation/web-animations.html">
 <link rel="import" href="mg-common-styles.html">
 
 <dom-module id="mg-item-image">
@@ -36,12 +38,24 @@
         width: 90%;
         pointer-events: none;
         position: absolute;
-        bottom: 5px;
+        top: 5px;
       }
 
-      paper-button div {
+      .label {
+        width: 100%;
         text-transform: none;
         white-space: nowrap;
+        position: absolute;
+        bottom: 0;
+        /*background-color: rgba(255,255,255,0.85);*/
+        color: black;
+        background: linear-gradient( transparent 0, whitesmoke 15px)
+                    ,linear-gradient( transparent 0, whitesmoke 15px);
+        height: 20px;
+        line-height: 25px;
+        z-index: 1;
+        vertical-align: text-bottom;
+        text-align: center;
       }
 
     </style>
@@ -62,8 +76,9 @@
         ></paper-progress>
       </template>
 
-      <div>[[name]]</div>
+      <div class="label">[[name]]</div>
     </paper-button>
+    <paper-tooltip animation-delay="500">[[name]]</paper-tooltip>
 
   </template>
   <script>
@@ -74,7 +89,6 @@
         src: {
           type: String,
           value: "",
-          observer: "_srcChanged",
         },
 
         progress: {
@@ -85,14 +99,17 @@
           type: Boolean,
           computed: '_computeShowProgress(progress)',
         },
+
+        /*
+        visible: {
+          type: Boolean,
+          value: false,
+        },
+        */
       }}
 
       static get observers() { return [
       ]}
-
-      _srcChanged(src) {
-        console.log("src",src);
-      }
 
       _computeShowProgress(progress) {
         if (typeof(progress) == "undefined") return false;
