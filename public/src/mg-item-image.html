@@ -18,6 +18,7 @@
         width: 100%;
         height: 100%;
         background-color: whitesmoke;
+        border-radius: 5px;
       }
 
       .photo {
@@ -49,24 +50,25 @@
         bottom: 0;
         /*background-color: rgba(255,255,255,0.85);*/
         color: black;
-        background: linear-gradient( transparent 0, whitesmoke 15px)
-                    ,linear-gradient( transparent 0, whitesmoke 15px);
+        background: linear-gradient( transparent 0, rgba(255,255,255,0.8) 15px)
+                    ,linear-gradient( transparent 0,rgba(255,255,255,0.5) 10px);
         height: 20px;
         line-height: 25px;
         z-index: 1;
-        vertical-align: text-bottom;
         text-align: center;
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
       }
 
     </style>
       </custom-style>
 
-    <paper-button class="photo" on-click="_onThumbClick">
+    <paper-button class="photo">
       <iron-image
         class="photo-thumbnail"
         src="[[src]]"
         sizing="cover"
-        placeholder="images/logo-pumpkin-grayout.svg"
+        placeholder="images/logo-pumpkin-outline-grayout.svg"
         preload
         fade
       ></iron-image>
@@ -76,17 +78,24 @@
         ></paper-progress>
       </template>
 
-      <div class="label">[[name]]</div>
+      <div class="label"><span id="labelSpan">[[label]]</span></div>
     </paper-button>
-    <paper-tooltip animation-delay="500">[[name]]</paper-tooltip>
+    <paper-tooltip id="tooltip" animation-delay="0">
+      [[label]]
+    </paper-tooltip>
 
   </template>
   <script>
-    class MGItemImage extends Polymer.Element {
+    class MGItemImage extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() { return 'mg-item-image'; }
 
       static get properties() { return {
         src: {
+          type: String,
+          value: "",
+        },
+
+        label: {
           type: String,
           value: "",
         },
@@ -100,22 +109,43 @@
           computed: '_computeShowProgress(progress)',
         },
 
-        /*
-        visible: {
-          type: Boolean,
-          value: false,
-        },
-        */
       }}
 
       static get observers() { return [
       ]}
+
+
+      /*
+      connectedCallback() {
+        super.connectedCallback();
+        Polymer.Gestures.addListener(this, 'track', this.handleTap.bind(this));
+      }
+      disconnectedCallback(){
+        super.disconnectedCallback();
+      }
+      */
+
+      handleTap(e) {
+        console.log(e);
+      }
 
       _computeShowProgress(progress) {
         if (typeof(progress) == "undefined") return false;
         if (progress == 100) return false;
         return true;
       }
+
+      /*
+      _onMOver(e) {
+        if (this.$.labelSpan.offsetWidth > this.offsetWidth) {
+          this.$.tooltip.show();
+        }
+      }
+
+      _onMOut(e) {
+        this.$.tooltip.hide();
+      }
+      */
     }
 
     customElements.define(MGItemImage.is, MGItemImage);
