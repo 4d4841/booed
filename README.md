@@ -1,5 +1,6 @@
+<img width="200px" src="public/images/logo-full.svg" align="center" />
+
 # Booed Shop
-<img src="public/images/logo-full.svg" align="center" />
 
 A simple shop app aims to provide an example which allows collaborations from small & medium size shops by letting anyone to join & sell their products with a single mall front-end.
 
