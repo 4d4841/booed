@@ -630,6 +630,18 @@
 
     var MGFIRE;
 
+    function MGIconForRole(role) {
+      switch(role) {
+        case "product": return "local-mall";
+        case "article": return "local-library";
+        case "collection": return "group-work";
+        case "gallery": return "photo-library";
+        case "photo": return "photo";
+        case "sales": return "sales-baht";
+        default: return role;
+      }
+    }
+
     function MGCopyObject(o) {
       var out, v, key;
       out = Array.isArray(o) ? [] : {};

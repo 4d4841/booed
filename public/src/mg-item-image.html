@@ -5,23 +5,24 @@
 <link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../bower_components/neon-animation/web-animations.html">
 <link rel="import" href="mg-common-styles.html">
+<link rel="import" href="mg-icons.html">
 
 <dom-module id="mg-item-image">
   <template strip-whitespace>
       <custom-style>
     <style include="mg-common-styles iron-flex iron-flex-alignment">
       :host {
-        margin: 5px;
       }
 
-      .photo-thumbnail {
-        width: 100%;
-        height: 100%;
-        background-color: whitesmoke;
-        border-radius: 5px;
+      :host(.iron-selected) .photo-frame {
+        border: 2px solid tomato;
       }
 
-      .photo {
+      :host(:not(.iron-selected)) .photo-frame {
+        border: 2px solid white;
+      }
+
+      .photo-frame {
         width: 100%;
         height: 100%;
         text-decoration: none;
@@ -29,10 +30,17 @@
         margin: 5px;
         border-radius: 5px;
         @apply(--layout-vertical);
-        box-shadow: 1px 1px 2px var(--app-shadow-color);
+        box-shadow: 1px 1px 1px var(--app-shadow-color);
         background-color: white;
         overflow: hidden;
         border: 2px solid white;
+      }
+
+      .photo-frame > iron-image {
+        width: 100%;
+        height: 100%;
+        background-color: whitesmoke;
+        border-radius: 5px;
       }
 
       paper-progress {
@@ -60,15 +68,20 @@
         @apply(--layout-center-justified);
       }
 
+      .icon {
+        --iron-icon-width: 15px;
+        --iron-icon-height: 15px;
+        min-width: 20px;
+      }
+
     </style>
       </custom-style>
 
-    <paper-button class="photo">
+    <paper-button class="photo-frame">
       <iron-image
-        class="photo-thumbnail"
         src="[[src]]"
         sizing="cover"
-        placeholder="images/logo-pumpkin-outline-grayout.svg"
+        placeholder="images/logo-pumpkin-gray-bouncing.svg"
         preload
         fade
       ></iron-image>
@@ -78,7 +91,15 @@
         ></paper-progress>
       </template>
 
-      <div class="label"><span id="labelSpan">[[label]]</span></div>
+      <div class="label horizontal layout center start-justified">
+        <template is="dom-if" if="{{role}}">
+          <iron-icon class="icon" icon="[[_iconForRole(role)]]"></iron-icon>
+        </template>
+        <template is="dom-repeat" items="{{_formatRoles(roles)}}">
+          <iron-icon class="icon" style="[[_formatRoleStyle(item)]]" icon="[[_iconForRole(item)]]"></iron-icon>
+        </template>
+        <div id="labelSpan">[[label]]</div>
+      </div>
     </paper-button>
     <paper-tooltip id="tooltip" animation-delay="0">
       [[label]]
@@ -94,6 +115,8 @@
           type: String,
           value: "",
         },
+
+        role: String,
 
         label: {
           type: String,
@@ -113,6 +136,25 @@
 
       static get observers() { return [
       ]}
+
+      _formatRoleStyle(role) {
+        if (role == "new-releases") return "color:gold";
+        if (role == "sales") return "color:red";
+        if (this.roles[role] === true) {
+          return "color:tomato";
+        }  else if (this.roles[role] === false) {
+          return "color:black";
+        }
+        return "color:lightgray";
+      }
+
+      _formatRoles(roles) {
+        return Object.keys(roles);
+      }
+
+      _iconForRole(role) {
+        return MGIconForRole(role);
+      }
 
 
       /*
@@ -151,3 +193,4 @@
     customElements.define(MGItemImage.is, MGItemImage);
   </script>
 </dom-module>
+u

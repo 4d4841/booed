@@ -42,8 +42,9 @@
       }
 
       .image-icon {
-        width: 150px;
-        height: 150px;
+        margin: 5px;
+        width: 120px;
+        height: 120px;
       }
 
     </style>
@@ -54,7 +55,7 @@
       <div class="horizontal layout end">
 
         <template is="dom-if" if="{{loading}}">
-        <img height="62px" src="images/logo-bounce.svg">
+          <img height="62px" src="images/logo-bounce.svg">
         </template>
 
         <template is="dom-if" if="{{!loading}}">
@@ -87,6 +88,7 @@
           src="[[item.src]]"
           progress="[[item.progress]]"
           label="[[item.name]]"
+          role="photo"
         ></mg-item-image>
 
       </template>
@@ -122,19 +124,11 @@
           value: [],
         },
 
-        /*
-        previousItems: {
-          type: Object,
-          value: {},
-        },
-        */
-
       }}
 
       static get observers() { return [
         '_itemIdChanged(me.user, itemId)',
         '_itemNameChanged(me.user, itemRole, itemName)',
-       // '_imagesChanged(images.*)',
       ]}
 
       /*
@@ -235,9 +229,9 @@
             /* image uploaded, register file id into the database */
             var registerData = {};
 
-            registerData["items/"+itemId+"/images/"+imgKey] = {name:imgFile.name};
-            registerData["items/"+itemId+"/role"] = role;
-            registerData["home/"+uid+"/items/"+itemId+"/time"] = firebase.database.ServerValue.TIMESTAMP;
+            registerData['items/'+itemId+'/images/'+imgKey] = {name:imgFile.name};
+            registerData['items/'+itemId+'/role'] = role;
+            registerData['home/'+uid+'/items/'+itemId+'/time'] = firebase.database.ServerValue.TIMESTAMP;
 
             MGFIRE.database().ref().update(registerData, function(error){
               if (!error) {
@@ -259,9 +253,9 @@
       }
 
       _getItemSnapshot(snapshot) {
-        this.set('loading', false);
         let itemId = this.itemId;
         let v = snapshot.val();
+        this.set('loading', false);
 
         /* XXX role must already be set in the database */
         if (v && v.role) {
@@ -341,9 +335,9 @@
 
           delete this._ItemName;
           var registerData = {};
-          registerData["items/"+this.itemId+"/name"] = itemName;
-          registerData["items/"+this.itemId+"/role"] = this.itemRole;
-          registerData["home/"+this.me.user.uid+"/items/"+this.itemId+"/time"] = firebase.database.ServerValue.TIMESTAMP;
+          registerData['items/'+this.itemId+'/name'] = itemName;
+          registerData['items/'+this.itemId+'/role'] = this.itemRole;
+          registerData['home/'+this.me.user.uid+'/items/'+this.itemId+'/time'] = firebase.database.ServerValue.TIMESTAMP;
 
           MGFIRE.database().ref().update(registerData, function(error){
             if (error) {
@@ -362,13 +356,7 @@
       }
 
       _iconForRole(role) {
-        switch(role) {
-          case "product": return "local-mall";
-          case "article": return "local-library";
-          case "collection": return "group-work";
-          case "gallery": return "photo-library";
-          default: return "help";
-        }
+        return MGIconForRole(role);
       }
 
       _onAddButtonTap(e) {
@@ -387,7 +375,7 @@
 
       newItem(role,name) {
         let key = MGFIRE.database().ref('items').push().key;
-        this.set("itemId", key);
+        this.set('itemId', key);
         this.set('itemRole', role);
          /* Only update UI name without server registration */
         this.set('itemName', this._ItemName = name || "แกลเลอรี่ไม่มีชื่อ");
