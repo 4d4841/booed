@@ -9,6 +9,7 @@
 <link rel="import" href="mg-menu.html">
 <link rel="import" href="mg-item.html">
 <link rel="import" href="mg-image.html">
+<link rel="import" href="mg-item-image.html">
 
 
 <dom-module id="mg-items">
@@ -45,21 +46,16 @@
       }
 
       .item {
-        width:100px;
-        text-decoration: none;
-        padding: 0;
-        margin: 5px;
-        border-radius: 5px;
-        @apply(--layout-vertical);
-        box-shadow: 1px 1px 2px var(--app-shadow-color);
-        background-color: white;
-        overflow: hidden;
-        border: 2px solid white;
+        width: 100px;
+        height: 130px;
+        margin-bottom: 5px;
       }
 
-      .item.iron-selected {
-        border: 2px solid tomato;
+      /*
+      .iron-selected > * {
+        border: 2px solid red;
       }
+      */
 
       .item-thumbnail {
         display: block;
@@ -104,16 +100,24 @@
       </paper-button>
 
       <iron-selector class="items-container" attr-for-selected="name" selected="[[itemId]]">
-        <dom-repeat items="[[itemList]]" mutable-data>
-      <template>
-      <paper-button name="[[item.key]]" class="item" on-click="_onThumbClick">
-        <iron-icon class="icon-thumbnail" icon="[[_iconForRole(item.role)]]"></iron-icon>
-        <iron-icon class="icon-thumbnail-shadow" icon="[[_iconForRole(item.role)]]"></iron-icon>
-        <iron-image class="item-thumbnail" src="[[item.thumbnail]]" sizing="cover"></iron-image>
-          [[item.name]]
-      </paper-button>
+      <template is="dom-repeat" items="[[itemList]]" mutable-data>
+        <mg-item-image
+          name="[[item.key]]"
+          label="[[item.name]]"
+          role="[[item.role]]"
+          src="[[item.thumbnail]]"
+          class="item"
+          on-click="_onThumbClick"
+        ></mg-item-image>
+          <!--
+        <paper-button name="[[item.key]]" class="item" on-click="_onThumbClick">
+          <iron-icon class="icon-thumbnail" icon="[[_iconForRole(item.role)]]"></iron-icon>
+          <iron-icon class="icon-thumbnail-shadow" icon="[[_iconForRole(item.role)]]"></iron-icon>
+          <iron-image class="item-thumbnail" src="[[item.thumbnail]]" sizing="cover"></iron-image>
+            [[item.name]]
+        </paper-button>
+      -->
       </template>
-        </dom-repeat>
       </iron-selector>
 
     </div>
