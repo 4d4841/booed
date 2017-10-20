@@ -227,9 +227,11 @@
               if (images) {
                 let keys = Object.keys(val.images);
                 if (keys.length && !images[keys[0]].uploading) {
-                  MGFIRE.storage().ref('home').child(uid).child('items')
-                  .child(keysnap.key).child(keys[0])
-                  .getDownloadURL().then(function(url){
+                  MGFIRE.storage().ref('home')
+                                  .child(uid)
+                                  .child('images')
+                                  .child(keys[0])
+                                  .getDownloadURL().then(function(url){
                       this.set('itemList.'+last+".thumbnail",url);
                   }.bind(this));
                 }
