@@ -91,15 +91,17 @@
         ></paper-progress>
       </template>
 
-      <div class="label horizontal layout center start-justified">
-        <template is="dom-if" if="{{role}}">
-          <iron-icon class="icon" icon="[[_iconForRole(role)]]"></iron-icon>
-        </template>
-        <template is="dom-repeat" items="{{_formatRoles(roles)}}">
-          <iron-icon class="icon" style="[[_formatRoleStyle(item)]]" icon="[[_iconForRole(item)]]"></iron-icon>
-        </template>
-        <div id="labelSpan">[[label]]</div>
-      </div>
+      <template is="dom-if" if="{{hasLabel}}">
+        <div class="label horizontal layout center start-justified">
+          <template is="dom-if" if="{{icon}}">
+            <iron-icon class="icon" icon="[[icon]]"></iron-icon>
+          </template>
+          <template is="dom-repeat" items="{{_formatIcons(icons)}}">
+            <iron-icon class="icon" style="[[_formatIconStyle(item)]]" icon="[[item]]"></iron-icon>
+          </template>
+          <div id="labelSpan">[[label]]</div>
+        </div>
+      </template>
     </paper-button>
     <paper-tooltip id="tooltip" animation-delay="0">
       [[label]]
@@ -116,7 +118,9 @@
           value: "",
         },
 
-        role: String,
+        icon: String,
+
+        icons: Object,
 
         label: {
           type: String,
@@ -132,30 +136,37 @@
           computed: '_computeShowProgress(progress)',
         },
 
+        hasLabel: {
+          type: Boolean,
+          computed: '_computeHasLabel(icon, icons, label)',
+        },
       }}
 
       static get observers() { return [
       ]}
 
-      _formatRoleStyle(role) {
-        if (role == "new-releases") return "color:gold";
-        if (role == "sales") return "color:red";
-        if (this.roles[role] === true) {
+      _computeHasLabel(icon, icons, label) {
+        if (icon || (icons && Object.keys(icons).length > 0) || label ) {
+          return true;
+        }
+        return false;
+      }
+
+      _formatIconStyle(icon) {
+        /* XXX Temp */
+        if (icon == "new-releases") return "color:gold";
+        if (icon == "sales-baht") return "color:red";
+        if (this.icons[icon] === true) {
           return "color:tomato";
-        }  else if (this.roles[role] === false) {
+        }  else if (this.icons[icon] === false) {
           return "color:black";
         }
         return "color:lightgray";
       }
 
-      _formatRoles(roles) {
-        return Object.keys(roles);
+      _formatIcons(icons) {
+        return Object.keys(icons);
       }
-
-      _iconForRole(role) {
-        return MGIconForRole(role);
-      }
-
 
       /*
       connectedCallback() {

@@ -53,7 +53,7 @@
        class="quilt-image"
        src="[[item.photo]]"
        style$="[[_computeItemStyle(item,unitWidth,index,2)]]"
-       roles="[[item.tags]]"
+       icons="[[_formatIconsForTags(item.tags)]]"
        label="[[_formatLabel(item.tags)]]"
       ></mg-item-image>
     </template>
@@ -133,6 +133,14 @@
           return Object.keys(tags).join(',');
         }
         return "";
+      }
+
+      _formatIconsForTags(tags) {
+        let ret = {};
+        for(let key in tags) {
+          ret[MGIconForRole(key)] = tags[key];
+        }
+        return ret;
       }
 
       connectedCallback() {

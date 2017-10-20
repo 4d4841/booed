@@ -104,7 +104,7 @@
         <mg-item-image
           name="[[item.key]]"
           label="[[item.name]]"
-          role="[[item.role]]"
+          icon="[[_formatRoleIcon(item.role)]]"
           src="[[item.thumbnail]]"
           class="item"
           on-click="_onThumbClick"
@@ -179,7 +179,7 @@
         visible: {
           type: Boolean,
           value: false,
-        }
+        },
       }}
 
       static get observers() { return [
@@ -203,23 +203,22 @@
         }
       }
 
-      _iconForRole(role) {
-        switch(role) {
-          case "product": return "local-mall";
-          case "article": return "local-library";
-          case "collection": return "group-work";
-          case "gallery": return "photo-library";
-          default: return "help";
-        }
+      _formatRoleIcon(role) {
+        return MGIconForRole(role);
       }
 
       _userChanged(uid) {
         if (uid) {
-          MGFIRE.database().ref('home').child(uid).child('items').on('child_added', function(keysnap){
+          MGFIRE.database().ref('home')
+                           .child(uid)
+                           .child('items')
+                           .on('child_added', function(keysnap){
             if (!this.items[keysnap.key]) {
               this.items[keysnap.key] = {};
             }
-            MGFIRE.database().ref('items').child(keysnap.key).once('value',function(datasnap){
+            MGFIRE.database().ref('items')
+                             .child(keysnap.key)
+                             .once('value',function(datasnap){
               let val = datasnap.val();
               this.items[keysnap.key].name = val.name;
               this.push('itemList',{key: keysnap.key, role:val.role, name:val.name});

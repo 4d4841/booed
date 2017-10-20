@@ -88,7 +88,7 @@
           src="[[item.src]]"
           progress="[[item.progress]]"
           label="[[item.name]]"
-          role="photo"
+          icon="photo"
         ></mg-item-image>
 
       </template>
@@ -199,8 +199,7 @@
 
         Array.from(files).forEach(function(imgFile){
           let imgKey = imagesRef.push().key;
-          let imgRef = storage.ref('home').child(uid)
-          .child('items').child(itemId).child(imgKey);
+          let imgRef = storage.ref('home').child(uid).child('images').child(imgKey);
 
           let imgData = {key:imgKey, name:imgFile.name};
           let lastIndex = this.push('photoList',imgData) - 1;
@@ -265,7 +264,7 @@
           }
 
           if (v.images) {
-            let itemRef = MGFIRE.storage().ref('home').child(this.me.user.uid).child('items').child(snapshot.key);
+            let itemRef = MGFIRE.storage().ref('home').child(this.me.user.uid).child('images').child(snapshot.key);
 
             Object.keys(v.images).forEach(function(imgKey){
               let imgData = this.appImages[imgKey];
