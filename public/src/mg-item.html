@@ -79,7 +79,10 @@
 
       </div>
 
-      <iron-selector class="photos-container horizontal layout wrap" attr-for-selected="name">
+      <iron-selector
+        selected-values="{{selectedImages}}"
+        class="photos-container horizontal layout wrap"
+        multi>
 
       <template is="dom-repeat" items="{{photoList}}" mutable-data>
 
@@ -124,12 +127,20 @@
           value: [],
         },
 
+        selectedImages: {
+          type: Array,
+          notify: true,
+        }
       }}
 
       static get observers() { return [
         '_itemIdChanged(me.user, itemId)',
         '_itemNameChanged(me.user, itemRole, itemName)',
+        '_selectedImagesChanged(selectedImages.splices)',
       ]}
+
+      _selectedImagesChanged(changes) {
+      }
 
       /*
       _imagesChanged(imgChanges) {
@@ -324,6 +335,7 @@
 
         this._ItemName = "ไอเท็มไม่มีชื่อ";
         this.set('itemName',this._ItemName);
+        this.set('selectedImages',[]);
         this.set('photoList',[]);
         this.set('loading', true);
         let database = MGFIRE.database();
