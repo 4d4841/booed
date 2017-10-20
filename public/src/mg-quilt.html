@@ -16,11 +16,11 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../bower_components/iron-scroll-threshold/iron-scroll-threshold.html">
-<link rel="import" href="../bower_components/iron-list/iron-list.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 
 <link rel="import" href="mg-common-styles.html">
 <link rel="import" href="mg-image.html">
+<link rel="import" href="mg-item-image.html">
 
 <dom-module id="mg-quilt">
   <template>
@@ -34,19 +34,9 @@
         margin: 0;
       }
 
-      iron-list {
-      }
-
-      #quilt {
-      }
-
       .quilt-image {
         display: block;
         position: absolute;
-        --mg-image: {
-          box-sizing: border-box;
-          border-radius: 5px;
-        };
       }
 
     </style>
@@ -57,16 +47,15 @@
         items="[[quiltItems]]"
         mutable-data>
     <template strip-whitespace>
-      <!--
-    <iron-image sizing="cover" style$="[[_computeItemStyle(item,unitWidth,index)]]" class="quilt-image" src="[[item.photo]]"></iron-image>
-      -->
-      <!--
-    <paper-card image="[[item.photo]]" style$="[[_computePaperCardItemStyle(item,unitWidth,index,4)]]">
-    </paper-card>
-      -->
       <dom-if if="[[_itemInOffsetRange(item)]]">
     <template>
-      <mg-image class="quilt-image" tags="[[item.tags]]" src="[[item.photo]]" style$="[[_computeItemStyle(item,unitWidth,index,2)]]"></mg-image>
+      <mg-item-image
+       class="quilt-image"
+       src="[[item.photo]]"
+       style$="[[_computeItemStyle(item,unitWidth,index,2)]]"
+       roles="[[item.tags]]"
+       label="[[_formatLabel(item.tags)]]"
+      ></mg-item-image>
     </template>
       </dom-if>
 
@@ -138,6 +127,13 @@
 
       static get observers() { return [
       ]}
+
+      _formatLabel(tags) {
+        if (tags) {
+          return Object.keys(tags).join(',');
+        }
+        return "";
+      }
 
       connectedCallback() {
         super.connectedCallback();
