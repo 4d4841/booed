@@ -14,6 +14,10 @@ This is still a work in progress.
 * Polymer
 * Firebase
 
+## Implementations
+
+<img src="https://docs.google.com/drawings/d/e/2PACX-1vSGW08d5r2ZLc3BFFvLcbyvKfHoqpEX1MQ-Kwf-PHGcfSO0_KywdKd-ZaTsNUWTQnJIF0TcEC5UugmL/pub?w=960&amp;h=720" />
+
 ## Contributing
 
 Not so sure... May be a pull request? You can also let me know at 4d4841@gmail.com.
