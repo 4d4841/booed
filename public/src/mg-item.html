@@ -70,8 +70,19 @@
           </paper-input>
 
           <paper-button on-tap="_onAddButtonTap">
-            <iron-icon icon="add-to-photos"></iron-icon> เพิ่มรูป
+            <iron-icon icon="add"></iron-icon> เพิ่มรูป
           </paper-button>
+          <template is="dom-if" if="{{hasSelection}}">
+            <paper-button on-tap="_onAddButtonTap">
+              <iron-icon icon="delete"></iron-icon> ลบ
+            </paper-button>
+            <paper-button on-tap="_onAddButtonTap">
+              <iron-icon icon="reorder"></iron-icon> เรียง
+            </paper-button>
+          <paper-button on-tap="_onAddButtonTap">
+            <iron-icon icon="add-to-photos"></iron-icon> แกลเลอรี่
+          </paper-button>
+          </template>
 
         </template>
 
@@ -80,6 +91,7 @@
       </div>
 
       <iron-selector
+        attr-for-selected="key"
         selected-values="{{selectedImages}}"
         class="photos-container horizontal layout wrap"
         multi>
@@ -87,6 +99,7 @@
       <template is="dom-repeat" items="{{photoList}}" mutable-data>
 
         <mg-item-image
+          key="[[item.key]]"
           class="image-icon"
           src="[[item.src]]"
           progress="[[item.progress]]"
@@ -130,7 +143,9 @@
         selectedImages: {
           type: Array,
           notify: true,
-        }
+        },
+
+        hasSelection: Boolean,
       }}
 
       static get observers() { return [
@@ -140,6 +155,11 @@
       ]}
 
       _selectedImagesChanged(changes) {
+        if (this.selectedImages.length) {
+          this.set('hasSelection', true);
+        } else {
+          this.set('hasSelection', false);
+        }
       }
 
       /*
@@ -207,6 +227,7 @@
         let storage = MGFIRE.storage();
         let database = MGFIRE.database();
         let imagesRef = database.ref('items').child(itemId).child('images');
+        ///XXX this should be array to maintain order
 
         Array.from(files).forEach(function(imgFile){
           let imgKey = imagesRef.push().key;
@@ -243,6 +264,7 @@
             var registerData = {};
 
             registerData['items/'+itemId+'/images/'+imgKey] = {name:imgFile.name};
+            registerData['items/'+itemId+'/uid'] = uid;
             registerData['items/'+itemId+'/role'] = role;
             registerData['home/'+uid+'/items/'+itemId+'/time'] = firebase.database.ServerValue.TIMESTAMP;
 
@@ -324,9 +346,16 @@
 
       _getDataError(error) {
         console.error("ERR", error);
+        this._ItemReference.off('value', this._getItemSnapshot, this);
+        delete this._ItemReference;
       }
 
       _itemIdChanged(user, itemId) {
+        if (this._ItemReference) {
+          this._ItemReference.off('value', this._getItemSnapshot, this);
+          delete this._ItemReference;
+        }
+
         if (!user || !itemId) {
           return;
         }
@@ -338,8 +367,8 @@
         this.set('selectedImages',[]);
         this.set('photoList',[]);
         this.set('loading', true);
-        let database = MGFIRE.database();
-        database.ref('items').child(itemId).once('value', this._getItemSnapshot, this._getDataError, this);
+        this._ItemReference = MGFIRE.database().ref('items').child(itemId);
+        this._ItemReference.on('value', this._getItemSnapshot, this._getDataError, this);
       }
 
       _itemNameChanged(user, itemRole, itemName) {
@@ -351,9 +380,10 @@
 
           delete this._ItemName;
           var registerData = {};
+          registerData['items/'+this.itemId+'/uid'] = user.uid;
           registerData['items/'+this.itemId+'/name'] = itemName;
           registerData['items/'+this.itemId+'/role'] = this.itemRole;
-          registerData['home/'+this.me.user.uid+'/items/'+this.itemId+'/time'] = firebase.database.ServerValue.TIMESTAMP;
+          registerData['home/'+user.uid+'/items/'+this.itemId+'/time'] = firebase.database.ServerValue.TIMESTAMP;
 
           MGFIRE.database().ref().update(registerData, function(error){
             if (error) {
