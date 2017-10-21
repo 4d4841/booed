@@ -208,14 +208,21 @@
       }
 
       _userChanged(uid) {
+        this.set('itemList',[]);
+        if (this._itemsCallback) {
+          this._itemsCallbackRef.off('child_added', this._itemsCallback, this);
+          delete this._itemsCallback;
+        }
         if (uid) {
-          MGFIRE.database().ref('home')
-                           .child(uid)
-                           .child('items')
-                           .on('child_added', function(keysnap){
+          this._itemsCallbackRef = MGFIRE.database().ref('home')
+                                                    .child(uid)
+                                                    .child('items');
+          this._itemsCallback = this._itemsCallbackRef.on('child_added', function(keysnap){
+
             if (!this.items[keysnap.key]) {
               this.items[keysnap.key] = {};
             }
+
             MGFIRE.database().ref('items')
                              .child(keysnap.key)
                              .once('value',function(datasnap){
