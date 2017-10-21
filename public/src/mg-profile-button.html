@@ -1,6 +1,20 @@
+<!DOCTYPE html>
+<!--
+ .................................................................................................
+:::BSDB'::BSDB'::BSDB':::::BSDB':::BSDBS'::BSDBS'::BSDB'::::BSD'::BSDBS'::BSDBS'::BSDB'::::::BSD'::
+::BSDBSD BSDBSD :.BSDBS':BSDBS .:BSD ..BSD  ...BSD 'BSDBS':BSD .BSD ..BSD  ...BSD :BSDBS'::BSDB .::
+::COPYRIGHT2017 ::.BS BSDB .BS :BSD .::.BSD :::.BSD :BS .BSDB .BSD .:::BSD ::::BSD :BS BSDB BS .:::
+:::BSDSTYLEBSD .:::BS  BS .:BS :BSD ::::BSD ::::BSD :BS ::BSD :BSD :::::...::::BSD :BS :BS  BS ::::
+::::.LICENSE .::::BSD .:..::BS 'BSD ::::BSD ::::BSD :BS :::BS :BSD ::BSDBS'::::BSD :BS ::..:BS ':::
+:::::::BSD .::::BSDB .::::::BSD 'BSD'::BSD .:::BSD .BSD :::BSD':BSD'::.BSD :::BSD .BSD :::::BSDB'::
+::::::::B .::::::BS .:::::::.BSD ::BSDBS .:BSDBS  :BSD .::::BSD :.BSDBS BS BSDB .:BSD .:::::.BS .::
+`::::::::.::::::::..::::::::::...:::.....:::.....:::...::::::...:::.............:::...::::::::..::'
+-->
+
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="mg-badge-button.html">
 <link rel="import" href="mg-menu.html">
 
@@ -29,7 +43,7 @@
       .photo {
         height: 200px;
         width: 200px;
-        background-size: cover;
+        background-size: contain;
         margin: 0px;
       }
 
@@ -131,8 +145,12 @@
             <div class="under-photo">
               <h3>[[me.user.email]]<br>[[me.user.displayName]]</h3>
             </div>
-            <mg-image class="photo" src="[[me.user.photoURL]]" on-tap="_openProfile"></mg-image>
-
+            <iron-image
+              class="photo"
+              src="[[me.user.photoURL]]"
+              on-click="_openProfile"
+              sizing="cover"
+            ></iron-image>
             <mg-menu menu="[[menu.entries.0.submenu]]"></mg-menu>
     </paper-card>
 
@@ -206,6 +224,7 @@
           this.icon = "pumpkin";
           this.image = null;
           this.$.button.style.color = "var(--app-primary-color)";
+          this.showPanel = false;
         }
       }
 
@@ -225,7 +244,7 @@
         } else if (!this.route.path.startsWith("/user/profile")) {
           this.showPanel = !this.showPanel;
         }
-        
+
         if (this.showPanel) {
           this.dispatchEvent(new CustomEvent('close-contextual-menu', {
             bubbles: true, composed: true, detail:{sender:this}}));

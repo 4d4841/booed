@@ -18,6 +18,7 @@
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="mg-profile.html">
 <link rel="import" href="mg-items.html">
+<link rel="import" href="mg-image.html">
 
 <dom-module id="mg-user">
   <template strip-whitespace>
@@ -43,7 +44,17 @@
         me="{{me}}"
       ></mg-profile>
       <div name="order">
-        show order<br>
+        <mg-image
+          style="border-radius:5px;border:2px solid white;width:500px;height:500px;
+          
+          box-shadow: 1px 1px 1px var(--app-shadow-color);
+          "
+          placeholder="images/logo-pumpkin-gray-bouncing.svg"
+          src="http://cfile21.uf.tistory.com/image/264D6433548B13A3151F5C"
+          sizing="cover"
+        >
+        something inside
+        <mg-image>
       </div>
       <mg-items
         id="items"

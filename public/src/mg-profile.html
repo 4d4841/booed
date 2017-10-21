@@ -14,12 +14,12 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="mg-input.html">
-<link rel="import" href="mg-image.html">
 
 <dom-module id="mg-profile">
   <template strip-whitespace>
@@ -300,7 +300,7 @@
             <dom-if if="[[me.user.email]]">
           <template>
             <!-- begin: user panel -->
-              <mg-image class="photo" src="[[me.user.photoURL]]"></mg-image>
+              <iron-image class="photo" src="[[me.user.photoURL]]" sizing="cover"></iron-image>
               <div class="under-photo">
                 <h3>[[me.user.email]]<br>[[me.user.displayName]]</h3>
               </div>
@@ -324,7 +324,7 @@
             <dom-if if="[[me.user.email]]">
           <template>
             <!-- begin: user panel -->
-              <mg-image class="photo" src="[[me.user.photoURL]]"></mg-image>
+              <iron-image class="photo" src="[[me.user.photoURL]]" sizing="cover"></iron-image>
               <div class="under-photo">
                 <h3>[[me.user.email]]<br>[[me.user.displayName]]</h3>
               </div>

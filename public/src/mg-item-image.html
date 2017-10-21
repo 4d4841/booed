@@ -1,11 +1,24 @@
+<!DOCTYPE html>
+<!--
+ .................................................................................................
+:::BSDB'::BSDB'::BSDB':::::BSDB':::BSDBS'::BSDBS'::BSDB'::::BSD'::BSDBS'::BSDBS'::BSDB'::::::BSD'::
+::BSDBSD BSDBSD :.BSDBS':BSDBS .:BSD ..BSD  ...BSD 'BSDBS':BSD .BSD ..BSD  ...BSD :BSDBS'::BSDB .::
+::COPYRIGHT2017 ::.BS BSDB .BS :BSD .::.BSD :::.BSD :BS .BSDB .BSD .:::BSD ::::BSD :BS BSDB BS .:::
+:::BSDSTYLEBSD .:::BS  BS .:BS :BSD ::::BSD ::::BSD :BS ::BSD :BSD :::::...::::BSD :BS :BS  BS ::::
+::::.LICENSE .::::BSD .:..::BS 'BSD ::::BSD ::::BSD :BS :::BS :BSD ::BSDBS'::::BSD :BS ::..:BS ':::
+:::::::BSD .::::BSDB .::::::BSD 'BSD'::BSD .:::BSD .BSD :::BSD':BSD'::.BSD :::BSD .BSD :::::BSDB'::
+::::::::B .::::::BS .:::::::.BSD ::BSDBS .:BSDBS  :BSD .::::BSD :.BSDBS BS BSDB .:BSD .:::::.BS .::
+`::::::::.::::::::..::::::::::...:::.....:::.....:::...::::::...:::.............:::...::::::::..::'
+-->
+
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../bower_components/neon-animation/web-animations.html">
 <link rel="import" href="mg-common-styles.html">
 <link rel="import" href="mg-icons.html">
+<link rel="import" href="mg-image.html">
 
 <dom-module id="mg-item-image">
   <template strip-whitespace>
@@ -15,11 +28,11 @@
       }
 
       :host(.iron-selected) .photo-frame {
-        border: 2px solid tomato;
+        background-color: tomato;
       }
 
       :host(:not(.iron-selected)) .photo-frame {
-        border: 2px solid white;
+        background-color: white;
       }
 
       .photo-frame {
@@ -29,25 +42,27 @@
         padding: 0;
         margin: 5px;
         border-radius: 5px;
-        @apply(--layout-vertical);
         box-shadow: 1px 1px 1px var(--app-shadow-color);
         background-color: white;
         overflow: hidden;
-        border: 2px solid white;
+        border: 2px solid transparent;
       }
 
-      .photo-frame > iron-image {
+      .photo-frame > mg-image {
         width: 100%;
         height: 100%;
         background-color: whitesmoke;
         border-radius: 5px;
+        @apply(--layout-vertical);
+        @apply(--layout-center);
+        overflow: hidden;
       }
 
       paper-progress {
-        width: 90%;
+        width: calc(100% - 10px);
         pointer-events: none;
-        position: absolute;
-        top: 5px;
+        border-radius: 2px;
+        margin-top: 5px;
       }
 
       .label {
@@ -78,30 +93,32 @@
       </custom-style>
 
     <paper-button class="photo-frame">
-      <iron-image
+      <mg-image
         src="[[src]]"
         sizing="cover"
+        transition="[[transition]]"
         placeholder="images/logo-pumpkin-gray-bouncing.svg"
-        preload
-        fade
-      ></iron-image>
-      <template is="dom-if" if="{{showProgress}}">
-        <paper-progress
-          value="[[progress]]"
-        ></paper-progress>
-      </template>
+      >
+        <template is="dom-if" if="{{showProgress}}">
+          <paper-progress
+            value="[[progress]]"
+          ></paper-progress>
+        </template>
 
-      <template is="dom-if" if="{{hasLabel}}">
-        <div class="label horizontal layout center start-justified">
-          <template is="dom-if" if="{{icon}}">
-            <iron-icon class="icon" icon="[[icon]]"></iron-icon>
-          </template>
-          <template is="dom-repeat" items="{{_formatIcons(icons)}}">
-            <iron-icon class="icon" style="[[_formatIconStyle(item)]]" icon="[[item]]"></iron-icon>
-          </template>
-          <div id="labelSpan">[[label]]</div>
-        </div>
-      </template>
+        <template is="dom-if" if="{{hasLabel}}">
+          <div class="label horizontal layout center start-justified">
+            <template is="dom-if" if="{{icon}}">
+              <iron-icon class="icon" icon="[[icon]]"></iron-icon>
+            </template>
+            <template is="dom-repeat" items="{{_formatIcons(icons)}}">
+              <iron-icon class="icon" style="[[_formatIconStyle(item)]]" icon="[[item]]"></iron-icon>
+            </template>
+            <div id="labelSpan">[[label]]</div>
+          </div>
+        </template>
+
+      </mg-image>
+
     </paper-button>
     <paper-tooltip id="tooltip" animation-delay="0">
       [[label]]
@@ -117,6 +134,8 @@
           type: String,
           value: "",
         },
+
+        transition: String,
 
         icon: String,
 
