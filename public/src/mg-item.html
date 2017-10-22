@@ -105,7 +105,7 @@
           src="[[item.src]]"
           progress="[[item.progress]]"
           label="[[item.name]]"
-          order="[[item.order]]"
+          selection-order="[[item.selectionOrder]]"
           icon="photo"
           transition="1.5s"
           spinner
@@ -166,8 +166,8 @@
             splice.removed.forEach(function(removedKey){
               for(let i = 0, photo; photo = this.photoList[i]; ++i ) {
                 if (photo.key == removedKey) {
-                  this.photoList[i].order = null;
-                  this.notifyPath('photoList.'+i+'.order');
+                  this.photoList[i].selectionOrder = null;
+                  this.notifyPath('photoList.'+i+'.selectionOrder');
                 }
               }
             }.bind(this))
@@ -176,8 +176,8 @@
           this.selectedImages.forEach(function(key){
             for(let i = 0, photo; photo = this.photoList[i]; ++i ) {
               if (photo.key == key) {
-                this.photoList[i].order = ++orderNumber;
-                this.notifyPath('photoList.'+i+'.order');
+                this.photoList[i].selectionOrder = ++orderNumber;
+                this.notifyPath('photoList.'+i+'.selectionOrder');
               }
             }
           }.bind(this));
@@ -337,7 +337,7 @@
 
               if (snapshot.key == itemId) {
                 if (idx < 0) {
-                  delete imgData.order;
+                  delete imgData.selectionOrder;
                   this.push('photoList',imgData);
                 }
               }
