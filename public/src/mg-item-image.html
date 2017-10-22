@@ -55,6 +55,7 @@
         border-radius: 5px;
         @apply(--layout-vertical);
         @apply(--layout-center);
+        @apply(--layout-center-justified);
         overflow: hidden;
       }
 
@@ -89,6 +90,18 @@
         min-width: 20px;
       }
 
+      .loader {
+        width: 100%;
+        height: 100%;
+        transition: opacity 0s;
+        opacity: 1;
+      }
+
+      .loader[loaded] {
+        opacity: 0;
+        transition: opacity 0.5s;
+      }
+
     </style>
       </custom-style>
 
@@ -96,13 +109,20 @@
       <mg-image
         src="[[src]]"
         sizing="cover"
+        loaded="{{isLoaded}}"
+      >
+      <!--
         transition="[[transition]]"
         placeholder="images/logo-pumpkin-gray-bouncing.svg"
-      >
+      -->
         <template is="dom-if" if="{{showProgress}}">
           <paper-progress
             value="[[progress]]"
           ></paper-progress>
+        </template>
+
+        <template is="dom-if" if="{{spinner}}">
+          <img class="loader" src="images/logo-pumpkin-gray-bouncing.svg" draggable="false" loaded$="{{isLoaded}}">
         </template>
 
         <template is="dom-if" if="{{hasLabel}}">
@@ -158,6 +178,11 @@
         hasLabel: {
           type: Boolean,
           computed: '_computeHasLabel(icon, icons, label)',
+        },
+
+        spinner: {
+          type: Boolean,
+          value: false,
         },
       }}
 

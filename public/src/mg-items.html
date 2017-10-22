@@ -50,38 +50,6 @@
         margin-bottom: 5px;
       }
 
-      /*
-      .iron-selected > * {
-        border: 2px solid red;
-      }
-      */
-
-      .item-thumbnail {
-        display: block;
-        width: 100px;
-        height: 100px;
-      }
-
-      .icon-thumbnail {
-        --iron-icon-width:15px;
-        --iron-icon-height:15px;
-        --iron-icon-fill-color: black;
-        position: absolute;
-        z-index:2;
-        top: 5px;
-        left: 5px;
-      }
-
-      .icon-thumbnail-shadow {
-        --iron-icon-width:15px;
-        --iron-icon-height:15px;
-        --iron-icon-stroke-color: white;
-        position: absolute;
-        z-index:1;
-        top: 5px;
-        left: 5px;
-      }
-
       #editor {
         margin-left: 20px
       }
@@ -104,18 +72,10 @@
           name="[[item.key]]"
           label="[[item.name]]"
           icon="[[_formatRoleIcon(item.role)]]"
-          src="[[item.thumbnail]]"
+          src="[[item.src]]"
           class="item"
           on-click="_onThumbClick"
         ></mg-item-image>
-          <!--
-        <paper-button name="[[item.key]]" class="item" on-click="_onThumbClick">
-          <iron-icon class="icon-thumbnail" icon="[[_iconForRole(item.role)]]"></iron-icon>
-          <iron-icon class="icon-thumbnail-shadow" icon="[[_iconForRole(item.role)]]"></iron-icon>
-          <iron-image class="item-thumbnail" src="[[item.thumbnail]]" sizing="cover"></iron-image>
-            [[item.name]]
-        </paper-button>
-      -->
       </template>
       </iron-selector>
 
@@ -238,12 +198,12 @@
                                   .child('images')
                                   .child(keys[0])
                                   .getDownloadURL().then(function(url){
-                      this.set('itemList.'+last+".thumbnail",url);
+                      this.set('itemList.'+last+".src",url);
                   }.bind(this));
                 }
               }
               else {
-                this.set('itemList.'+last+".thumbnail",'images/logo-pumpkin-grayout.svg');
+                this.set('itemList.'+last+".src",'images/logo-pumpkin-grayout.svg');
               }
 
               MGFIRE.database().ref('items').child(keysnap.key).on('child_changed', function(keysnap){

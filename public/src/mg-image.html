@@ -42,17 +42,15 @@
 
       static get properties() { return {
 
-        image: {
-          type: Object,
-          value: function() {
-            let val = new Image();
-            val.onload = this._onLoad.bind(this);
-            console.log(val.width,val.height);
-            return val;
-          },
-        },
-
         alt: String,
+
+        /*
+        storageSrc = {uid: uid string ,key: image key}
+        */
+        storageSrc: {
+          type: Object,
+          observer: '_storageSrcChanged',
+        },
 
         src: {
           type: String,
@@ -73,14 +71,21 @@
 
         placeholder: {
           type: String,
+          value: '',
           observer: '_placeholderChanged'
+        },
+
+        loaded: {
+          type: Boolean,
+          value: false,
+          notify: true,
         },
       }}
 
       _transitionChanged(trans) {
         if (trans) {
-          this.style.transition = 'background '+trans;
-          this.style.transitionDuration = '0s';
+//          this.style.transition = 'background '+trans+', background-position 0s, background-size 0s';
+//          this.style.transitionDuration = '0s';
         }
       }
 
@@ -89,23 +94,45 @@
       }
 
       _onLoad(e) {
-        this.style.backgroundImage = 'url(\'' + this.image.src + '\')';
+        this.set('loaded',true);
+        this.style.backgroundImage = 'url(\'' + this._ImageLoader.src + '\')';
+        delete this._ImageLoader;
       }
 
       _srcChanged(src) {
         if (src) {
-          this.image.src = src;
+          this.set('loaded',false);
+          this._ImageLoader = this._ImageLoader || new Image();
+          this._ImageLoader.onload = this._onLoad.bind(this);
+          this._ImageLoader.src = src;
         } else {
+          this.set('loaded',true);
           this.style.backgroundImage = 'url(\'' + this.placeholder + '\')';
         }
       }
 
+      _storageSrcChanged(stroageSrc) {
+        MGFIRE.storage().ref('home')
+                        .child(storageSrc.uid)
+                        .child('images')
+                        .child(storageSrc.key)
+                        .getDownloadURL().then(function(url){
+            this.set('src', url);
+        }.bind(this));
+      }
+
       _placeholderChanged(placeholder) {
-        if (this.image && this.image.width && this.image.height) {
+
+        if (this.style.backgroundImage) {
           return;
         }
 
-        this.style.backgroundImage = 'url(\'' + placeholder + '\')';
+        if (!placeholder) {
+          this.style.backgroundImage = "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)";
+//          this.style.backgroundImage = "url(\'data:image/svg+xml;utf8,<svg class=\"shadow\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"0 0 200000 0\"></svg>\')";
+        } else {
+          this.style.backgroundImage = 'url(\'' + placeholder + '\')';
+        }
       }
 
     }
