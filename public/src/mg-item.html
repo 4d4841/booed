@@ -35,8 +35,9 @@
         position: relative;
       }
 
-      .photos-container {
+      #selector {
         @apply(--layout-horizontal);
+        @apply(--layout-wrap);
         padding: 0px;
         height: 100%;
       }
@@ -91,9 +92,9 @@
       </div>
 
       <iron-selector
+        id="selector"
         attr-for-selected="key"
         selected-values="{{selectedImages}}"
-        class="photos-container horizontal layout wrap"
         multi>
 
       <template is="dom-repeat" items="{{photoList}}" mutable-data>
@@ -104,9 +105,11 @@
           src="[[item.src]]"
           progress="[[item.progress]]"
           label="[[item.name]]"
+          order="[[item.order]]"
           icon="photo"
           transition="1.5s"
           spinner
+          on-tap="_onItemTap"
         ></mg-item-image>
 
       </template>
@@ -157,48 +160,60 @@
       ]}
 
       _selectedImagesChanged(changes) {
+        if (changes) {
+          let orderNumber = 0;
+          changes.indexSplices.forEach(function(splice){
+            splice.removed.forEach(function(removedKey){
+              for(let i = 0, photo; photo = this.photoList[i]; ++i ) {
+                if (photo.key == removedKey) {
+                  this.photoList[i].order = null;
+                  this.notifyPath('photoList.'+i+'.order');
+                }
+              }
+            }.bind(this))
+          }.bind(this));
+
+          this.selectedImages.forEach(function(key){
+            for(let i = 0, photo; photo = this.photoList[i]; ++i ) {
+              if (photo.key == key) {
+                this.photoList[i].order = ++orderNumber;
+                this.notifyPath('photoList.'+i+'.order');
+              }
+            }
+          }.bind(this));
+        }
         if (this.selectedImages.length) {
           this.set('hasSelection', true);
         } else {
           this.set('hasSelection', false);
         }
-      }
 
-      /*
-      _imagesChanged(imgChanges) {
-        if (imgChanges.path.startsWith("images.")) {
-
-          for (let i = 0, photo; photo = this.photoList[i]; ++i) {
-            if (imgChanges.path == "images."+photo.key) {
-              for (let key in imgChanges.value) {
-                this.set('photoList.'+i+'.'+key, imgChanges.value[key]);
-                //this.notifyPath('photoList.'+i+'.'+key);
-              }
-              return;
-            }
-            if (imgChanges.path == "images."+photo.key+".src") {
-              //this.set('photoList.'+i, Object.assign({},this.photoList[i], {src:imgChanges.value}));
-              this.set('photoList.'+i+'.src', imgChanges.value);
-              this.notifyPath('photoList.'+i+'.src');
-              return;
-            }
-            if (imgChanges.path == "images."+photo.key+".progress") {
-              this.set('photoList.'+i+'.progress', imgChanges.value.toFixed(2));
-              return;
-            }
-          }
-          if (imgChanges.value.key
-              && imgChanges.path == "images."+imgChanges.value.key) {
-            this.push('photoList', imgChanges.value);
-          }
-        } else if (imgChanges.path == "images") {
-          this.set('photoList', []);
-          for (let key in imgChanges.value) {
-            this.push('photoList', imgChanges.value[key]);
+        /*
+        if (this._InsertRange) {
+          delete this._InsertRange;
+          let beginKey = this.selectedImages.length ?
+          let beginIndex,endIndex;
+          for(let i = 0, photo; photo = this.photoList[i]; ++i) {
+            if ()
           }
         }
+        */
       }
-      */
+
+      _onItemTap(e) {
+        if (e.detail.sourceEvent.shiftKey) {
+          if (typeof(this._LastTapIndex) == "undefined") {
+            this._LastTapIndex = -1;
+          }
+
+          let inc = this._LastTapIndex < e.model.index ? 1 : -1;
+
+          for (let i = this._LastTapIndex + inc; inc > 0 ? i < e.model.index : i > e.model.index; i+=inc) {
+            this.$.selector.selectIndex(i);
+          }
+        }
+        this._LastTapIndex = e.model.index;
+      }
 
       _indexId(imageId) {
         let appData = this.appImages[imageId];
@@ -322,6 +337,7 @@
 
               if (snapshot.key == itemId) {
                 if (idx < 0) {
+                  delete imgData.order;
                   this.push('photoList',imgData);
                 }
               }
@@ -353,6 +369,7 @@
       }
 
       _itemIdChanged(user, itemId) {
+        delete this._LastTapIndex;
         if (this._ItemReference) {
           this._ItemReference.off('value', this._getItemSnapshot, this);
           delete this._ItemReference;
