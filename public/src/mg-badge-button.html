@@ -1,11 +1,13 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/paper-spinner/paper-spinner.html">
 <link rel="import" href="mg-common-styles.html">
 <link rel="import" href="mg-icons.html">
 
 <dom-module id="mg-badge-button">
   <template strip-whitespace>
-    <style>
+      <custom-style>
+    <style include="iron-flex iron-flex-alignment">
       :host {
         @apply(--layout-vertical);
         margin-top:-3px;
@@ -15,7 +17,8 @@
         width: 28px;
         height: 28px;
         border-radius: 50% 50%;
-        border: 3px solid var(--app-primary-color);
+        /*border: 3px solid var(--app-primary-color);*/
+        border: 1px solid tomato;
         box-sizing: border-box;
         position: absolute;
         pointer-events: none;
@@ -56,7 +59,9 @@
       }
 
     </style>
+      </custom-style>
 
+    <paper-spinner-lite style="--paper-spinner-stroke-width:1px;--paper-spinner-color:tomato;position:absolute;top:3px" class="layout self-center" active="{{spinnerActive}}"></paper-spinner-lite>
     <img class="photo-icon" src="[[image]]" hidden$="[[_noImage(image)]]">
 
     <svg class="badge" hidden$="[[_hideBadge(value)]]">

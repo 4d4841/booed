@@ -207,7 +207,12 @@
 
       static get observers() { return [
         '_avatarChanged(me.user.photoURL)',
+        '_waitingChanged(me.waiting)',
       ]}
+
+      _waitingChanged(waiting) {
+        this.set('spinnerActive',waiting);
+      }
 
       connectedCallback() {
         super.connectedCallback();
