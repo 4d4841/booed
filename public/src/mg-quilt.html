@@ -81,6 +81,10 @@
           type: Number,
         },
 
+        loadLength: {
+          type: Number,
+          value: 0,
+        },
         allItems: {
           type: Array,
           value: [],
@@ -120,6 +124,7 @@
 
         selected: {
           type: String,
+          value: null,
           observer: '_selectedChanged'
         },
 
@@ -165,7 +170,7 @@
 
       _load() {
         /* XXX Could use a pagination */
-        if (this.collisionMap.length+this.collisionOffset > 3000) return;
+        if (this.collisionMap.length+this.collisionOffset > 1000) return;
 
         if (this._loading) this._loading.cancel();
         this._loading = Polymer.Debouncer.debounce(this._loading,
@@ -192,9 +197,14 @@
             "sales",
         ];
 
-        while (this.collisionOffset < originalOffset + rows && this.allItems.length < 2000) {
 
+        while (this.collisionOffset < originalOffset + rows && this.allItems.length < 2000) {
           for (let j = 0; j < 5; j++) {
+
+            if (this.loadLength < this.allItems.length) {
+              this._appendItemToQuilt(this.allItems[this.loadLength++]);
+              continue;
+            }
 
             let w = getRandomInt(1,3);
             let h = getRandomInt(1,3);
@@ -211,6 +221,12 @@
 
             this.push('allItems',newItem);
             this._appendItemToQuilt(newItem);
+            this.loadLength = this.allItems.length;
+          }
+
+          if (this.loadLength < this.allItems.length) {
+            this._appendItemToQuilt(this.allItems[this.loadLength++]);
+            continue;
           }
 
           let w = getRandomInt(2,7);
@@ -226,6 +242,7 @@
           };
           this.push('allItems',newItem);
           this._appendItemToQuilt(newItem);
+          this.loadLength = this.allItems.length;
 
         }
         this.$.scrollThreshold.clearTriggers();
@@ -242,7 +259,7 @@
         this.collisionMap = [];
         this.set('collisionOffset',0);
         this.set('quiltItems',[]);
-        this.allItems.forEach(this._appendItemToQuilt, this);
+        this.visible && this._load();
       }
 
       _selectedChanged(selected) {
@@ -250,10 +267,8 @@
         this.collisionMap = [];
         this.set('collisionOffset',0);
         this.set('quiltItems',[]);
-        this.allItems.forEach(this._appendItemToQuilt, this);
-        if (this.collisionOffset < 10) {
-          this.visible && this._load();
-        }
+        this.loadLength = 0;
+        this.visible && this._load();
       }
 
       _testCollision(row,col) {
