@@ -17,6 +17,7 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../bower_components/iron-scroll-threshold/iron-scroll-threshold.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-spinner/paper-spinner.html">
 
 <link rel="import" href="mg-common-styles.html">
 <link rel="import" href="mg-item-image.html">
@@ -60,6 +61,8 @@
 
     </template>
       </dom-repeat>
+
+    <paper-spinner style="position:fixed;z-index:1000;bottom:2px;left:50%;width:20px;height:20px;--paper-spinner-stroke-width:2px" active="[[loading]]"></paper-spinner>
 
     <iron-scroll-threshold
       style="display:none"
@@ -172,6 +175,7 @@
         /* XXX Could use a pagination */
         if (this.collisionMap.length+this.collisionOffset > 1000) return;
 
+        this.set('loading',true);
         if (this._loading) this._loading.cancel();
         this._loading = Polymer.Debouncer.debounce(this._loading,
                   Polymer.Async.timeOut.after(1000),
@@ -184,6 +188,7 @@
       }
 
       _loadSome(rows) {
+        this.set('loading',false);
         if (this.visible === false) {return;}
         let originalOffset = this.collisionOffset;
         let u = this.unitWidth*0.75;
