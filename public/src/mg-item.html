@@ -80,9 +80,12 @@
             <paper-button on-tap="_onAddButtonTap">
               <iron-icon icon="reorder"></iron-icon> เรียง
             </paper-button>
-          <paper-button on-tap="_onAddButtonTap">
-            <iron-icon icon="add-to-photos"></iron-icon> แกลเลอรี่
-          </paper-button>
+            <paper-button on-tap="_onAddButtonTap">
+              <iron-icon icon="add-to-photos"></iron-icon> แกลเลอรี่
+            </paper-button>
+            <paper-button on-tap="_onCancelButtonTap">
+              <iron-icon icon="cancel"></iron-icon> ยกเลิก
+            </paper-button>
           </template>
 
         </template>
@@ -168,6 +171,7 @@
                 if (photo.key == removedKey) {
                   this.photoList[i].selectionOrder = null;
                   this.notifyPath('photoList.'+i+'.selectionOrder');
+                  delete this.photoList[i].selectionOrder;
                 }
               }
             }.bind(this))
@@ -337,7 +341,7 @@
 
               if (snapshot.key == itemId) {
                 if (idx < 0) {
-                  delete imgData.selectionOrder;
+                  //delete imgData.selectionOrder;
                   this.push('photoList',imgData);
                 }
               }
@@ -383,7 +387,9 @@
 
         this._ItemName = "ไอเท็มไม่มีชื่อ";
         this.set('itemName',this._ItemName);
-        this.set('selectedImages',[]);
+        if (this.selectedImages) {
+          this.splice('selectedImages',0,this.selectedImages.length);
+        }
         this.set('photoList',[]);
         this.set('loading', true);
         this._ItemReference = MGFIRE.database().ref('items').child(itemId);
@@ -427,6 +433,10 @@
       _onAddButtonTap(e) {
         this.$.fileInput.value = '';
         this.$.fileInput.click();
+      }
+
+      _onCancelButtonTap(e) {
+
       }
 
       _onDeletePhoto(e) {
