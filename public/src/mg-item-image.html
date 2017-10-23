@@ -55,23 +55,23 @@
         border-radius: 5px;
         @apply(--layout-vertical);
         @apply(--layout-center);
-        @apply(--layout-center-justified);
         overflow: hidden;
       }
 
       paper-progress {
+        position: absolute;
+        top: 5px;
         width: calc(100% - 10px);
         pointer-events: none;
         border-radius: 2px;
-        margin-top: 5px;
       }
 
       .label {
+        position: absolute;
+        bottom: 0;
         width: 100%;
         text-transform: none;
         white-space: nowrap;
-        position: absolute;
-        bottom: 0;
         /*background-color: rgba(255,255,255,0.85);*/
         color: black;
         background: linear-gradient( transparent 0, rgba(255,255,255,0.8) 15px)
@@ -90,14 +90,15 @@
         min-width: 20px;
       }
 
-      .loader {
+      .spinner {
+        position: absolute;
         width: 100%;
         height: 100%;
         transition: opacity 0s;
         opacity: 1;
       }
 
-      .loader[loaded] {
+      .spinner[loaded] {
         opacity: 0;
         transition: opacity 0.5s;
       }
@@ -124,20 +125,20 @@
         sizing="cover"
         loaded="{{isLoaded}}"
       >
-      <!--
-        transition="[[transition]]"
-        placeholder="images/logo-pumpkin-gray-bouncing.svg"
-      -->
+
+        <!--Top indicator-->
         <template is="dom-if" if="{{showProgress}}">
           <paper-progress
             value="[[progress]]"
           ></paper-progress>
         </template>
 
+        <!--Pumpkin spinner-->
         <template is="dom-if" if="{{spinner}}">
-          <img class="loader" src="images/logo-pumpkin-gray-bouncing.svg" draggable="false" loaded$="{{isLoaded}}">
+          <img class="spinner" src="images/logo-pumpkin-gray-bouncing.svg" draggable="false" loaded$="{{isLoaded}}">
         </template>
 
+        <!--Selection order-->
         <template is="dom-if" if="{{showSelectionOrder}}">
           <div class="selection-order">
             [[selectionOrder]]
