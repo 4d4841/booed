@@ -25,6 +25,7 @@
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-styles/typography.html">
@@ -187,7 +188,8 @@
         height: var(--booed-header-height);
       }
 
-      a.logo {
+      .head-logo {
+        border-radius: 30px;
         @apply(--layout-flex);
         @apply(--layout-horizontal);
         min-width: 100px;
@@ -426,7 +428,7 @@
           min-width: 300px;
         }
 
-        a.logo {
+        .head-logo {
           background-image:  url(/images/logo-sat/logo-packed-sat.svg);
           background-size: auto var(--booed-logo-height);
           background-repeat: no-repeat;
@@ -448,10 +450,11 @@
           --booed-logo-height: 20px;
         }
 
-        a.logo {
+        .head-logo {
           background-position: margin var(--booed-logo-margin);
           margin-left: -70px;
           margin-top: 6px;
+          border-radius: 0;
         }
       }
 
@@ -487,25 +490,21 @@
       <div class="tool-bar">
         <div class="header-bar horizontal layout center-justified">
           <div class="layout horizontal" style="position:absolute;left:0">
-            <dom-if if="[[_shouldRenderDrawer]]">
-          <template>
-          <mg-badge-button
-            id="menu-button"
-            on-tap="_toggleDrawer"
-            icon="menu"
-            path-style="fill:tomato"
-            value="">
-          </mg-badge-button>
-          </template>
-            </dom-if>
+              <template is="dom-if" if="[[_shouldRenderDrawer]]">
+            <mg-badge-button
+              id="menu-button"
+              on-tap="_toggleDrawer"
+              icon="menu"
+              path-style="fill:tomato"
+              value="">
+            </mg-badge-button>
+              </template>
           </div>
 
-              <div class="header-filler"></div>
-            <a href="/" page$="[[page]]" class="logo">
-              <div class="logo horizontal layout center-justified">
-              </div>
-            </a>
-              <div class="header-filler"></div>
+            <div class="header-filler"></div>
+          <paper-button class="head-logo" on-tap='_openHome' noink>
+          </paper-button>
+            <div class="header-filler"></div>
 
           <div class="layout horizontal" style="position:fixed;right:10px">
           <mg-badge-button id="fmPicker" icon="wc" path-style="fill:lightpink" ></mg-badge-button>
@@ -780,6 +779,11 @@
         this._notifyNetworkStatus();
       }
 
+      _openHome(e) {
+        this.set('route.path','');
+        this.set('menu.selected', null);
+      }
+
       _computeProfileContainerStyleWithPhoto(photo) {
         if (photo) return "background-image:url("+photo+");background-size:cover";
         return "";
@@ -966,7 +970,7 @@
               return;
             }
 
-            /* Only show submenu if it's already selected. */
+            /* Only show its submenu if it's already selected. */
             if (e.model.item.name == this.menu.selected) {
               var target = e.composedPath()[0];
               this.$.balloon.positionTarget = target;
