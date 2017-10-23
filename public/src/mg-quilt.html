@@ -122,6 +122,11 @@
           type: String,
           observer: '_selectedChanged'
         },
+
+        visible: {
+          type:Boolean,
+          observer: '_visibleChanged',
+        },
       }}
 
       static get observers() { return [
@@ -147,7 +152,6 @@
         this.addEventListener('iron-resize', this._onResizeEvent);
 
         this.__photoIndex = getRandomInt(0,1000);
-        this._load();
       }
 
       disconnectedCallback() {
@@ -155,8 +159,11 @@
         super.disconnectedCallback();
       }
 
-      _load() {
+      _visibleChanged(visible) {
+        visible && this._load();
+      }
 
+      _load() {
         /* XXX Could use a pagination */
         if (this.collisionMap.length+this.collisionOffset > 3000) return;
 
@@ -245,7 +252,7 @@
         this.set('quiltItems',[]);
         this.allItems.forEach(this._appendItemToQuilt, this);
         if (this.collisionOffset < 10) {
-          this._load();
+          this.visible && this._load();
         }
       }
 
