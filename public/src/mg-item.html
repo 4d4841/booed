@@ -51,7 +51,7 @@
     </style>
       </custom-style>
 
-    <iron-collapse class="vertical layout" opened="[[_shouldOpen(itemId)]]">
+    <iron-collapse class="vertical layout" opened="[[_shouldOpen(itemKey)]]">
 
       <div class="horizontal layout end">
 
@@ -74,10 +74,10 @@
             <iron-icon icon="add"></iron-icon> เพิ่มรูป
           </paper-button>
           <template is="dom-if" if="{{hasSelection}}">
-            <paper-button on-tap="_onAddButtonTap">
+            <paper-button on-tap="_onDeleteButtonTap">
               <iron-icon icon="delete"></iron-icon> ลบ
             </paper-button>
-            <paper-button on-tap="_onAddButtonTap">
+            <paper-button on-tap="_onReorderButtonTap">
               <iron-icon icon="reorder"></iron-icon> เรียง
             </paper-button>
             <paper-button on-tap="_onAddButtonTap">
@@ -94,21 +94,27 @@
 
       </div>
 
+      <template is="dom-if" if="{{!photoList.0}}">
+        <div class="vertical layout center center-justified" style="border-radius:5px;border:1px dashed tomato;width:100%;height:500px">
+          แกลเลอรี่เปล่า ยังไม่มีรูป
+        </div>
+      </template>
+
       <iron-selector
         id="selector"
         attr-for-selected="key"
         selected-values="{{selectedImages}}"
         multi>
 
-      <template is="dom-repeat" items="{{photoList}}" mutable-data>
+      <template is="dom-repeat" items="{{photoList}}" observe="order" sort="{{_reorderPhoto}}" mutable-data>
 
         <mg-item-image
           key="[[item.key]]"
           class="image-icon"
-          src="[[item.src]]"
-          progress="[[item.progress]]"
+          src="[[item._src]]"
+          progress="[[item._progress]]"
           label="[[item.name]]"
-          selection-order="[[item.selectionOrder]]"
+          selection-order="[[item._selectionOrder]]"
           icon="photo"
           transition="1.5s"
           spinner
@@ -129,7 +135,7 @@
       static get properties() { return {
         files: Object,
 
-        itemId: {
+        itemKey: {
           type: String,
           notify: true,
         },
@@ -157,10 +163,17 @@
       }}
 
       static get observers() { return [
-        '_itemIdChanged(me.user, itemId)',
+        '_itemKeyChanged(me.user, itemKey)',
         '_itemNameChanged(me.user, itemRole, itemName)',
         '_selectedImagesChanged(selectedImages.splices)',
       ]}
+
+      _reorderPhoto(a,b) {
+        let ao = a.order || Number.MAX_SAFE_INTEGER;
+        let bo = b.order || Number.MAX_SAFE_INTEGER;
+
+        return ao-bo;
+      }
 
       _selectedImagesChanged(changes) {
         if (changes) {
@@ -169,9 +182,9 @@
             splice.removed.forEach(function(removedKey){
               for(let i = 0, photo; photo = this.photoList[i]; ++i ) {
                 if (photo.key == removedKey) {
-                  this.photoList[i].selectionOrder = null;
-                  this.notifyPath('photoList.'+i+'.selectionOrder');
-                  delete this.photoList[i].selectionOrder;
+                  this.photoList[i]._selectionOrder = null;
+                  this.notifyPath('photoList.'+i+'._selectionOrder');
+                  delete this.photoList[i]._selectionOrder;
                 }
               }
             }.bind(this))
@@ -180,8 +193,8 @@
           this.selectedImages.forEach(function(key){
             for(let i = 0, photo; photo = this.photoList[i]; ++i ) {
               if (photo.key == key) {
-                this.photoList[i].selectionOrder = ++orderNumber;
-                this.notifyPath('photoList.'+i+'.selectionOrder');
+                this.photoList[i]._selectionOrder = ++orderNumber;
+                this.notifyPath('photoList.'+i+'._selectionOrder');
               }
             }
           }.bind(this));
@@ -219,19 +232,35 @@
         this._LastTapIndex = e.model.index;
       }
 
-      _indexId(imageId) {
-        let appData = this.appImages[imageId];
-        if (!appData) {
-          return -1;
-        }
-
+      /*
+      _indexRep(repKey) {
         for (let i = 0, data; data = this.photoList[i]; ++i) {
-          if (data === appData) {
+          if (data.rep == repKey) {
             return i;
           }
         }
 
         return -1;
+      }
+      */
+
+      _indexImage(imageKey) {
+
+        for (let i = 0, data; data = this.photoList[i]; ++i) {
+          if (data.key == imageKey) {
+            return i;
+          }
+        }
+
+        return -1;
+      }
+
+      _setPhotoKeyProperty(key,prop,val) {
+        let idx = this._indexImage(key);
+        if (idx > -1) {
+          this.photoList[idx][prop] = val;
+          this.notifyPath(['photoList',idx,prop]);
+        }
       }
 
       _filesSelected(e) {
@@ -241,126 +270,164 @@
           return;
         }
 
-        let itemId = this.itemId;
-        let uid = this.me.user.uid;
+        let itemKey = this.itemKey;
+        let uid = MGAPP.AU.currentUser.uid;
         let role = this.itemRole;
+        let name = this.itemName;
+
         console.assert(role, "Role is missing");
-        let storage = MGFIRE.storage();
-        let database = MGFIRE.database();
-        let imagesRef = database.ref('items').child(itemId).child('images');
-        ///XXX this should be array to maintain order
+        let itemRef = MGAPP.DB.ref('home').child(uid).child(itemKey);
 
         Array.from(files).forEach(function(imgFile){
-          let imgKey = imagesRef.push().key;
-          let imgRef = storage.ref('home')
-                              .child(uid)
-                              .child('images')
-                              .child(imgKey);
+          let repKey = MGAPP.DB.ref().child('representations').push().key;
+          /* An item image would contain link(s) to storage image representation. */
+          let image = {
+            key: itemRef.push().key,
+            rep: repKey, /* db representations/repKey contains storage info eg. uid */
+            name: imgFile.name.split('.')[0],
+            /*_src: display source for current widget,*/
+            /*_progress: uploading status,*/
+            /*_unsubscribe: callback to stop listening to progress,*/
+          };
 
-          let imgData = {key:imgKey, name:imgFile.name};
-          let lastIndex = this.push('photoList',imgData) - 1;
+          let pushIndex = this.push('photoList',image) - 1;
+          this.notifyPath('photoList.'+pushIndex);
 
-          this.set('appImages.'+imgKey, imgData);
+          /* XXX Should generate a thumbnail representation with Pica */
+          MGAPP.registerRepresentation(repKey, function(key,src){
 
-          var reader = new FileReader();
-          reader.onload = function(e) {
+            this._setPhotoKeyProperty(image.key,'_src',src);
 
-            this.set('appImages.'+imgKey+'.src', e.target.result);
-            let idx = this._indexId(imgKey);
-            if (idx > -1) { this.notifyPath('photoList.'+idx+'.src'); }
+          }.bind(this), imgFile);
 
-          }.bind(this);
-          reader.readAsDataURL(imgFile);
+          MGAPP.set(['representations',repKey,'name'], imgFile.name);
 
-          imgRef.put(imgFile).on(firebase.storage.TaskEvent.STATE_CHANGED, function(snapshot){
+          this._setPhotoKeyProperty(image.key,'_unsubscribe',
 
-            this.set('appImages.'+imgKey+'.progress', (snapshot.bytesTransferred / snapshot.totalBytes * 100).toFixed(2));
-            let idx = this._indexId(imgKey);
-            if (idx > -1) { this.notifyPath('photoList.'+idx+'.progress'); }
+            MGAPP.representations[repKey].task
+            .on(firebase.storage.TaskEvent.STATE_CHANGED, function(snapshot) {
 
-          }.bind(this), function(error){
-            console.error("ERR",error);
-          }, function() {
-            /* image uploaded, register file id into the database */
-            var registerData = {};
+              this._setPhotoKeyProperty(image.key, '_progress',
+                (snapshot.bytesTransferred / snapshot.totalBytes * 100).toFixed(2)
+              );
 
-            registerData['items/'+itemId+'/images/'+imgKey] = {name:imgFile.name};
-            registerData['items/'+itemId+'/uid'] = uid;
-            registerData['items/'+itemId+'/role'] = role;
-            registerData['home/'+uid+'/items/'+itemId+'/time'] = firebase.database.ServerValue.TIMESTAMP;
+            }.bind(this), function(error){
+              console.error("ERR",error);
+            }, function() {
+              /* image uploaded, register file id into the database */
+              var registerData = {};
 
-            MGFIRE.database().ref().update(registerData, function(error){
-              if (!error) {
-                /*
-                imgRef.getDownloadURL().then(function(url){
+              registerData['representations/'+repKey+'/name'] = imgFile.name;
+              registerData['items/'+itemKey+'/uid'] = uid;
+              registerData['items/'+itemKey+'/role'] = role;
+              registerData['items/'+itemKey+'/public'] = false;
+              registerData['items/'+itemKey+'/name'] = name;
+              /* This will contain customizations like ROIs, thumbnail, custom name */
+              registerData['home/'+uid+'/items/'+itemKey+'/role'] = role;
+              registerData['home/'+uid+'/items/'+itemKey+'/name'] = name;
+              registerData['home/'+uid+'/items/'+itemKey+'/images/'+image.key+'/rep'] = repKey;
+              registerData['home/'+uid+'/items/'+itemKey+'/images/'+image.key+'/name'] = image.name;
+              /* Published item, Will also contain tags */
 
-                  this.set('appImages.'+imgKey+'.src', url);
-                  let idx = this._indexId(imgKey);
-                  if (idx > -1) { this.notifyPath('photoList.'+idx+'.src'); }
+              this._LastWritten.uid = uid;
+              this._LastWritten.name = image.name;
+              this._LastWritten.role = role;
 
-                }.bind(this));
-                */
-              } else {
-                console.error("ERR",error);
-              }
-            }.bind(this));
-          }.bind(this));
-        },this);
+              MGAPP.DB.ref().update(registerData, function(error){
+                if (!error) {
+                  /*
+                  imgRef.getDownloadURL().then(function(url){
+
+                    this.set('appImages.'+imgKey+'.src', url);
+                    let idx = this._indexImage(imgKey);
+                    if (idx > -1) { this.notifyPath('photoList.'+idx+'.src'); }
+
+                  }.bind(this));
+                  */
+                } else {
+                  console.error("ERR",error);
+                }
+              }.bind(this));
+            }.bind(this))
+
+          ); /* set unsubscribe */
+
+        },this); /*forEach(files)*/
       }
 
       _getItemSnapshot(snapshot) {
-        let itemId = this.itemId;
+        let itemKey = this.itemKey;
         let v = snapshot.val();
         this.set('loading', false);
 
         /* XXX role must already be set in the database */
         if (v && v.role) {
-          if (snapshot.key == itemId) {
+          if (snapshot.key == itemKey) {
             this.set('itemRole',v.role);
             this.set('itemName',this._ItemName = v.name);
           }
 
           if (v.images) {
-            let itemRef = MGFIRE.storage().ref('home')
-                                          .child(this.me.user.uid)
-                                          .child('images');
+            let uid = MGAPP.AU.currentUser.uid;
+
+            /* XXX cache into MGAPP.items */
 
             Object.keys(v.images).forEach(function(imgKey){
-              let imgData = this.appImages[imgKey];
-              let idx = this._indexId(imgKey);
 
-              if (!imgData) {
-                imgData = {key:imgKey, name:v.images[imgKey].name};
-                this.set('appImages.'+imgKey,imgData);
+              /* update current photoList */
+
+              let image = v.images[imgKey];
+              let idx = this._indexImage(imgKey);
+              let photo;
+              if (idx < 0) {
+                /* photo not exist, make a new slot */
+                photo = {
+                  key: imgKey,
+                  rep: image.rep,
+                  name: image.name,
+                  order: image.order,
+                };
+
+                if (snapshot.key == itemKey) {
+                  this.notifyPath('photoList.'+(this.push('photoList',photo) -1));
+                }
               } else {
-                if (v.images[imgKey].name) {
-                  this.set('appImages.'+imgKey+'.name', v.images[imgKey].name);
-                  if (idx > -1) { this.notifyPath('photoList.'+idx+'.name'); }
-                }
+                photo = this.photoList[idx];
+                this.photoList[idx].key = imgKey;
+                this.photoList[idx].rep = image.rep;
+                this.notifyPath('photoList.'+idx+'.rep');
+                this.photoList[idx].name = image.name;
+                this.notifyPath('photoList.'+idx+'.name');
+                this.photoList[idx].order = image.order;
+                this.notifyPath('photoList.'+idx+'.order');
               }
 
-              if (snapshot.key == itemId) {
-                if (idx < 0) {
-                  //delete imgData.selectionOrder;
-                  this.push('photoList',imgData);
-                }
+              MGAPP.registerRepresentation(image.rep,
+                function(key,src) {
+                  this._setPhotoKeyProperty(imgKey,'_src',src);
+                }.bind(this)
+              );
+
+              /* track existing progress */
+              if (MGAPP.representations[image.rep].task) {
+                this._setPhotoKeyProperty(image.key, '_unsubscribe',
+                  MGAPP.representations[image.rep].task
+                  .on(firebase.storage.TaskEvent.STATE_CHANGED,
+                    function(snapshot) {
+                      this._setPhotoKeyProperty(image.key, '_progress',
+                        (snapshot.bytesTransferred / snapshot.totalBytes * 100).toFixed(2)
+                      );
+                    }.bind(this),
+                    null,null
+                  )
+                );
               }
 
-              if (!imgData.src) {
-                itemRef.child(imgKey).getDownloadURL().then(function(url){
-
-                  this.set('appImages.'+imgKey+'.src', url);
-                  let idx = this._indexId(imgKey);
-                  if (idx > -1) { this.notifyPath('photoList.'+idx+'.src'); }
-
-                }.bind(this));
-              }
             }, this);
-
           }
         } else if (!this.itemRole){
           /* No data and the role isn't set then the path should be reset back */
-          this.set('itemId', null);
+          this.set('itemKey', null);
         }/* else {
           console.log("new item");
         }*/
@@ -372,27 +439,37 @@
         delete this._ItemReference;
       }
 
-      _itemIdChanged(user, itemId) {
+      _itemKeyChanged(user, itemKey) {
+        this._LastWritten = {};
+
         delete this._LastTapIndex;
         if (this._ItemReference) {
           this._ItemReference.off('value', this._getItemSnapshot, this);
           delete this._ItemReference;
         }
 
-        if (!user || !itemId) {
+        if (!user || !itemKey) {
           return;
         }
 
-//        this.previousItems[itemId] = this.previousItems[itemId] || {};
+
+//        this.previousItems[itemKey] = this.previousItems[itemKey] || {};
 
         this._ItemName = "ไอเท็มไม่มีชื่อ";
         this.set('itemName',this._ItemName);
+
         if (this.selectedImages) {
           this.splice('selectedImages',0,this.selectedImages.length);
         }
+        this.photoList.forEach(function(photo){
+          if (photo._unsubscribe) {
+            photo._unsubscribe();
+          }
+        });
         this.set('photoList',[]);
         this.set('loading', true);
-        this._ItemReference = MGFIRE.database().ref('items').child(itemId);
+        this._ItemReference = MGAPP.DB.ref('home').child(MGAPP.AU.currentUser.uid)
+                                      .child('items').child(itemKey);
         this._ItemReference.on('value', this._getItemSnapshot, this._getDataError, this);
       }
 
@@ -405,12 +482,18 @@
 
           delete this._ItemName;
           var registerData = {};
-          registerData['items/'+this.itemId+'/uid'] = user.uid;
-          registerData['items/'+this.itemId+'/name'] = itemName;
-          registerData['items/'+this.itemId+'/role'] = this.itemRole;
-          registerData['home/'+user.uid+'/items/'+this.itemId+'/time'] = firebase.database.ServerValue.TIMESTAMP;
+          registerData['items/'+this.itemKey+'/uid'] = user.uid;
+          registerData['items/'+this.itemKey+'/name'] = itemName;
+          registerData['items/'+this.itemKey+'/role'] = this.itemRole;
+          registerData['home/'+user.uid+'/items/'+this.itemKey+'/name'] = itemName;
+          registerData['home/'+user.uid+'/items/'+this.itemKey+'/role'] = itemRole;
+          registerData['home/'+user.uid+'/items/'+this.itemKey+'/time'] = firebase.database.ServerValue.TIMESTAMP;
 
-          MGFIRE.database().ref().update(registerData, function(error){
+          this._LastWritten.uid = user.uid;
+          this._LastWritten.name = itemName;
+          this._LastWritten.role = this.itemRole;
+
+          MGAPP.DB.ref().update(registerData, function(error){
             if (error) {
               console.error("ERR",error);
             }
@@ -435,6 +518,32 @@
         this.$.fileInput.click();
       }
 
+      _onReorderButtonTap(e) {
+        let registerData = {};
+
+        this.photoList.forEach(function(photo){
+          registerData['items/'+this.itemKey+'/images/'+photo.key+'/order'] = photo._selectionOrder || Number.MAX_SAFE_INTEGER;
+        },this);
+
+        MGAPP.DB.ref().update(registerData, function(error){
+            console.assert(!error,"ERR updating order");
+        }.bind(this));
+        this.splice('selectedImages',0,this.selectedImages.length);
+      }
+
+      _onDeleteButtonTap(e) {
+        let registerData = {};
+
+        photo._selectionOrder.forEach(function(key){
+          registerData['items/'+this.itemKey+'/images/'+key+'/delete'] = true;
+        },this);
+
+        MGAPP.DB.ref().update(registerData, function(error){
+            console.assert(!error,"ERR updating order");
+        }.bind(this));
+        this.splice('selectedImages',0,this.selectedImages.length);
+      }
+
       _onCancelButtonTap(e) {
           this.splice('selectedImages',0,this.selectedImages.length);
       }
@@ -449,9 +558,9 @@
       }
 
       newItem(role,name) {
-        let key = MGFIRE.database().ref('items').push().key;
-        this.set('itemId', key);
+        let key = MGAPP.DB.ref('items').push().key;
         this.set('itemRole', role);
+        this.set('itemKey', key);
          /* Only update UI name without server registration */
         this.set('itemName', this._ItemName = name || "แกลเลอรี่ไม่มีชื่อ");
       }

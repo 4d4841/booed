@@ -626,481 +626,560 @@
   }
   */
 
-    var MGFIRE;
+  function MGIconForRole(role) {
+    switch(role) {
+      case "product": return "local-mall";
+      case "article": return "local-library";
+      case "collection": return "group-work";
+      case "gallery": return "photo-library";
+      case "photo": return "photo";
+      case "sales": return "sales-baht";
+      default: return role;
+    }
+  }
 
-    function MGIconForRole(role) {
-      switch(role) {
-        case "product": return "local-mall";
-        case "article": return "local-library";
-        case "collection": return "group-work";
-        case "gallery": return "photo-library";
-        case "photo": return "photo";
-        case "sales": return "sales-baht";
-        default: return role;
+  function MGCopyObject(o) {
+    var out, v, key;
+    out = Array.isArray(o) ? [] : {};
+    for (key in o) {
+      v = o[key];
+      out[key] = (typeof v === "object") ? MGCopyObject(v) : v;
+    }
+    return out;
+  }
+
+  function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min)) + min;
+  }
+
+  let seed = 10;
+  function mg_random() {
+    var x = Math.sin(seed++) * 10000;
+    return x - Math.floor(x);
+  }
+
+  function getSeededRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(mg_random() * (max - min)) + min;
+  }
+
+
+  window.performance && performance.mark && performance.mark('mg-app - before register');
+
+  var MGAPP;
+
+  class MGApp extends Polymer.Element {
+
+    static get is() { return 'mg-app'; }
+
+    static get properties() { return {
+      me: {
+        type: Object,
+      },
+
+      /* Items here is for caching known snapshot of items to distribute
+      change notifications but the listening will only be in mg-items and to
+      specific items currently on display */
+      items: {
+        type: Object,
+        value: {},
+      },
+
+      representations: {
+        type: Object,
+        value: {},
+      },
+
+      route: {
+        type: Object,
+      },
+
+      subroute: {
+        type: Object,
+      },
+
+      page: {
+        type: String,
+        reflectToAttribute: true,
+        observer: '_pageChanged'
+      },
+
+      menu: {
+        type: Object,
+      },
+
+      submenu: {
+        type: Object,
+      },
+
+      appItems: {
+        type: Object,
+        value: {},
+      },
+
+      _shouldShowTabs: {
+        computed: '_computeShouldShowTabs(page, smallScreen)'
+      },
+
+      _shouldRenderTabs: {
+        computed: '_computeShouldRenderTabs(_shouldShowTabs, loadComplete)'
+      },
+
+      _shouldRenderDrawer: {
+        computed: '_computeShouldRenderDrawer(smallScreen, loadComplete)'
       }
-    }
+    }}
 
-    function MGCopyObject(o) {
-      var out, v, key;
-      out = Array.isArray(o) ? [] : {};
-      for (key in o) {
-        v = o[key];
-        out[key] = (typeof v === "object") ? MGCopyObject(v) : v;
-      }
-      return out;
-    }
-
-    function getRandomInt(min, max) {
-      min = Math.ceil(min);
-      max = Math.floor(max);
-      return Math.floor(Math.random() * (max - min)) + min;
-    }
-
-    let seed = 10;
-    function mg_random() {
-      var x = Math.sin(seed++) * 10000;
-      return x - Math.floor(x);
-    }
-
-    function getSeededRandomInt(min, max) {
-      min = Math.ceil(min);
-      max = Math.floor(max);
-      return Math.floor(mg_random() * (max - min)) + min;
-    }
-
-
-    window.performance && performance.mark && performance.mark('mg-app - before register');
-
-    class MGApp extends Polymer.Element {
-
-      static get is() { return 'mg-app'; }
-
-      static get properties() { return {
-        route: {
-          type: Object,
-        },
-
-        subroute: {
-          type: Object,
-        },
-
-        page: {
-          type: String,
-          reflectToAttribute: true,
-          observer: '_pageChanged'
-        },
-
-        menu: {
-          type: Object,
-        },
-
-        submenu: {
-          type: Object,
-        },
-
-        /* keyed images from firebase storage */
-        appImages: {
-          type: Object,
-          value: {},
-        },
-
-        _shouldShowTabs: {
-          computed: '_computeShouldShowTabs(page, smallScreen)'
-        },
-
-        _shouldRenderTabs: {
-          computed: '_computeShouldRenderTabs(_shouldShowTabs, loadComplete)'
-        },
-
-        _shouldRenderDrawer: {
-          computed: '_computeShouldRenderDrawer(smallScreen, loadComplete)'
-        }
-      }}
-
-      static get observers() { return [
+    static get observers() { return [
 //        '_appImagesChanged(appImages.*)',
-        '_routePageChanged(routeData.page)',
+      '_routePageChanged(routeData.page)',
 //        '_categoriesDataChanged(categoriesData)',
-        '_productsDataChanged(productsData.splices)',
-      ]}
+      '_productsDataChanged(productsData.splices)',
+    ]}
 
-      _appImagesChanged(changes) {
-        console.log(changes);
+    _appImagesChanged(changes) {
+      console.log(changes);
+    }
+
+    constructor() {
+      super();
+      window.performance && performance.mark && performance.mark('mg-app.created');
+    }
+
+    /*
+    disconnectedCallback() {
+      super.disconnectedCallback();
+    }
+    */
+
+    connectedCallback() {
+      super.connectedCallback();
+      //subsub = this.$.balloon;
+      // Custom elements polyfill safe way to indicate an element has been upgraded.
+      this.removeAttribute('unresolved');
+
+      window.addEventListener('scroll', this._onScroll.bind(this));
+      window.addEventListener('resize', this._onResize.bind(this));
+
+      /* XXX prevent double connectedCallback() calls when 404 redirect happens */
+      var config = {
+        apiKey: "AIzaSyDyJuzvmpg4jRPs9VE_Mpne8vdysEZGxbo",
+        authDomain: "be-booed.firebaseapp.com",
+        databaseURL: "https://be-booed.firebaseio.com",
+        projectId: "be-booed",
+        storageBucket: "be-booed.appspot.com",
+        messagingSenderId: "1079409265314"
+      };
+
+      if (!MGAPP) {
+        let MGFIRE = firebase.initializeApp(config);
+        this.DB = MGFIRE.database();
+        this.ST = MGFIRE.storage();
+        this.AU = MGFIRE.auth();
+        MGAPP = this;
       }
 
-      constructor() {
-        super();
-        window.performance && performance.mark && performance.mark('mg-app.created');
+      this.addEventListener('add-cart-item', (e)=>this._onAddCartItem(e));
+      this.addEventListener('announce', (e)=>this._onAnnounce(e));
+      this.addEventListener('change-section', (e)=>this._onChangeSection(e));
+      this.addEventListener('clear-cart', (e)=>this._onClearCart(e));
+      this.addEventListener('dom-change', (e)=>this._domChange(e));
+      this.addEventListener('set-cart-item', (e)=>this._onSetCartItem(e));
+      this.addEventListener('show-invalid-url-warning', (e)=>this._onFallbackSelectionTriggered(e));
+
+      this.addEventListener('close-contextual-menu', this._onCloseContextualMenu.bind(this));
+
+      Polymer.RenderStatus.afterNextRender(this, () => {
+        window.addEventListener('online', (e)=>this._notifyNetworkStatus(e));
+        window.addEventListener('offline', (e)=>this._notifyNetworkStatus(e));
+      });
+
+      this._notifyNetworkStatus();
+    }
+
+    registerRepresentation(key,srcCallback,file) {
+      let storageRef = MGAPP.ST.ref('home')
+                               .child(MGAPP.AU.currentUser.uid)
+                               .child('representations')
+                               .child(key);
+      this.representations[key] = this.representations[key] || {};
+      let rep = this.representations[key];
+
+      if (file /*&& !rep.task*/) {
+        /*
+        if (task) {
+          this.representations[key].task.cancel();
+        }
+        */
+        /* rep.task can be used to track existing uploading progress */
+        this.set(['representations',key,'name'], file.name);
+        this.set(['representations',key,'task'], storageRef.put(file));
+
+        rep.callbacks = rep.callbacks || [];
+        rep.callbacks.push(srcCallback);
+
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          this.set(['representations',key,'src'], e.target.result);
+          rep.callbacks.forEach(function(cb){ cb(key,e.target.result); });
+          delete rep.callbacks;
+        }.bind(this);
+        reader.readAsDataURL(file);
+
+        /* XXX track task to delete it when done */
+
+      } else {
+        /* Don't set src if uploading task exists */
+        if (!rep.src && !rep.task) {
+          /* Prevent async src assignment */
+          rep.src = "images/logo-pumpkin-outline-grayout.svg";
+          rep.callbacks = rep.callbacks || [];
+          rep.callbacks.push(srcCallback);
+
+          storageRef.getDownloadURL().then(function(url){
+            this.set(['representations',key,'src'], url);
+            rep.callbacks.forEach(function(cb){ cb(key,url); });
+            delete rep.callbacks;
+          }.bind(this));
+        } else {
+          srcCallback(key,rep.src);
+        }
       }
 
-      /*
-      disconnectedCallback() {
-        super.disconnectedCallback();
+      /* return function to unsubscribe srcCallback */
+      return function(){
+        if (rep.callbacks) {
+          rep.callbacks.splice(rep.callbacks.indexOf(srcCallback),1);
+        }
+      };
+    }
+
+    _openHome(e) {
+      this.set('route.path','');
+      this.set('menu.selected', null);
+    }
+
+    _computeProfileContainerStyleWithPhoto(photo) {
+      if (photo) return "background-image:url("+photo+");background-size:cover";
+      return "";
+    }
+
+    _computeMeIcon(photo) {
+      if (photo) return null;
+      return "pumpkin";
+    }
+
+    _openProfile(e) {
+      this.showPanel = false;
+      this.set('route.path','user');
+    }
+
+    _arraySortedByKeys(obj) {
+      if (obj) {
+        return Object.values(obj).sort(function(a,b){ return a.$key - b.$key});
       }
-      */
+      return [];
+    }
 
-      connectedCallback() {
-        super.connectedCallback();
-        //subsub = this.$.balloon;
-        // Custom elements polyfill safe way to indicate an element has been upgraded.
-        this.removeAttribute('unresolved');
+    /*
+    _productsDataChanged(splices) {
+      if (splices) {
+        for (let i=0, s; s = splices.indexSplices[i]; ++i) {
+          var p = this.productsData[s.index];
+          this.products[p.$key] = p;
 
-        window.addEventListener('scroll', this._onScroll.bind(this));
-        window.addEventListener('resize', this._onResize.bind(this));
+          if (p.sale > 0) {
+            this.categories.sales.products[p.$key] = p;
+          }
 
-        var config = {
-          apiKey: "AIzaSyDyJuzvmpg4jRPs9VE_Mpne8vdysEZGxbo",
-          authDomain: "be-booed.firebaseapp.com",
-          databaseURL: "https://be-booed.firebaseio.com",
-          projectId: "be-booed",
-          storageBucket: "be-booed.appspot.com",
-          messagingSenderId: "1079409265314"
-        };
+          for (let key in p.tags) {
+            let cate = this.categories[key];
+            if (cate) {
+              cate.products = Object.assign( cate.products||{}, {[p.$key]:p} );
+            }
+            else {
+              this.categories[key] = {name:key, products:{[p.$key]:p}};
+            }
+          }
+        }
 
-        /* XXX prevent double connectedCallback() calls when 404 redirect happens */
-        MGFIRE = MGFIRE ? MGFIRE : firebase.initializeApp(config);
+        this.categories = MGCopyObject(this.categories);
+        this.products = MGCopyObject(this.products);
+      }
+    }
+    */
 
-        this.addEventListener('add-cart-item', (e)=>this._onAddCartItem(e));
-        this.addEventListener('announce', (e)=>this._onAnnounce(e));
-        this.addEventListener('change-section', (e)=>this._onChangeSection(e));
-        this.addEventListener('clear-cart', (e)=>this._onClearCart(e));
-        this.addEventListener('dom-change', (e)=>this._domChange(e));
-        this.addEventListener('set-cart-item', (e)=>this._onSetCartItem(e));
-        this.addEventListener('show-invalid-url-warning', (e)=>this._onFallbackSelectionTriggered(e));
+    _routePageChanged(page) {
+      if (this.page === 'list') {
+        this._listScrollTop = window.pageYOffset;
+      }
 
-        this.addEventListener('close-contextual-menu', this._onCloseContextualMenu.bind(this));
+      this.page = page || 'home';
 
+      // Close the drawer - in case the *route* change came from a link in the drawer.
+      this.drawerOpened = false;
+    }
+
+    _pageChanged(page, oldPage) {
+      this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+        bubbles: true, composed: true, detail:{sender:null}}));
+
+      if (page != null) {
+        // home route is eagerly loaded
+        if (page == 'home') {
+          this._pageLoaded(Boolean(oldPage));
+        // other routes are lazy loaded
+        } else {
+
+          // When a load failed, it triggered a 404 which means we need to
+          // eagerly load the 404 page definition
+          let cb = this._pageLoaded.bind(this, Boolean(oldPage));
+          Polymer.importHref(
+            this.resolveUrl('mg-' + page + '.html'),
+            cb, cb, true);
+        }
+      }
+    }
+
+    _pageLoaded(shouldResetLayout) {
+      this._ensureLazyLoaded();
+      if (shouldResetLayout) {
+        // The size of the header depends on the page (e.g. on some pages the tabs
+        // do not appear), so reset the header's layout only when switching pages.
+        Polymer.Async.timeOut.run(() => {
+          this.$.header.resetLayout();
+        }, 1);
+      }
+    }
+
+    _ensureLazyLoaded() {
+      // load lazy resources after render and set `loadComplete` when done.
+      if (!this.loadComplete) {
         Polymer.RenderStatus.afterNextRender(this, () => {
-          window.addEventListener('online', (e)=>this._notifyNetworkStatus(e));
-          window.addEventListener('offline', (e)=>this._notifyNetworkStatus(e));
-        });
-
-        this._notifyNetworkStatus();
-      }
-
-      _openHome(e) {
-        this.set('route.path','');
-        this.set('menu.selected', null);
-      }
-
-      _computeProfileContainerStyleWithPhoto(photo) {
-        if (photo) return "background-image:url("+photo+");background-size:cover";
-        return "";
-      }
-
-      _computeMeIcon(photo) {
-        if (photo) return null;
-        return "pumpkin";
-      }
-
-      _openProfile(e) {
-        this.showPanel = false;
-        this.set('route.path','user');
-      }
-
-      _arraySortedByKeys(obj) {
-        if (obj) {
-          return Object.values(obj).sort(function(a,b){ return a.$key - b.$key});
-        }
-        return [];
-      }
-
-      /*
-      _productsDataChanged(splices) {
-        if (splices) {
-          for (let i=0, s; s = splices.indexSplices[i]; ++i) {
-            var p = this.productsData[s.index];
-            this.products[p.$key] = p;
-
-            if (p.sale > 0) {
-              this.categories.sales.products[p.$key] = p;
-            }
-
-            for (let key in p.tags) {
-              let cate = this.categories[key];
-              if (cate) {
-                cate.products = Object.assign( cate.products||{}, {[p.$key]:p} );
-              }
-              else {
-                this.categories[key] = {name:key, products:{[p.$key]:p}};
-              }
-            }
-          }
-
-          this.categories = MGCopyObject(this.categories);
-          this.products = MGCopyObject(this.products);
-        }
-      }
-      */
-
-      _routePageChanged(page) {
-        if (this.page === 'list') {
-          this._listScrollTop = window.pageYOffset;
-        }
-
-        this.page = page || 'home';
-
-        // Close the drawer - in case the *route* change came from a link in the drawer.
-        this.drawerOpened = false;
-      }
-
-      _pageChanged(page, oldPage) {
-        this.dispatchEvent(new CustomEvent('close-contextual-menu', {
-          bubbles: true, composed: true, detail:{sender:null}}));
-
-        if (page != null) {
-          // home route is eagerly loaded
-          if (page == 'home') {
-            this._pageLoaded(Boolean(oldPage));
-          // other routes are lazy loaded
-          } else {
-
-            // When a load failed, it triggered a 404 which means we need to
-            // eagerly load the 404 page definition
-            let cb = this._pageLoaded.bind(this, Boolean(oldPage));
-            Polymer.importHref(
-              this.resolveUrl('mg-' + page + '.html'),
-              cb, cb, true);
-          }
-        }
-      }
-
-      _pageLoaded(shouldResetLayout) {
-        this._ensureLazyLoaded();
-        if (shouldResetLayout) {
-          // The size of the header depends on the page (e.g. on some pages the tabs
-          // do not appear), so reset the header's layout only when switching pages.
-          Polymer.Async.timeOut.run(() => {
-            this.$.header.resetLayout();
-          }, 1);
-        }
-      }
-
-      _ensureLazyLoaded() {
-        // load lazy resources after render and set `loadComplete` when done.
-        if (!this.loadComplete) {
-          Polymer.RenderStatus.afterNextRender(this, () => {
-            Polymer.importHref(this.resolveUrl('lazy-resources.html'), () => {
-              // Register service worker if supported.
-              if ('serviceWorker' in navigator) {
+          Polymer.importHref(this.resolveUrl('lazy-resources.html'), () => {
+            // Register service worker if supported.
+            if ('serviceWorker' in navigator) {
 //                navigator.serviceWorker.register('service-worker.js', {scope: '/'});
-              }
-              this._notifyNetworkStatus();
-              this.loadComplete = true;
-            });
+            }
+            this._notifyNetworkStatus();
+            this.loadComplete = true;
           });
+        });
+      }
+    }
+
+    _notifyNetworkStatus() {
+      let oldOffline = this.offline;
+      this.offline =  !navigator.onLine;
+      // Show the snackbar if the user is offline when starting a new session
+      // or if the network status changed.
+      if (this.offline || (!this.offline && oldOffline === true)) {
+        if (!this._networkSnackbar) {
+          this._networkSnackbar = document.createElement('mg-snackbar');
+          this.root.appendChild(this._networkSnackbar);
+        }
+        this._networkSnackbar.innerHTML = this.offline ?
+            'You are offline' : 'You are online';
+        this._networkSnackbar.open();
+      }
+    }
+
+    _toggleDrawer() {
+      this.drawerOpened = !this.drawerOpened;
+      this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+        bubbles: true, composed: true, detail:{sender:null}}));
+    }
+
+    // Elements in the app can notify section changes.
+    // Response by a11y announcing the section and syncronizing the category.
+    _onChangeSection(event) {
+      let detail = event.detail;
+
+      // Scroll to the top of the page when navigating to a non-list page. For list view,
+      // scroll to the last saved position only if the category has not changed.
+      let scrollTop = 0;
+      if (this.page === 'home') {
+        if (this.categoryName === detail.category) {
+          scrollTop = this._listScrollTop;
+        } else {
+          // Reset the list view scrollTop if the category changed.
+          this._listScrollTop = 0;
         }
       }
-
-      _notifyNetworkStatus() {
-        let oldOffline = this.offline;
-        this.offline =  !navigator.onLine;
-        // Show the snackbar if the user is offline when starting a new session
-        // or if the network status changed.
-        if (this.offline || (!this.offline && oldOffline === true)) {
-          if (!this._networkSnackbar) {
-            this._networkSnackbar = document.createElement('mg-snackbar');
-            this.root.appendChild(this._networkSnackbar);
-          }
-          this._networkSnackbar.innerHTML = this.offline ?
-              'You are offline' : 'You are online';
-          this._networkSnackbar.open();
-        }
-      }
-
-      _toggleDrawer() {
-        this.drawerOpened = !this.drawerOpened;
-        this.dispatchEvent(new CustomEvent('close-contextual-menu', {
-          bubbles: true, composed: true, detail:{sender:null}}));
-      }
-
-      // Elements in the app can notify section changes.
-      // Response by a11y announcing the section and syncronizing the category.
-      _onChangeSection(event) {
-        let detail = event.detail;
-
-        // Scroll to the top of the page when navigating to a non-list page. For list view,
-        // scroll to the last saved position only if the category has not changed.
-        let scrollTop = 0;
-        if (this.page === 'home') {
-          if (this.categoryName === detail.category) {
-            scrollTop = this._listScrollTop;
-          } else {
-            // Reset the list view scrollTop if the category changed.
-            this._listScrollTop = 0;
-          }
-        }
-        // Use `Polymer.AppLayout.scroll` with `behavior: 'silent'` to disable header scroll
-        // effects during the scroll.
-        Polymer.AppLayout.scroll({ top: scrollTop, behavior: 'silent' });
+      // Use `Polymer.AppLayout.scroll` with `behavior: 'silent'` to disable header scroll
+      // effects during the scroll.
+      Polymer.AppLayout.scroll({ top: scrollTop, behavior: 'silent' });
 
 //        this.categoryName = detail.category || '';
 
-        // Announce the page's title
-        if (detail.title) {
-          document.title = detail.title + " - Booed";
-          this._announce(detail.title + ', loaded');
-        }
-
-        /*
-        if (detail.menu) {
-          this._closeSubmenu();
-          this.set('menu', detail.menu);
-        }
-        */
+      // Announce the page's title
+      if (detail.title) {
+        document.title = detail.title + " - Booed";
+        this._announce(detail.title + ', loaded');
       }
 
       /*
-      _onMeButtonClick(e) {
-        this.set('route.path','user');
+      if (detail.menu) {
+        this._closeSubmenu();
+        this.set('menu', detail.menu);
       }
       */
+    }
 
-      _willRefit() {
-        this.$.balloon.style.display = "block";
-        this.$.balloon.refit();
-      }
+    /*
+    _onMeButtonClick(e) {
+      this.set('route.path','user');
+    }
+    */
 
-      _openSubmenu(e) {
-        for(let i = 0, sub; sub = this.menu.entries[i]; ++i) {
-          if (this.menu.entries[i].name == e.target.name && this.menu.entries[i].submenu) {
-            if (this.submenu === this.menu.entries[i].submenu) {
-              this._closeSubmenu();
-              return;
-            }
+    _willRefit() {
+      this.$.balloon.style.display = "block";
+      this.$.balloon.refit();
+    }
 
-            /* Only show its submenu if it's already selected. */
-            if (e.model.item.name == this.menu.selected) {
-              var target = e.composedPath()[0];
-              this.$.balloon.positionTarget = target;
-              this.submenu = this.menu.entries[i].submenu;
-              this.__WillRefitSubmenuDebouncer = Polymer.Debouncer.debounce(this.__WillRefitSubmenuDebouncer,
-                Polymer.Async.timeOut.after(10),
-                this._willRefit.bind(this));
-              return;
-            }
+    _openSubmenu(e) {
+      for(let i = 0, sub; sub = this.menu.entries[i]; ++i) {
+        if (this.menu.entries[i].name == e.target.name && this.menu.entries[i].submenu) {
+          if (this.submenu === this.menu.entries[i].submenu) {
+            this._closeSubmenu();
+            return;
+          }
+
+          /* Only show its submenu if it's already selected. */
+          if (e.model.item.name == this.menu.selected) {
+            var target = e.composedPath()[0];
+            this.$.balloon.positionTarget = target;
+            this.submenu = this.menu.entries[i].submenu;
+            this.__WillRefitSubmenuDebouncer = Polymer.Debouncer.debounce(this.__WillRefitSubmenuDebouncer,
+              Polymer.Async.timeOut.after(10),
+              this._willRefit.bind(this));
+            return;
           }
         }
+      }
+      this._closeSubmenu();
+    }
+
+    _onScroll(e) {
+      this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+        bubbles: true, composed: true, detail:{sender:null}}));
+    }
+
+    _onResize(e) {
+      this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+        bubbles: true, composed: true, detail:{sender:null}}));
+    }
+
+    _closeSubmenu() {
+      this.submenu = {};
+      this.$.balloon.style.display = "none";
+    }
+
+    _onCloseContextualMenu(e) {
+      if (e.detail && e.detail.sender != this) {
         this._closeSubmenu();
-      }
-
-      _onScroll(e) {
-        this.dispatchEvent(new CustomEvent('close-contextual-menu', {
-          bubbles: true, composed: true, detail:{sender:null}}));
-      }
-
-      _onResize(e) {
-        this.dispatchEvent(new CustomEvent('close-contextual-menu', {
-          bubbles: true, composed: true, detail:{sender:null}}));
-      }
-
-      _closeSubmenu() {
-        this.submenu = {};
-        this.$.balloon.style.display = "none";
-      }
-
-      _onCloseContextualMenu(e) {
-        if (e.detail && e.detail.sender != this) {
-          this._closeSubmenu();
-        }
-      }
-
-      _onMenuTap(e) {
-        this.dispatchEvent(new CustomEvent('close-contextual-menu', {
-          bubbles: true, composed: true, detail:{sender:this}}));
-
-        this._openSubmenu(e);
-      }
-
-      _onAddCartItem(event) {
-        if (!this._cartModal) {
-          this._cartModal = document.createElement('mg-cart-modal');
-          this.root.appendChild(this._cartModal);
-        }
-        this.$.cart.addItem(event.detail);
-        this._cartModal.open();
-        this._announce('Item added to the cart');
-      }
-
-      _onSetCartItem(event) {
-        let detail = event.detail;
-        this.$.cart.setItem(detail);
-        if (detail.quantity === 0) {
-          this._announce('Item deleted');
-        } else {
-          this._announce('Quantity changed to ' + detail.quantity);
-        }
-      }
-
-      _onClearCart() {
-        this.$.cart.clearCart();
-        this._announce('Cart cleared');
-      }
-
-      _onUserLogin(e) {
-        /*
-        this.$.me.setEmail(e.detail.accountEmail);
-        this.$.me.setHash(e.detail.accountHash);
-        */
-      }
-
-      // Elements in the app can notify a change to be a11y announced.
-      _onAnnounce(e) {
-        this._announce(e.detail);
-      }
-
-      // A11y announce the given message.
-      _announce(message) {
-        this._a11yLabel = '';
-        this._announceDebouncer = Polymer.Debouncer.debounce(this._announceDebouncer,
-          Polymer.Async.timeOut.after(100), () => {
-            this._a11yLabel = message;
-          });
-      }
-
-      // This is for performance logging only.
-      _domChange(e) {
-        if (window.performance && performance.mark && !this.__loggedDomChange) {
-          let target = e.composedPath()[0];
-          let host = target.getRootNode().host;
-          if (host && host.localName.match(this.page)) {
-            this.__loggedDomChange = true;
-            performance.mark(host.localName + '.domChange');
-          }
-        }
-      }
-
-      _onFallbackSelectionTriggered() {
-        this.page = '404';
-      }
-
-      _computeShouldShowTabs(page, smallScreen) {
-        return (page === 'home' || page === 'user') && !smallScreen;
-      }
-
-      _computeShouldRenderTabs(_shouldShowTabs, loadComplete) {
-        return _shouldShowTabs && loadComplete;
-      }
-
-      _computeShouldRenderDrawer(smallScreen, loadComplete) {
-        return smallScreen && loadComplete;
-      }
-
-      _computePluralizedQuantity(quantity) {
-        return quantity + ' ' + (quantity === 1 ? 'item' : 'items');
-      }
-
-      _computeLogo(smallScreen) {
-        return smallScreen ? "/images/logo-small.svg": "/images/logo.svg" ;
-      }
-
-      _computeKeyIcon()
-      {
-        return "key";
       }
     }
 
-    customElements.define(MGApp.is, MGApp);
+    _onMenuTap(e) {
+      this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+        bubbles: true, composed: true, detail:{sender:this}}));
+
+      this._openSubmenu(e);
+    }
+
+    _onAddCartItem(event) {
+      if (!this._cartModal) {
+        this._cartModal = document.createElement('mg-cart-modal');
+        this.root.appendChild(this._cartModal);
+      }
+      this.$.cart.addItem(event.detail);
+      this._cartModal.open();
+      this._announce('Item added to the cart');
+    }
+
+    _onSetCartItem(event) {
+      let detail = event.detail;
+      this.$.cart.setItem(detail);
+      if (detail.quantity === 0) {
+        this._announce('Item deleted');
+      } else {
+        this._announce('Quantity changed to ' + detail.quantity);
+      }
+    }
+
+    _onClearCart() {
+      this.$.cart.clearCart();
+      this._announce('Cart cleared');
+    }
+
+    _onUserLogin(e) {
+      /*
+      this.$.me.setEmail(e.detail.accountEmail);
+      this.$.me.setHash(e.detail.accountHash);
+      */
+    }
+
+    // Elements in the app can notify a change to be a11y announced.
+    _onAnnounce(e) {
+      this._announce(e.detail);
+    }
+
+    // A11y announce the given message.
+    _announce(message) {
+      this._a11yLabel = '';
+      this._announceDebouncer = Polymer.Debouncer.debounce(this._announceDebouncer,
+        Polymer.Async.timeOut.after(100), () => {
+          this._a11yLabel = message;
+        });
+    }
+
+    // This is for performance logging only.
+    _domChange(e) {
+      if (window.performance && performance.mark && !this.__loggedDomChange) {
+        let target = e.composedPath()[0];
+        let host = target.getRootNode().host;
+        if (host && host.localName.match(this.page)) {
+          this.__loggedDomChange = true;
+          performance.mark(host.localName + '.domChange');
+        }
+      }
+    }
+
+    _onFallbackSelectionTriggered() {
+      this.page = '404';
+    }
+
+    _computeShouldShowTabs(page, smallScreen) {
+      return (page === 'home' || page === 'user') && !smallScreen;
+    }
+
+    _computeShouldRenderTabs(_shouldShowTabs, loadComplete) {
+      return _shouldShowTabs && loadComplete;
+    }
+
+    _computeShouldRenderDrawer(smallScreen, loadComplete) {
+      return smallScreen && loadComplete;
+    }
+
+    _computePluralizedQuantity(quantity) {
+      return quantity + ' ' + (quantity === 1 ? 'item' : 'items');
+    }
+
+    _computeLogo(smallScreen) {
+      return smallScreen ? "/images/logo-small.svg": "/images/logo.svg" ;
+    }
+
+    _computeKeyIcon()
+    {
+      return "key";
+    }
+  }
+
+  customElements.define(MGApp.is, MGApp);
 
   </script>
 </dom-module>

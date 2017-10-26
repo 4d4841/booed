@@ -51,7 +51,9 @@
       }
 
       #editor {
-        margin-left: 20px
+        margin: 0 20px 20px 20px;
+        width: 100%;
+        height: 100%;
       }
 
       a {
@@ -66,13 +68,13 @@
         <iron-icon icon="add"></iron-icon> สร้าง
       </paper-button>
 
-      <iron-selector class="items-container" attr-for-selected="name" selected="[[itemId]]">
+      <iron-selector class="items-container" attr-for-selected="name" selected="[[itemKey]]">
       <template is="dom-repeat" items="[[itemList]]" mutable-data>
         <mg-item-image
           name="[[item.key]]"
           label="[[item.name]]"
           icon="[[_formatRoleIcon(item.role)]]"
-          src="[[item.src]]"
+          src="[[item._src]]"
           class="item"
           on-click="_onThumbClick"
         ></mg-item-image>
@@ -89,14 +91,14 @@
     <mg-item
       id="editor"
       me="[[me]]"
-      item-id="{{itemId}}"
+      item-key="{{itemKey}}"
       items={{items}}
       app-images="{{appImages}}"
     ></mg-item>
 
     <app-route
         route="{{route}}"
-        pattern="/:itemId"
+        pattern="/:itemKey"
         data="{{routeData}}"
         tail="{{subroute}}">
     </app-route>
@@ -107,10 +109,6 @@
       static get is() { return 'mg-items'; }
       static get properties() { return {
         selectedItem: Number,
-        items: {
-          type: Object,
-          value: {},
-        },
         itemList: {
           type: Array,
           value: [],
@@ -142,7 +140,7 @@
       }}
 
       static get observers() { return [
-        '_itemIdChanged(itemId)',
+        '_itemKeyChanged(itemKey)',
         '_routeDataChanged(routeData)',
         '_userChanged(me.user.uid)',
         '_visibleChanged(visible)',
@@ -158,7 +156,7 @@
 
       _visibleChanged(visible) {
         if (!visible) {
-          this.set('itemId',null);
+          this.set('itemKey',null);
         }
       }
 
@@ -168,59 +166,74 @@
 
       _userChanged(uid) {
         this.set('itemList',[]);
-        if (this._itemsCallback) {
-          this._itemsCallbackRef.off('child_added', this._itemsCallback, this);
-          delete this._itemsCallback;
+        if (this._UidChangedCallback) {
+          MGAPP.DB.ref('home')
+                  .child(uid)
+                  .child('items')
+                  .off('child_added', this._UidChangedCallback, this);
+          delete this._UidChangedCallback;
         }
         if (uid) {
-          this._itemsCallbackRef = MGFIRE.database().ref('home')
-                                                    .child(uid)
-                                                    .child('items');
-          this._itemsCallback = this._itemsCallbackRef.on('child_added', function(keysnap){
+          this._UidChangedCallback =
+          MGAPP.DB.ref('home')
+                  .child(uid)
+                  .child('items')
+                  .on('child_added', function(snapshot){
 
-            if (!this.items[keysnap.key]) {
-              this.items[keysnap.key] = {};
+            let val = snapshot.val();
+            this.unshift('itemList',{
+              key: snapshot.key,
+              role:val.role,
+              name:val.name,
+            }) - 1;
+            if (val.images) {
+              for (let key in val.images) {
+                MGAPP.ST.ref('home')
+                        .child(uid)
+                        .child('representations')
+                        .child(val.images[key].rep)
+                        .getDownloadURL().then( function(url) {
+                    this._setPhotoKeyProperty(snapshot.key, '_src', url);
+                }.bind(this));
+                break;
+              }
+            } else {
+              this.set('itemList.0._src','images/logo-pumpkin-grayout.svg');
             }
 
-            MGFIRE.database().ref('items')
-                             .child(keysnap.key)
-                             .once('value',function(datasnap){
-              let val = datasnap.val();
-              this.items[keysnap.key].name = val.name;
-              this.push('itemList',{key: keysnap.key, role:val.role, name:val.name});
-              let last = this.itemList.length - 1;
-              let images = val.images;
-              if (images) {
-                let keys = Object.keys(val.images);
-                if (keys.length && !images[keys[0]].uploading) {
-                  MGFIRE.storage().ref('home')
-                                  .child(uid)
-                                  .child('images')
-                                  .child(keys[0])
-                                  .getDownloadURL().then(function(url){
-                      this.set('itemList.'+last+".src",url);
-                  }.bind(this));
-                }
-              }
-              else {
-                this.set('itemList.'+last+".src",'images/logo-pumpkin-grayout.svg');
-              }
+            let ref = MGAPP.DB.ref('home')
+                              .child(uid)
+                              .child('items')
+                              .child(snapshot.key);
 
-              MGFIRE.database().ref('items').child(keysnap.key).on('child_changed', function(keysnap){
-                let key = keysnap.key;
-                let parentKey = keysnap.ref.parent.key;
-                if (key == 'name') {
-                  for (let i = 0,item; item = this.itemList[i]; ++i) {
-                    if (item.key == parentKey) {
-                      this.set('itemList.'+i+"."+key,keysnap.val());
-                      break;
-                    }
-                  }
-                }
-              }.bind(this));
-
+            ref.child('name').on('value', function(nameSnapshot){
+              this._setPhotoKeyProperty(snapshot.key, 'name', nameSnapshot.val());
             }.bind(this));
+
+            ref.child('images').once('child_added', function(imageSnapshot){
+              MGAPP.registerRepresentation(imageSnapshot.val().rep, function(repKey,src){
+                this._setPhotoKeyProperty(snapshot.key,'_src',src);
+              }.bind(this));
+            }.bind(this));
+
           },function(error){},this);
+        }
+      }
+
+      _indexImage(imageKey) {
+        for (let i = 0, data; data = this.itemList[i]; ++i) {
+          if (data.key == imageKey) {
+            return i;
+          }
+        }
+        return -1;
+      }
+
+      _setPhotoKeyProperty(key,prop,val) {
+        let idx = this._indexImage(key);
+        if (idx > -1) {
+          this.itemList[idx][prop] = val;
+          this.notifyPath(['itemList',idx,prop]);
         }
       }
 
@@ -241,13 +254,13 @@
         }
       }
 
-      _itemIdChanged(newItemId) {
+      _itemKeyChanged(newItemId) {
         this.set('route.path', newItemId ? "/"+newItemId : "");
       }
 
       _routeDataChanged(routeData) {
-        if (routeData.itemId) {
-          this.set('itemId', routeData.itemId);
+        if (routeData.itemKey) {
+          this.set('itemKey', routeData.itemKey);
         }
       }
 

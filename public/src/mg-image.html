@@ -44,12 +44,9 @@
 
         alt: String,
 
-        /*
-        storageSrc = {uid: uid string ,key: image key}
-        */
-        storageSrc: {
-          type: Object,
-          observer: '_storageSrcChanged',
+        storage: {
+          type: String,
+          observer: '_storageChanged',
         },
 
         src: {
@@ -111,14 +108,40 @@
         }
       }
 
-      _storageSrcChanged(stroageSrc) {
-        MGFIRE.storage().ref('home')
-                        .child(storageSrc.uid)
-                        .child('images')
-                        .child(storageSrc.key)
-                        .getDownloadURL().then(function(url){
+      disconnectedCallback() {
+        super.disconnectedCallback();
+      }
+
+      _removeListener() {
+        let img = MGIMAGES[this.storage];
+        for (let i = 0,listener; listener = img.listeners[i] ; ++i) {
+          if (this == listener) {
+            img.listeners.splice(i,1);
+            return;
+          }
+        }
+      }
+
+      _updateProgress(progress) {
+        if (progress == 100) {
+          this.set('src',MGIMAGES[this.storage].src);
+        }
+      }
+
+      _storageChanged(storage) {
+        if (storage) {
+          if (MGIMAGES[storage]) {
+            if (MGIMAGES[storage].src) {
+              this.set('src',MGIMAGES[storage].src);
+            } else if (MGIMAGES[storage].listeners) {
+              MGIMAGES[storage].listeners.push(this);
+            }
+          }
+
+          MGAPP.ST.ref(storage).getDownloadURL().then(function(url){
             this.set('src', url);
-        }.bind(this));
+          }.bind(this));
+        }
       }
 
       _placeholderChanged(placeholder) {
