@@ -17,8 +17,7 @@
         width: 28px;
         height: 28px;
         border-radius: 50% 50%;
-        /*border: 3px solid var(--app-primary-color);*/
-        border: 1px solid tomato;
+        border: 2px solid var(--app-primary-color);
         box-sizing: border-box;
         position: absolute;
         pointer-events: none;
@@ -61,7 +60,7 @@
     </style>
       </custom-style>
 
-    <paper-spinner-lite style="--paper-spinner-stroke-width:1px;--paper-spinner-color:tomato;position:absolute;top:3px" class="layout self-center" active="{{spinnerActive}}"></paper-spinner-lite>
+    <paper-spinner-lite style="--paper-spinner-stroke-width:2px;--paper-spinner-color:tomato;position:absolute;top:3px" class="layout self-center" active="{{spinnerActive}}"></paper-spinner-lite>
     <img class="photo-icon" src="[[image]]" hidden$="[[_noImage(image)]]">
 
     <svg class="badge" hidden$="[[_hideBadge(value)]]">
