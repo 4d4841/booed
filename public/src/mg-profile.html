@@ -428,7 +428,7 @@
       connectedCallback() {
         super.connectedCallback();
         this.__validWaiting = true;
-        MGFIRE.auth().onAuthStateChanged(this._onAuthStateChanged.bind(this));
+        MGAPP.AU.onAuthStateChanged(this._onAuthStateChanged.bind(this));
       }
 
       _onAuthStateChanged(user) {
@@ -447,10 +447,10 @@
       _googleSignIn(e) {
         this.state = 'waiting';
 
-        MGFIRE.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(
+        MGAPP.AU.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(
           function() {
             var provider = new firebase.auth.GoogleAuthProvider();
-            return MGFIRE.auth().signInWithRedirect(provider);
+            return MGAPP.AU.signInWithRedirect(provider);
           })
           .catch(function(error) {
             var errorCode = error.code;
@@ -460,7 +460,7 @@
       }
 
       _signOut(e) {
-        MGFIRE.auth().signOut();
+        MGAPP.AU.signOut();
         this.state = "init";
       }
 
