@@ -356,18 +356,25 @@
             this._LastWritten.uid = uid;
             this._LastWritten.name = name;
             this._LastWritten.role = role;
-            this._uploadReps(uid,itemKey,files);
           }
         }.bind(this));
 
+        this._uploadReps(uid,itemKey,files);
       }
 
       _getItemSnapshot(snapshot) {
         let itemKey = snapshot.key;
         let v = snapshot.val();
+
         this.set('loading', false);
 
         if (v) {
+
+          if (!v.role) {
+            /* If files got uploaded beforehand */
+            return;
+          }
+
           if (MGAPP.items[itemKey]) {
             MGAPP.set(['items',itemKey,'name'], v.name);
             MGAPP.set(['items',itemKey,'role'], v.role);
