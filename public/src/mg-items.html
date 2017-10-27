@@ -206,10 +206,12 @@
                               .child('items')
                               .child(snapshot.key);
 
+            /* Listen to name changes */
             ref.child('name').on('value', function(nameSnapshot){
               this._setPhotoKeyProperty(snapshot.key, 'name', nameSnapshot.val());
             }.bind(this));
 
+            /* Only allow updating item thumbnail/cover once uploading first image*/
             ref.child('images').once('child_added', function(imageSnapshot){
               MGAPP.registerRepresentation(imageSnapshot.val().rep, function(repKey,src){
                 this._setPhotoKeyProperty(snapshot.key,'_src',src);

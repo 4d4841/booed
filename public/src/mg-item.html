@@ -178,25 +178,15 @@
       _selectedImagesChanged(changes) {
         if (changes) {
           let orderNumber = 0;
+          /* Remove number from deselected photo */
           changes.indexSplices.forEach(function(splice){
             splice.removed.forEach(function(removedKey){
-              for(let i = 0, photo; photo = this.photoList[i]; ++i ) {
-                if (photo.key == removedKey) {
-                  this.photoList[i]._selectionOrder = null;
-                  this.notifyPath('photoList.'+i+'._selectionOrder');
-                  delete this.photoList[i]._selectionOrder;
-                }
-              }
+              this._setPhotoKeyProperty(removedKey,'_selectionOrder',null);
             }.bind(this))
           }.bind(this));
 
           this.selectedImages.forEach(function(key){
-            for(let i = 0, photo; photo = this.photoList[i]; ++i ) {
-              if (photo.key == key) {
-                this.photoList[i]._selectionOrder = ++orderNumber;
-                this.notifyPath('photoList.'+i+'._selectionOrder');
-              }
-            }
+            this._setPhotoKeyProperty(key,'_selectionOrder',++orderNumber);
           }.bind(this));
         }
         if (this.selectedImages.length) {
@@ -290,8 +280,7 @@
             /*_unsubscribe: callback to stop listening to progress,*/
           };
 
-          let pushIndex = this.push('photoList',image) - 1;
-          this.notifyPath('photoList.'+pushIndex);
+          this.notifyPath('photoList.' + (this.push('photoList',image)-1));
 
           /* XXX Should generate a thumbnail representation with Pica */
           MGAPP.registerRepresentation(repKey, function(key,src){
@@ -389,7 +378,7 @@
                 };
 
                 if (snapshot.key == itemKey) {
-                  this.notifyPath('photoList.'+(this.push('photoList',photo) -1));
+                  this.notifyPath('photoList.' + (this.push('photoList',photo)-1));
                 }
               } else {
                 photo = this.photoList[idx];
@@ -522,7 +511,7 @@
         let registerData = {};
 
         this.photoList.forEach(function(photo){
-          registerData['items/'+this.itemKey+'/images/'+photo.key+'/order'] = photo._selectionOrder || Number.MAX_SAFE_INTEGER;
+          registerData['home/'+MGAPP.AU.currentUser.uid+'/items/'+this.itemKey+'/images/'+photo.key+'/order'] = photo._selectionOrder || Number.MAX_SAFE_INTEGER;
         },this);
 
         MGAPP.DB.ref().update(registerData, function(error){
@@ -535,11 +524,11 @@
         let registerData = {};
 
         photo._selectionOrder.forEach(function(key){
-          registerData['items/'+this.itemKey+'/images/'+key+'/delete'] = true;
+          registerData['home/'+MGAPP.AU.currentUser.uid+'/items/'+this.itemKey+'/images/'+photo.key+'/delete'] = true
         },this);
 
         MGAPP.DB.ref().update(registerData, function(error){
-            console.assert(!error,"ERR updating order");
+            console.assert(!error,"ERR updating deletion");
         }.bind(this));
         this.splice('selectedImages',0,this.selectedImages.length);
       }
