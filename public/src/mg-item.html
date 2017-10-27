@@ -247,33 +247,13 @@
 
       _setPhotoKeyProperty(key,prop,val) {
         let idx = this._indexImage(key);
-        if (idx > -1) {
+        if (idx !== -1) {
           this.photoList[idx][prop] = val;
           this.notifyPath(['photoList',idx,prop]);
         }
       }
 
-      _filesSelected(e) {
-        let files = e.target.files;
-
-        if (!files || !files.length) {
-          return;
-        }
-
-        let itemKey = this.itemKey;
-        let uid = MGAPP.AU.currentUser.uid;
-        let role = this.itemRole;
-        let name = this.itemName;
-
-        console.assert(role, "Role is missing");
-
-        MGAPP.items[itemKey] = MGAPP.items[itemKey] || {
-          _uid: uid,
-          name: name,
-          role: role,
-          images: {},
-          time: firebase.database.ServerValue.TIMESTAMP,
-        };
+      _uploadReps(uid,itemKey,files) {
 
         Array.from(files).forEach(function(imgFile){
           let repKey = MGAPP.DB.ref('representations').push().key;
@@ -287,7 +267,7 @@
           };
 
           this.notifyPath('photoList.' + (this.push('photoList',image)-1));
-          MGAPP.items[itemKey].images[image.key] = {name: image.name, rep: repKey};
+          MGAPP.set(['items',itemKey,'images',image.key], {name: image.name, rep: repKey});
 
           /* XXX Should generate a thumbnail representation with Pica */
           MGAPP.registerRepresentation(repKey, function(key,src){
@@ -312,20 +292,10 @@
             var registerData = {};
 
             registerData['representations/'+repKey+'/name'] = imgFile.name;
-            registerData['items/'+itemKey+'/uid'] = uid;
-            registerData['items/'+itemKey+'/role'] = role;
-            registerData['items/'+itemKey+'/public'] = false;
-            registerData['items/'+itemKey+'/name'] = name;
             /* This will contain customizations like ROIs, thumbnail, custom name */
-            registerData['home/'+uid+'/items/'+itemKey+'/role'] = role;
-            registerData['home/'+uid+'/items/'+itemKey+'/name'] = name;
             registerData['home/'+uid+'/items/'+itemKey+'/images/'+image.key+'/rep'] = repKey;
             registerData['home/'+uid+'/items/'+itemKey+'/images/'+image.key+'/name'] = image.name;
             /* Published item, Will also contain tags */
-
-            this._LastWritten.uid = uid;
-            this._LastWritten.name = image.name;
-            this._LastWritten.role = role;
 
             MGAPP.DB.ref().update(registerData, function(error){
               if (!error) {
@@ -334,7 +304,7 @@
 
                   this.set('appImages.'+imgKey+'.src', url);
                   let idx = this._indexImage(imgKey);
-                  if (idx > -1) { this.notifyPath('photoList.'+idx+'.src'); }
+                  if (idx !== -1) { this.notifyPath('photoList.'+idx+'.src'); }
 
                 }.bind(this));
                 */
@@ -347,6 +317,51 @@
         },this); /*forEach(files)*/
       }
 
+      _filesSelected(e) {
+        let files = e.target.files;
+
+        if (!files || !files.length) {
+          return;
+        }
+
+        let itemKey = this.itemKey;
+        let uid = MGAPP.AU.currentUser.uid;
+        let role = this.itemRole;
+        let name = this.itemName;
+
+        console.assert(role, "Role is missing");
+
+        if (!MGAPP.items[itemKey]) {
+          MGAPP.set('items.'+itemKey, {
+            _uid: uid,
+            name: name,
+            role: role,
+            time: firebase.database.ServerValue.TIMESTAMP,
+            images: {},
+          });
+        }
+
+        var registerData = {};
+        registerData['home/'+uid+'/items/'+itemKey+'/role'] = role;
+        registerData['home/'+uid+'/items/'+itemKey+'/name'] = name;
+        registerData['items/'+itemKey+'/uid'] = uid;
+        registerData['items/'+itemKey+'/role'] = role;
+        registerData['items/'+itemKey+'/name'] = name;
+        registerData['items/'+itemKey+'/public'] = false;
+
+        /* XXX Update server to allow swiching back to uploading task(s).
+        This should push a tmp entry in mg-items */
+        MGAPP.DB.ref().update(registerData, function(error){
+          if (!error) {
+            this._LastWritten.uid = uid;
+            this._LastWritten.name = name;
+            this._LastWritten.role = role;
+            this._uploadReps(uid,itemKey,files);
+          }
+        }.bind(this));
+
+      }
+
       _getItemSnapshot(snapshot) {
         let itemKey = snapshot.key;
         let v = snapshot.val();
@@ -354,19 +369,21 @@
 
         if (v) {
           if (MGAPP.items[itemKey]) {
-            MGAPP.items[itemKey].name = v.name;
-            MGAPP.items[itemKey].role = v.role;
-            MGAPP.items[itemKey].time = v.time;
-            MGAPP.items[itemKey]._uid = snapshot.ref.parent.parent.key;
-            Object.assign(MGAPP.items[itemKey].images, v.images);
+            MGAPP.set(['items',itemKey,'name'], v.name);
+            MGAPP.set(['items',itemKey,'role'], v.role);
+            MGAPP.set(['items',itemKey,'time'], v.time);
+            MGAPP.set(['items',itemKey,'_uid'], snapshot.ref.parent.parent.key);
+            for(let imgKey in v.images) {
+              MGAPP.set(['items',itemKey,'images',imgKey], v.images[imgKey]);
+            }
           } else {
-            MGAPP.items[itemKey] = {
+            MGAPP.set('items.'+itemKey, {
+              _uid: snapshot.ref.parent.parent.key,
               name: v.name,
               role: v.role,
               time: v.time,
-              _uid: snapshot.ref.parent.parent.key,
               images: v.images || {},
-            };
+            });
           }
         } else if (!this.itemRole) {
           /* This is not creating a new item, just reset url & return */
@@ -377,7 +394,7 @@
           return;
         }
 
-        /* XXX role must already be set in the database */
+        /* Continue updating UI only if it's a snapshot of current item */
         if (snapshot.key != this.itemKey) {
           return;
         }
@@ -387,14 +404,13 @@
         this.set('itemRole',v.role);
         this.set('itemName',this._ItemName = v.name);
 
-        let images = MGAPP.items[this.itemKey].images;
-        Object.keys(images)
-        .forEach(function(imgKey){
+        let appImages = MGAPP.items[this.itemKey].images;
+        for(let imgKey in appImages) {
           /* update current photoList */
 
-          let image = images[imgKey];
+          let image = appImages[imgKey];
           let idx = this._indexImage(imgKey);
-          if (idx < 0) {
+          if (idx === -1) {
 
             if (snapshot.key == itemKey) {
               this.notifyPath('photoList.' + (
@@ -407,14 +423,14 @@
               ));
             }
 
-          } else { /* update current photos */
+          } else { /* update current photo's event-value */
             this.photoList[idx].key = imgKey;
             this.photoList[idx].rep = image.rep;
-            this.notifyPath('photoList.'+idx+'.rep');
+            this.notifyPath(['photoList',idx,'rep']);
             this.photoList[idx].name = image.name;
-            this.notifyPath('photoList.'+idx+'.name');
+            this.notifyPath(['photoList',idx,'name']);
             this.photoList[idx].order = image.order;
-            this.notifyPath('photoList.'+idx+'.order');
+            this.notifyPath(['photoList',idx,'order']);
           }
 
           MGAPP.registerRepresentation(image.rep,
@@ -422,8 +438,7 @@
               this._setPhotoKeyProperty(imgKey,'_src',src);
             }.bind(this)
           );
-
-        }, this); /* forEach imgKey */
+        }
       }
 
       _getDataError(error) {
