@@ -284,7 +284,6 @@
             name: imgFile.name.split('.')[0],
             /*_src: display source for current widget,*/
             /*_progress: uploading status,*/
-            /*_unsubscribe: callback to stop listening to progress,*/
           };
 
           this.notifyPath('photoList.' + (this.push('photoList',image)-1));
@@ -299,55 +298,51 @@
 
           MGAPP.set(['representations',repKey,'name'], imgFile.name);
 
-          this._setPhotoKeyProperty(image.key,'_unsubscribe',
+          MGAPP.representations[repKey].task
+          .on(firebase.storage.TaskEvent.STATE_CHANGED, function(snapshot) {
 
-            MGAPP.representations[repKey].task
-            .on(firebase.storage.TaskEvent.STATE_CHANGED, function(snapshot) {
+            this._setPhotoKeyProperty(image.key, '_progress',
+              (snapshot.bytesTransferred / snapshot.totalBytes * 100).toFixed(2)
+            );
 
-              this._setPhotoKeyProperty(image.key, '_progress',
-                (snapshot.bytesTransferred / snapshot.totalBytes * 100).toFixed(2)
-              );
+          }.bind(this), function(error){
+            console.error("ERR",error);
+          }, function() {
+            /* image uploaded, register file id into the database */
+            var registerData = {};
 
-            }.bind(this), function(error){
-              console.error("ERR",error);
-            }, function() {
-              /* image uploaded, register file id into the database */
-              var registerData = {};
+            registerData['representations/'+repKey+'/name'] = imgFile.name;
+            registerData['items/'+itemKey+'/uid'] = uid;
+            registerData['items/'+itemKey+'/role'] = role;
+            registerData['items/'+itemKey+'/public'] = false;
+            registerData['items/'+itemKey+'/name'] = name;
+            /* This will contain customizations like ROIs, thumbnail, custom name */
+            registerData['home/'+uid+'/items/'+itemKey+'/role'] = role;
+            registerData['home/'+uid+'/items/'+itemKey+'/name'] = name;
+            registerData['home/'+uid+'/items/'+itemKey+'/images/'+image.key+'/rep'] = repKey;
+            registerData['home/'+uid+'/items/'+itemKey+'/images/'+image.key+'/name'] = image.name;
+            /* Published item, Will also contain tags */
 
-              registerData['representations/'+repKey+'/name'] = imgFile.name;
-              registerData['items/'+itemKey+'/uid'] = uid;
-              registerData['items/'+itemKey+'/role'] = role;
-              registerData['items/'+itemKey+'/public'] = false;
-              registerData['items/'+itemKey+'/name'] = name;
-              /* This will contain customizations like ROIs, thumbnail, custom name */
-              registerData['home/'+uid+'/items/'+itemKey+'/role'] = role;
-              registerData['home/'+uid+'/items/'+itemKey+'/name'] = name;
-              registerData['home/'+uid+'/items/'+itemKey+'/images/'+image.key+'/rep'] = repKey;
-              registerData['home/'+uid+'/items/'+itemKey+'/images/'+image.key+'/name'] = image.name;
-              /* Published item, Will also contain tags */
+            this._LastWritten.uid = uid;
+            this._LastWritten.name = image.name;
+            this._LastWritten.role = role;
 
-              this._LastWritten.uid = uid;
-              this._LastWritten.name = image.name;
-              this._LastWritten.role = role;
+            MGAPP.DB.ref().update(registerData, function(error){
+              if (!error) {
+                /*
+                imgRef.getDownloadURL().then(function(url){
 
-              MGAPP.DB.ref().update(registerData, function(error){
-                if (!error) {
-                  /*
-                  imgRef.getDownloadURL().then(function(url){
+                  this.set('appImages.'+imgKey+'.src', url);
+                  let idx = this._indexImage(imgKey);
+                  if (idx > -1) { this.notifyPath('photoList.'+idx+'.src'); }
 
-                    this.set('appImages.'+imgKey+'.src', url);
-                    let idx = this._indexImage(imgKey);
-                    if (idx > -1) { this.notifyPath('photoList.'+idx+'.src'); }
-
-                  }.bind(this));
-                  */
-                } else {
-                  console.error("ERR",error);
-                }
-              }.bind(this));
-            }.bind(this))
-
-          ); /* set unsubscribe */
+                }.bind(this));
+                */
+              } else {
+                console.error("ERR",error);
+              }
+            }.bind(this));
+          }.bind(this));
 
         },this); /*forEach(files)*/
       }
@@ -428,23 +423,6 @@
             }.bind(this)
           );
 
-          /* track existing progress */
-          if (MGAPP.representations[image.rep].task) {
-            let idx = this._indexImage(imgKey);
-            if (idx > -1 && !this.photoList[idx]._unsubscribe) {
-              this._setPhotoKeyProperty(imgKey, '_unsubscribe',
-                MGAPP.representations[image.rep].task
-                .on(firebase.storage.TaskEvent.STATE_CHANGED,
-                  function(snapshot) {
-                    this._setPhotoKeyProperty(imgKey, '_progress',
-                      (snapshot.bytesTransferred / snapshot.totalBytes * 100).toFixed(2)
-                    );
-                  }.bind(this),
-                  null,null
-                )
-              );
-            }
-          }
         }, this); /* forEach imgKey */
       }
 
@@ -476,13 +454,6 @@
         if (this.selectedImages) {
           this.splice('selectedImages',0,this.selectedImages.length);
         }
-        this.photoList.forEach(function(photo){
-          if (photo._unsubscribe) {
-            console.log("unsubscribe");
-            photo._unsubscribe();
-            delete photo._unsubscribe;
-          }
-        });
         this.set('photoList',[]);
         this.set('loading', true);
         this._ItemReference = MGAPP.DB.ref('home').child(MGAPP.AU.currentUser.uid)
