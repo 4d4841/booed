@@ -266,13 +266,20 @@
         let name = this.itemName;
 
         console.assert(role, "Role is missing");
-        let itemRef = MGAPP.DB.ref('home').child(uid).child(itemKey);
+
+        MGAPP.items[itemKey] = MGAPP.items[itemKey] || {
+          _uid: uid,
+          name: name,
+          role: role,
+          images: {},
+          time: firebase.database.ServerValue.TIMESTAMP,
+        };
 
         Array.from(files).forEach(function(imgFile){
-          let repKey = MGAPP.DB.ref().child('representations').push().key;
+          let repKey = MGAPP.DB.ref('representations').push().key;
           /* An item image would contain link(s) to storage image representation. */
           let image = {
-            key: itemRef.push().key,
+            key: MGAPP.DB.ref('home').child(uid).child(itemKey).push().key,
             rep: repKey, /* db representations/repKey contains storage info eg. uid */
             name: imgFile.name.split('.')[0],
             /*_src: display source for current widget,*/
@@ -281,6 +288,7 @@
           };
 
           this.notifyPath('photoList.' + (this.push('photoList',image)-1));
+          MGAPP.items[itemKey].images[image.key] = {name: image.name, rep: repKey};
 
           /* XXX Should generate a thumbnail representation with Pica */
           MGAPP.registerRepresentation(repKey, function(key,src){
@@ -345,81 +353,99 @@
       }
 
       _getItemSnapshot(snapshot) {
-        let itemKey = this.itemKey;
+        let itemKey = snapshot.key;
         let v = snapshot.val();
         this.set('loading', false);
 
-        /* XXX role must already be set in the database */
-        if (v && v.role) {
-          if (snapshot.key == itemKey) {
-            this.set('itemRole',v.role);
-            this.set('itemName',this._ItemName = v.name);
+        if (v) {
+          if (MGAPP.items[itemKey]) {
+            MGAPP.items[itemKey].name = v.name;
+            MGAPP.items[itemKey].role = v.role;
+            MGAPP.items[itemKey].time = v.time;
+            MGAPP.items[itemKey]._uid = snapshot.ref.parent.parent.key;
+            Object.assign(MGAPP.items[itemKey].images, v.images);
+          } else {
+            MGAPP.items[itemKey] = {
+              name: v.name,
+              role: v.role,
+              time: v.time,
+              _uid: snapshot.ref.parent.parent.key,
+              images: v.images || {},
+            };
           }
-
-          if (v.images) {
-            let uid = MGAPP.AU.currentUser.uid;
-
-            /* XXX cache into MGAPP.items */
-
-            Object.keys(v.images).forEach(function(imgKey){
-
-              /* update current photoList */
-
-              let image = v.images[imgKey];
-              let idx = this._indexImage(imgKey);
-              let photo;
-              if (idx < 0) {
-                /* photo not exist, make a new slot */
-                photo = {
-                  key: imgKey,
-                  rep: image.rep,
-                  name: image.name,
-                  order: image.order,
-                };
-
-                if (snapshot.key == itemKey) {
-                  this.notifyPath('photoList.' + (this.push('photoList',photo)-1));
-                }
-              } else {
-                photo = this.photoList[idx];
-                this.photoList[idx].key = imgKey;
-                this.photoList[idx].rep = image.rep;
-                this.notifyPath('photoList.'+idx+'.rep');
-                this.photoList[idx].name = image.name;
-                this.notifyPath('photoList.'+idx+'.name');
-                this.photoList[idx].order = image.order;
-                this.notifyPath('photoList.'+idx+'.order');
-              }
-
-              MGAPP.registerRepresentation(image.rep,
-                function(key,src) {
-                  this._setPhotoKeyProperty(imgKey,'_src',src);
-                }.bind(this)
-              );
-
-              /* track existing progress */
-              if (MGAPP.representations[image.rep].task) {
-                this._setPhotoKeyProperty(image.key, '_unsubscribe',
-                  MGAPP.representations[image.rep].task
-                  .on(firebase.storage.TaskEvent.STATE_CHANGED,
-                    function(snapshot) {
-                      this._setPhotoKeyProperty(image.key, '_progress',
-                        (snapshot.bytesTransferred / snapshot.totalBytes * 100).toFixed(2)
-                      );
-                    }.bind(this),
-                    null,null
-                  )
-                );
-              }
-
-            }, this);
-          }
-        } else if (!this.itemRole){
-          /* No data and the role isn't set then the path should be reset back */
+        } else if (!this.itemRole) {
+          /* This is not creating a new item, just reset url & return */
           this.set('itemKey', null);
-        }/* else {
-          console.log("new item");
-        }*/
+          return;
+        } else if (!v) {
+          /* Creating a new item */
+          return;
+        }
+
+        /* XXX role must already be set in the database */
+        if (snapshot.key != this.itemKey) {
+          return;
+        }
+
+        /* Updating UI. Check against current key */
+
+        this.set('itemRole',v.role);
+        this.set('itemName',this._ItemName = v.name);
+
+        let images = MGAPP.items[this.itemKey].images;
+        Object.keys(images)
+        .forEach(function(imgKey){
+          /* update current photoList */
+
+          let image = images[imgKey];
+          let idx = this._indexImage(imgKey);
+          if (idx < 0) {
+
+            if (snapshot.key == itemKey) {
+              this.notifyPath('photoList.' + (
+                this.push('photoList', {
+                    key: imgKey,
+                    rep: image.rep,
+                    name: image.name,
+                    order: image.order,
+                }) - 1
+              ));
+            }
+
+          } else { /* update current photos */
+            this.photoList[idx].key = imgKey;
+            this.photoList[idx].rep = image.rep;
+            this.notifyPath('photoList.'+idx+'.rep');
+            this.photoList[idx].name = image.name;
+            this.notifyPath('photoList.'+idx+'.name');
+            this.photoList[idx].order = image.order;
+            this.notifyPath('photoList.'+idx+'.order');
+          }
+
+          MGAPP.registerRepresentation(image.rep,
+            function(key,src) {
+              this._setPhotoKeyProperty(imgKey,'_src',src);
+            }.bind(this)
+          );
+
+          /* track existing progress */
+          if (MGAPP.representations[image.rep].task) {
+            let idx = this._indexImage(imgKey);
+            if (idx > -1 && !this.photoList[idx]._unsubscribe) {
+              this._setPhotoKeyProperty(imgKey, '_unsubscribe',
+                MGAPP.representations[image.rep].task
+                .on(firebase.storage.TaskEvent.STATE_CHANGED,
+                  function(snapshot) {
+                    this._setPhotoKeyProperty(imgKey, '_progress',
+                      (snapshot.bytesTransferred / snapshot.totalBytes * 100).toFixed(2)
+                    );
+                  }.bind(this),
+                  null,null
+                )
+              );
+            }
+          }
+        }, this); /* forEach imgKey */
       }
 
       _getDataError(error) {
@@ -452,7 +478,9 @@
         }
         this.photoList.forEach(function(photo){
           if (photo._unsubscribe) {
+            console.log("unsubscribe");
             photo._unsubscribe();
+            delete photo._unsubscribe;
           }
         });
         this.set('photoList',[]);
