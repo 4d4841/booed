@@ -800,7 +800,11 @@
       this._notifyNetworkStatus();
     }
 
+
     registerRepresentation(key,srcCallback,file) {
+      /* srcCallback will be called more than once until src is resolved.
+      which could be storage src or local file data */
+
       let storageRef = MGAPP.ST.ref('home')
                                .child(MGAPP.AU.currentUser.uid)
                                .child('representations')
@@ -808,7 +812,12 @@
       this.representations[key] = this.representations[key] || {};
       let rep = this.representations[key];
 
-      if (file /*&& !rep.task*/) {
+      if (rep.src) {
+        srcCallback(key, rep.src);
+      } else if (file /*&& !rep.task*/) {
+        rep.callbacks = rep.callbacks || [];
+        rep.callbacks.push(srcCallback);
+
         /*
         if (task) {
           this.representations[key].task.cancel();
@@ -818,8 +827,6 @@
         this.set(['representations',key,'name'], file.name);
         this.set(['representations',key,'task'], storageRef.put(file));
 
-        rep.callbacks = rep.callbacks || [];
-        rep.callbacks.push(srcCallback);
 
         var reader = new FileReader();
         reader.onload = function(e) {
@@ -831,27 +838,23 @@
 
         /* XXX track task to delete it when done */
 
-      } else {
-        /* Don't set src if uploading task exists */
-        if (!rep.src && !rep.task) {
-          /* Prevent async src assignment */
-          rep.src = "images/logo-pumpkin-outline-grayout.svg";
-          rep.callbacks = rep.callbacks || [];
-          rep.callbacks.push(srcCallback);
+      } else if (!rep.callbacks && !rep.src) {
+        rep.callbacks = rep.callbacks || [];
+        rep.callbacks.push(srcCallback);
 
-          storageRef.getDownloadURL().then(function(url){
-            this.set(['representations',key,'src'], url);
-            rep.callbacks.forEach(function(cb){ cb(key,url); });
-            delete rep.callbacks;
-          }.bind(this));
-        } else {
-          srcCallback(key,rep.src);
-        }
+        storageRef.getDownloadURL().then(function(url){
+          this.set(['representations',key,'src'], url);
+          rep.callbacks.forEach(function(cb){ cb(key,url); });
+          delete rep.callbacks;
+        }.bind(this));
+      } else if (rep.callbacks){
+        rep.callbacks.push(srcCallback);
       }
 
       /* return function to unsubscribe srcCallback */
       return function(){
         if (rep.callbacks) {
+          console.log("unsubscribe callback");
           rep.callbacks.splice(rep.callbacks.indexOf(srcCallback),1);
         }
       };
