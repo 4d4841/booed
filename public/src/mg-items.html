@@ -181,24 +181,39 @@
                   .on('child_added', function(snapshot){
 
             let val = snapshot.val();
-            this.unshift('itemList',{
-              key: snapshot.key,
-              role:val.role,
-              name:val.name,
-            }) - 1;
+            let storageRef = MGAPP.ST.ref('home').child(uid).child('representations');
+
+            if( this.itemList.every(function(item){
+              /* Check if item exists */
+              return item.key != snapshot.key;
+            })) {
+              /* New item found in snapshot, insert into item list.
+               * In expected case it may already add placeholders for keeping
+               * items that are being constructed.
+               */
+              this.unshift('itemList',{
+                key: snapshot.key,
+                role:val.role,
+                name:val.name,
+              }) - 1;
+            }
+
             if (val.images) {
               for (let key in val.images) {
-                MGAPP.ST.ref('home')
-                        .child(uid)
-                        .child('representations')
-                        .child(val.images[key].rep)
-                        .getDownloadURL().then( function(url) {
-                    this._setPhotoKeyProperty(snapshot.key, '_src', url);
-                }.bind(this));
+                if (val.images[key].order && val.images[key].order != 1) {
+                  continue;
+                }
+                let ref = val.images[key].rep ? storageRef.child(val.images[key].rep):null;
+                MGAPP.registerRepresentation(ref, (key,ev,val) => {
+                    if (ev == 'src') {
+                      this._setPhotoKeyProperty(snapshot.key, '_src', val);
+                    }
+                  }
+                );
                 break;
               }
             } else {
-              this.set('itemList.0._src','images/logo-pumpkin-grayout.svg');
+              this._setPhotoKeyProperty(snapshot.key, '_src', 'images/logo-pumpkin-outline-grayout.svg');
             }
 
             let ref = MGAPP.DB.ref('home')
@@ -207,16 +222,41 @@
                               .child(snapshot.key);
 
             /* Listen to name changes */
-            ref.child('name').on('value', function(nameSnapshot){
+            ref.child('name').on('value', nameSnapshot => {
               this._setPhotoKeyProperty(snapshot.key, 'name', nameSnapshot.val());
-            }.bind(this));
+            });
+
+            ref.child('images').on('value', imagesSnapshot => {
+              let val = imagesSnapshot.val();
+              if (!val) { return; } /* no image was registered yet */
+
+              let images = Object.values(val)
+              .sort(function(a,b){
+                let ao = a.order || Number.MAX_SAFE_INTEGER;
+                let bo = b.order || Number.MAX_SAFE_INTEGER;
+                return ao-bo;
+              });
+
+              if (images.length && images[0].rep) {
+                MGAPP.registerRepresentation(storageRef.child(images[0].rep), (key,ev,val) => {
+                  if (ev == 'src') {
+                    this._setPhotoKeyProperty(snapshot.key,'_src',val);
+                  }
+                });
+              }
+
+            });
 
             /* Only allow updating item thumbnail/cover once uploading first image*/
-            ref.child('images').once('child_added', function(imageSnapshot){
-              MGAPP.registerRepresentation(imageSnapshot.val().rep, function(repKey,src){
-                this._setPhotoKeyProperty(snapshot.key,'_src',src);
+            /*
+            ref.child('images').orderByChild('order').once('child_added', function(imageSnapshot){
+              MGAPP.registerRepresentation(imageSnapshot.val().rep, function(key,ev,val){
+                if (ev == 'src') {
+                  this._setPhotoKeyProperty(snapshot.key,'_src',val);
+                }
               }.bind(this));
             }.bind(this));
+            */
 
           },function(error){},this);
         }

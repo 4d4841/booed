@@ -790,7 +790,7 @@
       this.addEventListener('set-cart-item', (e)=>this._onSetCartItem(e));
       this.addEventListener('show-invalid-url-warning', (e)=>this._onFallbackSelectionTriggered(e));
 
-      this.addEventListener('close-contextual-menu', this._onCloseContextualMenu.bind(this));
+      this.addEventListener('close-contextual-menu', (e)=>this._onCloseContextualMenu(e));
 
       Polymer.RenderStatus.afterNextRender(this, () => {
         window.addEventListener('online', (e)=>this._notifyNetworkStatus(e));
@@ -801,15 +801,25 @@
     }
 
 
-    registerRepresentation(key,srcCallback,blob) {
+    registerRepresentation(storageRef,srcCallback,blob) {
+      let key = storageRef ? storageRef.name : null;
+      if (!key) {
+        srcCallback(key,'src','images/logo-pumpkin-outline-grayout.svg');
+        return;
+      }
+      let uid = storageRef.parent.parent.name;
+
       /* srcCallback(key,event,value) will be called more than once until src is resolved.
        * Which could be storage src or local blob data.
        */
 
+       /*
       let storageRef = MGAPP.ST.ref('home')
                                .child(MGAPP.AU.currentUser.uid)
                                .child('representations')
                                .child(key);
+                               */
+
       let rep = this.representations[key];
       if (!rep) {
         rep = {};
@@ -832,48 +842,31 @@
           rep._callbacks.push(srcCallback);
         }
 
-        task.on( firebase.storage.TaskEvent.STATE_CHANGED, function(snapshot) {
+        task.on( firebase.storage.TaskEvent.STATE_CHANGED, snapshot => {
             rep._callbacks.forEach(function(cb){
-              cb(key,'progress',(snapshot.bytesTransferred / snapshot.totalBytes * 100).toFixed(2));
+              cb(key,'progress',snapshot);
             });
-          }.bind(this), function(error){
+          }, error => {
             rep._callbacks.forEach(function(cb){
               cb(key,'error',error);
             });
-          }, function() {
-            /* image uploaded, register file id into the database */
-            /*
-            var registerData = {};
+          }, () => {
+            rep._callbacks.forEach(function(cb){
+              cb(key,'complete',true); /* false on cancellation */
+            });
 
-            registerData['representations/'+repKey+'/name'] = blob.name;
-            */
-            /* This will contain customizations like ROIs, thumbnail, custom name */
-            /*
-            registerData['home/'+uid+'/items/'+itemKey+'/images/'+image.key+'/rep'] = repKey;
-            registerData['home/'+uid+'/items/'+itemKey+'/images/'+image.key+'/name'] = image.name;
-            */
-            /* Published item, Will also contain tags */
-
-              /* how to clear callbacks here */
-              /*
-            MGAPP.DB.ref().update(registerData, function(error){
-              if (error) {
-                console.error("ERR",error);
-              }
-            }.bind(this));
-            */
             if (rep.src) {
               /* Whichever done last must delete the callbacks, existing src means
                * that the reader already solved it.
                */
               delete rep._callbacks;
             }
-          }.bind(this)
+          }
         ); /*End of uploading task*/
 
         /* Read blob as src and create thumbnail */
         var reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = e => {
 
           this.set(['representations',key,'src'], e.target.result);
 
@@ -905,7 +898,7 @@
           }
           */
 
-        }.bind(this);
+        };
         reader.readAsDataURL(blob);
 
       } /* end if(blob) */
@@ -922,11 +915,11 @@
         } else if (!rep.src) {
           /* no callback and no src, so no chance it is getting src, so let's get it now */
           rep._callbacks = [srcCallback];
-          storageRef.getDownloadURL().then(function(url){
+          storageRef.getDownloadURL().then(url => {
             this.set(['representations',key,'src'], url);
             rep._callbacks.forEach(function(cb){ cb(key,'src',url); });
             delete rep._callbacks;
-          }.bind(this));
+          });
 
         } else /* src has been resolved */ {
           srcCallback(key, 'src', rep.src);
