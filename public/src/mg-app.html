@@ -801,7 +801,7 @@
     }
 
 
-    registerRepresentation(storageRef,srcCallback,blob) {
+    registerRepresentation(storageRef,srcCallback,blob,contentType) {
       let key = storageRef ? storageRef.name : null;
       if (!key) {
         srcCallback(key,'src','images/logo-pumpkin-outline-grayout.svg');
@@ -828,7 +828,11 @@
 
       if (blob) {
         /* Task begin. Upload the blob onto storage. */
-        let task = storageRef.put(blob);
+        let metadata = {
+          contentType: contentType || 'image/jpeg',
+        }
+
+        let task = storageRef.put(blob,metadata);
 
         /* If uploader didn't specify srcCallback then _callbacks could be empty.
          * It sill allocates an empty list to prevent another registration from solving
@@ -880,24 +884,6 @@
              */
             delete rep._callbacks;
           }
-
-          /*
-          let thumbnail = newImage();
-          thumbnail.onload = function(e) {
-            let size = (300*300);
-            let w = Math.ceil(Math.sqrt(size * thumbnail.width / thumbnail.height));
-            let h = Math.ceil(size / w);
-
-            let canvas = document.createElement('canvas');
-            canvas.width = w;
-            canvas.height = h;
-            canvas.getContext('2d').drawImage(thumbnail, 0, 0, w, h);
-            this._setPhotoKeyProperty(image.key,'_src',canvas.toDataURL('image/jpeg'));
-            let blob = canvas.toBlob(dataURL);
-
-          }
-          */
-
         };
         reader.readAsDataURL(blob);
 
