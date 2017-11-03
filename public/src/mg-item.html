@@ -106,7 +106,7 @@
         selected-values="{{selectedImages}}"
         multi>
 
-      <template is="dom-repeat" items="{{iconList}}" observe="order" sort="{{_reorderPhoto}}" mutable-data>
+      <template is="dom-repeat" items="{{iconList}}" observe="order deleted" sort="{{_reorderPhoto}}" mutable-data>
 
         <mg-item-image
           key="[[item.key]]"
@@ -170,10 +170,32 @@
       ]}
 
       _reorderPhoto(a,b) {
-        let ao = a.order || Number.MAX_SAFE_INTEGER;
-        let bo = b.order || Number.MAX_SAFE_INTEGER;
+        if (a.deleted) {
+          if (b.deleted) {
+            if (a.key < b.key) {
+              return -1;
+            }
+          }
+          return 1;
+        }
+        if (b.deleted) {
+          return -1;
+        }
 
-        return ao-bo;
+        if (a.order) {
+          if (b.order) {
+            return a.order - b.order;
+          }
+          return -1;
+        } else if (b.order) {
+          return 1;
+        }
+
+        if (a.key < b.key) {
+          return -1;
+        }
+
+        return 1;
       }
 
       _selectedImagesChanged(changes) {
