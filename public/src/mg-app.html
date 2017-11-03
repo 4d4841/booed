@@ -584,7 +584,7 @@
         user-menu="{{userMenu}}"
         name="user"
         me="{{me}}"
-        app-images="{{appImages}}"
+        items="{{items}}"
         route="{{subroute}}"
         ></mg-user>
       <mg-about name="about"></mg-about>
@@ -666,11 +666,24 @@
     return Math.floor(mg_random() * (max - min)) + min;
   }
 
+  function MGDeepSet(target, path, object) {
+    if (!object) return;
+    if (typeof object === 'object') {
+      if (typeof target.get(path) !== 'object') {
+        target.set(path, {});
+      }
+      Object.keys(object).forEach(key => {
+        MGDeepSet(target, path+'.'+key, object[key]);
+      });
+    } else {
+      target.set(path, object);
+    }
+  }
 
   window.performance && performance.mark && performance.mark('mg-app - before register');
 
-  var MGAPP;
-
+  /* MG stands for MoonGom as in moongom119 AKA. Moon HyunA */
+  var MGAPP; /* Shortcut for application main, initialized in connectedCallback */
   class MGApp extends Polymer.Element {
 
     static get is() { return 'mg-app'; }
@@ -734,14 +747,12 @@
     }}
 
     static get observers() { return [
-//        '_appImagesChanged(appImages.*)',
       '_routePageChanged(routeData.page)',
-//        '_categoriesDataChanged(categoriesData)',
-      '_productsDataChanged(productsData.splices)',
+      /*'_productsDataChanged(productsData.splices)',*/
     ]}
 
-    _appImagesChanged(changes) {
-      console.log(changes);
+    _itemsChanged(splices) {
+      //console.log(">",splices);
     }
 
     constructor() {
@@ -800,6 +811,9 @@
       this._notifyNetworkStatus();
     }
 
+    assignItem(itemKey, itemData) {
+      MGDeepSet(this,'items.'+itemKey, itemData);
+    }
 
     registerRepresentation(storageRef,srcCallback,blob,contentType) {
       let key = storageRef ? storageRef.name : null;
