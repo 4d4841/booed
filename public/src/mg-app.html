@@ -667,8 +667,11 @@
   }
 
   function MGDeepSet(target, path, object) {
-    if (!object) return;
     if (typeof object === 'object') {
+      if (object === null) {
+        target.set(path, null);
+        return;
+      }
       if (typeof target.get(path) !== 'object') {
         target.set(path, {});
       }
