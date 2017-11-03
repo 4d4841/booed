@@ -150,7 +150,7 @@
         let thumbnail = MGAPP.get(['items',itemKey,'images',imageKey,'thumbnail']);
         if (thumbnail) {
           let uid = MGAPP.AU.currentUser.uid;
-          let repSTRef = MGAPP.ST.ref('home').child(uid).child('representations');
+          let repSTRef = MGAPP.ST.ref('UID').child(uid).child('DATA');
           MGAPP.registerRepresentation(repSTRef.child(thumbnail), (key,ev,val) => {
               if (ev == 'src') this._setPhotoKeyProperty(itemKey, '_src', val);
             }
@@ -238,52 +238,20 @@
             val._uid = uid;
             MGAPP.assignItem(snapshot.key,val);
 
-            /*
-            let repSTRef = MGAPP.ST.ref('home').child(uid).child('representations');
-            let setThumb = ref => {
-              let order = ref.child('order').val();
-              if ((!order || (order && order == 1))
-                && ref.child('thumbnail').exists()) {
-                MGAPP.registerRepresentation(repSTRef.child(ref.child('thumbnail').val()), (key,ev,val) => {
-                    if (ev == 'src') this._setPhotoKeyProperty(snapshot.key, '_src', val);
-                  }
-                );
-                return true;
-              }
-            };
-            snapshot.child('images').forEach(setThumb);
-            */
-
-
-            /*
-              let images = MGAPP.get(['items',snapshot.key,'images']);
-              if (images) {
-                Object.entries(images).every(([key,image]) => {
-                  if (image.thumbnail) {
-                    let repSrc = MGAPP.representations[image.thumbnail];
-                    if (repSrc) {
-                      this._setPhotoKeyProperty(snapshot.key, '_src', repSrc);
-                      return false;
-                    }
-                  }
-                });
-              }
-            */
-
-            let ref = MGAPP.DB.ref('home')
-                              .child(uid)
-                              .child('items')
-                              .child(snapshot.key);
+            let itemRef = MGAPP.DB.ref('home')
+                                  .child(uid)
+                                  .child('items')
+                                  .child(snapshot.key);
 
             /* Listen to name changes */
-            ref.child('name').on('value', nameSnapshot => {
+            itemRef.child('name').on('value', nameSnapshot => {
               this._setPhotoKeyProperty(snapshot.key, 'name', nameSnapshot.val());
             });
 
             /* Listen to images changes */
-            /*XXX FIX change with assignItem*/
-            ref.child('cover').on('value', coverSnapshot => {
+            itemRef.child('cover').on('value', coverSnapshot => {
                 MGAPP.assignItem(snapshot.key,{cover:coverSnapshot.val()});
+                this._setCover(snapshot.key, coverSnapshot.val());
             });
 
             /* Only allow updating item thumbnail/cover once uploading first image*/

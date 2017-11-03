@@ -254,7 +254,7 @@
       }
 
       _uploadReps(uid,itemKey,files) {
-        let storageRef = MGAPP.ST.ref('home').child(uid).child('representations');
+        let storageRef = MGAPP.ST.ref('UID').child(uid).child('DATA');
 
         Array.from(files).forEach(imgFile => {
           let repKey = MGAPP.DB.ref('representations').push().key;
@@ -411,15 +411,7 @@
         registerData['items/'+itemKey+'/name'] = name;
         registerData['items/'+itemKey+'/public'] = false;
 
-        /* XXX Update server to allow swiching back to uploading task(s).
-        This should push a tmp entry in mg-items */
-        MGAPP.DB.ref().update(registerData, error => {
-          if (!error) {
-            this._LastWritten.uid = uid;
-            this._LastWritten.name = name;
-            this._LastWritten.role = role;
-          }
-        });
+        MGAPP.DB.ref().update(registerData, error => { if (!error) {} });
 
         this._uploadReps(uid,itemKey,files);
       }
@@ -463,7 +455,7 @@
         this.set('itemRole',v.role);
         this.set('itemName',this._ItemName = v.name);
 
-        let storageRef = MGAPP.ST.ref('home').child(MGAPP.AU.currentUser.uid).child('representations');
+        let storageRef = MGAPP.ST.ref('UID').child(MGAPP.AU.currentUser.uid).child('DATA');
 
 
         /* Sort unsynced (uploading in progress) images after server's entries. */
@@ -535,7 +527,6 @@
       }
 
       _itemKeyChanged(user, itemKey) {
-        this._LastWritten = {};
 
         delete this._LastTapIndex;
         if (this._ItemReference) {
@@ -546,9 +537,6 @@
         if (!user || !itemKey) {
           return;
         }
-
-
-//        this.previousItems[itemKey] = this.previousItems[itemKey] || {};
 
         this._ItemName = "ไอเท็มไม่มีชื่อ";
         this.set('itemName',this._ItemName);
@@ -578,10 +566,6 @@
           registerData['home/'+user.uid+'/items/'+this.itemKey+'/name'] = itemName;
           registerData['home/'+user.uid+'/items/'+this.itemKey+'/role'] = itemRole;
           registerData['home/'+user.uid+'/items/'+this.itemKey+'/time'] = firebase.database.ServerValue.TIMESTAMP;
-
-          this._LastWritten.uid = user.uid;
-          this._LastWritten.name = itemName;
-          this._LastWritten.role = this.itemRole;
 
           MGAPP.DB.ref().update(registerData, function(error){
             if (error) {
