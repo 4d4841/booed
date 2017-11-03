@@ -92,8 +92,6 @@
       id="editor"
       me="[[me]]"
       item-key="{{itemKey}}"
-      items={{items}}
-      app-images="{{appImages}}"
     ></mg-item>
 
     <app-route
@@ -140,12 +138,52 @@
       }}
 
       static get observers() { return [
+        '_itemsChanged(items.*)',
         '_itemKeyChanged(itemKey)',
         '_routeDataChanged(routeData)',
         '_userChanged(me.user.uid)',
         '_visibleChanged(visible)',
 //        '_onNewItemSelected(newItemSelected)',
       ]}
+
+      _setCover(itemKey,imageKey) {
+        let thumbnail = MGAPP.get(['items',itemKey,'images',imageKey,'thumbnail']);
+        if (thumbnail) {
+          let uid = MGAPP.AU.currentUser.uid;
+          let repSTRef = MGAPP.ST.ref('home').child(uid).child('representations');
+          MGAPP.registerRepresentation(repSTRef.child(thumbnail), (key,ev,val) => {
+              if (ev == 'src') this._setPhotoKeyProperty(itemKey, '_src', val);
+            }
+          );
+        }
+      }
+
+      _itemsChanged(change) {
+        let path = change.path.split('.');
+        if (path.length < 2) return;
+        let itemKey = path[1];
+
+        if (path.length == 3 && path[2] == 'cover') {
+          this.itemList.every((item,index) => {
+            if (itemKey == item.key) {
+              this._setCover(itemKey,change.value);
+              return false;
+            }
+            return true;
+          });
+        } else if (path.length == 5 && path[4] == 'thumbnail') {
+          let imageKey = path[3];
+          this.itemList.every((item,index) => {
+            if (itemKey == item.key &&
+              imageKey == MGAPP.get(['items',itemKey,'cover'])) {
+              this._setCover(itemKey,imageKey);
+              return false;
+            }
+            return true;
+          });
+        }
+
+      }
 
       connectedCallback() {
         super.connectedCallback();
@@ -197,6 +235,10 @@
               }) - 1;
             }
 
+            val._uid = uid;
+            MGAPP.assignItem(snapshot.key,val);
+
+            /*
             let repSTRef = MGAPP.ST.ref('home').child(uid).child('representations');
             let setThumb = ref => {
               let order = ref.child('order').val();
@@ -209,8 +251,24 @@
                 return true;
               }
             };
-
             snapshot.child('images').forEach(setThumb);
+            */
+
+
+            /*
+              let images = MGAPP.get(['items',snapshot.key,'images']);
+              if (images) {
+                Object.entries(images).every(([key,image]) => {
+                  if (image.thumbnail) {
+                    let repSrc = MGAPP.representations[image.thumbnail];
+                    if (repSrc) {
+                      this._setPhotoKeyProperty(snapshot.key, '_src', repSrc);
+                      return false;
+                    }
+                  }
+                });
+              }
+            */
 
             let ref = MGAPP.DB.ref('home')
                               .child(uid)
@@ -223,7 +281,10 @@
             });
 
             /* Listen to images changes */
-            ref.child('images').on('value', imagesSnapshot => imagesSnapshot.forEach(setThumb));
+            /*XXX FIX change with assignItem*/
+            ref.child('cover').on('value', coverSnapshot => {
+                MGAPP.assignItem(snapshot.key,{cover:coverSnapshot.val()});
+            });
 
             /* Only allow updating item thumbnail/cover once uploading first image*/
             /*
@@ -240,9 +301,9 @@
         }
       }
 
-      _indexImage(imageKey) {
+      _indexItem(itemKey) {
         for (let i = 0, data; data = this.itemList[i]; ++i) {
-          if (data.key == imageKey) {
+          if (data.key == itemKey) {
             return i;
           }
         }
@@ -250,7 +311,7 @@
       }
 
       _setPhotoKeyProperty(key,prop,val) {
-        let idx = this._indexImage(key);
+        let idx = this._indexItem(key);
         if (idx > -1) {
           this.itemList[idx][prop] = val;
           this.notifyPath(['itemList',idx,prop]);
