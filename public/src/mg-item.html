@@ -94,7 +94,7 @@
 
       </div>
 
-      <template is="dom-if" if="{{!photoList.0}}">
+      <template is="dom-if" if="{{!iconList.0}}">
         <div class="vertical layout center center-justified" style="border-radius:5px;border:1px dashed tomato;width:100%;height:500px">
           แกลเลอรี่เปล่า ยังไม่มีรูป
         </div>
@@ -106,7 +106,7 @@
         selected-values="{{selectedImages}}"
         multi>
 
-      <template is="dom-repeat" items="{{photoList}}" observe="order" sort="{{_reorderPhoto}}" mutable-data>
+      <template is="dom-repeat" items="{{iconList}}" observe="order" sort="{{_reorderPhoto}}" mutable-data>
 
         <mg-item-image
           key="[[item.key]]"
@@ -149,7 +149,7 @@
           notify: true,
         },
 
-        photoList: {
+        iconList: {
           type: Array,
           value: [],
         },
@@ -194,17 +194,6 @@
         } else {
           this.set('hasSelection', false);
         }
-
-        /*
-        if (this._InsertRange) {
-          delete this._InsertRange;
-          let beginKey = this.selectedImages.length ?
-          let beginIndex,endIndex;
-          for(let i = 0, photo; photo = this.photoList[i]; ++i) {
-            if ()
-          }
-        }
-        */
       }
 
       _onItemTap(e) {
@@ -229,12 +218,12 @@
         }
 
         let idx = this._ImageMap.get(imageKey);
-        if (this.photoList.length > idx &&  this.photoList[idx].key == imageKey) {
+        if (this.iconList.length > idx &&  this.iconList[idx].key == imageKey) {
           return idx;
         }
         */
 
-        for (let i = 0, data; data = this.photoList[i]; ++i) {
+        for (let i = 0, data; data = this.iconList[i]; ++i) {
           //this._ImageMap.set(data.key, i);
           if (data.key == imageKey) {
             return i;
@@ -246,19 +235,19 @@
       _setPhotoKeyProperty(key,prop,val) {
         let idx = this._indexImage(key);
         if (idx !== -1) {
-          if (this.photoList[idx][prop] != val) {
-            this.photoList[idx][prop] = val;
-            this.notifyPath(['photoList',idx,prop]);
+          if (this.iconList[idx][prop] != val) {
+            this.iconList[idx][prop] = val;
+            this.notifyPath(['iconList',idx,prop]);
           }
         }
       }
 
       _setPhotoThumbnail(thumbnailKey,val) {
-        for (let i = 0, photo; photo = this.photoList[i]; ++i) {
-          if (photo.thumbnail == thumbnailKey) {
-            if (this.photoList[i]._src != val) {
-              this.photoList[i]._src = val;
-              this.notifyPath(['photoList',i,'_src']);
+        for (let i = 0, icon; icon = this.iconList[i]; ++i) {
+          if (icon.thumbnail == thumbnailKey) {
+            if (this.iconList[i]._src != val) {
+              this.iconList[i]._src = val;
+              this.notifyPath(['iconList',i,'_src']);
             }
           }
         }
@@ -272,13 +261,19 @@
           let thumbKey = MGAPP.DB.ref('representations').push().key;
           let imageKey =  MGAPP.DB.ref('home').child(uid).child(itemKey).child('images').push().key;
           let imageName = imgFile.name.split('.')[0];
+          let coverImageKey = MGAPP.get(['items',itemKey,'cover']) || imageKey;
+
+          MGAPP.assignItem(itemKey,{ cover: coverImageKey });
 
           let registerInfo = {};
-          function registerImage() {
+          function registerImageReps() {
+
+            /* Update once thumbnail and rep are uploaded onto storage */
             if (registerInfo.thumbnail && registerInfo.rep) {
               let registerData = {
                 ['representations/'+registerInfo.rep+'/uid']: uid,
                 ['representations/'+registerInfo.thumbnail+'/uid']: uid,
+                ['home/'+uid+'/items/'+itemKey+'/cover']: coverImageKey,
                 ['home/'+uid+'/items/'+itemKey+'/images/'+imageKey+'/thumbnail']: registerInfo.thumbnail,
                 ['home/'+uid+'/items/'+itemKey+'/images/'+imageKey+'/rep']: registerInfo.rep,
                 ['home/'+uid+'/items/'+itemKey+'/images/'+imageKey+'/name']: registerInfo.name,
@@ -293,8 +288,8 @@
             }
           }
 
-          /* An item image would contain link(s) to storage image representation. */
-          let image = {
+          /* Data for representing an image in the UI */
+          let icon = {
             key: imageKey,
             thumbnail: thumbKey, /* db representations/repKey contains storage info eg. uid */
             name: imageName,
@@ -302,16 +297,16 @@
             /*_progress: uploading status,*/
           };
 
-          this.notifyPath('photoList.' + (this.push('photoList',image)-1));
-          MGAPP.set(['items',itemKey,'images',imageKey], {name: imageName, rep: repKey, thumbnail: thumbKey});
+          this.notifyPath('iconList.' + (this.push('iconList',icon)-1));
 
           let thumbnail = new Image();
           let canvas = document.createElement('canvas');
 
           thumbnail.onload = (e) => {
-            let size = (250*250);
-            let w = Math.ceil(Math.sqrt(size * thumbnail.width / thumbnail.height));
-            let h = Math.ceil(size / w);
+            let area = (250*250); /* Default area for thumbnail */
+
+            let w = Math.ceil(Math.sqrt(area * thumbnail.width / thumbnail.height));
+            let h = Math.ceil(area / w);
 
             canvas.width = w;
             canvas.height = h;
@@ -322,15 +317,26 @@
 
             canvas.toBlob(blob => {
 
+              /* Thumbnail's actual upload should start after finishing image upload */
               MGAPP.registerRepresentation(storageRef.child(thumbKey) , (key,ev,val) => {
                 switch(ev) {
+                  case 'src': {
+                    MGAPP.assignItem(itemKey,{
+                      images: {
+                        [imageKey]: {
+                          name: imageName,
+                          thumbnail: thumbKey,
+                        }
+                      },
+                    });
+
+                  } break;
                   case 'complete': {
-                    //var registerData = {};
 
                     /* This will contain customizations like ROIs, thumbnail, custom name */
                     registerInfo.thumbnail = key;
                     /* Published item, Will also contain tags */
-                    registerImage();
+                    registerImageReps();
 
                   } break;
                 }
@@ -346,13 +352,19 @@
               } break;
               case 'complete': {
 
-                //MGAPP.set(['representations',repKey,'name'], imgFile.name);
+                MGAPP.assignItem(itemKey,{
+                  images: {
+                    [imageKey]: {
+                      rep: repKey,
+                    }
+                  },
+                });
+
                 /* This will contain customizations like ROIs, thumbnail, custom name */
                 registerInfo.rep = key;
                 registerInfo.name = imageName;
                 /* Published item, Will also contain tags */
-                registerImage();
-
+                registerImageReps();
 
               } break;
               case 'src':
@@ -384,15 +396,12 @@
 
         console.assert(role, "Role is missing");
 
-        if (!MGAPP.items[itemKey]) {
-          MGAPP.set('items.'+itemKey, {
+        MGAPP.assignItem(itemKey,{
             _uid: uid,
             name: name,
             role: role,
             time: firebase.database.ServerValue.TIMESTAMP,
-            images: {},
-          });
-        }
+        });
 
         var registerData = {};
         registerData['home/'+uid+'/items/'+itemKey+'/role'] = role;
@@ -428,21 +437,13 @@
             return;
           }
 
-          if (MGAPP.items[itemKey]) {
-            MGAPP.set(['items',itemKey,'name'], v.name);
-            MGAPP.set(['items',itemKey,'role'], v.role);
-            MGAPP.set(['items',itemKey,'time'], v.time);
-            MGAPP.set(['items',itemKey,'_uid'], snapshot.ref.parent.parent.key);
-          } else {
-            MGAPP.set('items.'+itemKey, {
+          MGAPP.assignItem(itemKey,{
               _uid: snapshot.ref.parent.parent.key,
               name: v.name,
               role: v.role,
               time: v.time,
-              images: {},
-              /*images: v.images || {},*/
-            });
-          }
+          });
+
         } else if (!this.itemRole) {
           /* This is not creating a new item, just reset url & return */
           this.set('itemKey', null);
@@ -470,7 +471,11 @@
         let entries = [];
 
         snapshot.child('images').forEach(ref => {
-          MGAPP.set(['items',itemKey,'images',ref.key],ref.val());
+          MGAPP.assignItem(itemKey,{
+            images:{
+              [ref.key]: ref.val()
+            }
+          });
           entries.push([ref.key, ref.val()]);
           delete images[ref.key]; /* Filter server records */
         });
@@ -478,14 +483,14 @@
         Object.entries(images).forEach( entry => entries.push(entry));
 
         entries.forEach(([imageKey,image,order],index) => {
-            /* update current photoList */
+            /* update current iconList */
 
             let idx = this._indexImage(imageKey);
             if (idx === -1) {
 
               if (snapshot.key == itemKey) {
-                this.notifyPath('photoList.' + (
-                  this.push('photoList', {
+                this.notifyPath('iconList.' + (
+                  this.push('iconList', {
                       key: imageKey,
                       thumbnail: image.thumbnail,
                       name: image.name,
@@ -495,28 +500,24 @@
                 ));
               }
 
-            } else { /* update current photo's event-value */
-              this.photoList[idx].key = imageKey;
-              if (image.thumbnail && (this.photoList[idx].thumbnail != image.thumbnail)) {
-                  this.photoList[idx].thumbnail = image.thumbnail;
-                  this.notifyPath(['photoList',idx,'thumbnail']);
+            } else { /* update current icon's event-value */
+              this.iconList[idx].key = imageKey;
+              if (image.thumbnail && (this.iconList[idx].thumbnail != image.thumbnail)) {
+                  this.iconList[idx].thumbnail = image.thumbnail;
+                  this.notifyPath(['iconList',idx,'thumbnail']);
               }
               if (image.name) {
-                this.photoList[idx].name = image.name;
-                this.notifyPath(['photoList',idx,'name']);
+                this.iconList[idx].name = image.name;
+                this.notifyPath(['iconList',idx,'name']);
               }
-              this.photoList[idx].order = image.order || order;
-              this.notifyPath(['photoList',idx,'order']);
+              this.iconList[idx].order = image.order || order;
+              this.notifyPath(['iconList',idx,'order']);
             }
 
             /* XXX Allow custom placeholder rep */
             if (image.thumbnail) {
               MGAPP.registerRepresentation(storageRef.child(image.thumbnail),
-                (repKey,ev,value) => {
-                  if (ev == 'src') {
-                    this._setPhotoThumbnail(repKey,value);
-                  }
-                }
+                (k,e,v) => e == 'src' && this._setPhotoThumbnail(k,v)
               );
             } else {
               /*XXX Can't control the size of placeholder */
@@ -555,7 +556,7 @@
         if (this.selectedImages) {
           this.splice('selectedImages',0,this.selectedImages.length);
         }
-        this.set('photoList',[]);
+        this.set('iconList',[]);
         this.set('loading', true);
         this._ItemReference = MGAPP.DB.ref('home').child(MGAPP.AU.currentUser.uid)
                                       .child('items').child(itemKey);
@@ -610,17 +611,18 @@
       _onReorderButtonTap(e) {
         let registerData = {};
         let autoNumber = this.selectedImages.length;
-        this.photoList
+        this.iconList
         .sort(function(a,b){
           let ao = a.order || Number.MAX_SAFE_INTEGER;
           let bo = b.order || Number.MAX_SAFE_INTEGER;
           return ao-bo;
         })
-        .forEach(function(photo){
-          /* XXX Is it safe to update data for photos being uploaded?
-           * Should it instantly update database before storage task finish?
-           */
-          registerData['home/'+MGAPP.AU.currentUser.uid+'/items/'+this.itemKey+'/images/'+photo.key+'/order'] = photo._selectionOrder || ++autoNumber;
+        .forEach(function(icon){
+          if (icon._selectionOrder == 1) {
+            registerData['home/'+MGAPP.AU.currentUser.uid+'/items/'+this.itemKey+'/cover'] = icon.key;
+          }
+
+          registerData['home/'+MGAPP.AU.currentUser.uid+'/items/'+this.itemKey+'/images/'+icon.key+'/order'] = icon._selectionOrder || ++autoNumber;
         },this);
 
         MGAPP.DB.ref().update(registerData, error => {
@@ -632,8 +634,8 @@
       _onDeleteButtonTap(e) {
         let registerData = {};
 
-        photo._selectionOrder.forEach(function(key){
-          registerData['home/'+MGAPP.AU.currentUser.uid+'/items/'+this.itemKey+'/images/'+photo.key+'/delete'] = true
+        icon._selectionOrder.forEach(function(key){
+          registerData['home/'+MGAPP.AU.currentUser.uid+'/items/'+this.itemKey+'/images/'+icon.key+'/delete'] = true
         },this);
 
         MGAPP.DB.ref().update(registerData, error => {
