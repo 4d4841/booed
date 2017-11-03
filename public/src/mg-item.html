@@ -281,7 +281,6 @@
               }
               MGAPP.DB.ref().update(registerData, error => {
                 if (!error) {
-                  console.log("registered image", registerInfo);
                 } else {
                   console.error("ERR",error);
                 }
@@ -478,8 +477,6 @@
         });
         /* Add local records */
         Object.entries(images).forEach( entry => entries.push(entry));
-
-        console.log(MGAPP.items);
 
         entries.forEach(([imageKey,image,order],index) => {
             /* update current iconList */
