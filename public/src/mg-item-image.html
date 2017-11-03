@@ -148,6 +148,9 @@
 
         <template is="dom-if" if="{{showLabel}}">
           <div class="label horizontal layout center start-justified">
+            <template is="dom-if" if="{{deleted}}">
+              <iron-icon class="icon" icon="delete"></iron-icon>
+            </template>
             <template is="dom-if" if="{{icon}}">
               <iron-icon class="icon" icon="[[icon]]"></iron-icon>
             </template>
@@ -178,6 +181,8 @@
 
         transition: String,
 
+        deleted: Boolean,
+        
         icon: String,
 
         icons: Object,

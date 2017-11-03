@@ -116,6 +116,7 @@
           label="[[item.name]]"
           selection-order="[[item._selectionOrder]]"
           icon="photo"
+          deleted="[[item.deleted]]"
           transition="1.5s"
           spinner
           on-tap="_onItemTap"
@@ -434,6 +435,7 @@
               name: v.name,
               role: v.role,
               time: v.time,
+              cover: v.cover,
           });
 
         } else if (!this.itemRole) {
@@ -463,16 +465,21 @@
         let entries = [];
 
         snapshot.child('images').forEach(ref => {
+          let val = ref.val();
+          val.deleted = val.deleted || null;
           MGAPP.assignItem(itemKey,{
             images:{
-              [ref.key]: ref.val()
+              [ref.key]: val,
             }
           });
+
           entries.push([ref.key, ref.val()]);
           delete images[ref.key]; /* Filter server records */
         });
         /* Add local records */
         Object.entries(images).forEach( entry => entries.push(entry));
+
+        console.log(MGAPP.items);
 
         entries.forEach(([imageKey,image,order],index) => {
             /* update current iconList */
@@ -481,6 +488,7 @@
             if (idx === -1) {
 
               if (snapshot.key == itemKey) {
+
                 this.notifyPath('iconList.' + (
                   this.push('iconList', {
                       key: imageKey,
@@ -488,6 +496,7 @@
                       name: image.name,
                       /* Assign indices which were sorted above as order */
                       order: image.order || (index+1),
+                      deleted: image.deleted,
                   }) - 1
                 ));
               }
@@ -502,6 +511,9 @@
                 this.iconList[idx].name = image.name;
                 this.notifyPath(['iconList',idx,'name']);
               }
+              this.iconList[idx].deleted = image.deleted ? true:false;
+              this.notifyPath(['iconList',idx,'deleted']);
+
               this.iconList[idx].order = image.order || order;
               this.notifyPath(['iconList',idx,'order']);
             }
@@ -602,6 +614,7 @@
           return ao-bo;
         })
         .forEach(function(icon){
+          /*XXX define cover properly*/
           if (icon._selectionOrder == 1) {
             registerData['home/'+MGAPP.AU.currentUser.uid+'/items/'+this.itemKey+'/cover'] = icon.key;
           }
@@ -617,15 +630,18 @@
 
       _onDeleteButtonTap(e) {
         let registerData = {};
+        let selectedImages = this.selectedImages;
 
-        icon._selectionOrder.forEach(function(key){
-          registerData['home/'+MGAPP.AU.currentUser.uid+'/items/'+this.itemKey+'/images/'+icon.key+'/delete'] = true
-        },this);
+        this.selectedImages.forEach(selectedKey => {
+          let del = MGAPP.get(['items',this.itemKey,'images',selectedKey,'deleted']) ? null:true;
+          MGAPP.assignItem(this.itemKey, {images:{[selectedKey]:{deleted:del}}});
+          registerData['home/'+MGAPP.AU.currentUser.uid+'/items/'+this.itemKey+'/images/'+selectedKey+'/deleted'] = del;
+        });
+        this.splice('selectedImages',0,this.selectedImages.length);
 
         MGAPP.DB.ref().update(registerData, error => {
             console.assert(!error,"ERR updating deletion");
         });
-        this.splice('selectedImages',0,this.selectedImages.length);
       }
 
       _onCancelButtonTap(e) {
