@@ -147,6 +147,10 @@
       ]}
 
       _setCover(itemKey,imageKey) {
+        if (!imageKey) {
+          this._setPhotoKeyProperty(itemKey, '_src', 'images/logo-pumpkin-face-grayout.svg');
+          return;
+        }
         let thumbnail = MGAPP.get(['items',itemKey,'images',imageKey,'thumbnail']);
         if (thumbnail) {
           let uid = MGAPP.AU.currentUser.uid;
