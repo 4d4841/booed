@@ -855,8 +855,8 @@
          * It sill allocates an empty list to prevent another registration from solving
          * URL as it's going to use the given Blob as source.
          */
-        console.assert(!rep._callbacks, "_callbacks already exists, reupload isn't correctly implemented yet.");
-        rep._callbacks = [];
+        //console.assert(!rep._callbacks, "_callbacks already exists, reupload isn't correctly implemented yet.");
+        rep._callbacks = rep._callbacks || [];
         if (srcCallback) {
           /* expose task once to the uploading call */
           srcCallback(key,'task',task);
@@ -873,7 +873,7 @@
             });
           }, () => {
             rep._callbacks.forEach(function(cb){
-              cb(key,'complete',true); /* false on cancellation */
+              cb(key,'complete',true); /* XXX false on cancellation */
             });
 
             if (rep.src) {
@@ -922,6 +922,11 @@
             this.set(['representations',key,'src'], url);
             rep._callbacks.forEach(function(cb){ cb(key,'src',url); });
             delete rep._callbacks;
+          }).catch(error => {
+            /* This might have been invoked before the upload task started by any following registerRep call.
+             * Please don't do that!
+             */
+            console.warn(`Representation src for ${key} does not exist. Callback has not been released.`,error);
           });
 
         } else /* src has been resolved */ {
@@ -950,7 +955,6 @@
       /* return function to unsubscribe srcCallback */
       return function(){
         if (rep._callbacks) {
-          console.log("unsubscribe callback");
           /* Replace the _callbacks not to interrupt the on-going forEach */
           rep._callbacks = rep._callbacks.slice();
           rep._callbacks.splice(rep.callbacks.indexOf(srcCallback),1);
