@@ -80,8 +80,11 @@
             <paper-button on-tap="_onReorderButtonTap">
               <iron-icon icon="reorder"></iron-icon> เรียง
             </paper-button>
-            <paper-button on-tap="_onAddButtonTap">
-              <iron-icon icon="add-to-photos"></iron-icon> แกลเลอรี่
+            <paper-button on-tap="_onAddGalleryTap">
+              <iron-icon icon="content-copy"></iron-icon> โคลน
+            </paper-button>
+            <paper-button on-tap="_onAddGalleryTap">
+              <iron-icon icon="send"></iron-icon> ย้าย
             </paper-button>
             <paper-button on-tap="_onCancelButtonTap">
               <iron-icon icon="cancel"></iron-icon> ยกเลิก
@@ -116,7 +119,7 @@
           label="[[item.name]]"
           selection-order="[[item._selectionOrder]]"
           icon="photo"
-          deleted="[[item.deleted]]"
+          deleted$="[[item.deleted]]"
           transition="1.5s"
           spinner
           on-tap="_onItemTap"
