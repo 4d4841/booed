@@ -48,6 +48,23 @@
         height: 120px;
       }
 
+      .copied-icon {
+        margin: 0 5px 5px 0;
+        width: 100px;
+        height: 100px;
+        --mg-thumbnail: {
+          border: 1px dashed black;
+          box-shadow: none;
+        };
+      }
+
+      .cancel-copy-button {
+        @apply(--layout-self-end);
+        color:white;
+        --iron-icon-stroke-color:rgba(0,0,0,0.2);
+        pointer-events: none;
+      }
+
     </style>
       </custom-style>
 
@@ -80,11 +97,8 @@
             <paper-button on-tap="_onReorderButtonTap">
               <iron-icon icon="reorder"></iron-icon> เรียง
             </paper-button>
-            <paper-button on-tap="_onAddGalleryTap">
-              <iron-icon icon="content-copy"></iron-icon> โคลน
-            </paper-button>
-            <paper-button on-tap="_onAddGalleryTap">
-              <iron-icon icon="send"></iron-icon> ย้าย
+            <paper-button on-tap="_onCopyButtonTap">
+              <iron-icon icon="content-copy"></iron-icon> ก๊อปปี้
             </paper-button>
             <paper-button on-tap="_onCancelButtonTap">
               <iron-icon icon="cancel"></iron-icon> ยกเลิก
@@ -97,11 +111,35 @@
 
       </div>
 
+      <iron-collapse class="horizontal layout wrap" opened="[[clipboardList.length]]">
+        <template is="dom-repeat" items="{{clipboardList}}" mutable-data>
+
+          <mg-item-image
+            key="[[item.key]]"
+            class="copied-icon"
+            thumbnail="[[item.thumbnail]]"
+            name="[[item.name]]"
+            on-tap="_onCopiedTap"
+          ><iron-icon icon="cancel" class="cancel-copy-button"></iron-icon></mg-item-image>
+
+        </template>
+
+        <div class="vertical layout start start-justified">
+          <paper-button class="horizontal layout start-justified" on-tap="_onPasteClipboardTap">
+            <iron-icon icon="content-paste"></iron-icon> เพิ่มลงแกลเลอรี่
+          </paper-button>
+          <paper-button class="horizontal layout start-justified" on-tap="_onClearClipboardTap">
+            <iron-icon icon="cancel"></iron-icon> เคลียร์คลิปบอร์ด
+          </paper-button>
+        </div>
+      </iron-collapse>
+
       <template is="dom-if" if="{{!iconList.length}}">
         <div class="vertical layout center center-justified" style="border-radius:5px;border:1px dashed tomato;width:100%;height:500px">
           แกลเลอรี่เปล่า ยังไม่มีรูป
         </div>
       </template>
+
 
       <iron-selector
         id="selector"
@@ -109,19 +147,17 @@
         selected-values="{{selectedImages}}"
         multi>
 
+      <!-- XXX Maybe sorting will cause ghost update -->
       <template is="dom-repeat" items="{{iconList}}" observe="order deleted" sort="{{_reorderPhoto}}" mutable-data>
 
         <mg-item-image
           key="[[item.key]]"
           class="image-icon"
-          src="[[item._src]]"
+          thumbnail="[[item.thumbnail]]"
           progress="[[item._progress]]"
-          label="[[item.name]]"
+          name="[[item.name]]"
           selection-order="[[item._selectionOrder]]"
-          icon="photo"
-          deleted$="[[item.deleted]]"
-          transition="1.5s"
-          spinner
+          deleted="[[item.deleted]]"
           on-tap="_onItemTap"
         ></mg-item-image>
 
@@ -158,9 +194,13 @@
           value: [],
         },
 
+        clipboardList: {
+          type: Array,
+          value: [],
+        },
+
         selectedImages: {
           type: Array,
-          notify: true,
         },
 
       }}
@@ -303,7 +343,7 @@
             key: imageKey,
             thumbnail: thumbKey, /* db representations/repKey contains storage info eg. uid */
             name: imageName,
-            /*_src: display source for current widget,*/
+            rep: repKey,
             /*_progress: uploading status,*/
           };
 
@@ -376,7 +416,6 @@
               } break;
               case 'src':
                 thumbnailLoader.src = val;
-                //this._setPhotoKeyProperty(image.key,'_src',val);
 
                 break;
               /* case 'task':
@@ -649,13 +688,26 @@
           this.splice('selectedImages',0,this.selectedImages.length);
       }
 
-      _onDeletePhoto(e) {
-        console.log("e",e.model.index);
+      _onCopiedTap(e) {
+        this.splice('clipboardList',e.model.index,1);
       }
 
-      _shouldOpen(id) {
-        if (id) return true;
-        return false;
+      _onCopyButtonTap(e) {
+        this.selectedImages.forEach(imageKey => {
+          this._indexImage(imageKey, idx => {
+            let copy = {
+              name: this.iconList[idx].name,
+              thumbnail: this.iconList[idx].thumbnail,
+            };
+            this.push('clipboardList', copy);
+          });
+        });
+
+        this.splice('selectedImages',0,this.selectedImages.length);
+      }
+
+      _onPasteClipboardTap(e) {
+
       }
 
       newItem(role,name) {
