@@ -50,6 +50,7 @@
         background-color: white;
         overflow: hidden;
         border: 2px solid transparent;
+        @apply(--mg-thumbnail);
       }
 
       .photo-frame > mg-image {
@@ -143,7 +144,6 @@
         sizing="cover"
         loaded="{{isLoaded}}"
       >
-
         <!--Top indicator-->
         <template is="dom-if" if="{{showProgress}}">
           <paper-progress
@@ -180,6 +180,7 @@
             <div id="labelSpan">[[label]]</div>
           </div>
         </template>
+        <slot></slot>
 
       </mg-image>
 

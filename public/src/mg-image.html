@@ -52,6 +52,7 @@
         src: {
           type: String,
           observer: '_srcChanged',
+          value: "",
         },
 
         sizing: {
@@ -77,6 +78,7 @@
           value: false,
           notify: true,
         },
+
       }}
 
       _transitionChanged(trans) {
@@ -103,8 +105,10 @@
           this._ImageLoader.onload = this._onLoad.bind(this);
           this._ImageLoader.src = src;
         } else {
+          if (!this.placeholder) {
+            this.style.backgroundImage = 'none';
+          } else this.style.backgroundImage = 'url(\'' + this.placeholder + '\')';
           this.set('loaded',true);
-          this.style.backgroundImage = 'url(\'' + this.placeholder + '\')';
         }
       }
 

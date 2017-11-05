@@ -27,12 +27,15 @@
     src="[[src]]"
     progress="[[progress]]"
     icon="photo"
-    label="[[label]]"
+    label="[[name]]"
     selection-order="[[selectionOrder]]"
     deleted$="[[deleted]]"
+    placeholder='images/logo-pumpkin-outline-grayout.svg'
     transition="1.5s"
     spinner
-  ></mg-thumbnail>
+  >
+    <slot></slot>
+  </mg-thumbnail>
 
   </template>
   <script>
@@ -42,9 +45,11 @@
       static get properties() { return {
         thumbnail: {
           type: String,
-          value: null,
+          value: '',
           observer: '_thumbnailChanged',
         },
+
+        name: String,
 
       }}
 
@@ -53,13 +58,16 @@
 
       _thumbnailChanged(repKey) {
         if (repKey) {
+          this.set('src',null);
           let uid = MGAPP.AU.currentUser.uid;
           let storageRef = MGAPP.ST.ref('UID').child(uid).child('DATA');
           MGAPP.registerRepresentation(storageRef.child(repKey), (key,ev,val) => {
-            ev === 'src' && this.set('src',val);
+            ev === 'src' && repKey == this.thumbnail && this.set('src',val);
           });
         }
-        else this.set('src','images/logo-pumpkin-outline-grayout.svg');
+        else {
+          this.set('src','images/logo-pumpkin-outline-grayout.svg');
+        }
       }
     }
 

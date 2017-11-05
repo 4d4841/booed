@@ -231,7 +231,7 @@
         this._LastTapIndex = e.model.index;
       }
 
-      _indexImage(imageKey) {
+      _indexImage(imageKey,cb) {
         /* XXX optimize later
         if (!this._ImageMap) {
           this._ImageMap = newMap();
@@ -246,6 +246,8 @@
         for (let i = 0, data; data = this.iconList[i]; ++i) {
           //this._ImageMap.set(data.key, i);
           if (data.key == imageKey) {
+            if (cb) { cb(i); }
+
             return i;
           }
         }
@@ -549,6 +551,12 @@
         if (this.selectedImages) {
           this.splice('selectedImages',0,this.selectedImages.length);
         }
+
+        this.iconList.forEach((icon,index) => {
+          this.set(['iconList',index,'thumbnail'],null);
+          this.notifyPath(['iconList',index,'thumbnail']);
+        });
+
         this.set('iconList',[]);
         this.set('loading', true);
         this._ItemReference = MGAPP.DB.ref('home').child(MGAPP.AU.currentUser.uid)
