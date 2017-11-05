@@ -60,8 +60,7 @@
         if (repKey) {
           this.set('src',null);
           let uid = MGAPP.AU.currentUser.uid;
-          let storageRef = MGAPP.ST.ref('UID').child(uid).child('DATA');
-          MGAPP.registerRepresentation(storageRef.child(repKey), (key,ev,val) => {
+          MGAPP.registerRepresentation(repKey, (key,ev,val) => {
             ev === 'src' && repKey == this.thumbnail && this.set('src',val);
           });
         }

@@ -154,8 +154,7 @@
         let thumbnail = MGAPP.get(['items',itemKey,'images',imageKey,'thumbnail']);
         if (thumbnail) {
           let uid = MGAPP.AU.currentUser.uid;
-          let repSTRef = MGAPP.ST.ref('UID').child(uid).child('DATA');
-          MGAPP.registerRepresentation(repSTRef.child(thumbnail), (key,ev,val) => {
+          MGAPP.registerRepresentation(thumbnail, (key,ev,val) => {
               if (ev == 'src') this._setPhotoKeyProperty(itemKey, '_src', val);
             }
           );

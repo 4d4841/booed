@@ -305,8 +305,6 @@
       }
 
       _uploadReps(uid,itemKey,files) {
-        let storageRef = MGAPP.ST.ref('UID').child(uid).child('DATA');
-
         Array.from(files).forEach(imgFile => {
           let repKey = MGAPP.DB.ref('representations').push().key;
           let thumbKey = MGAPP.DB.ref('representations').push().key;
@@ -364,7 +362,7 @@
             canvas.toBlob(blob => {
 
               /* Thumbnail's actual upload should start after finishing image upload */
-              MGAPP.registerRepresentation(storageRef.child(thumbKey) , (key,ev,val) => {
+              MGAPP.registerRepresentation(thumbKey, (key,ev,val) => {
                 switch(ev) {
                   case 'src': {
                     MGAPP.assignItem(itemKey,{
@@ -392,7 +390,7 @@
             },'image/jpeg',0.8);
           };
 
-          MGAPP.registerRepresentation(storageRef.child(repKey) , (key,ev,val) => {
+          MGAPP.registerRepresentation(repKey, (key,ev,val) => {
             switch(ev) {
               case 'progress': {
                 this._setPhotoKeyProperty(imageKey, '_progress', (val.bytesTransferred / val.totalBytes * 100).toFixed(2));

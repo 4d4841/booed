@@ -818,24 +818,12 @@
       MGDeepSet(this,'items.'+itemKey, itemData);
     }
 
-    registerRepresentation(storageRef,srcCallback,blob,contentType) {
-      let key = storageRef ? storageRef.name : null;
+    /*XXX UID of other user */
+    registerRepresentation(key,srcCallback,blob,contentType) {
       if (!key) {
         srcCallback(key,'src','images/logo-pumpkin-outline-grayout.svg');
         return;
       }
-      let uid = storageRef.parent.parent.name;
-
-      /* srcCallback(key,event,value) will be called more than once until src is resolved.
-       * Which could be storage src or local blob data.
-       */
-
-       /*
-      let storageRef = MGAPP.ST.ref('UID')
-                               .child(MGAPP.AU.currentUser.uid)
-                               .child('DATA')
-                               .child(key);
-                               */
 
       let rep = this.representations[key];
       if (!rep) {
@@ -844,12 +832,13 @@
       }
 
       if (blob) {
+        let repSTRef = this.ST.ref('UID').child(this.AU.currentUser.uid).child('DATA').child(key);
         /* Task begin. Upload the blob onto storage. */
         let metadata = {
           contentType: contentType || 'image/jpeg',
         }
 
-        let task = storageRef.put(blob,metadata);
+        let task = repSTRef.put(blob,metadata);
 
         /* If uploader didn't specify srcCallback then _callbacks could be empty.
          * It sill allocates an empty list to prevent another registration from solving
@@ -918,17 +907,26 @@
         } else if (!rep.src) {
           /* no callback and no src, so no chance it is getting src, so let's get it now */
           rep._callbacks = [srcCallback];
-          storageRef.getDownloadURL().then(url => {
-            this.set(['representations',key,'src'], url);
-            rep._callbacks.forEach(function(cb){ cb(key,'src',url); });
-            delete rep._callbacks;
-          }).catch(error => {
-            /* This might have been invoked before the upload task started by any following registerRep call.
-             * Please don't do that!
-             */
-            console.warn(`Representation src for ${key} does not exist. Callback has not been released.`,error);
-          });
 
+          this.DB.ref('representations').child(key).child('uid').once('value', snapshot => {
+            let uid = snapshot.val();
+            if (uid) {
+              let repSTRef = this.ST.ref('UID').child(uid).child('DATA').child(key);
+              repSTRef.getDownloadURL().then(url => {
+                this.set(['representations',key,'src'], url);
+                rep._callbacks.forEach(function(cb){ cb(key,'src',url); });
+                delete rep._callbacks;
+              }).catch(error => {
+                /* This might have been invoked before the upload task started by any following registerRep call.
+                 * Please don't do that!
+                 */
+                console.warn(`Representation src for ${key} does not exist. Callback has not been released.`,error);
+              });
+            }
+
+            console.assert(uid, "XXX UID not found, should wait?");
+
+          });
         } else /* src has been resolved */ {
           srcCallback(key, 'src', rep.src);
         }
