@@ -20,7 +20,7 @@
 <link rel="import" href="../bower_components/paper-spinner/paper-spinner.html">
 
 <link rel="import" href="mg-common-styles.html">
-<link rel="import" href="mg-item-image.html">
+<link rel="import" href="mg-thumbnail.html">
 
 <dom-module id="mg-quilt">
   <template>
@@ -49,13 +49,13 @@
     <template strip-whitespace>
       <dom-if if="[[_itemInOffsetRange(item)]]">
     <template>
-      <mg-item-image
+      <mg-thumbnail
        class="quilt-image"
        src="[[item.photo]]"
        style$="[[_computeItemStyle(item,unitWidth,index,2)]]"
        icons="[[_formatIconsForTags(item.tags)]]"
        label="[[_formatLabel(item.tags)]]"
-      ></mg-item-image>
+      ></mg-thumbnail>
     </template>
       </dom-if>
 

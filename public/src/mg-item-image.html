@@ -11,14 +11,7 @@
 `::::::::.::::::::..::::::::::...:::.....:::.....:::...::::::...:::.............:::...::::::::..::'
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
-<link rel="import" href="../bower_components/neon-animation/web-animations.html">
-<link rel="import" href="mg-common-styles.html">
-<link rel="import" href="mg-icons.html">
-<link rel="import" href="mg-image.html">
+<link rel="import" href="mg-thumbnail.html">
 
 <dom-module id="mg-item-image">
   <template strip-whitespace>
@@ -27,166 +20,19 @@
       :host {
       }
 
-      :host([deleted]) {
-        opacity: 0.3;
-      }
-
-      :host(.iron-selected) .photo-frame {
-        background-color: tomato;
-      }
-
-      :host(:not(.iron-selected)) .photo-frame {
-        background-color: white;
-      }
-
-      .photo-frame {
-        width: 100%;
-        height: 100%;
-        text-decoration: none;
-        padding: 0;
-        margin: 5px;
-        border-radius: 5px;
-        box-shadow: 1px 1px 1px var(--app-shadow-color);
-        background-color: white;
-        overflow: hidden;
-        border: 2px solid transparent;
-      }
-
-      .photo-frame > mg-image {
-        width: 100%;
-        height: 100%;
-        background-color: whitesmoke;
-        border-radius: 5px;
-        @apply(--layout-vertical);
-        @apply(--layout-center);
-        overflow: hidden;
-      }
-
-      paper-progress {
-        position: absolute;
-        top: 5px;
-        width: calc(100% - 10px);
-        pointer-events: none;
-        border-radius: 2px;
-        z-index:1;
-      }
-
-      .label {
-        position: absolute;
-        bottom: 0;
-        width: 100%;
-        text-transform: none;
-        white-space: nowrap;
-        /*background-color: rgba(255,255,255,0.85);*/
-        color: black;
-        background: linear-gradient( transparent 0, rgba(255,255,255,0.8) 15px)
-                    ,linear-gradient( transparent 0,rgba(255,255,255,0.5) 10px);
-        height: 20px;
-        line-height: 25px;
-        z-index: 1;
-        text-align: center;
-        @apply(--layout-horizontal);
-        @apply(--layout-center-justified);
-      }
-
-      .icon {
-        --iron-icon-width: 15px;
-        --iron-icon-height: 15px;
-        min-width: 20px;
-      }
-
-      .spinner {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        transition: opacity 0s;
-        opacity: 1;
-      }
-
-      .spinner[loaded] {
-        opacity: 0;
-        transition: opacity 0.5s;
-      }
-
-      .deleted {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(255,255,255,0.5);
-        color: rgba(0,0,0,0.7);
-        --iron-icon-width: 80px;
-        --iron-icon-height: 80px;
-        @apply(--layout-vertical);
-        @apply(--layout-center);
-        @apply(--layout-center-justified);
-      }
-
-      .selection-order {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.5);
-        color: white;
-        font-size: 60px;
-        font-weight: normal;
-        text-align: center;
-        line-height: 110px;
-        text-decoration: none;
-      }
-
     </style>
       </custom-style>
 
-    <paper-button class="photo-frame">
-      <mg-image
-        src="[[src]]"
-        sizing="cover"
-        loaded="{{isLoaded}}"
-      >
-
-        <!--Top indicator-->
-        <template is="dom-if" if="{{showProgress}}">
-          <paper-progress
-            value="[[progress]]"
-          ></paper-progress>
-        </template>
-
-        <!--Pumpkin spinner-->
-        <template is="dom-if" if="{{spinner}}">
-          <img class="spinner" src="images/logo-pumpkin-gray-bouncing.svg" draggable="false" loaded$="{{isLoaded}}">
-        </template>
-
-        <template is="dom-if" if="{{deleted}}">
-          <div class="deleted">
-            <iron-icon icon="delete"></iron-icon>
-          </div>
-        </template>
-
-        <!--Selection order-->
-        <template is="dom-if" if="{{showSelectionOrder}}">
-          <div class="selection-order">
-            [[selectionOrder]]
-          </div>
-        </template>
-
-        <template is="dom-if" if="{{showLabel}}">
-          <div class="label horizontal layout center start-justified">
-            <template is="dom-if" if="{{icon}}">
-              <iron-icon class="icon" icon="[[icon]]"></iron-icon>
-            </template>
-            <template is="dom-repeat" items="{{_formatIcons(icons)}}">
-              <iron-icon class="icon" style="[[_formatIconStyle(item)]]" icon="[[item]]"></iron-icon>
-            </template>
-            <div id="labelSpan">[[label]]</div>
-          </div>
-        </template>
-
-      </mg-image>
-
-    </paper-button>
-    <paper-tooltip id="tooltip" animation-delay="0">
-      [[label]]
-    </paper-tooltip>
+  <mg-thumbnail
+    src="[[src]]"
+    progress="[[progress]]"
+    icon="photo"
+    label="[[label]]"
+    selection-order="[[selectionOrder]]"
+    deleted$="[[deleted]]"
+    transition="1.5s"
+    spinner
+  ></mg-thumbnail>
 
   </template>
   <script>
@@ -194,108 +40,29 @@
       static get is() { return 'mg-item-image'; }
 
       static get properties() { return {
-        src: {
+        thumbnail: {
           type: String,
-          value: "",
+          value: null,
+          observer: '_thumbnailChanged',
         },
 
-        transition: String,
-
-        deleted: Boolean,
-
-        icon: String,
-
-        icons: Object,
-
-        label: String,
-        showLabel: {
-          type: Boolean,
-          computed: '_computeHasLabel(icon, icons, label)',
-        },
-
-        progress: Number,
-        showProgress: {
-          type: Boolean,
-          computed: '_computeShowProgress(progress)',
-        },
-
-        selectionOrder: String,
-        showSelectionOrder: {
-          type: Boolean,
-          computed: '_computeShowSelectionOrder(selectionOrder)',
-        },
-
-        spinner: {
-          type: Boolean,
-          value: false,
-        },
       }}
 
       static get observers() { return [
       ]}
 
-      _computeHasLabel(icon, icons, label) {
-        if (icon || (icons && Object.keys(icons).length > 0) || label ) {
-          return true;
+      _thumbnailChanged(repKey) {
+        if (repKey) {
+          let uid = MGAPP.AU.currentUser.uid;
+          let storageRef = MGAPP.ST.ref('UID').child(uid).child('DATA');
+          MGAPP.registerRepresentation(storageRef.child(repKey), (key,ev,val) => {
+            ev === 'src' && this.set('src',val);
+          });
         }
-        return false;
+        else this.set('src','images/logo-pumpkin-outline-grayout.svg');
       }
-
-      _formatIconStyle(icon) {
-        /* XXX Temp */
-        if (icon == "new-releases") return "color:gold";
-        if (icon == "sales-baht") return "color:red";
-        if (this.icons[icon] === true) {
-          return "color:tomato";
-        }  else if (this.icons[icon] === false) {
-          return "color:black";
-        }
-        return "color:lightgray";
-      }
-
-      _formatIcons(icons) {
-        return Object.keys(icons);
-      }
-
-      /*
-      connectedCallback() {
-        super.connectedCallback();
-        Polymer.Gestures.addListener(this, 'track', this.handleTap.bind(this));
-      }
-      disconnectedCallback(){
-        super.disconnectedCallback();
-      }
-      */
-
-      handleTap(e) {
-        console.log(e);
-      }
-
-      _computeShowSelectionOrder(selectionOrder) {
-        if (selectionOrder) return true;
-        return false;
-      }
-
-      _computeShowProgress(progress) {
-        if (typeof(progress) == "undefined") return false;
-        if (progress == 100) return false;
-        return true;
-      }
-
-      /*
-      _onMOver(e) {
-        if (this.$.labelSpan.offsetWidth > this.offsetWidth) {
-          this.$.tooltip.show();
-        }
-      }
-
-      _onMOut(e) {
-        this.$.tooltip.hide();
-      }
-      */
     }
 
     customElements.define(MGItemImage.is, MGItemImage);
   </script>
 </dom-module>
-u

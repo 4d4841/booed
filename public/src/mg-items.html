@@ -8,7 +8,7 @@
 <link rel="import" href="mg-balloon.html">
 <link rel="import" href="mg-menu.html">
 <link rel="import" href="mg-item.html">
-<link rel="import" href="mg-item-image.html">
+<link rel="import" href="mg-thumbnail.html">
 
 
 <dom-module id="mg-items">
@@ -70,14 +70,14 @@
 
       <iron-selector class="items-container" attr-for-selected="name" selected="[[itemKey]]">
       <template is="dom-repeat" items="[[itemList]]" mutable-data>
-        <mg-item-image
+        <mg-thumbnail
           name="[[item.key]]"
           label="[[item.name]]"
           icon="[[_formatRoleIcon(item.role)]]"
           src="[[item._src]]"
           class="item"
           on-click="_onThumbClick"
-        ></mg-item-image>
+        ></mg-thumbnail>
       </template>
       </iron-selector>
 

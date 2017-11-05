@@ -51,7 +51,7 @@
     </style>
       </custom-style>
 
-    <iron-collapse class="vertical layout" opened="[[_shouldOpen(itemKey)]]">
+    <iron-collapse class="vertical layout" opened="[[itemKey]]">
 
       <div class="horizontal layout end">
 
@@ -262,17 +262,6 @@
         }
       }
 
-      _setPhotoThumbnail(thumbnailKey,val) {
-        for (let i = 0, icon; icon = this.iconList[i]; ++i) {
-          if (icon.thumbnail == thumbnailKey) {
-            if (this.iconList[i]._src != val) {
-              this.iconList[i]._src = val;
-              this.notifyPath(['iconList',i,'_src']);
-            }
-          }
-        }
-      }
-
       _uploadReps(uid,itemKey,files) {
         let storageRef = MGAPP.ST.ref('UID').child(uid).child('DATA');
 
@@ -316,23 +305,19 @@
             /*_progress: uploading status,*/
           };
 
-          this.notifyPath('iconList.' + (this.push('iconList',icon)-1));
-
-          let thumbnail = new Image();
+          let thumbnailLoader = new Image();
           let canvas = document.createElement('canvas');
 
-          thumbnail.onload = (e) => {
+          thumbnailLoader.onload = (e) => {
             let area = (250*250); /* Default area for thumbnail */
 
-            let w = Math.ceil(Math.sqrt(area * thumbnail.width / thumbnail.height));
+            let w = Math.ceil(Math.sqrt(area * thumbnailLoader.width / thumbnailLoader.height));
             let h = Math.ceil(area / w);
 
             canvas.width = w;
             canvas.height = h;
-            canvas.getContext('2d').drawImage(thumbnail, 0, 0, w, h);
+            canvas.getContext('2d').drawImage(thumbnailLoader, 0, 0, w, h);
             let dataURL = canvas.toDataURL('image/jpeg');
-
-            this._setPhotoThumbnail(thumbKey,dataURL);
 
             canvas.toBlob(blob => {
 
@@ -360,6 +345,7 @@
                   } break;
                 }
               }, blob);
+              this.notifyPath('iconList.' + (this.push('iconList',icon)-1));
 
             },'image/jpeg',0.8);
           };
@@ -387,7 +373,7 @@
 
               } break;
               case 'src':
-                thumbnail.src = val;
+                thumbnailLoader.src = val;
                 //this._setPhotoKeyProperty(image.key,'_src',val);
 
                 break;
@@ -534,15 +520,6 @@
               this.notifyPath(['iconList',idx,'order']);
             }
 
-            /* XXX Allow custom placeholder rep */
-            if (image.thumbnail) {
-              MGAPP.registerRepresentation(storageRef.child(image.thumbnail),
-                (k,e,v) => e == 'src' && this._setPhotoThumbnail(k,v)
-              );
-            } else {
-              /*XXX Can't control the size of placeholder */
-              this._setPhotoKeyProperty(imageKey, '_src', 'images/logo-pumpkin-outline-grayout.svg');
-            }
           }
         );
 
