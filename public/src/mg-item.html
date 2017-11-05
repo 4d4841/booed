@@ -519,10 +519,10 @@
           entries.push([ref.key, ref.val()]);
           delete images[ref.key]; /* Filter server records */
         });
-        /* Add local records */
+        /* Add local records XXX seems bad cuz it didn't update local ? */
         Object.entries(images).forEach( entry => entries.push(entry));
 
-        entries.forEach(([imageKey,image,order],index) => {
+        entries.forEach(([imageKey,image,order]) => {
             /* update current iconList */
 
             let idx = this._indexImage(imageKey);
@@ -536,8 +536,7 @@
                       thumbnail: image.thumbnail,
                       rep: image.rep,
                       name: image.name,
-                      /* Assign indices which were sorted above as order */
-                      order: image.order || (index+1),
+                      order: image.order,
                       deleted: image.deleted,
                   }) - 1
                 ));
@@ -711,15 +710,37 @@
         this.splice('selectedImages',0,this.selectedImages.length);
       }
 
+      _onClearClipboardTap(e) {
+        this.splice('clipboardList',0,this.clipboardList.length);
+      }
+
       _onPasteClipboardTap(e) {
-        let path = 'home/'+MGAPP.AU.currentUser.uid+'/items/'+this.itemKey+'/images/';
-        let registerData = {};
-        this.clipboardList.forEach(data => {
-          let imageKey =  MGAPP.DB.ref('home').child(MGAPP.AU.currentUser.uid).child(this.itemKey).child('images').push().key;
-          registerData[path+imageKey+'/name'] = data.name;
-          registerData[path+imageKey+'/thumbnail'] = data.thumbnail;
-          registerData[path+imageKey+'/rep'] = data.rep;
+        console.assert(this.clipboardList.length,"Empty clipboard?");
+
+        let uid = MGAPP.AU.currentUser.uid;
+        let itemKey = this.itemKey;
+        let path = 'home/'+uid+'/items/'+itemKey;
+        let ref = MGAPP.DB.ref('home').child(uid).child(itemKey).child('images');
+        let registerData = {
+          ['items/'+itemKey+'/public']: false,
+          ['items/'+itemKey+'/uid']: uid,
+          ['items/'+itemKey+'/role']: this.itemRole,
+          ['items/'+itemKey+'/name']: this.itemName,
+          [path+'/role']: this.itemRole,
+          [path+'/name']: this.itemName,
+        };
+
+        path+='/images/';
+        let coverKey = MGAPP.get(['items',itemKey,'cover']);
+        this.clipboardList.forEach((data,index) => {
+          let imageKey = ref.push().key;
+          coverKey = coverKey || imageKey;
+          registerData[path+imageKey+'/name'] = data.name || null;
+          registerData[path+imageKey+'/thumbnail'] = data.thumbnail || null;
+          registerData[path+imageKey+'/rep'] = data.rep || null;
         });
+
+        registerData['home/'+uid+'/items/'+itemKey+'/cover'] = coverKey;
 
         /* XXX Should it also update local? Or should it rely only on query events? */
         /* XXX Need to try off-line. */
