@@ -534,6 +534,7 @@
                   this.push('iconList', {
                       key: imageKey,
                       thumbnail: image.thumbnail,
+                      rep: image.rep,
                       name: image.name,
                       /* Assign indices which were sorted above as order */
                       order: image.order || (index+1),
@@ -544,9 +545,14 @@
 
             } else { /* update current icon's event-value */
               this.iconList[idx].key = imageKey;
+              /* Make sure dirty checks here are necessary */
               if (image.thumbnail && (this.iconList[idx].thumbnail != image.thumbnail)) {
                   this.iconList[idx].thumbnail = image.thumbnail;
                   this.notifyPath(['iconList',idx,'thumbnail']);
+              }
+              if (image.rep && (this.iconList[idx].rep != image.rep)) {
+                this.iconList[idx].rep = image.rep;
+                this.notifyPath(['iconList',idx,'rep']);
               }
               if (image.name) {
                 this.iconList[idx].name = image.name;
@@ -696,6 +702,7 @@
             let copy = {
               name: this.iconList[idx].name,
               thumbnail: this.iconList[idx].thumbnail,
+              rep: this.iconList[idx].rep,
             };
             this.push('clipboardList', copy);
           });
@@ -705,7 +712,24 @@
       }
 
       _onPasteClipboardTap(e) {
+        let path = 'home/'+MGAPP.AU.currentUser.uid+'/items/'+this.itemKey+'/images/';
+        let registerData = {};
+        this.clipboardList.forEach(data => {
+          let imageKey =  MGAPP.DB.ref('home').child(MGAPP.AU.currentUser.uid).child(this.itemKey).child('images').push().key;
+          registerData[path+imageKey+'/rep'] = data.name;
+          registerData[path+imageKey+'/thumbnail'] = data.thumbnail;
+          registerData[path+imageKey+'/rep'] = data.rep;
+        });
 
+        /* XXX Should it also update local? Or should it rely only on query events? */
+        /* XXX Need to try off-line. */
+
+        MGAPP.DB.ref().update(registerData, error => {
+          if (!error) {
+          } else {
+            console.error("ERR",error);
+          }
+        });
       }
 
       newItem(role,name) {
