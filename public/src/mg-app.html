@@ -751,8 +751,14 @@
 
     static get observers() { return [
       '_routePageChanged(routeData.page)',
+      /*'_onMenuSelected(menu.selected)',*/
       /*'_productsDataChanged(productsData.splices)',*/
     ]}
+
+    /*
+    _onMenuSelected(change){
+    }
+    */
 
     _itemsChanged(splices) {
       //console.log(">",splices);

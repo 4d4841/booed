@@ -46,7 +46,7 @@
 
       .item {
         width: 100px;
-        height: 130px;
+        height: 100px;
         margin-bottom: 5px;
       }
 
@@ -327,34 +327,26 @@
 
       _closeSubmenu(e) {
         if (e.detail && e.detail.sender != this) {
-          this.$['new-item-balloon'].style.display = "none";
+          this.$['new-item-balloon'].close();
         }
       }
 
-      _willRefit() {
-        this.$['new-item-balloon'].style.display = "block";
-        this.$['new-item-balloon'].refit();
-      }
-
-      /* XXX addd contextual behavior */
+      /* XXX implement contextual behavior */
       _openNewItemMenu(e) {
         this.dispatchEvent(new CustomEvent('close-contextual-menu', {
-          bubbles: true, composed: true, detail:{sender:this}}));
+          bubbles: true, composed: true, detail:{sender:this}
+        }));
 
-        if (this.$['new-item-balloon'].style.display == "block") {
-          this.$['new-item-balloon'].style.display = "none";
+        if (this.$['new-item-balloon'].visible) {
+          this.$['new-item-balloon'].close();
           return;
         }
 
         this.$['new-item-balloon'].positionTarget = this.$['new-item'];
-        this.__WillRefitSubmenuDebouncer = Polymer.Debouncer.debounce(this.__WillRefitSubmenuDebouncer,
-          Polymer.Async.timeOut.after(10),
-          this._willRefit.bind(this));
-
-      }
-
-      addPhoto(photo) {
-
+        Polymer.Async.timeOut.run(() => {
+          this.$['new-item-balloon'].open();
+          this.$['new-item-balloon'].refit();
+        }, 1);
       }
     }
     customElements.define(MGItems.is, MGItems);

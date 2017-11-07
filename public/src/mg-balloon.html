@@ -41,7 +41,8 @@
     </style>
       </custom-style>
 
-    <a tabindex="-1" id="panel"></a>
+    <a tabindex="-1" style="opacity:0;position:absolute;" id="panel">
+    </a>
     <div id="arrow">
       <svg class="arrow-element">
         <defs id="defs2">
@@ -77,6 +78,30 @@
     class MGBalloon extends Polymer.mixinBehaviors([Polymer.IronFitBehavior], Polymer.Element) {
       static get is() { return 'mg-balloon'; }
 
+      static get properties() { return {
+        positionTarget: {
+          type: Object,
+          observer: '_positionTargetChanged',
+        },
+
+        visible: Boolean,
+      }}
+
+      _onPositionTargetBlur(e) {
+        Polymer.Async.timeOut.run(() => {
+          this.close();
+        }, 300);
+      }
+
+      _positionTargetChanged(target,oldTarget) {
+        if (oldTarget) {
+          oldTarget.removeEventListener('blur', this._onPositionTargetBlur.bind(this),true);
+        }
+        if (target) {
+          target.addEventListener('blur', this._onPositionTargetBlur.bind(this),true);
+        }
+      }
+
       connectedCallback() {
         super.connectedCallback();
         this.$.content.positionTarget = this.$.pos;
@@ -87,14 +112,22 @@
         this.addEventListener('mg-menu-toggle-opened', this._refit.bind(this));
 
         window.addEventListener('close-contextual-menu', e => {
-            this.close();
+            //this.close();
+            this.style.display = 'none';
         });
 
-        this.$.panel.addEventListener('blur', e => {
-          if(!this.contains(e.relatedTarget)) {
-            this.close();
-          }
+        /* XXX contextual menu could be a behavior */
+        /*
+        this.addEventListener('focus', e => {
+          console.log('focus');
         },true);
+
+        this.addEventListener('blur', e => {
+          Polymer.Async.timeOut.run(() => {
+            this.close();
+          }, 300);
+        },true);
+        */
       }
 
       _refit() {
@@ -117,11 +150,19 @@
       }
 
       open() {
+        this.visible = true;
         this.style.display = 'block';
-        this.$.panel.focus();
+        /*
+        Polymer.Async.timeOut.run(() => {
+          console.log('f');
+          this.focus();
+        }, 300);
+        */
       }
 
       close() {
+        console.trace();
+        this.visible = false;
         this.style.display = 'none';
       }
     }
