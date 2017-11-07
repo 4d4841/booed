@@ -343,10 +343,7 @@
         }
 
         this.$['new-item-balloon'].positionTarget = this.$['new-item'];
-        Polymer.Async.timeOut.run(() => {
-          this.$['new-item-balloon'].open();
-          this.$['new-item-balloon'].refit();
-        }, 1);
+        this.$['new-item-balloon'].open();
       }
     }
     customElements.define(MGItems.is, MGItems);

@@ -611,21 +611,6 @@
   <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-storage.js"></script>
   <script>
 
-  /*
-  window.addEventListener('resize', refit);
-  window.addEventListener('scroll', refit);
-  var _raf = null;
-  var subsub;
-  function refit() {
-    _raf && window.cancelAnimationFrame(_raf);
-    _raf = window.requestAnimationFrame(function() {
-      _raf = null;
-      subsub.refit();
-      console.log(subsub,"xxx");
-    });
-  }
-  */
-
   function MGIconForRole(role) {
     switch(role) {
       case "product": return "local-mall";
@@ -1144,11 +1129,6 @@
     }
     */
 
-    _willRefit() {
-      this.$.balloon.open();
-      this.$.balloon.refit();
-    }
-
     _openSubmenu(e) {
       for(let i = 0, sub; sub = this.menu.entries[i]; ++i) {
         if (this.menu.entries[i].name == e.target.name && this.menu.entries[i].submenu) {
@@ -1162,9 +1142,7 @@
             var target = e.composedPath()[0];
             this.$.balloon.positionTarget = target;
             this.submenu = this.menu.entries[i].submenu;
-            this.__WillRefitSubmenuDebouncer = Polymer.Debouncer.debounce(this.__WillRefitSubmenuDebouncer,
-              Polymer.Async.timeOut.after(10),
-              this._willRefit.bind(this));
+            this.$.balloon.open();
             return;
           }
         }

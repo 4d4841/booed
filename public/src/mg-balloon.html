@@ -152,6 +152,9 @@
       open() {
         this.visible = true;
         this.style.display = 'block';
+        Polymer.Async.timeOut.run(() => {
+          this.refit();
+        }, 1);
         /*
         Polymer.Async.timeOut.run(() => {
           console.log('f');
@@ -161,7 +164,6 @@
       }
 
       close() {
-        console.trace();
         this.visible = false;
         this.style.display = 'none';
       }
