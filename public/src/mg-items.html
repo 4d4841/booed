@@ -72,7 +72,7 @@
       <template is="dom-repeat" items="[[itemList]]" mutable-data>
         <mg-thumbnail
           name="[[item.key]]"
-          label="[[item.name]]"
+          label="[[_formatLabel(item.name)]]"
           icon="[[_formatRoleIcon(item.role)]]"
           src="[[item._src]]"
           class="item"
@@ -159,6 +159,11 @@
             }
           );
         }
+      }
+
+      _formatLabel(str) {
+        if (str) return str;
+        return "(ไม่มีชื่อ)"
       }
 
       _itemsChanged(change) {
