@@ -7,6 +7,7 @@
 
 <dom-module id="mg-about">
   <template>
+      <custom-style>
     <style include="mg-button">
 
       :host {
@@ -61,6 +62,7 @@
       }
 
     </style>
+      </custom-style>
 
   <paper-card>
         <a href="/">
@@ -84,7 +86,7 @@
           type: Object,
           value: { entries: [
             { name:"tos", path:"/about/tos", icon:"info", title:"เงื่อนไขการให้บริการ", },
-            { name:"policy", path:"/about/policy", icon:"info", title:"นโยบายความเป็นส่วนตัว"},
+            { name:"policy", path:"/about/privacy-policy", icon:"info", title:"นโยบายความเป็นส่วนตัว"},
           ]}
         },
 
