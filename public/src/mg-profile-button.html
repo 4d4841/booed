@@ -145,12 +145,13 @@
             <div class="under-photo">
               <h3>[[me.user.email]]<br>[[me.user.displayName]]</h3>
             </div>
+            <paper-button style="padding:0;margin:0" on-tap="_openProfile">
             <iron-image
               class="photo"
               src="[[me.user.photoURL]]"
-              on-click="_openProfile"
               sizing="cover"
             ></iron-image>
+            </paper-button>
             <mg-menu menu="[[menu.entries.0.submenu]]"></mg-menu>
     </paper-card>
 
@@ -163,6 +164,7 @@
     </svg>
       </template>
         </dom-if>
+
 
 
   </template>
@@ -217,6 +219,12 @@
       connectedCallback() {
         super.connectedCallback();
         window.addEventListener('close-contextual-menu', this._closeSubmenu.bind(this));
+
+        this.addEventListener('blur', e => {
+          Polymer.Async.timeOut.run(() => {
+            this.showPanel = false;
+          }, 300);
+        },true);
       }
 
       _avatarChanged(photoURL) {
@@ -254,11 +262,13 @@
           this.dispatchEvent(new CustomEvent('close-contextual-menu', {
             bubbles: true, composed: true, detail:{sender:this}}));
         }
+
+        this.focus();
       }
 
       _openProfile(e) {
         this.showPanel = false;
-        this.set('route.path','/user/');
+        this.set('route.path','/user/profile');
       }
 
     }

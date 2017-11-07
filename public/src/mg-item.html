@@ -75,18 +75,36 @@
         border-radius: 5px;
         padding: 5px;
         margin: 5px;
-        background-color: rgba(0,0,0,0.05);
+        background-color: rgba(0,0,0,0.02);
       }
 
+      /*
       .cancel-copy-button {
         @apply(--layout-self-end);
         color:white;
         --iron-icon-stroke-color:rgba(0,0,0,0.2);
         pointer-events: none;
       }
+      */
+
+      .image-editor {
+        width:100vw;
+        height:100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index:1000;
+        background-color: rgba(0,0,0,0.5);
+      }
 
     </style>
       </custom-style>
+
+      <!--
+    <iron-collapse class="image-editor vertical layout" opened>
+      xyz
+    </iron-collapse>
+  -->
 
     <iron-collapse class="vertical layout" opened="[[itemKey]]">
 
@@ -120,6 +138,9 @@
             <paper-button on-tap="_onCopyButtonTap">
               <iron-icon icon="content-copy"></iron-icon> ก๊อปปี้
             </paper-button>
+            <paper-button on-tap="_onEditButtonTap">
+              <iron-icon icon="mode-edit"></iron-icon> แก้ไข
+            </paper-button>
             <paper-button on-tap="_onCancelButtonTap">
               <iron-icon icon="cancel"></iron-icon> ยกเลิก
             </paper-button>
@@ -142,7 +163,7 @@
               thumbnail="[[item.thumbnail]]"
               name="[[item.name]]"
               on-tap="_onCopiedTap"
-            ><iron-icon icon="cancel" class="cancel-copy-button"></iron-icon></mg-item-image>
+            ><!--<iron-icon icon="cancel" class="cancel-copy-button"></iron-icon>--></mg-item-image>
 
           </template>
         </div>
@@ -175,7 +196,8 @@
           selection-order="[[item._selectionOrder]]"
           deleted="[[item.deleted]]"
           on-tap="_onItemTap"
-        ></mg-item-image>
+        >
+        </mg-item-image>
 
       </template>
 
@@ -283,6 +305,7 @@
       }
 
       _onItemTap(e) {
+
         if (e.detail.sourceEvent.shiftKey) {
           if (typeof(this._LastTapIndex) == "undefined") {
             this._LastTapIndex = -1;
@@ -295,6 +318,10 @@
           }
         }
         this._LastTapIndex = e.model.index;
+      }
+
+      _onEditButtonTap(e) {
+
       }
 
       _indexImage(imageKey,cb) {

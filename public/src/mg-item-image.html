@@ -19,6 +19,7 @@
       <custom-style>
     <style include="mg-common-styles iron-flex iron-flex-alignment">
       :host {
+        position: relative;
       }
 
       :host(.iron-selected) {
@@ -49,9 +50,20 @@
         text-decoration: none;
       }
 
+      .image-edit-button {
+        position: absolute;
+        right: 0;
+        @apply(--layout-self-end);
+        color:white;
+        --iron-icon-stroke-color:rgba(0,0,0,0.2);
+        pointer-events: inherit;
+        z-index: 3;
+      }
 
     </style>
       </custom-style>
+
+  <iron-icon icon="mode-edit" class="image-edit-button" on-tap="_onEditImage"></iron-icon>
 
   <mg-thumbnail
     src="[[src]]"
@@ -77,12 +89,22 @@
     <slot></slot>
   </mg-thumbnail>
 
+
   </template>
   <script>
     class MGItemImage extends Polymer.GestureEventListeners(Polymer.Element) {
       static get is() { return 'mg-item-image'; }
 
       static get properties() { return {
+        /* If itemKey and key are set, edits will be synced. */
+        itemKey: {
+          type: String,
+        },
+
+        key: {
+          type: String,
+        },
+
         thumbnail: {
           type: String,
           value: '',
@@ -133,6 +155,9 @@
         return false;
       }
 
+      _onEditImage(e) {
+        console.log('edit',this);
+      }
     }
 
     customElements.define(MGItemImage.is, MGItemImage);

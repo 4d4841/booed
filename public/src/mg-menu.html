@@ -161,25 +161,10 @@
         <template>
           <paper-item tabindex="-1" class="menu-item horizontal layout center start-justified">
 
-              <dom-if if="[[item.path]]">
-            <template>
-            <a href="[[item.path]]">
-            <paper-button style="min-height:var(--mg-menu-height)" class="horizontal layout center">
-              <iron-icon class="menu-item-icon" icon="[[item.icon]]" style="[[_computeIconColorStyle(item)]]"></iron-icon>
-                [[item.title]]
-            </paper-button>
-            </a>
-            </template>
-              </dom-if>
-
-              <dom-if if="[[!item.path]]">
-            <template>
             <paper-button style="min-height:var(--mg-menu-height)" class="horizontal layout center" on-tap="_onMenuButtonTap">
               <iron-icon class="menu-item-icon" icon="[[item.icon]]" style="[[_computeIconColorStyle(item)]]"></iron-icon>
                 [[item.title]]
             </paper-button>
-            </template>
-              </dom-if>
 
           </paper-item>
         </template>
@@ -224,7 +209,10 @@
       _onMenuButtonTap(e) {
         this.dispatchEvent(new CustomEvent('close-contextual-menu', {
           bubbles: true, composed: true, detail:{sender:null}}));
-        if (e.model.item.action) {
+
+        if (e.model.item.path) {
+          MGAPP.set('route.path',e.model.item.path);
+        } else if (e.model.item.action) {
           e.model.item.action(e);
         } else if (this.menu.action) {
           this.menu.action(e);

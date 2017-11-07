@@ -1139,7 +1139,7 @@
     */
 
     _willRefit() {
-      this.$.balloon.style.display = "block";
+      this.$.balloon.open();
       this.$.balloon.refit();
     }
 
@@ -1178,7 +1178,7 @@
 
     _closeSubmenu() {
       this.submenu = {};
-      this.$.balloon.style.display = "none";
+      //this.$.balloon.close();
     }
 
     _onCloseContextualMenu(e) {

@@ -41,6 +41,7 @@
     </style>
       </custom-style>
 
+    <a tabindex="-1" id="panel"></a>
     <div id="arrow">
       <svg class="arrow-element">
         <defs id="defs2">
@@ -84,6 +85,16 @@
         window.addEventListener('resize', this._refit.bind(this));
         window.addEventListener('scroll', this._refit.bind(this));
         this.addEventListener('mg-menu-toggle-opened', this._refit.bind(this));
+
+        window.addEventListener('close-contextual-menu', e => {
+            this.close();
+        });
+
+        this.$.panel.addEventListener('blur', e => {
+          if(!this.contains(e.relatedTarget)) {
+            this.close();
+          }
+        },true);
       }
 
       _refit() {
@@ -103,6 +114,15 @@
         */
         super.refit();
         this.$.content.refit();
+      }
+
+      open() {
+        this.style.display = 'block';
+        this.$.panel.focus();
+      }
+
+      close() {
+        this.style.display = 'none';
       }
     }
     customElements.define(MGBalloon.is, MGBalloon);
