@@ -208,19 +208,13 @@
       _userChanged(uid) {
         this.set('itemList',[]);
         if (this._UidChangedCallback) {
-          MGAPP.DB.ref('home')
-                  .child(uid)
-                  .child('items')
-                  .off('child_added', this._UidChangedCallback, this);
+          this._UidChangedCallback.ref.off('child_added', this._UidChangedCallback.cb, this);
           delete this._UidChangedCallback;
         }
         if (uid) {
-          this._UidChangedCallback =
-          MGAPP.DB.ref('home')
-                  .child(uid)
-                  .child('items')
-                  .on('child_added', function(snapshot){
-
+          this._UidChangedCallback = {ref:MGAPP.DB.ref('home').child(uid).child('items')};
+          this._UidChangedCallback.cb
+           = this._UidChangedCallback.ref.on('child_added', function(snapshot) {
             let val = snapshot.val();
 
             if( this.itemList.every(function(item){
