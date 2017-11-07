@@ -664,7 +664,7 @@
           return;
         }
 
-        if (itemName) {
+        if (itemName || itemName === "") {
 
           delete this._ItemName;
           var registerData = {};
