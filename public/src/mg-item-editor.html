@@ -23,7 +23,7 @@
 <link rel="import" href="mg-item-image.html">
 
 
-<dom-module id="mg-item">
+<dom-module id="mg-item-editor">
   <template strip-whitespace>
       <custom-style>
     <style is="custom-style" include="mg-common-styles iron-flex iron-flex-alignment">
@@ -86,16 +86,6 @@
         pointer-events: none;
       }
       */
-
-      .image-editor {
-        width:100vw;
-        height:100vh;
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index:1000;
-        background-color: rgba(0,0,0,0.5);
-      }
 
     </style>
       </custom-style>
@@ -207,8 +197,8 @@
 
   </template>
   <script>
-    class MGItem extends Polymer.Element {
-      static get is() { return 'mg-item'; }
+    class MGItemEditor extends Polymer.Element {
+      static get is() { return 'mg-item-editor'; }
 
       static get properties() { return {
         files: Object,
@@ -816,6 +806,6 @@
 
     }
 
-    customElements.define(MGItem.is, MGItem);
+    customElements.define(MGItemEditor.is, MGItemEditor);
   </script>
 </dom-module>
