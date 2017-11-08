@@ -79,7 +79,7 @@
    width="200"
    height="200">
 
-   <rect x$="[[rLeft]]" y$="[[rTop]]" width$="[[rWidth]]" height$="[[rHeight]]" style="fill:none;stroke-width:3;stroke:rgb(0,0,0)" />
+   <rect x$="[[rrLeft]]" y$="[[rrTop]]" width$="[[rrWidth]]" height$="[[rrHeight]]" style="fill:none;stroke-width:3;stroke:rgb(0,0,0)" />
 </svg>
 
 
@@ -121,10 +121,23 @@
         viewHeight: {
           type:Number,
         },
+
+        rLeft: { type: Number, value: 0 },
+        rTop: { type: Number, value: 0 },
+        rWidth: { type: Number, value: 0 },
+        rHeight: { type: Number, value: 0 },
       }}
 
       static get observers() { return [
+        '_rChanged(rLeft, rTop, rWidth, rHeight)'
       ]}
+
+      _rChanged(rLeft, rTop, rWidth, rHeight) {
+        this.set('rrLeft', rLeft - 1);
+        this.set('rrTop', rTop - 1);
+        this.set('rrWidth', rWidth + 2);
+        this.set('rrHeight', rHeight + 2);
+      }
 
       connectedCallback(){
         super.connectedCallback();
@@ -204,10 +217,12 @@
           case 'track':
 
             if (this._Tracking.l) {
-              this.set('rLeft',this.rLeft + dx);
+              let rl = this.rLeft + dx;
+              this.set('rLeft', rl > this.imageWidth ? this.imageWidth : rl);
             }
             if (this._Tracking.t) {
-              this.set('rTop',this.rTop + dy);
+              let rt = this.rTop + dy;
+              this.set('rTop', rt > this.imageHeight ? this.imageHeight : rt);
             }
             if (this._Tracking.w) {
               let rw = this.rWidth - dx * this._Tracking.w;
