@@ -50,40 +50,8 @@
         text-decoration: none;
       }
 
-      .image-edit-button-icon {
-        opacity: 0;
-        width: 0px;
-        height: 0px;
-        position: absolute;
-        right: 0;
-        top: 3px;
-        @apply(--layout-self-end);
-        z-index: 3;
-        color: white;
-        background-color: rgba(0,0,0,0.3);
-        box-shadow: inset 1px 1px 1px var(--app-shadow-color);
-        border-radius: 25%;
-        padding: 3px;
-        --iron-icon-width: 20px;
-        --iron-icon-height: 20px;
-      }
-
-      :host(:hover) .image-edit-button-icon {
-        opacity: 1;
-        transition: width 0.25s, height 0.5s, opacity 1s;
-        width: 30px;
-        height: 30px;
-      }
-
-      :host(.iron-selected) .image-edit-button-icon {
-        opacity: 0;
-      }
-
     </style>
       </custom-style>
-
-  <paper-icon-button icon="mode-edit" class="image-edit-button-icon" on-tap="_onEditImage">
-  </paper-icon-button>
 
   <mg-thumbnail
     src="[[src]]"
@@ -108,7 +76,6 @@
 
     <slot></slot>
   </mg-thumbnail>
-
 
   </template>
   <script>
@@ -175,10 +142,6 @@
         return false;
       }
 
-      _onEditImage(e) {
-        console.log('edit',this);
-        e.stopImmediatePropagation();
-      }
     }
 
     customElements.define(MGItemImage.is, MGItemImage);

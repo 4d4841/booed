@@ -21,6 +21,7 @@
 <link rel="import" href="mg-common-styles.html">
 <link rel="import" href="mg-input.html">
 <link rel="import" href="mg-item-image.html">
+<link rel="import" href="mg-image-editor.html">
 
 
 <dom-module id="mg-item-editor">
@@ -87,14 +88,39 @@
       }
       */
 
+      .image-edit-button-icon {
+        opacity: 0;
+        width: 0px;
+        height: 0px;
+        position: absolute;
+        right: 0;
+        top: 3px;
+        @apply(--layout-self-end);
+        z-index: 3;
+        color: white;
+        background-color: rgba(0,0,0,0.3);
+        box-shadow: inset 1px 1px 1px var(--app-shadow-color);
+        border-radius: 25%;
+        padding: 3px;
+        --iron-icon-width: 20px;
+        --iron-icon-height: 20px;
+      }
+
+      .image-icon:hover .image-edit-button-icon {
+        opacity: 1;
+        transition: width 0.25s, height 0.5s, opacity 1s;
+        width: 30px;
+        height: 30px;
+      }
+
+      .image-icon.iron-selected .image-edit-button-icon {
+        opacity: 0;
+      }
+
+
+
     </style>
       </custom-style>
-
-      <!--
-    <iron-collapse class="image-editor vertical layout" opened>
-      xyz
-    </iron-collapse>
-  -->
 
     <iron-collapse class="vertical layout" opened="[[itemKey]]">
 
@@ -151,9 +177,13 @@
               key="[[item.key]]"
               class="copied-icon"
               thumbnail="[[item.thumbnail]]"
+              rep="[[item.rep]]"
               name="[[item.name]]"
               on-tap="_onCopiedTap"
-            ><!--<iron-icon icon="cancel" class="cancel-copy-button"></iron-icon>--></mg-item-image>
+            >
+              <paper-icon-button icon="mode-edit" class="image-edit-button-icon" on-tap="_onEditImage">
+              </paper-icon-button>
+            </mg-item-image>
 
           </template>
         </div>
@@ -181,12 +211,15 @@
           key="[[item.key]]"
           class="image-icon"
           thumbnail="[[item.thumbnail]]"
+          rep="[[item.rep]]"
           progress="[[item._progress]]"
           name="[[item.name]]"
           selection-order="[[item._selectionOrder]]"
           deleted="[[item.deleted]]"
           on-tap="_onItemTap"
         >
+          <paper-icon-button icon="mode-edit" class="image-edit-button-icon" on-tap="_onEditImage">
+          </paper-icon-button>
         </mg-item-image>
 
       </template>
@@ -194,6 +227,9 @@
       </iron-selector>
 
     </iron-collapse>
+
+    <mg-image-editor id="image-editor" rep="{{editingRep}}">
+    </mg-image-editor>
 
   </template>
   <script>
@@ -236,6 +272,9 @@
           notify: true,
           reflectToAttribute: true,
         },
+
+        editingRep: String,
+
       }}
 
       static get observers() { return [
@@ -802,6 +841,11 @@
         this.set('itemKey', key);
          /* Only update UI name without server registration */
         this.set('itemName', this._ItemName = name || "แกลเลอรี่ไม่มีชื่อ");
+      }
+
+      _onEditImage(e) {
+        this.set('editingRep',e.model.item.rep);
+        e.stopImmediatePropagation();
       }
 
     }

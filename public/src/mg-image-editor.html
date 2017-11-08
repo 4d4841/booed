@@ -1,59 +1,286 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="mg-common-styles.html">
+
 
 
 <dom-module id="mg-image-editor">
   <template strip-whitespace>
       <custom-style>
     <style include="iron-flex iron-flex-alignment">
+
       :host {
-        width:100vw;
-        height:100vh;
-        position: fixed;
-        top: 0;
-        left: 0;
+        display: none;
+        opacity: 0;
+        position: absolute;
+        width:100%;
+        height:100%;
         z-index:1000;
         background-color: rgba(0,0,0,0.5);
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+        @apply(--layout-center);
+      }
+
+      :host([active]) {
+        display: block;
+        pointer-events: initial;
+        position: fixed;
+        opacity: 1;
+        display: block;
+        top:0;
+        left:0;
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+        @apply(--layout-center);
+      }
+
+
+      #canvas {
+        background-size: contain;
+      }
+
+      /*
+      #image-container {
+        height: calc(100% - 120px);
+        width: calc(100% - 60px);
+        border: 1px solid red;
         pointer-events: none;
       }
+      */
+
 
     </style>
       </custom-style>
 
-      <iron-image src="[[src]]" on-tap="_test">
-      </iron-image>
+    <paper-icon-button icon="cancel" style="position:absolute;top:5px;right:5px;color:white" on-tap="_deactivate">
+    </paper-icon-button>
+
+
+<!--
+    <iron-image id="image-container" sizing="contain" src="[[src]]" placeholder="/images/logo-bounce.svg">
+    </iron-image>
+    <svg id="canvas" width="200px" height="200px" on-track="_onTrack">
+    </svg>
+  -->
+
+<svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   id="canvas"
+   on-track="_onTrack"
+   version="1.1"
+   viewBox="0 0 200 200"
+   preserveAspectRatio="none"
+   width="200"
+   height="200">
+
+   <rect x$="[[rLeft]]" y$="[[rTop]]" width$="[[rWidth]]" height$="[[rHeight]]" style="fill:none;stroke-width:3;stroke:rgb(0,0,0)" />
+</svg>
 
 
   </template>
   <script>
-    class MGImageEditor extends Polymer.Element {
+    class MGImageEditor extends Polymer.GestureEventListeners(
+      Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)
+    ) {
       static get is() { return 'mg-image-editor'; }
 
       static get properties() { return {
         rep: {
           type: String,
+          notify: true,
           observer: '_repChanged',
         },
 
         src: {
           type: String,
-          value: '/images/logo-pumpkin-light.svg'
+          observer: '_srcChanged',
+          value: '/images/logo-pumpkin-bouncing.svg',
+        },
+
+        active: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
+        },
+
+        imageWidth: {
+          type:Number,
+        },
+        imageHeight: {
+          type:Number,
+        },
+        viewWidth: {
+          type:Number,
+        },
+        viewHeight: {
+          type:Number,
         },
       }}
 
       static get observers() { return [
       ]}
 
+      connectedCallback(){
+        super.connectedCallback();
+        //Polymer.Gestures.addListener(this, 'track', e => this._onTrack(e));
+
+        this.csize = '40px';
+        this.addEventListener('iron-resize', e => {
+          //console.log('resize', e);
+          //console.log('wh',this.offsetWidth, this.offsetHeight);
+          this._setImageWH( this.imageWidth, this.imageHeight );
+        },true);
+      }
+
+      _setImageWH(w,h) {
+        if (!w || !h) return;
+
+        let vw = this.offsetWidth - 60;
+        let vh = this.offsetHeight - 120;
+
+
+        if (w/h > vw/vh) {
+          vh = vw * h/w;
+        } else {
+          vw = vh * w/h;
+        }
+
+        this.set('viewWidth',vw);
+        this.set('viewHeight',vh);
+        this.set('imageWidth',w);
+        this.set('imageHeight',h);
+
+        this.$.canvas.setAttribute('width', vw);
+        this.$.canvas.setAttribute('height', vh);
+        this.$.canvas.setAttribute('viewBox',`0 0 ${w} ${h}`);
+
+        this.set('_canvasBB', this.$.canvas.getBoundingClientRect());
+        this.set('_scaleFactor', this.imageWidth/this.viewWidth);
+
+        this.set('rLeft',0);
+        this.set('rTop',0);
+        this.set('rWidth',w);
+        this.set('rHeight',h);
+      }
+
+      _onTrack(e) {
+        let cx = this._scaleFactor * (e.detail.x - this._canvasBB.left);
+        let cy = this._scaleFactor * (e.detail.y - this._canvasBB.top);
+        let dx = this._scaleFactor * e.detail.ddx;
+        let dy = this._scaleFactor * e.detail.ddy;
+
+        switch (e.detail.state) {
+          case 'start':
+            this._Tracking = {l: 0, t: 0, w: 0, h: 0};
+            if (cx > this.rLeft && cx < this.rLeft + this.rWidth
+              && cy > this.rTop && cy < this.rTop + this.rHeight) {
+              this._Tracking.l = 1;
+              this._Tracking.t = 1;
+            } else {
+              if (cx < this.rLeft) {
+                this._Tracking.l = 1;
+                this._Tracking.w = 1;
+              } else if (cx > this.rLeft + this.rWidth) {
+                this._Tracking.w = -1;
+              }
+
+              if (cy < this.rTop) {
+                this._Tracking.t = 1;
+                this._Tracking.h = 1;
+              } else if (cy > this.rTop + this.rHeight) {
+                this._Tracking.h = -1;
+              }
+            }
+            break;
+          case 'end':
+            delete this._Tracking;
+            break;
+          case 'track':
+
+            if (this._Tracking.l) {
+              this.set('rLeft',this.rLeft + dx);
+            }
+            if (this._Tracking.t) {
+              this.set('rTop',this.rTop + dy);
+            }
+            if (this._Tracking.w) {
+              let rw = this.rWidth - dx * this._Tracking.w;
+              this.set('rWidth', rw < 0 ? 0 : rw);
+            }
+            if (this._Tracking.h) {
+              let rh = this.rHeight - dy * this._Tracking.h;
+              this.set('rHeight', rh < 0 ? 0 : rh);
+            }
+
+
+            if (this.rLeft < 0) {
+              let rw = this.rWidth + this.rLeft;
+              this.set('rWidth', rw < 0 ? 0 : rw);
+              this.set('rLeft', 0);
+            } else if (this.rLeft + this.rWidth > this.imageWidth) {
+              let rw = this.imageWidth - this.rLeft;
+              this.set('rWidth', rw < 0 ? 0 : rw);
+            }
+
+            if (this.rTop < 0) {
+              let rh = this.rHeight + this.rTop;
+              this.set('rHeight', rh < 0 ? 0 : rh);
+              this.set('rTop', 0);
+            } else if (this.rTop + this.rHeight > this.imageHeight) {
+              let rh = this.imageHeight - this.rTop;
+              this.set('rHeight', rh < 0 ? 0 : rh);
+            }
+
+            break;
+        }
+        /*
+        this.set('rWidth',cx > 0 ? cx : 0);
+        this.set('rHeight',cy > 0 ? cy : 0);
+        */
+      }
+
+      _onImageLoaded(e) {
+        this._setImageWH(e.path[0].width,e.path[0].height);
+      }
+
+      _srcChanged(src) {
+        //this.$.source.setAttributeNS('http://www.w3.org/1999/xlink','href',src);
+        this.$.canvas.style.backgroundImage = `url(${src})`;
+      }
+
       _repChanged(rep) {
-        MGAPP.registerRepresentation(rep, (key,ev,val) => {
-          key == this.rep && this.set('src',val);
-        });
+        if (rep) {
+          this.set('active',true);
+          MGAPP.registerRepresentation(rep, (key,ev,val) => {
+            if (key == this.rep) {
+               this.set('src',val);
+               let img = new Image();
+               img.onload = e => this._onImageLoaded(e);
+               img.src = val;
+            }
+          });
+        } else {
+          this.set('src','/images/logo-pumpkin-bouncing.svg');
+          this.set('active',false);
+
+          this.$.canvas.setAttribute('viewBox','0 0 200 200');
+          this.$.canvas.setAttribute('width', 200);
+          this.$.canvas.setAttribute('height', 200);
+        }
       }
 
       _test(e) {
+        console.log(e);
+      }
 
+      _deactivate(e) {
+        this.set('rep',null);
       }
 
     }
