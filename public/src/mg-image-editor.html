@@ -19,7 +19,7 @@
         width:100%;
         height:100%;
         z-index:1000;
-        background-color: rgba(0,0,0,0.5);
+        background-color: rgba(0,0,0,0.7);
         @apply(--layout-horizontal);
         @apply(--layout-center-justified);
         @apply(--layout-center);
@@ -177,10 +177,6 @@
         this.set('_canvasBB', this.$.canvas.getBoundingClientRect());
         this.set('_scaleFactor', this.imageWidth/this.viewWidth);
 
-        this.set('rLeft',0);
-        this.set('rTop',0);
-        this.set('rWidth',w);
-        this.set('rHeight',h);
       }
 
       _onTrack(e) {
@@ -263,10 +259,15 @@
 
       _onImageLoaded(e) {
         this._setImageWH(e.path[0].width,e.path[0].height);
+        this.set('rLeft',0);
+        this.set('rTop',0);
+        this.set('rWidth',this.imageWidth);
+        this.set('rHeight',this.imageHeight);
+
+        this.set('src',e.path[0].src);
       }
 
       _srcChanged(src) {
-        //this.$.source.setAttributeNS('http://www.w3.org/1999/xlink','href',src);
         this.$.canvas.style.backgroundImage = `url(${src})`;
       }
 
@@ -275,7 +276,6 @@
           this.set('active',true);
           MGAPP.registerRepresentation(rep, (key,ev,val) => {
             if (key == this.rep) {
-               this.set('src',val);
                let img = new Image();
                img.onload = e => this._onImageLoaded(e);
                img.src = val;
@@ -288,6 +288,10 @@
           this.$.canvas.setAttribute('viewBox','0 0 200 200');
           this.$.canvas.setAttribute('width', 200);
           this.$.canvas.setAttribute('height', 200);
+          this.set('rLeft',0);
+          this.set('rTop',0);
+          this.set('rWidth',200);
+          this.set('rHeight',200);
         }
       }
 
