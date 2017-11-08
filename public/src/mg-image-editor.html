@@ -19,7 +19,7 @@
         width:100%;
         height:100%;
         z-index:1000;
-        background-color: rgba(0,0,0,0.7);
+        background-color: rgba(0,0,0,0.8);
         @apply(--layout-horizontal);
         @apply(--layout-center-justified);
         @apply(--layout-center);
@@ -81,6 +81,12 @@
 
    <rect x$="[[rrLeft]]" y$="[[rrTop]]" width$="[[rrWidth]]" height$="[[rrHeight]]" style="fill:none;stroke-width:3;stroke:rgb(0,0,0)" />
    <rect x$="[[rrLeft]]" y$="[[rrTop]]" width$="[[rrWidth]]" height$="[[rrHeight]]" style="fill:none;stroke-width:1;stroke:rgb(255,255,255)" />
+   <text x$="[[rrLeft]]" y$="[[rrTop]]" font-size="20" transform="translate(0,20)" style="fill:none;stroke-width:1;stroke:rgb(0,0,0)">
+     ลากเพื่อกำหนดกรอบ
+   </text>
+   <text x$="[[rrLeft]]" y$="[[rrTop]]" font-size="20" transform="translate(0,20)" style="fill:rgb(255,255,255);stroke:none">
+     ลากเพื่อกำหนดกรอบ
+   </text>
 </svg>
 
 
@@ -212,6 +218,13 @@
             delete this._Tracking;
             break;
           case 'track':
+
+            /* XXXX hack to clear selection */
+            if ( document.selection ) {
+              document.selection.empty();
+            } else if ( window.getSelection ) {
+              window.getSelection().removeAllRanges();
+            }
 
             if (this._Tracking.l) {
               let rl = this.rLeft + dx;
