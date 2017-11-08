@@ -1,0 +1,63 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="mg-common-styles.html">
+
+
+<dom-module id="mg-image-editor">
+  <template strip-whitespace>
+      <custom-style>
+    <style include="iron-flex iron-flex-alignment">
+      :host {
+        width:100vw;
+        height:100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index:1000;
+        background-color: rgba(0,0,0,0.5);
+        pointer-events: none;
+      }
+
+    </style>
+      </custom-style>
+
+      <iron-image src="[[src]]" on-tap="_test">
+      </iron-image>
+
+
+  </template>
+  <script>
+    class MGImageEditor extends Polymer.Element {
+      static get is() { return 'mg-image-editor'; }
+
+      static get properties() { return {
+        rep: {
+          type: String,
+          observer: '_repChanged',
+        },
+
+        src: {
+          type: String,
+          value: '/images/logo-pumpkin-light.svg'
+        },
+      }}
+
+      static get observers() { return [
+      ]}
+
+      _repChanged(rep) {
+        MGAPP.registerRepresentation(rep, (key,ev,val) => {
+          key == this.rep && this.set('src',val);
+        });
+      }
+
+      _test(e) {
+
+      }
+
+    }
+
+    customElements.define(MGImageEditor.is, MGImageEditor);
+  </script>
+</dom-module>
