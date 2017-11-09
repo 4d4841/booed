@@ -10,29 +10,31 @@
 <dom-module id="mg-image-editor">
   <template strip-whitespace>
       <custom-style>
-    <style include="iron-flex iron-flex-alignment">
+    <style include="mg-common-styles iron-flex iron-flex-alignment">
 
       :host {
         display: none;
-        opacity: 0;
         position: absolute;
-        width:100%;
-        height:100%;
-        z-index:1000;
-        background-color: rgba(0,0,0,0.8);
+        width: 0;
+        height: 0;
         @apply(--layout-horizontal);
         @apply(--layout-center-justified);
         @apply(--layout-center);
+        background-color: black;
+        opacity: 0;
+        transition: opacity 0.5s;
+        z-index:-1;
       }
 
       :host([active]) {
         display: block;
-        pointer-events: initial;
         position: fixed;
-        opacity: 1;
+        z-index:1000;
+        width:100%;
+        height:100%;
+        top: 0;
+        left: 0;
         display: block;
-        top:0;
-        left:0;
         @apply(--layout-horizontal);
         @apply(--layout-center-justified);
         @apply(--layout-center);
@@ -67,6 +69,10 @@
     </svg>
   -->
 
+  <template is="dom-if" if="[[loading]]">
+    <img style="position:absolute" width="200px" height="200px" src="/images/logo-pumpkin-bouncing.svg">
+  </template>
+
 <svg
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
@@ -76,17 +82,21 @@
    version="1.1"
    viewBox="0 0 200 200"
    preserveAspectRatio="none"
-   width="200"
-   height="200">
+   width="0"
+   height="0"
+   hidden$="[[loading]]">
 
-   <rect x$="[[rrLeft]]" y$="[[rrTop]]" width$="[[rrWidth]]" height$="[[rrHeight]]" style="fill:none;stroke-width:3;stroke:rgb(0,0,0)" />
-   <rect x$="[[rrLeft]]" y$="[[rrTop]]" width$="[[rrWidth]]" height$="[[rrHeight]]" style="fill:none;stroke-width:1;stroke:rgb(255,255,255)" />
-   <text x$="[[rrLeft]]" y$="[[rrTop]]" font-size="20" transform="translate(0,20)" style="fill:none;stroke-width:1;stroke:rgb(0,0,0)">
-     ลากเพื่อกำหนดกรอบ
-   </text>
-   <text x$="[[rrLeft]]" y$="[[rrTop]]" font-size="20" transform="translate(0,20)" style="fill:rgb(255,255,255);stroke:none">
-     ลากเพื่อกำหนดกรอบ
-   </text>
+   <path d$="[[rPath]]" fill="rgba(0,0,0,0.9)" stroke="none"/>
+
+   <path transform$="[[_formatTranslate(scaleFactor,rMidX,rTop)]]" d="M 0 -15 l 10 10 h -20" style$="[[_styleArrow(tracking)]]"/>
+   <path transform$="[[_formatTranslate(scaleFactor,rMidX,rTop,180)]]" d="M 0 -15 l 10 10 h -20 z" style$="[[_styleArrow(tracking)]]"/>
+   <path transform$="[[_formatTranslate(scaleFactor,rLeft,rMidY,-90)]]" d="M 0 -15 l 10 10 h -20 z" style$="[[_styleArrow(tracking)]]"/>
+   <path transform$="[[_formatTranslate(scaleFactor,rLeft,rMidY,90)]]" d="M 0 -15 l 10 10 h -20 z" style$="[[_styleArrow(tracking)]]"/>
+   <path transform$="[[_formatTranslate(scaleFactor,rMidX,rBottom)]]" d="M 0 -15 l 10 10 h -20 z" style$="[[_styleArrow(tracking)]]"/>
+   <path transform$="[[_formatTranslate(scaleFactor,rMidX,rBottom,180)]]" d="M 0 -15 l 10 10 h -20 z" style$="[[_styleArrow(tracking)]]"/>
+   <path transform$="[[_formatTranslate(scaleFactor,rRight,rMidY,-90)]]" d="M 0 -15 l 10 10 h -20 z" style$="[[_styleArrow(tracking)]]"/>
+   <path transform$="[[_formatTranslate(scaleFactor,rRight,rMidY,90)]]" d="M 0 -15 l 10 10 h -20 z" style$="[[_styleArrow(tracking)]]"/>
+
 </svg>
 
 
@@ -107,7 +117,7 @@
         src: {
           type: String,
           observer: '_srcChanged',
-          value: '/images/logo-pumpkin-bouncing.svg',
+          value: null,
         },
 
         active: {
@@ -116,34 +126,56 @@
           reflectToAttribute: true,
         },
 
-        imageWidth: {
-          type:Number,
-        },
-        imageHeight: {
-          type:Number,
-        },
-        viewWidth: {
-          type:Number,
-        },
-        viewHeight: {
-          type:Number,
-        },
+        imageWidth: { type: Number, value: 0 },
+        imageHeight: { type: Number, value: 0 },
+        viewWidth: { type:Number, value: 0 },
+        viewHeight: { type:Number, value: 0 },
 
         rLeft: { type: Number, value: 0 },
         rTop: { type: Number, value: 0 },
-        rWidth: { type: Number, value: 200 },
-        rHeight: { type: Number, value: 200 },
+        rWidth: { type: Number, value: 0 },
+        rHeight: { type: Number, value: 0 },
+        rPath: {
+          type: String,
+          value: "M 0 0 v 0 h 0 v -0 Z",
+        },
+
+        loading: Boolean,
+
+        tracking: {
+          type: Object,
+          value: null,
+        },
       }}
 
       static get observers() { return [
         '_rChanged(rLeft, rTop, rWidth, rHeight)'
       ]}
 
+      _styleArrow(tracking) {
+        return tracking ? 'fill:none;stroke:none' : 'fill:white;stroke-width:1;stroke:black';
+      }
+
+      _formatTranslate(s,x,y,r) {
+        x = x || 0;
+        y = y || 0;
+        r = r || 0;
+
+        let ret = `translate(${x},${y})`;
+        if (r) ret += ` rotate(${r})`;
+        ret+= ` scale(${s*0.8})`;
+
+        return ret;
+      }
+
       _rChanged(rLeft, rTop, rWidth, rHeight) {
-        this.set('rrLeft', rLeft - 1);
-        this.set('rrTop', rTop - 1);
-        this.set('rrWidth', rWidth + 2);
-        this.set('rrHeight', rHeight + 2);
+        this.set('rMidX', rLeft + rWidth/2);
+        this.set('rMidY', rTop + rHeight/2);
+        this.set('rRight', rLeft + rWidth);
+        this.set('rBottom', rTop + rHeight);
+
+        this.set('rPath',`M 0 0 v ${this.imageHeight} h ${this.imageWidth} v -${this.imageHeight} Z M ${rLeft} ${rTop} h ${rWidth} v ${rHeight} h -${rWidth} Z`);
+
       }
 
       connectedCallback(){
@@ -164,6 +196,7 @@
         let vw = this.offsetWidth - 60;
         let vh = this.offsetHeight - 120;
 
+        if (vw < 0 || vh < 0) return;
 
         if (w/h > vw/vh) {
           vh = vw * h/w;
@@ -180,42 +213,44 @@
         this.$.canvas.setAttribute('height', vh);
         this.$.canvas.setAttribute('viewBox',`0 0 ${w} ${h}`);
 
-        this.set('_canvasBB', this.$.canvas.getBoundingClientRect());
-        this.set('_scaleFactor', this.imageWidth/this.viewWidth);
+        this.set('canvasBB', this.$.canvas.getBoundingClientRect());
+        this.set('scaleFactor', this.imageWidth/this.viewWidth);
 
       }
 
       _onTrack(e) {
-        let cx = this._scaleFactor * (e.detail.x - this._canvasBB.left);
-        let cy = this._scaleFactor * (e.detail.y - this._canvasBB.top);
-        let dx = this._scaleFactor * e.detail.ddx;
-        let dy = this._scaleFactor * e.detail.ddy;
+        let cx = this.scaleFactor * (e.detail.x - this.canvasBB.left);
+        let cy = this.scaleFactor * (e.detail.y - this.canvasBB.top);
+        let dx = this.scaleFactor * e.detail.ddx;
+        let dy = this.scaleFactor * e.detail.ddy;
+
+        let bw = 40;
 
         switch (e.detail.state) {
           case 'start':
-            this._Tracking = {l: 0, t: 0, w: 0, h: 0};
-            if (cx > this.rLeft && cx < this.rLeft + this.rWidth
-              && cy > this.rTop && cy < this.rTop + this.rHeight) {
-              this._Tracking.l = 1;
-              this._Tracking.t = 1;
+            this.tracking = {l: 0, t: 0, w: 0, h: 0};
+            if (cx >= this.rLeft + bw && cx < this.rRight - bw
+              && cy >= this.rTop + bw && cy < this.rBottom - bw) {
+              this.tracking.l = 1;
+              this.tracking.t = 1;
             } else {
-              if (cx < this.rLeft) {
-                this._Tracking.l = 1;
-                this._Tracking.w = 1;
-              } else if (cx > this.rLeft + this.rWidth) {
-                this._Tracking.w = -1;
+              if (cx < this.rLeft + bw) {
+                this.tracking.l = 1;
+                this.tracking.w = 1;
+              } else if (cx >= this.rRight - bw) {
+                this.tracking.w = -1;
               }
 
-              if (cy < this.rTop) {
-                this._Tracking.t = 1;
-                this._Tracking.h = 1;
-              } else if (cy > this.rTop + this.rHeight) {
-                this._Tracking.h = -1;
+              if (cy < this.rTop + bw) {
+                this.tracking.t = 1;
+                this.tracking.h = 1;
+              } else if (cy >= this.rBottom - bw) {
+                this.tracking.h = -1;
               }
             }
             break;
           case 'end':
-            delete this._Tracking;
+            this.set('tracking', null);
             break;
           case 'track':
 
@@ -226,20 +261,20 @@
               window.getSelection().removeAllRanges();
             }
 
-            if (this._Tracking.l) {
+            if (this.tracking.l) {
               let rl = this.rLeft + dx;
               this.set('rLeft', rl > this.imageWidth ? this.imageWidth : rl);
             }
-            if (this._Tracking.t) {
+            if (this.tracking.t) {
               let rt = this.rTop + dy;
               this.set('rTop', rt > this.imageHeight ? this.imageHeight : rt);
             }
-            if (this._Tracking.w) {
-              let rw = this.rWidth - dx * this._Tracking.w;
+            if (this.tracking.w) {
+              let rw = this.rWidth - dx * this.tracking.w;
               this.set('rWidth', rw < 0 ? 0 : rw);
             }
-            if (this._Tracking.h) {
-              let rh = this.rHeight - dy * this._Tracking.h;
+            if (this.tracking.h) {
+              let rh = this.rHeight - dy * this.tracking.h;
               this.set('rHeight', rh < 0 ? 0 : rh);
             }
 
@@ -271,6 +306,7 @@
       }
 
       _onImageLoaded(e) {
+        this.set('loading', false);
         this._setImageWH(e.path[0].width,e.path[0].height);
         this.set('rLeft',0);
         this.set('rTop',0);
@@ -287,6 +323,8 @@
       _repChanged(rep) {
         if (rep) {
           this.set('active',true);
+          this.style.opacity = 1;
+          this.set('loading', true);
           MGAPP.registerRepresentation(rep, (key,ev,val) => {
             if (key == this.rep) {
                let img = new Image();
@@ -295,7 +333,7 @@
             }
           });
         } else {
-          this.set('src','/images/logo-pumpkin-bouncing.svg');
+          this.set('src',null);
           this.set('active',false);
 
           this.$.canvas.setAttribute('viewBox','0 0 200 200');
@@ -313,7 +351,10 @@
       }
 
       _deactivate(e) {
-        this.set('rep',null);
+        this.style.opacity = 0;
+        Polymer.Async.timeOut.run(() => {
+          this.set('rep',null);
+        }, 500);
       }
 
     }

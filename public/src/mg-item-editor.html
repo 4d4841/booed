@@ -89,12 +89,12 @@
       */
 
       .image-edit-button-icon {
-        opacity: 0;
-        width: 0px;
-        height: 0px;
+        opacity: 0.6;
         position: absolute;
         right: 0;
-        top: 3px;
+        top: 0;
+        width: 25px;
+        height: 25px;
         @apply(--layout-self-end);
         z-index: 3;
         color: white;
@@ -108,9 +108,7 @@
 
       .image-icon:hover .image-edit-button-icon {
         opacity: 1;
-        transition: width 0.25s, height 0.5s, opacity 1s;
-        width: 30px;
-        height: 30px;
+        transition: opacity 1s;
       }
 
       .image-icon.iron-selected .image-edit-button-icon {
