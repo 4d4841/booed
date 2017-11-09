@@ -86,16 +86,16 @@
    height="0"
    hidden$="[[loading]]">
 
+   <defs>
+     <path id="chevrons" d="M -2.6,4.6 -7.2,0 -2.6,-4.6 -4,-6 -10,0 -4,6 Z M 2.6,4.6 7.2,0 2.6,-4.6 4,-6 10,0 4,6 Z" style$="[[_styleArrow(tracking)]]"/>
+   </defs>
+
    <path d$="[[rPath]]" fill="rgba(0,0,0,0.9)" stroke="none"/>
 
-   <path transform$="[[_formatTranslate(scaleFactor,rMidX,rTop)]]" d="M 0 -15 l 10 10 h -20" style$="[[_styleArrow(tracking)]]"/>
-   <path transform$="[[_formatTranslate(scaleFactor,rMidX,rTop,180)]]" d="M 0 -15 l 10 10 h -20 z" style$="[[_styleArrow(tracking)]]"/>
-   <path transform$="[[_formatTranslate(scaleFactor,rLeft,rMidY,-90)]]" d="M 0 -15 l 10 10 h -20 z" style$="[[_styleArrow(tracking)]]"/>
-   <path transform$="[[_formatTranslate(scaleFactor,rLeft,rMidY,90)]]" d="M 0 -15 l 10 10 h -20 z" style$="[[_styleArrow(tracking)]]"/>
-   <path transform$="[[_formatTranslate(scaleFactor,rMidX,rBottom)]]" d="M 0 -15 l 10 10 h -20 z" style$="[[_styleArrow(tracking)]]"/>
-   <path transform$="[[_formatTranslate(scaleFactor,rMidX,rBottom,180)]]" d="M 0 -15 l 10 10 h -20 z" style$="[[_styleArrow(tracking)]]"/>
-   <path transform$="[[_formatTranslate(scaleFactor,rRight,rMidY,-90)]]" d="M 0 -15 l 10 10 h -20 z" style$="[[_styleArrow(tracking)]]"/>
-   <path transform$="[[_formatTranslate(scaleFactor,rRight,rMidY,90)]]" d="M 0 -15 l 10 10 h -20 z" style$="[[_styleArrow(tracking)]]"/>
+   <use xlink:href="#chevrons" transform$="[[_formatTranslate(scaleFactor,rMidX,rTop,90)]]" />
+   <use xlink:href="#chevrons" transform$="[[_formatTranslate(scaleFactor,rLeft,rMidY)]]" />
+   <use xlink:href="#chevrons" transform$="[[_formatTranslate(scaleFactor,rMidX,rBottom,90)]]" />
+   <use xlink:href="#chevrons" transform$="[[_formatTranslate(scaleFactor,rRight,rMidY)]]" />
 
 </svg>
 
@@ -135,6 +135,7 @@
         rTop: { type: Number, value: 0 },
         rWidth: { type: Number, value: 0 },
         rHeight: { type: Number, value: 0 },
+        scaleFactor: { type: Number, value: 1 },
         rPath: {
           type: String,
           value: "M 0 0 v 0 h 0 v -0 Z",
@@ -163,7 +164,7 @@
 
         let ret = `translate(${x},${y})`;
         if (r) ret += ` rotate(${r})`;
-        ret+= ` scale(${s*0.8})`;
+        ret+= ` scale(${1.2*s})`;
 
         return ret;
       }
@@ -214,7 +215,7 @@
         this.$.canvas.setAttribute('viewBox',`0 0 ${w} ${h}`);
 
         this.set('canvasBB', this.$.canvas.getBoundingClientRect());
-        this.set('scaleFactor', this.imageWidth/this.viewWidth);
+        this.set('scaleFactor', this.viewWidth ? this.imageWidth/this.viewWidth : 1);
 
       }
 
@@ -223,8 +224,7 @@
         let cy = this.scaleFactor * (e.detail.y - this.canvasBB.top);
         let dx = this.scaleFactor * e.detail.ddx;
         let dy = this.scaleFactor * e.detail.ddy;
-
-        let bw = 40;
+        let bw = 40; /* grabbable border */
 
         switch (e.detail.state) {
           case 'start':
