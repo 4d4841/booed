@@ -22,6 +22,7 @@
       <custom-style>
     <style include="iron-flex iron-flex-alignment">
       :host {
+        transition: opacity 0.25s;
       }
 
       .hidden {
@@ -152,8 +153,10 @@
       open() {
         this.visible = true;
         this.style.display = 'block';
+        this.style.opacity = 0;
         Polymer.Async.timeOut.run(() => {
           this.refit();
+        this.style.opacity = 1;
         }, 1);
         /*
         Polymer.Async.timeOut.run(() => {
