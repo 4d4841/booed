@@ -72,7 +72,19 @@
       </custom-style>
 
     <div class="image-info" hidden$="[[loading]]">
-      Width: [[imageWidth]]<br>Height: [[imageHeight]]
+      <template is="dom-if" if="[[!data.item]]">
+        <span>Clipboard Data<iron-icon style="--iron-icon-height:15px" icon="help"></iron-icon>
+          <paper-tooltip>
+            Editing clipboard data is not associated with an item until
+            pasting into an item triggers the server syncing.
+            Until then all the modifications have hitherto been kept
+            locally within the clipboard.
+          </paper-tooltip>
+        <span><br>
+      </template>
+      <template is="dom-if" if="[[data.name]]"> Name: [[data.name]] <br> </template>
+      Width: [[imageWidth]]<br>
+      Height: [[imageHeight]]<br>
     </div>
     <paper-icon-button class="close-button" icon="cancel" on-tap="_deactivate">
     </paper-icon-button>
@@ -116,6 +128,12 @@
       static get is() { return 'mg-image-editor'; }
 
       static get properties() { return {
+        data: {
+          type: Object,
+          notify: true,
+          observer: '_dataChanged',
+        },
+
         rep: {
           type: String,
           notify: true,
@@ -321,8 +339,12 @@
         this.set('src',e.path[0].src);
       }
 
-      _srcChanged(src) {
-        this.$.canvas.style.backgroundImage = `url(${src})`;
+      _dataChanged(data) {
+        if (data) {
+          this.set('rep', data.rep);
+        } else {
+          this.set('rep', null);
+        }
       }
 
       _repChanged(rep) {
@@ -351,6 +373,11 @@
         }
       }
 
+      _srcChanged(src) {
+        this.$.canvas.style.backgroundImage = `url(${src})`;
+      }
+
+
       _test(e) {
         console.log(e);
       }
@@ -358,7 +385,7 @@
       _deactivate(e) {
         this.style.opacity = 0;
         Polymer.Async.timeOut.run(() => {
-          this.set('rep',null);
+          this.set('data',null);
         }, 500);
       }
 

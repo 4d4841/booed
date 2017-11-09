@@ -227,7 +227,7 @@
 
     </iron-collapse>
 
-    <mg-image-editor id="image-editor" rep="{{editingRep}}">
+    <mg-image-editor id="image-editor" data="{{editingData}}">
     </mg-image-editor>
 
   </template>
@@ -272,7 +272,7 @@
           reflectToAttribute: true,
         },
 
-        editingRep: String,
+        editingData: Object,
 
       }}
 
@@ -419,6 +419,7 @@
 
           /* Data for representing an image in the UI */
           let icon = {
+            item: itemKey,
             key: imageKey,
             thumbnail: thumbKey, /* db representations/repKey contains storage info eg. uid */
             name: imageName,
@@ -847,8 +848,13 @@
         this.set('itemName', this._ItemName = name || "แกลเลอรี่ไม่มีชื่อ");
       }
 
+      _onEditCopy(e) {
+        this.set('editingData',this.clipboardList[e.model.index]);
+        e.stopImmediatePropagation();
+      }
+
       _onEditImage(e) {
-        this.set('editingRep',e.model.item.rep);
+        this.set('editingData',this.iconList[e.model.index]);
         e.stopImmediatePropagation();
       }
 
