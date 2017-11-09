@@ -1161,8 +1161,10 @@
     }
 
     _closeSubmenu() {
-      this.submenu = {};
-      //this.$.balloon.close();
+      this.$.balloon.close();
+      Polymer.Async.timeOut.run(() => {
+        this.submenu = {};
+      }, 250);
     }
 
     _onCloseContextualMenu(e) {

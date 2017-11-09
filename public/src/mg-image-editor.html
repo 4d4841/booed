@@ -40,6 +40,19 @@
         @apply(--layout-center);
       }
 
+      .image-info {
+        color: lightgray;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+
+      .close-button {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        color: lightgray;
+      }
 
       #canvas {
         background-size: contain;
@@ -58,47 +71,42 @@
     </style>
       </custom-style>
 
-    <paper-icon-button icon="cancel" style="position:absolute;top:5px;right:5px;color:white" on-tap="_deactivate">
+    <div class="image-info" hidden$="[[loading]]">
+      Width: [[imageWidth]]<br>Height: [[imageHeight]]
+    </div>
+    <paper-icon-button class="close-button" icon="cancel" on-tap="_deactivate">
     </paper-icon-button>
 
+    <template is="dom-if" if="[[loading]]">
+      <img style="position:absolute" width="200px" height="200px" src="/images/logo-pumpkin-bouncing.svg">
+    </template>
 
-<!--
-    <iron-image id="image-container" sizing="contain" src="[[src]]" placeholder="/images/logo-bounce.svg">
-    </iron-image>
-    <svg id="canvas" width="200px" height="200px" on-track="_onTrack">
+    <svg
+       xmlns:svg="http://www.w3.org/2000/svg"
+       xmlns="http://www.w3.org/2000/svg"
+       xmlns:xlink="http://www.w3.org/1999/xlink"
+       id="canvas"
+       on-track="_onTrack"
+       version="1.1"
+       viewBox="0 0 200 200"
+       preserveAspectRatio="none"
+       width="0"
+       height="0"
+       overflow="visible"
+       hidden$="[[loading]]">
+
+       <defs>
+         <path id="chevrons" d="M -2.6,4.6 -7.2,0 -2.6,-4.6 -4,-6 -10,0 -4,6 Z M 2.6,4.6 7.2,0 2.6,-4.6 4,-6 10,0 4,6 Z" style$="[[_styleArrow(tracking)]]"/>
+       </defs>
+
+       <path d$="[[rPath]]" fill="rgba(0,0,0,0.9)" stroke="none"/>
+
+       <use xlink:href="#chevrons" transform$="[[_formatTranslate(scaleFactor,rMidX,rTop,90)]]" />
+       <use xlink:href="#chevrons" transform$="[[_formatTranslate(scaleFactor,rLeft,rMidY)]]" />
+       <use xlink:href="#chevrons" transform$="[[_formatTranslate(scaleFactor,rMidX,rBottom,90)]]" />
+       <use xlink:href="#chevrons" transform$="[[_formatTranslate(scaleFactor,rRight,rMidY)]]" />
+
     </svg>
-  -->
-
-  <template is="dom-if" if="[[loading]]">
-    <img style="position:absolute" width="200px" height="200px" src="/images/logo-pumpkin-bouncing.svg">
-  </template>
-
-<svg
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
-   id="canvas"
-   on-track="_onTrack"
-   version="1.1"
-   viewBox="0 0 200 200"
-   preserveAspectRatio="none"
-   width="0"
-   height="0"
-   hidden$="[[loading]]">
-
-   <defs>
-     <path id="chevrons" d="M -2.6,4.6 -7.2,0 -2.6,-4.6 -4,-6 -10,0 -4,6 Z M 2.6,4.6 7.2,0 2.6,-4.6 4,-6 10,0 4,6 Z" style$="[[_styleArrow(tracking)]]"/>
-   </defs>
-
-   <path d$="[[rPath]]" fill="rgba(0,0,0,0.9)" stroke="none"/>
-
-   <use xlink:href="#chevrons" transform$="[[_formatTranslate(scaleFactor,rMidX,rTop,90)]]" />
-   <use xlink:href="#chevrons" transform$="[[_formatTranslate(scaleFactor,rLeft,rMidY)]]" />
-   <use xlink:href="#chevrons" transform$="[[_formatTranslate(scaleFactor,rMidX,rBottom,90)]]" />
-   <use xlink:href="#chevrons" transform$="[[_formatTranslate(scaleFactor,rRight,rMidY)]]" />
-
-</svg>
-
 
   </template>
   <script>
@@ -138,7 +146,7 @@
         scaleFactor: { type: Number, value: 1 },
         rPath: {
           type: String,
-          value: "M 0 0 v 0 h 0 v -0 Z",
+          value: "M 0 0 v 0 h 0 v 0 Z",
         },
 
         loading: Boolean,
@@ -183,10 +191,7 @@
         super.connectedCallback();
         //Polymer.Gestures.addListener(this, 'track', e => this._onTrack(e));
 
-        this.csize = '40px';
         this.addEventListener('iron-resize', e => {
-          //console.log('resize', e);
-          //console.log('wh',this.offsetWidth, this.offsetHeight);
           this._setImageWH( this.imageWidth, this.imageHeight );
         },true);
       }

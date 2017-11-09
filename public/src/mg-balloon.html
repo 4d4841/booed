@@ -112,10 +112,12 @@
         window.addEventListener('scroll', this._refit.bind(this));
         this.addEventListener('mg-menu-toggle-opened', this._refit.bind(this));
 
+        /* XXX This can't be done since mg-app use a single node for many things
+           XXX or could this be decided by parent.
         window.addEventListener('close-contextual-menu', e => {
-            //this.close();
-            this.style.display = 'none';
+          this.close();
         });
+        */
 
         /* XXX contextual menu could be a behavior */
         /*
@@ -156,7 +158,7 @@
         this.style.opacity = 0;
         Polymer.Async.timeOut.run(() => {
           this.refit();
-        this.style.opacity = 1;
+          this.style.opacity = 1;
         }, 1);
         /*
         Polymer.Async.timeOut.run(() => {
@@ -168,7 +170,10 @@
 
       close() {
         this.visible = false;
-        this.style.display = 'none';
+        this.style.opacity = 0;
+        Polymer.Async.timeOut.run(() => {
+          this.style.display = 'none';
+        }, 250);
       }
     }
     customElements.define(MGBalloon.is, MGBalloon);

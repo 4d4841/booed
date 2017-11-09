@@ -76,6 +76,7 @@
         pointer-events: none;
       }
 
+
       #id-card {
         width:200px;
         border-radius: 5px;
@@ -86,6 +87,15 @@
         position: absolute;
         top: 36px;
         right: 0;
+      }
+
+      #panel {
+        display: none;
+        transition: opacity 0.25s;
+      }
+
+      #panel[show] {
+        display: block;
       }
 
       .button {
@@ -128,8 +138,7 @@
 
     <!-- <div id="pyramid"></div> -->
 
-        <dom-if id="panel" if="[[_canShowPanel(me,showPanel)]]">
-      <template>
+      <div id="panel" show$="[[showPanel]]">
     <svg class="arrow">
       <defs id="defs2">
         <filter id="blurshadow">
@@ -143,7 +152,7 @@
         style="opacity:0.3;fill:#000000;stroke:none;filter:url(#blurshadow);" />
     </svg>
 
-    <paper-card id="id-card">
+    <paper-card id="id-card" show$="[[showPanel]]">
             <div class="under-photo">
               <h3>[[me.user.email]]<br>[[me.user.displayName]]</h3>
             </div>
@@ -164,8 +173,7 @@
         d="M 16,10 0,10 8,0 Z"
         style="fill:#ffffff;stroke:none;" />
     </svg>
-      </template>
-        </dom-if>
+      </div>
 
 
 
@@ -223,9 +231,10 @@
         window.addEventListener('close-contextual-menu', this._closeSubmenu.bind(this));
 
         this.addEventListener('blur', e => {
+          this.$.panel.style.opacity = 0;
           Polymer.Async.timeOut.run(() => {
             this.showPanel = false;
-          }, 300);
+          }, 250);
         },true);
       }
 
@@ -239,13 +248,20 @@
           this.icon = "pumpkin";
           this.image = null;
           this.$.button.style.color = "var(--app-primary-color)";
-          this.showPanel = false;
+
+          this.$.panel.style.opacity = 0;
+          Polymer.Async.timeOut.run(() => {
+            this.showPanel = false;
+          }, 250);
         }
       }
 
       _closeSubmenu(e) {
         if (e.detail && e.detail.sender != this) {
-          this.showPanel = false;
+          this.$.panel.style.opacity = 0;
+          Polymer.Async.timeOut.run(() => {
+            this.showPanel = false;
+          }, 250);
         }
       }
 
@@ -254,13 +270,25 @@
       }
 
       _onButtonClick(e) {
+        let sp = !this.showPanel;
         if (!this.me || !this.me.user) {
           this._openProfile(e);
         } else if (!this.route.path.startsWith("/user/profile")) {
-          this.showPanel = !this.showPanel;
+          if (sp) {
+            this.set('showPanel', true);
+            Polymer.Async.timeOut.run(() => {
+              this.$.panel.style.opacity = 1;
+            }, 0);
+          }
+          else {
+            this.$.panel.style.opacity = 0;
+            Polymer.Async.timeOut.run(() => {
+              this.set('showPanel',!this.showPanel);
+            }, 250);
+          }
         }
 
-        if (this.showPanel) {
+        if (sp) {
           this.dispatchEvent(new CustomEvent('close-contextual-menu', {
             bubbles: true, composed: true, detail:{sender:this}}));
         }
@@ -269,7 +297,10 @@
       }
 
       _openProfile(e) {
-        this.showPanel = false;
+        this.$.panel.style.opacity = 0;
+        Polymer.Async.timeOut.run(() => {
+          this.showPanel = false;
+        }, 250);
         this.set('route.path','/user/profile');
       }
 
