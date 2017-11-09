@@ -177,9 +177,10 @@
               thumbnail="[[item.thumbnail]]"
               rep="[[item.rep]]"
               name="[[item.name]]"
+              deleted="[[item.deleted]]"
               on-tap="_onCopiedTap"
             >
-              <paper-icon-button icon="mode-edit" class="image-edit-button-icon" on-tap="_onEditImage">
+              <paper-icon-button icon="mode-edit" class="image-edit-button-icon" on-tap="_onEditCopy">
               </paper-icon-button>
             </mg-item-image>
 
@@ -612,12 +613,13 @@
 
                 this.notifyPath('iconList.' + (
                   this.push('iconList', {
-                      key: imageKey,
-                      thumbnail: image.thumbnail,
-                      rep: image.rep,
-                      name: image.name,
-                      order: image.order,
-                      deleted: image.deleted,
+                    item: itemKey,
+                    key: imageKey,
+                    thumbnail: image.thumbnail,
+                    rep: image.rep,
+                    name: image.name,
+                    order: image.order,
+                    deleted: image.deleted,
                   }) - 1
                 ));
               }
@@ -772,7 +774,10 @@
       }
 
       _onCopiedTap(e) {
-        this.splice('clipboardList',e.model.index,1);
+        //XXX toggle deleted which mean it won't be pasted.
+        //this.splice('clipboardList',e.model.index,1);
+        this.clipboardList[e.model.index].deleted = this.clipboardList[e.model.index].deleted ? false : true;
+        this.notifyPath(['clipboardList',e.model.index,'deleted']);
       }
 
       _onCopyButtonTap(e) {
@@ -813,6 +818,7 @@
         path+='/images/';
         let coverKey = MGAPP.get(['items',itemKey,'cover']);
         this.clipboardList.forEach((data,index) => {
+          if (data.deleted) return;
           let imageKey = ref.push().key;
           coverKey = coverKey || imageKey;
           registerData[path+imageKey+'/name'] = data.name || null;
