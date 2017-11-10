@@ -112,10 +112,10 @@
 
        <path d$="[[rPath]]" fill="rgba(0,0,0,0.9)" stroke="none"/>
 
-       <use xlink:href="#chevrons" transform$="[[_formatTranslate(imageWidth,imageHeight,dataMidW,data.top,90)]]" />
-       <use xlink:href="#chevrons" transform$="[[_formatTranslate(imageWidth,imageHeight,data.left,dataMidH)]]" />
-       <use xlink:href="#chevrons" transform$="[[_formatTranslate(imageWidth,imageHeight,dataMidW,dataBottom,90)]]" />
-       <use xlink:href="#chevrons" transform$="[[_formatTranslate(imageWidth,imageHeight,dataRight,dataMidH)]]" />
+       <use xlink:href="#chevrons" transform$="[[_translateArrows(scaleFactor,imageWidth,imageHeight,dataMidW,data.top,90)]]" />
+       <use xlink:href="#chevrons" transform$="[[_translateArrows(scaleFactor,imageWidth,imageHeight,data.left,dataMidH)]]" />
+       <use xlink:href="#chevrons" transform$="[[_translateArrows(scaleFactor,imageWidth,imageHeight,dataMidW,dataBottom,90)]]" />
+       <use xlink:href="#chevrons" transform$="[[_translateArrows(scaleFactor,imageWidth,imageHeight,dataRight,dataMidH)]]" />
 
     </svg>
 
@@ -191,11 +191,10 @@
         return tracking ? 'fill:none;stroke:none' : 'fill:white;stroke-width:1;stroke:black';
       }
 
-      _formatTranslate(w,h,x,y,r) {
+      _translateArrows(s,w,h,x,y,r) {
         x = x || 0;
         y = y || 0;
         r = r || 0;
-        let s = this.scaleFactor;
 
         let ret = `translate(${x*w},${y*h})`;
         if (r) ret += ` rotate(${r})`;
