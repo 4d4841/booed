@@ -849,12 +849,24 @@
       }
 
       _onEditCopy(e) {
-        this.set('editingData',this.clipboardList[e.model.index]);
+        let data = this.clipboardList[e.model.index];
+        data.left = data.left || 0;
+        data.top = data.top || 0;
+        data.width = data.width || 1;
+        data.height = data.height || 1;
+
+        this.set('editingData',data);
         e.stopImmediatePropagation();
       }
 
       _onEditImage(e) {
-        this.set('editingData',this.iconList[e.model.index]);
+        let data = this.iconList[e.model.index];
+        data.left = data.left || 0;
+        data.top = data.top || 0;
+        data.width = data.width || 1;
+        data.height = data.height || 1;
+
+        this.set('editingData',data);
         e.stopImmediatePropagation();
       }
 
