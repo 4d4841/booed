@@ -51,7 +51,7 @@
         transition: padding-top 0.5s;
         padding-bottom: 144px;
         min-height: 80vh;
-        --app-primary-color: sienna;
+        --app-primary-color: #213; /*sienna;*/
         --app-secondary-color: #757575;
         --app-accent-color: #172C50;
         --app-shadow-color: rgba(47,27,56,0.3);
@@ -167,6 +167,8 @@
         width: 100%;
         padding:0;
         z-index: 1;
+
+        background-color: #e5e8ea;
       }
 
       .menu-bar {
@@ -176,6 +178,8 @@
         /*overflow: hidden;*/
         width: 100%;
         padding:0;
+
+        /* border-top: 1px dashed var(--booed-menu-color) */
       }
 
       .menu-bar iron-icon {
@@ -242,15 +246,14 @@
       }
 
       paper-tabs {
-        /*--paper-tabs-selection-bar-color: var(--app-primary-color);*/
-        --paper-tabs-selection-bar-color: var(--booed-menu-color);
+        --paper-tabs-selection-bar-color: #a7b7c1;
+        /*--paper-tabs-selection-bar-color: var(--booed-menu-color);*/
         height: var(--booed-menu-height);
         width:100%;
         --paper-tabs-selection-bar: {
-          opacity: 0.5;
           /*height:0.5px;*/
           /*background-image: linear-gradient(to right, rgba(255,85,85,0), rgba(255,85,85,0.5), rgba(255,85,85,0.5), rgba(255,85,85,0));*/
-          /*background-image: linear-gradient(rgba(255,85,85,0.5) 4px,transparent 4px,  transparent 30px);*/
+          background-image: linear-gradient(rgba(255,85,85,0.5) 4px,transparent 4px,  transparent 30px);
         };
         --paper-tabs: {
         }
@@ -513,7 +516,7 @@
           </div>
 
         </div>
-        <div class="menu-bar" style="border-top: 1px dashed var(--booed-menu-color)" hidden$="[[!_shouldShowTabs]]">
+        <div class="menu-bar" hidden$="[[!_shouldShowTabs]]">
               <dom-if if="[[_shouldRenderTabs]]">
             <template>
           <paper-tabs
@@ -522,7 +525,9 @@
             hide-scroll-buttons
             scrollable
             fit-container
-            noink>
+            noink
+            align-bottom
+            >
 
               <dom-repeat items="[[menu.entries]]">
             <template>
