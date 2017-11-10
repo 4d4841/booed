@@ -152,28 +152,45 @@
         style="opacity:0.3;fill:#000000;stroke:none;filter:url(#blurshadow);" />
     </svg>
 
-    <paper-card id="id-card" show$="[[showPanel]]">
-            <div class="under-photo">
-              <h3>[[me.user.email]]<br>[[me.user.displayName]]</h3>
-            </div>
-            <paper-button style="padding:0;margin:0" on-tap="_openProfile">
-            <iron-image
-              class="photo"
-              src="[[me.user.photoURL]]"
-              sizing="cover"
-            ></iron-image>
-            </paper-button>
-            <mg-menu menu="[[menu.entries.0.submenu]]"></mg-menu>
+    <paper-card id="id-card">
+      <div class="under-photo">
+        <h3>[[me.user.email]]<br>[[me.user.displayName]]</h3>
+      </div>
+      <paper-button style="padding:0;margin:0" on-tap="_openProfile">
+      <iron-image
+        class="photo"
+        src="[[image]]"
+        sizing="cover"
+      ></iron-image>
+      </paper-button>
+      <mg-menu menu="[[menu.entries.0.submenu]]"></mg-menu>
     </paper-card>
 
-    <svg class="arrow">
+    <svg class="arrow"
+       xmlns:svg="http://www.w3.org/2000/svg"
+       xmlns="http://www.w3.org/2000/svg"
+       xmlns:xlink="http://www.w3.org/1999/xlink"
+       viewBox="0 0 200 200"
+       preserveAspectRatio="none"
+       width="200"
+       height="200"
+       overflow="visible"
+       >
+      <clipPath id="arrow-mask">
       <path
-        transform="translate(13,31)"
+        transform="translate(173,10) scale(1,-1)"
         id="arrow"
         d="M 16,10 0,10 8,0 Z"
-        style="fill:#ffffff;stroke:none;" />
+      />
+      </clipPath>
+      <image id="arrow"
+        clip-path="url(#arrow-mask)"
+        transform="translate(-160,40) scale(1,-1)"
+        height="200px"
+        width="200px"
+      />
     </svg>
-      </div>
+  </div>
 
 
 
@@ -243,6 +260,11 @@
           this.icon = null;
           this.image = photoURL;
           this.$.button.style.color = "rgba(0,0,0,0)";
+
+          /* Fill the arrow area with a flip image of profile photo to polish
+          the continuity with the profile photo */
+          
+          this.$.arrow.setAttributeNS('http://www.w3.org/1999/xlink','href', photoURL);
         }
         else {
           this.icon = "pumpkin";
