@@ -281,7 +281,27 @@
         '_itemNameChanged(me.user, itemRole, itemName)',
         '_selectedImagesChanged(selectedImages.splices)',
         '_checkEmpty(iconList.length)',
+        '_editingDataChanged(editingData.roi)'
       ]}
+
+      _editingDataChanged(roi) {
+        if (!this.editingData) return;
+
+        let uid = MGAPP.AU.currentUser.uid;
+        let itemKey = this.itemKey;
+        let imageKey = this.editingData.key;
+        if (this.editingData.item) {
+
+          MGAPP.DB.ref().update({['home/'+uid+'/items/'+itemKey+'/images/'+imageKey+'/roi']: roi}, error => {
+            if (error) {
+              console.error("ERR",error);
+            } else {
+              console.log('sync frame');
+            }
+          });
+
+        }
+      }
 
       _checkEmpty(len) {
         this.set('empty', len?false:true);
@@ -409,8 +429,7 @@
                 ['home/'+uid+'/items/'+itemKey+'/images/'+imageKey+'/name']: registerInfo.name,
               }
               MGAPP.DB.ref().update(registerData, error => {
-                if (!error) {
-                } else {
+                if (error) {
                   console.error("ERR",error);
                 }
               });
@@ -556,11 +575,11 @@
           }
 
           MGAPP.assignItem(itemKey,{
-              _uid: snapshot.ref.parent.parent.key,
-              name: v.name,
-              role: v.role,
-              time: v.time,
-              cover: v.cover,
+            _uid: snapshot.ref.parent.parent.key,
+            name: v.name,
+            role: v.role,
+            time: v.time,
+            cover: v.cover,
           });
 
         } else if (!this.itemRole) {
@@ -589,17 +608,24 @@
         let images = Object.assign({}, MGAPP.items[this.itemKey].images);
         let entries = [];
 
-        snapshot.child('images').forEach(ref => {
-          let val = ref.val();
+        snapshot.child('images').forEach(imgRef => {
+          let val = imgRef.val();
           val.deleted = val.deleted || null;
+          val.roi = val.roi || null;
+
+          if (this.editingData && this.editingData.key == imgRef.key) {
+            this.editingData.roi = val.roi;
+            this.notifyPath(['editingData.roi']);
+          }
+
           MGAPP.assignItem(itemKey,{
             images:{
-              [ref.key]: val,
+              [imgRef.key]: val,
             }
           });
 
-          entries.push([ref.key, ref.val()]);
-          delete images[ref.key]; /* Filter server records */
+          entries.push([imgRef.key, imgRef.val()]);
+          delete images[imgRef.key]; /* Filter server records */
         });
         /* Add local records XXX seems bad cuz it didn't update local ? */
         Object.entries(images).forEach( entry => entries.push(entry));
@@ -611,17 +637,19 @@
             if (idx === -1) {
 
               if (snapshot.key == itemKey) {
+                let icon = {
+                  item: itemKey,
+                  key: imageKey,
+                  thumbnail: image.thumbnail,
+                  rep: image.rep,
+                  name: image.name,
+                  order: image.order,
+                  deleted: image.deleted,
+                  roi: image.roi,
+                };
 
                 this.notifyPath('iconList.' + (
-                  this.push('iconList', {
-                    item: itemKey,
-                    key: imageKey,
-                    thumbnail: image.thumbnail,
-                    rep: image.rep,
-                    name: image.name,
-                    order: image.order,
-                    deleted: image.deleted,
-                  }) - 1
+                  this.push('iconList', icon) - 1
                 ));
               }
 
@@ -640,16 +668,19 @@
                 this.iconList[idx].name = image.name;
                 this.notifyPath(['iconList',idx,'name']);
               }
+              this.iconList[idx].roi = image.roi;
+              this.notifyPath(['iconList',idx,'roi']);
+
               this.iconList[idx].deleted = image.deleted ? true:false;
               this.notifyPath(['iconList',idx,'deleted']);
 
               this.iconList[idx].order = image.order || order;
               this.notifyPath(['iconList',idx,'order']);
+
             }
 
           }
         );
-
       }
 
       _getDataError(error) {
@@ -850,22 +881,15 @@
 
       _onEditCopy(e) {
         let data = this.clipboardList[e.model.index];
-        data.left = data.left || 0;
-        data.top = data.top || 0;
-        data.width = data.width || 1;
-        data.height = data.height || 1;
-
+        data.roi = data.roi || [0,0,1,1];
         this.set('editingData',data);
         e.stopImmediatePropagation();
       }
 
       _onEditImage(e) {
         let data = this.iconList[e.model.index];
-        data.left = data.left || 0;
-        data.top = data.top || 0;
-        data.width = data.width || 1;
-        data.height = data.height || 1;
-
+        console.log(data.roi);
+        data.roi = data.roi || [0,0,1,1];
         this.set('editingData',data);
         e.stopImmediatePropagation();
       }
