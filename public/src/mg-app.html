@@ -278,9 +278,12 @@
         };
       }
 
-      paper-tab iron-icon {
-        pointer-events: none;
+      paper-tab iron-icon.expand-more {
+        --iron-icon-fill-color: gray;
+      }
 
+      paper-tab:hover iron-icon.expand-more {
+        --iron-icon-fill-color: tomato;
       }
 
       #drawer {
@@ -530,7 +533,7 @@
             >
 
               <dom-repeat items="[[menu.entries]]">
-            <template>
+            <template strip-whitespace>
               <paper-tab
                 name="[[item.name]]"
                 on-tap="_onMenuTap">
@@ -540,7 +543,9 @@
 
                   <dom-if if="[[item.submenu]]">
                 <template>
-                <iron-icon icon="expand-more"></iron-icon>
+                <div on-tap="_onMenuTapExpand">
+                <iron-icon class="expand-more" icon="expand-more"></iron-icon>
+                </div>
                 </template>
                   </dom-if>
 
@@ -1134,25 +1139,38 @@
     }
     */
 
-    _openSubmenu(e) {
+    _openModelSubmenu(model,expand) {
       for(let i = 0, sub; sub = this.menu.entries[i]; ++i) {
-        if (this.menu.entries[i].name == e.target.name && this.menu.entries[i].submenu) {
-          if (this.submenu === this.menu.entries[i].submenu) {
+        if (sub.name == model.item.name && sub.submenu) {
+          if (this.submenu === sub.submenu) {
             this._closeSubmenu();
-            return;
-          }
 
-          /* Only show its submenu if it's already selected. */
-          if (e.model.item.name == this.menu.selected) {
-            var target = e.composedPath()[0];
-            this.$.balloon.positionTarget = target;
-            this.submenu = this.menu.entries[i].submenu;
+          } else if (expand || this.menu.selected == model.item.name) {
+            /* Only show its submenu if it's already selected. */
+            this.$.balloon.positionTarget = model.children[0];
+            this.submenu = sub.submenu;
             this.$.balloon.open();
-            return;
           }
+          return;
         }
       }
-      this._closeSubmenu();
+      console.warn(model,'XXX');
+      this._closeSubmenu(); /*XXX?*/
+    }
+
+    _onMenuTap(e) {
+      this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+        bubbles: true, composed: true, detail:{sender:this}}));
+
+      this._openModelSubmenu(e.model);
+    }
+
+    _onMenuTapExpand(e) {
+      this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+        bubbles: true, composed: true, detail:{sender:this}}));
+
+      e.stopImmediatePropagation();
+      this._openModelSubmenu(e.model,true);
     }
 
     _onScroll(e) {
@@ -1176,13 +1194,6 @@
       if (e.detail && e.detail.sender != this) {
         this._closeSubmenu();
       }
-    }
-
-    _onMenuTap(e) {
-      this.dispatchEvent(new CustomEvent('close-contextual-menu', {
-        bubbles: true, composed: true, detail:{sender:this}}));
-
-      this._openSubmenu(e);
     }
 
     _onAddCartItem(event) {

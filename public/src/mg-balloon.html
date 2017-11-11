@@ -90,8 +90,9 @@
 
       _onPositionTargetBlur(e) {
         Polymer.Async.timeOut.run(() => {
-          this.close();
-        }, 300);
+          /* Attached to another position so ignore the older blur */
+          e.path[0] == this.positionTarget && this.close();
+        }, 250);
       }
 
       _positionTargetChanged(target,oldTarget) {
@@ -117,19 +118,6 @@
         window.addEventListener('close-contextual-menu', e => {
           this.close();
         });
-        */
-
-        /* XXX contextual menu could be a behavior */
-        /*
-        this.addEventListener('focus', e => {
-          console.log('focus');
-        },true);
-
-        this.addEventListener('blur', e => {
-          Polymer.Async.timeOut.run(() => {
-            this.close();
-          }, 300);
-        },true);
         */
       }
 
@@ -160,12 +148,6 @@
           this.refit();
           this.style.opacity = 1;
         }, 1);
-        /*
-        Polymer.Async.timeOut.run(() => {
-          console.log('f');
-          this.focus();
-        }, 300);
-        */
       }
 
       close() {
