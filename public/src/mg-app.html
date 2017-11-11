@@ -667,6 +667,16 @@
         target.set(path, null);
         return;
       }
+      if (Array.isArray(object)) {
+        let old = target.get(path);
+        if (!Array.isArray(old)
+          || old.length != object.length
+          || !old.every((v,i) => v === object[i])) {
+            /* Only set if not equal */
+            target.set(path, object);
+        }
+        return;
+      }
       if (typeof target.get(path) !== 'object') {
         target.set(path, {});
       }
