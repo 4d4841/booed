@@ -169,7 +169,7 @@
       <iron-collapse class="copied-collapse vertical layout" opened="[[clipboardList.length]]">
 
         <div class="copied-container">
-          <template is="dom-repeat" items="{{clipboardList}}" mutable-data>
+          <template is="dom-repeat" items="{{clipboardList}}">
 
             <mg-item-image
               key="[[item.key]]"
@@ -204,7 +204,7 @@
         multi>
 
       <!-- XXX Maybe sorting will cause ghost update -->
-      <template is="dom-repeat" items="{{iconList}}" observe="order deleted" sort="{{_reorderPhoto}}" mutable-data>
+      <template is="dom-repeat" items="{{iconList}}" observe="order deleted" sort="{{_reorderPhoto}}">
 
         <mg-item-image
           key="[[item.key]]"
@@ -295,8 +295,6 @@
           MGAPP.DB.ref().update({['home/'+uid+'/items/'+itemKey+'/images/'+imageKey+'/roi']: roi}, error => {
             if (error) {
               console.error("ERR",error);
-            } else {
-              console.log('sync frame');
             }
           });
 
@@ -399,8 +397,7 @@
         let idx = this._indexImage(key);
         if (idx !== -1) {
           if (this.iconList[idx][prop] != val) {
-            this.iconList[idx][prop] = val;
-            this.notifyPath(['iconList',idx,prop]);
+            this.set(['iconList',idx,prop],val);
           }
         }
       }
@@ -486,7 +483,7 @@
                   } break;
                 }
               }, blob);
-              this.notifyPath('iconList.' + (this.push('iconList',icon)-1));
+              this.push('iconList',icon);
 
             },'image/jpeg',0.8);
           };
@@ -614,8 +611,7 @@
           val.roi = val.roi || null;
 
           if (this.editingData && this.editingData.key == imgRef.key) {
-            this.editingData.roi = val.roi;
-            this.notifyPath(['editingData.roi']);
+            this.set('editingData.roi', val.roi);
           }
 
           MGAPP.assignItem(itemKey,{
@@ -648,34 +644,19 @@
                   roi: image.roi,
                 };
 
-                this.notifyPath('iconList.' + (
-                  this.push('iconList', icon) - 1
-                ));
+                this.push('iconList', icon);
               }
 
             } else { /* update current icon's event-value */
-              this.iconList[idx].key = imageKey;
-              /* Make sure dirty checks here are necessary */
-              if (image.thumbnail && (this.iconList[idx].thumbnail != image.thumbnail)) {
-                  this.iconList[idx].thumbnail = image.thumbnail;
-                  this.notifyPath(['iconList',idx,'thumbnail']);
-              }
-              if (image.rep && (this.iconList[idx].rep != image.rep)) {
-                this.iconList[idx].rep = image.rep;
-                this.notifyPath(['iconList',idx,'rep']);
-              }
-              if (image.name) {
-                this.iconList[idx].name = image.name;
-                this.notifyPath(['iconList',idx,'name']);
-              }
-              this.iconList[idx].roi = image.roi;
-              this.notifyPath(['iconList',idx,'roi']);
-
-              this.iconList[idx].deleted = image.deleted ? true:false;
-              this.notifyPath(['iconList',idx,'deleted']);
-
-              this.iconList[idx].order = image.order || order;
-              this.notifyPath(['iconList',idx,'order']);
+              this.setProperties({
+                ['iconList.'+idx+'.key']: imageKey,
+                ['iconList.'+idx+'.thumbnail']: image.thumbnail,
+                ['iconList.'+idx+'.rep']: image.rep,
+                ['iconList.'+idx+'.name']: image.name,
+                ['iconList.'+idx+'.roi']: image.roi,
+                ['iconList.'+idx+'.deleted']: image.deleted ? true : false,
+                ['iconList.'+idx+'.order']: image.order || order,
+              });
 
             }
 
@@ -710,7 +691,6 @@
 
         this.iconList.forEach((icon,index) => {
           this.set(['iconList',index,'thumbnail'],null);
-          this.notifyPath(['iconList',index,'thumbnail']);
         });
 
         this.set('iconList',[]);
