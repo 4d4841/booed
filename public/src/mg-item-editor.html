@@ -217,8 +217,10 @@
           deleted="[[item.deleted]]"
           on-tap="_onItemTap"
         >
-          <paper-icon-button icon="mode-edit" class="image-edit-button-icon" on-tap="_onEditImage">
-          </paper-icon-button>
+          <template is="dom-if" if="{{_isEditable(item._progress,item.rep)}}">
+            <paper-icon-button icon="mode-edit" class="image-edit-button-icon" on-tap="_onEditImage">
+            </paper-icon-button>
+          </template>
         </mg-item-image>
 
       </template>
@@ -334,6 +336,13 @@
         return 1;
       }
 
+      _isEditable(progress,rep) {
+        if (!rep) return false;
+        if (progress && progress != 100) return false;
+        if (progress === 0) return false;
+        return true;
+      }
+
       _selectedImagesChanged(changes) {
         if (changes) {
           let orderNumber = 0;
@@ -440,7 +449,7 @@
             thumbnail: thumbKey, /* db representations/repKey contains storage info eg. uid */
             name: imageName,
             rep: repKey,
-            /*_progress: uploading status,*/
+            _progress: 0,
           };
 
           let thumbnailLoader = new Image();
