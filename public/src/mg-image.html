@@ -51,8 +51,12 @@
 
         src: {
           type: String,
-          observer: '_srcChanged',
           value: "",
+          observer: '_srcChanged',
+        },
+
+        roi: {
+          type: Array,
         },
 
         sizing: {
@@ -81,6 +85,10 @@
 
       }}
 
+      static get observers() { return [
+        '_roiChanged(roi,naturalWidth,naturalHeight)',
+      ]}
+
       _transitionChanged(trans) {
         if (trans) {
 //          this.style.transition = 'background '+trans+', background-position 0s, background-size 0s';
@@ -92,18 +100,66 @@
         this.style.backgroundSize = sizing;
       }
 
-      _onLoad(e) {
-        this.set('loaded',true);
-        this.style.backgroundImage = 'url(\'' + this._ImageLoader.src + '\')';
-        delete this._ImageLoader;
+      _roiChanged(roi, nw, nh) {
+        if (roi && nw && nh) {
+          let vw = this.clientWidth;
+          let vh = this.clientHeight;
+
+          /* convert 0..1 to natural geometry */
+          let l = roi[0] * nw;
+          let t = roi[1] * nh;
+          let w = roi[2] * nw;
+          let h = roi[3] * nh;
+
+          if (w/h > vw/vh) {
+            /* fit horizontal */
+            vh = vw * h/w;
+          } else {
+            /* fit vertical */
+            vw = vh * w/h;
+          }
+
+          let s = vw/w;
+          l *= s;
+          t *= s;
+          w *= s;
+          h *= s;
+          nw *= s;
+          nh *= s;
+
+          let x = (this.clientWidth-vw)/2 - l;
+          let y = (this.clientHeight-vh)/2 - t;
+
+          if (x > 0) {
+            x = 0;
+          } else if (x + nw < this.clientWidth) {
+            x = this.clientWidth - nw;
+          }
+
+          if (y > 0) {
+            y = 0;
+          } else if (y + nh < this.clientHeight) {
+            y = this.clientHeight - nh;
+          }
+
+          this.style.backgroundPosition = `${x}px ${y}px`;
+          this.set('sizing', `${nw}px ${nh}px`);
+        }
       }
 
       _srcChanged(src) {
         if (src) {
           this.set('loaded',false);
-          this._ImageLoader = this._ImageLoader || new Image();
-          this._ImageLoader.onload = this._onLoad.bind(this);
-          this._ImageLoader.src = src;
+          let imgLoader = new Image();
+          imgLoader.onload = e => {
+            this.set('loaded',true);
+            this.setProperties({
+              naturalWidth: imgLoader.naturalWidth,
+              naturalHeight: imgLoader.naturalHeight,
+            });
+            this.style.backgroundImage = 'url(\'' + imgLoader.src + '\')';
+          };
+          imgLoader.src = src;
         } else {
           if (!this.placeholder) {
             this.style.backgroundImage = 'none';

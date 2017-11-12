@@ -184,10 +184,12 @@
 
       _dataRectChanged(roi) {
         if (roi) {
-          this.set('dataLeft',roi[0]);
-          this.set('dataTop',roi[1]);
-          this.set('dataWidth',roi[2]);
-          this.set('dataHeight',roi[3]);
+          this.setProperties({
+            dataLeft: roi[0],
+            dataTop: roi[1],
+            dataWidth: roi[2],
+            dataHeight: roi[3],
+          });
         }
       }
 
@@ -196,12 +198,14 @@
           return;
         }
 
-        this.set('dataRight', l + w);
-        this.set('dataBottom', t + h);
-        this.set('dataMidW', l + w/2);
-        this.set('dataMidH', t + h/2);
+        this.setProperties({
+          dataRight: l + w,
+          dataBottom: t + h,
+          dataMidW: l + w/2,
+          dataMidH: t + h/2,
+          rPath: `M 0 0 v ${ih} h ${iw} v -${ih} Z M ${l*iw} ${t*ih} h ${w*iw} v ${h*ih} h -${w*iw} Z`,
+        });
 
-        this.set('rPath',`M 0 0 v ${ih} h ${iw} v -${ih} Z M ${l*iw} ${t*ih} h ${w*iw} v ${h*ih} h -${w*iw} Z`);
       }
 
       _styleArrow(tracking) {
@@ -231,8 +235,8 @@
       _setImageWH(w,h) {
         if (!w || !h) return;
 
-        let vw = this.offsetWidth - 60;
-        let vh = this.offsetHeight - 120;
+        let vw = this.clientWidth - 60;
+        let vh = this.clientHeight - 120;
 
         if (vw < 0 || vh < 0) return;
 
@@ -242,13 +246,15 @@
           vw = vh * w/h;
         }
 
-        this.set('scaleFactor', w/vw);
-        this.set('viewWidth',vw);
-        this.set('viewHeight',vh);
-        this.set('imageWidth',w);
-        this.set('imageHeight',h);
-        this.set('_EW', 40/ this.viewWidth);
-        this.set('_EH', 40/ this.viewHeight);
+        this.setProperties({
+          scaleFactor:  w/vw,
+          viewWidth: vw,
+          viewHeight: vh,
+          imageWidth: w,
+          imageHeight: h,
+          _EW: 40/vw,
+          _EH: 40/vh,
+        });
 
         this.$.canvas.setAttribute('width', vw);
         this.$.canvas.setAttribute('height', vh);
@@ -354,11 +360,13 @@
 
       _dataChanged(data) {
         if (data) {
-          this.set('rep', data.rep);
-          this.set('dataLeft',data.roi[0]);
-          this.set('dataTop',data.roi[1]);
-          this.set('dataWidth',data.roi[2]);
-          this.set('dataHeight',data.roi[3]);
+          this.setProperties({
+            rep: data.rep,
+            'dataLeft': data.roi[0],
+            'dataTop': data.roi[1],
+            'dataWidth': data.roi[2],
+            'dataHeight': data.roi[3],
+          });
         } else {
           this.set('rep', null);
         }
