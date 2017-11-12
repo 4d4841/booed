@@ -806,10 +806,9 @@
       }
 
       _onCopiedTap(e) {
-        //XXX toggle deleted which mean it won't be pasted.
-        //this.splice('clipboardList',e.model.index,1);
-        this.clipboardList[e.model.index].deleted = this.clipboardList[e.model.index].deleted ? false : true;
-        this.notifyPath(['clipboardList',e.model.index,'deleted']);
+        //Toggles deleted true and it won't be pasted.
+        let idx = this.clipboardList.indexOf(e.model.item);
+        this.set(['clipboardList',idx,'deleted'], this.clipboardList[idx].deleted ? false : true);
       }
 
       _onCopyButtonTap(e) {
@@ -880,15 +879,14 @@
       }
 
       _onEditCopy(e) {
-        let data = this.clipboardList[e.model.index];
+        let data = e.model.item;
         data.roi = data.roi || [0,0,1,1];
         this.set('editingData',data);
         e.stopImmediatePropagation();
       }
 
       _onEditImage(e) {
-        let data = this.iconList[e.model.index];
-        console.log(data.roi);
+        let data = e.model.item;
         data.roi = data.roi || [0,0,1,1];
         this.set('editingData',data);
         e.stopImmediatePropagation();
