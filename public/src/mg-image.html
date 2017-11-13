@@ -65,6 +65,12 @@
           observer: '_sizingChanged',
         },
 
+        positioning: {
+          type: String,
+          value: "center",
+          observer: '_positioningChanged',
+        },
+
         transition: {
           type: String,
           value: "",
@@ -98,6 +104,10 @@
 
       _sizingChanged(sizing) {
         this.style.backgroundSize = sizing;
+      }
+
+      _positioningChanged(positioning) {
+        this.style.backgroundPosition = positioning;
       }
 
       /* XXX Add a property to prevent scaling of cover mode, just for keeping ROIs in frames */
@@ -137,8 +147,11 @@
             y = this.clientHeight - nh*s;
           }
 
-          this.style.backgroundPosition = `${x}px ${y}px`;
           this.set('sizing', `${nw*s}px ${nh*s}px`);
+          this.set('positioning', `${x}px ${y}px`);
+        } else {
+          this.set('sizing', 'cover');
+          this.set('positioning', 'center');
         }
       }
 
@@ -148,11 +161,11 @@
           let imgLoader = new Image();
           imgLoader.onload = e => {
             this.set('loaded',true);
+            this.style.backgroundImage = 'url(\'' + imgLoader.src + '\')';
             this.setProperties({
               naturalWidth: imgLoader.naturalWidth,
               naturalHeight: imgLoader.naturalHeight,
             });
-            this.style.backgroundImage = 'url(\'' + imgLoader.src + '\')';
           };
           imgLoader.src = src;
         } else {

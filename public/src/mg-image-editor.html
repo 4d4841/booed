@@ -20,7 +20,7 @@
         @apply(--layout-center);
         background-color: black;
         opacity: 0;
-        transition: opacity 0.5s;
+        transition: opacity 0.25s;
         z-index:-1;
       }
 
@@ -113,12 +113,13 @@
          <path id="chevron" d="M -2.6,4.6 -7.2,0 -2.6,-4.6 -4,-6 -10,0 -4,6 Z" style$="[[_styleArrow(tracking)]]"/>
        </defs>
 
-       <path d$="[[rPath]]" fill="rgba(0,0,0,0.9)" stroke="none"/>
+       <path d$="[[rPath]]" style$="[[_styleBorder(tracking)]]"/>
+       <path d$="[[rPathInner]]" style$="[[_styleBorderInner(tracking)]]"/>
 
-       <use id="chevrontop" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,imageWidth,imageHeight,dataMidW,dataTop,'top')]]" />
-       <use id="chevronleft" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,imageWidth,imageHeight,dataLeft,dataMidH,'left')]]" />
-       <use id="chevronbottom" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,imageWidth,imageHeight,dataMidW,dataBottom,'bottom')]]" />
-       <use id="chevronright" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,imageWidth,imageHeight,dataRight,dataMidH,'right')]]" />
+       <use id="chevrontop" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataMidW,dataTop,'top')]]" />
+       <use id="chevronleft" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataLeft,dataMidH,'left')]]" />
+       <use id="chevronbottom" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataMidW,dataBottom,'bottom')]]" />
+       <use id="chevronright" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataRight,dataMidH,'right')]]" />
 
     </svg>
 
@@ -214,34 +215,43 @@
           dataMidW: l + w/2,
           dataMidH: t + h/2,
           rPath: `M 0 0 v ${ih} h ${iw} v -${ih} Z M ${l*iw} ${t*ih} h ${w*iw} v ${h*ih} h -${w*iw} Z`,
+          rPathInner: `M ${l*iw} ${t*ih} h ${w*iw} v ${h*ih} h -${w*iw} Z`,
         });
 
       }
 
-      _styleArrow(tracking) {
-        return tracking ? 'fill:none;stroke:none' : 'fill:white;stroke-width:1;stroke:black';
+      _styleBorder(tracking) {
+        return tracking ? 'fill:rgba(0,0,0,0.9);stroke:none' : 'fill:none;stroke-width:1;stroke:black';
       }
 
-      _translateArrows(s,w,h,x,y,r) {
+      _styleBorderInner(tracking) {
+        return tracking ? 'fill:none;stroke:none' : 'fill:none;stroke-width:1;stroke:white;stroke-dasharray:3,3';
+      }
+
+      _styleArrow(tracking) {
+        return tracking ? 'fill:rgba(255,255,255,0.3);stroke:none' : 'fill:white;stroke-width:1;stroke:black';
+      }
+
+      _translateArrows(s,t,w,h,x,y,r) {
         x = x || 0;
         y = y || 0;
         let xlink = "http://www.w3.org/1999/xlink";
         switch(r) {
           case 'top':
-            r = -90;
-            this.$.chevrontop.setAttributeNS(xlink, "href", y > 0 ? '#chevrons' : '#chevron');
+            r = t ? 90 : 270;
+            this.$.chevrontop.setAttributeNS(xlink, "href", y > 0 && !t ? '#chevrons' : '#chevron');
           break;
           case 'left':
-            r = 180;
-            this.$.chevronleft.setAttributeNS(xlink, "href", x > 0 ? '#chevrons' : '#chevron');
+            r = t ? 0 : 180;
+            this.$.chevronleft.setAttributeNS(xlink, "href", x > 0 && !t ? '#chevrons' : '#chevron');
             break;
           case 'bottom':
-            r = 90;
-            this.$.chevronbottom.setAttributeNS(xlink, "href", y < 1 ? '#chevrons' : '#chevron');
+            r = t ? 270 : 90;
+            this.$.chevronbottom.setAttributeNS(xlink, "href", y < 1 && !t ? '#chevrons' : '#chevron');
             break;
           case 'right':
-            r = 0;
-            this.$.chevronright.setAttributeNS(xlink, "href", x < 1 ? '#chevrons' : '#chevron');
+            r = t ? 180 : 0;
+            this.$.chevronright.setAttributeNS(xlink, "href", x < 1 && !t ? '#chevrons' : '#chevron');
             break;
           default: r = r || 0;
         }

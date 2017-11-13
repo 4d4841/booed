@@ -460,8 +460,8 @@
           let canvas = document.createElement('canvas');
 
           thumbnailLoader.onload = (e) => {
-            let area = (250*250); /* Default area for thumbnail */
-
+            let area = (250*250); /* Default area size for thumbnail */
+            /* Try relying with data sizes rather geometries. */
             let w = Math.ceil(Math.sqrt(area * thumbnailLoader.width / thumbnailLoader.height));
             let h = Math.ceil(area / w);
 
