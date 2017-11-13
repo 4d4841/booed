@@ -121,11 +121,14 @@
 
       _thumbnailChanged(repKey) {
         if (repKey) {
-          this.set('src',null);
           let uid = MGAPP.AU.currentUser.uid;
+          this.set('src',null);
           MGAPP.registerRepresentation(repKey, (key,ev,val) => {
-            ev === 'src' && repKey == this.thumbnail && this.set('src',val);
+            ev === 'src' && key == this.thumbnail && this.set('src',val);
           });
+        }
+        else {
+          this.set('src','images/logo-pumpkin-outline-grayout.svg');
         }
       }
 
