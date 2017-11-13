@@ -91,7 +91,7 @@
       _onPositionTargetBlur(e) {
         Polymer.Async.timeOut.run(() => {
           /* Attached to another position so ignore the older blur */
-          let originalTarget = this.originalTarget || e.path[0];
+          let originalTarget = e.originalTarget || e.path[0];
           originalTarget == this.positionTarget && this.close();
         }, 250);
       }
