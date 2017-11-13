@@ -661,6 +661,17 @@
     return Math.floor(mg_random() * (max - min)) + min;
   }
 
+  var MGAbsoluteUrl = (function() {
+    var a;
+
+    return function(url) {
+      if(!a) a = document.createElement('a');
+      a.href = url;
+
+      return a.href;
+    };
+  })();
+
   function MGDeepSet(target, path, object) {
     if (typeof object === 'object') {
       if (object === null) {

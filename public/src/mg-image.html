@@ -160,6 +160,11 @@
           this.set('loaded',false);
           let imgLoader = new Image();
           imgLoader.onload = e => {
+            /* src has changed, discards updates */
+            if (imgLoader.src != MGAbsoluteUrl(this.src)) {
+              return;
+            }
+
             this.set('loaded',true);
             this.style.backgroundImage = 'url(\'' + imgLoader.src + '\')';
             this.setProperties({
