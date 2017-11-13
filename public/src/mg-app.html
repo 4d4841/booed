@@ -966,7 +966,10 @@
         if (rep._callbacks) {
           /* Replace the _callbacks not to interrupt the on-going forEach */
           rep._callbacks = rep._callbacks.slice();
-          rep._callbacks.splice(rep.callbacks.indexOf(srcCallback),1);
+          let idx = rep._callbacks.indexOf(srcCallback);
+          if (idx >= 0) {
+            rep._callbacks.splice(idx,1);
+          }
         }
       };
     }
