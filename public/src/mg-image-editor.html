@@ -327,7 +327,7 @@
             break;
           case 'end':
             this.set('tracking', null);
-            this.set('data.roi',[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight]);
+            //this.set('data.roi',[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight]);
             break;
           case 'track': {
 
@@ -429,6 +429,7 @@
       }
 
       _deactivate(e) {
+        this.set('data.roi',[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight]);
         this.style.opacity = 0;
         Polymer.Async.timeOut.run(() => {
           this.set('data',null);
