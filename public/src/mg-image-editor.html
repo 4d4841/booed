@@ -5,8 +5,6 @@
 <link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="mg-common-styles.html">
 
-
-
 <dom-module id="mg-image-editor">
   <template strip-whitespace>
       <custom-style>
@@ -108,19 +106,27 @@
 
        <defs>
          <path id="chevrons" d="M -2.6,4.6 -7.2,0 -2.6,-4.6 -4,-6 -10,0 -4,6 Z M 2.6,4.6 7.2,0 2.6,-4.6 4,-6 10,0 4,6 Z" style$="[[_styleArrow(tracking)]]"/>
+         <path id="chevron" d="M -2.6,4.6 -7.2,0 -2.6,-4.6 -4,-6 -10,0 -4,6 Z" style$="[[_styleArrow(tracking)]]"/>
        </defs>
 
        <path d$="[[rPath]]" fill="rgba(0,0,0,0.9)" stroke="none"/>
 
-       <use xlink:href="#chevrons" transform$="[[_translateArrows(scaleFactor,imageWidth,imageHeight,dataMidW,dataTop,90)]]" />
-       <use xlink:href="#chevrons" transform$="[[_translateArrows(scaleFactor,imageWidth,imageHeight,dataLeft,dataMidH)]]" />
-       <use xlink:href="#chevrons" transform$="[[_translateArrows(scaleFactor,imageWidth,imageHeight,dataMidW,dataBottom,90)]]" />
-       <use xlink:href="#chevrons" transform$="[[_translateArrows(scaleFactor,imageWidth,imageHeight,dataRight,dataMidH)]]" />
+       <use id="chevrontop" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,imageWidth,imageHeight,dataMidW,dataTop,'top')]]" />
+       <use id="chevronleft" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,imageWidth,imageHeight,dataLeft,dataMidH,'left')]]" />
+       <use id="chevronbottom" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,imageWidth,imageHeight,dataMidW,dataBottom,'bottom')]]" />
+       <use id="chevronright" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,imageWidth,imageHeight,dataRight,dataMidH,'right')]]" />
 
     </svg>
 
   </template>
   <script>
+
+/* TODO */
+/* - Allows resetting ROIs completely. */
+/* - Allows multiple ROIs for any purpose. (eg. for pan-scan animation.) */
+/* - ROIs should only be created by an editing. */
+/* - Recreate thumbnails.*/
+
     class MGImageEditor extends Polymer.GestureEventListeners(
       Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)
     ) {
@@ -215,7 +221,26 @@
       _translateArrows(s,w,h,x,y,r) {
         x = x || 0;
         y = y || 0;
-        r = r || 0;
+        let xlink = "http://www.w3.org/1999/xlink";
+        switch(r) {
+          case 'top':
+            r = -90;
+            this.$.chevrontop.setAttributeNS(xlink, "href", y > 0 ? '#chevrons' : '#chevron');
+          break;
+          case 'left':
+            r = 180;
+            this.$.chevronleft.setAttributeNS(xlink, "href", x > 0 ? '#chevrons' : '#chevron');
+            break;
+          case 'bottom':
+            r = 90;
+            this.$.chevronbottom.setAttributeNS(xlink, "href", y < 1 ? '#chevrons' : '#chevron');
+            break;
+          case 'right':
+            r = 0;
+            this.$.chevronright.setAttributeNS(xlink, "href", x < 1 ? '#chevrons' : '#chevron');
+            break;
+          default: r = r || 0;
+        }
 
         let ret = `translate(${x*w},${y*h})`;
         if (r) ret += ` rotate(${r})`;
