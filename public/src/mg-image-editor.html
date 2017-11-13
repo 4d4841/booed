@@ -45,7 +45,7 @@
         left: 0;
       }
 
-      .close-button {
+      .close-buttons {
         position: absolute;
         top: 5px;
         right: 5px;
@@ -84,8 +84,12 @@
       Width: [[imageWidth]]<br>
       Height: [[imageHeight]]<br>
     </div>
-    <paper-icon-button class="close-button" icon="cancel" on-tap="_deactivate">
-    </paper-icon-button>
+    <div class="close-buttons">
+      <paper-icon-button icon="close" on-tap="_deactivateClose">
+      </paper-icon-button>
+      <paper-icon-button icon="done" on-tap="_deactivateSave">
+      </paper-icon-button>
+    </div>
 
     <template is="dom-if" if="[[loading]]">
       <img style="position:absolute" width="200px" height="200px" src="/images/logo-pumpkin-bouncing.svg">
@@ -428,12 +432,16 @@
         console.log(e);
       }
 
-      _deactivate(e) {
-        this.set('data.roi',[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight]);
+      _deactivateClose(e) {
         this.style.opacity = 0;
         Polymer.Async.timeOut.run(() => {
           this.set('data',null);
         }, 500);
+      }
+
+      _deactivateSave(e) {
+        this.set('data.roi',[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight]);
+        this._deactivateClose(e)
       }
 
     }

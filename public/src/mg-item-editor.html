@@ -284,16 +284,19 @@
         '_itemNameChanged(me.user, itemRole, itemName)',
         '_selectedImagesChanged(selectedImages.splices)',
         '_checkEmpty(iconList.length)',
-        '_editingDataChanged(editingData.roi)'
+        '_editingRoiChanged(editingData.roi)'
       ]}
 
-      _editingDataChanged(roi) {
+      _editingRoiChanged(roi) {
         if (!this.editingData) return;
 
         let uid = MGAPP.AU.currentUser.uid;
         let itemKey = this.itemKey;
         let imageKey = this.editingData.key;
         if (this.editingData.item) {
+          if (roi && roi[0] == 0 && roi[1] == 0 && roi[2] == 1 && roi[3] == 1) {
+            roi = null;
+          }
 
           MGAPP.DB.ref().update({['home/'+uid+'/items/'+itemKey+'/images/'+imageKey+'/roi']: roi}, error => {
             if (error) {
