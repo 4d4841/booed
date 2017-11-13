@@ -308,6 +308,7 @@
           _EH: 40/vh,
         });
 
+        console.log(vw,vh,"kkk");
         this.$.canvas.setAttribute('width', vw);
         this.$.canvas.setAttribute('height', vh);
         this.$.canvas.setAttribute('viewBox',`0 0 ${w} ${h}`);
@@ -317,7 +318,8 @@
       }
 
       _onTrack(e) {
-        if (e.path[0] != this && e.path[0] != this.$.canvas) return;
+        let originalTarget = e.originalTarget || e.path[0];
+        if (originalTarget != this && originalTarget != this.$.canvas) return;
 
         if (!this.canvasBB) return;
 
@@ -406,12 +408,6 @@
         }
       }
 
-      _onImageLoaded(e) {
-        this.set('loading', false);
-        this._setImageWH(e.path[0].width,e.path[0].height);
-        this.set('src',e.path[0].src);
-      }
-
       _dataChanged(data) {
         if (data) {
           this.setProperties({
@@ -434,7 +430,12 @@
           MGAPP.registerRepresentation(rep, (key,ev,val) => {
             if (key == this.rep) {
                let img = new Image();
-               img.onload = e => this._onImageLoaded(e);
+               img.onload = e => {
+                 this.set('loading', false);
+                 console.log(img.naturalWidth,img.naturalHeight);
+                 this._setImageWH(img.naturalWidth,img.naturalHeight);
+                 this.set('src',img.src);
+               };
                img.src = val;
             }
           });

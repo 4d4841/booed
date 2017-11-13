@@ -7,7 +7,7 @@
 <dom-module id="mg-badge-button">
   <template strip-whitespace>
       <custom-style>
-    <style include="iron-flex iron-flex-alignment">
+    <style include="mg-common-styles iron-flex iron-flex-alignment">
       :host {
         @apply(--layout-vertical);
         margin-top:-3px;
@@ -23,6 +23,7 @@
         pointer-events: none;
         margin-left: 6px;
         margin-top: 6px;
+        background-size: contain;
         /*
         margin-left:6px;
         margin-top:6px;
@@ -61,7 +62,8 @@
       </custom-style>
 
     <paper-spinner-lite style="--paper-spinner-stroke-width:2px;--paper-spinner-color:tomato;position:absolute;top:3px" class="layout self-center" active="{{spinnerActive}}"></paper-spinner-lite>
-    <img class="photo-icon" src="[[image]]" hidden$="[[_noImage(image)]]">
+    <!--<img width="28" height="28" class="photo-icon" src="[[image]]" hidden$="[[_noImage(image)]]">-->
+    <div id="photoIcon" class="photo-icon" style="hidden$="[[_noImage(image)]]"></div>
 
     <svg class="badge" hidden$="[[_hideBadge(value)]]">
       <path id="path" d$="[[path]]" style$="[[_computePathStyle(pathStyle)]]">
@@ -84,11 +86,12 @@
       static get properties() { return {
         icon: {
           type: String,
-          value: null
+          value: null,
         },
         image: {
           type: String,
-          value: null
+          value: null,
+          observer: '_imageChanged',
         },
         path: {
           type: String,
@@ -114,6 +117,12 @@
 
       static get observers() { return [
       ]}
+
+      _imageChanged(src) {
+        if (src) {
+          this.$.photoIcon.style.backgroundImage = `url(${src})`;
+        }
+      }
 
       _noImage(image) {
         return this.image ? false:true;

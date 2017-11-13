@@ -21,7 +21,7 @@
 <dom-module id="mg-profile-button">
   <template strip-whitespace>
       <custom-style>
-    <style>
+    <style include="mg-badge-button">
       .arrow {
         pointer-events: none;
         position: absolute;
@@ -127,16 +127,6 @@
 
     </style>
       </custom-style>
-
-    <!--
-    <dom-if id="photo-icon" if="[[image]]">
-  <template>
-    <div class="photo-icon" hidden$="[[!image]]"></div>
-  </template>
-    </dom-if>
-  -->
-
-    <!-- <div id="pyramid"></div> -->
 
       <div id="panel" show$="[[showPanel]]">
     <svg class="arrow">
@@ -263,7 +253,7 @@
 
           /* Fill the arrow area with a flip image of profile photo to polish
           the continuity with the profile photo */
-          
+
           this.$.arrow.setAttributeNS('http://www.w3.org/1999/xlink','href', photoURL);
         }
         else {
