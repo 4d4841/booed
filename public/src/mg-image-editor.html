@@ -52,6 +52,19 @@
         color: lightgray;
       }
 
+      .close-buttons paper-icon-button[icon=close] {
+        color: red;
+      }
+
+      .close-buttons paper-icon-button[icon=done] {
+        color: green;
+      }
+
+      .close-buttons paper-icon-button:active {
+        color: white;
+      }
+
+
       #canvas {
         background-size: contain;
       }
@@ -304,6 +317,8 @@
       }
 
       _onTrack(e) {
+        if (e.path[0] != this && e.path[0] != this.$.canvas) return;
+
         if (!this.canvasBB) return;
 
         /* It will store 0..1 in database */
