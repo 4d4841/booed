@@ -100,6 +100,7 @@
         this.style.backgroundSize = sizing;
       }
 
+      /* XXX Add a property to prevent scaling of cover mode, just for keeping ROIs in frames */
       _roiChanged(roi, nw, nh) {
         if (roi && nw && nh) {
           let vw = this.clientWidth;
@@ -120,30 +121,24 @@
           }
 
           let s = vw/w;
-          l *= s;
-          t *= s;
-          w *= s;
-          h *= s;
-          nw *= s;
-          nh *= s;
 
-          let x = (this.clientWidth-vw)/2 - l;
-          let y = (this.clientHeight-vh)/2 - t;
+          let x = (this.clientWidth-vw)/2 - l*s;
+          let y = (this.clientHeight-vh)/2 - t*s;
 
           if (x > 0) {
             x = 0;
-          } else if (x + nw < this.clientWidth) {
-            x = this.clientWidth - nw;
+          } else if (x + nw*s < this.clientWidth) {
+            x = this.clientWidth - nw*s;
           }
 
           if (y > 0) {
             y = 0;
-          } else if (y + nh < this.clientHeight) {
-            y = this.clientHeight - nh;
+          } else if (y + nh*s < this.clientHeight) {
+            y = this.clientHeight - nh*s;
           }
 
           this.style.backgroundPosition = `${x}px ${y}px`;
-          this.set('sizing', `${nw}px ${nh}px`);
+          this.set('sizing', `${nw*s}px ${nh*s}px`);
         }
       }
 
