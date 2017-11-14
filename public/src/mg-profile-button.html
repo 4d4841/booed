@@ -157,21 +157,20 @@
     </paper-card>
 
     <svg class="arrow"
-       xmlns:svg="http://www.w3.org/2000/svg"
-       xmlns="http://www.w3.org/2000/svg"
-       xmlns:xlink="http://www.w3.org/1999/xlink"
-       viewBox="0 0 200 200"
-       preserveAspectRatio="none"
-       width="200"
-       height="200"
-       overflow="visible"
-       >
-      <clipPath id="arrow-mask">
-      <path
-        transform="translate(173,10) scale(1,-1)"
-        id="arrow"
-        d="M 16,10 0,10 8,0 Z"
-      />
+      xmlns:svg="http://www.w3.org/2000/svg"
+      xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      viewBox="0 0 200 200"
+      preserveAspectRatio="none"
+      width="200"
+      height="200"
+      overflow="visible"
+      ><clipPath id="arrow-mask">
+        <path
+          transform="translate(173,10) scale(1,-1)"
+          id="arrow"
+          d="M 16,10 0,10 8,0 Z"
+        />
       </clipPath>
       <image id="arrow"
         clip-path="url(#arrow-mask)"
@@ -258,8 +257,9 @@
         }
         else {
           this.icon = "pumpkin";
-          this.image = null;
+          this.image = '';
           this.$.button.style.color = "var(--app-primary-color)";
+          this.$.arrow.setAttributeNS('http://www.w3.org/1999/xlink','href', '');
 
           this.$.panel.style.opacity = 0;
           Polymer.Async.timeOut.run(() => {

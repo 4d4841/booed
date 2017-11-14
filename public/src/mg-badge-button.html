@@ -17,13 +17,14 @@
         width: 28px;
         height: 28px;
         border-radius: 50% 50%;
-        border: 2px solid var(--app-primary-color);
+        border: 1px solid var(--app-shadow-color);
         box-sizing: border-box;
         position: absolute;
         pointer-events: none;
         margin-left: 6px;
         margin-top: 6px;
         background-size: contain;
+        box-shadow: inset 1px 1px 3px whitesmoke;
         /*
         margin-left:6px;
         margin-top:6px;
@@ -62,12 +63,20 @@
       </custom-style>
 
     <paper-spinner-lite style="--paper-spinner-stroke-width:2px;--paper-spinner-color:tomato;position:absolute;top:3px" class="layout self-center" active="{{spinnerActive}}"></paper-spinner-lite>
-    <!--<img width="28" height="28" class="photo-icon" src="[[image]]" hidden$="[[_noImage(image)]]">-->
-    <div id="photoIcon" class="photo-icon" style="hidden$="[[_noImage(image)]]"></div>
+    <div id="photoIcon" class="photo-icon" hidden$="[[_noImage(image)]]">
+    </div>
+    <paper-icon-button id="button" on-tap="_onButtonClick" icon="[[icon]]"></paper-icon-button>
 
     <svg class="badge" hidden$="[[_hideBadge(value)]]">
       <path id="path" d$="[[path]]" style$="[[_computePathStyle(pathStyle)]]">
-        <animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="5s" repeatCount="indefinite"/>
+        <animateTransform attributeType="xml"
+          attributeName="transform"
+          type="rotate"
+          from="0 12 12"
+          to="360 12 12"
+          dur="5s"
+          repeatCount="indefinite"
+        />
       </path>
       <text
         id="text" y="17" x="12"
@@ -76,7 +85,6 @@
       </text>
     </svg>
 
-    <paper-icon-button id="button" on-tap="_onButtonClick" icon="[[icon]]"></paper-icon-button>
 
   </template>
   <script>
@@ -121,6 +129,8 @@
       _imageChanged(src) {
         if (src) {
           this.$.photoIcon.style.backgroundImage = `url(${src})`;
+        } else  {
+          this.$.photoIcon.style.backgroundImage = "none";
         }
       }
 
