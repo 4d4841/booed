@@ -22,7 +22,7 @@
       <custom-style>
     <style include="iron-flex iron-flex-alignment">
       :host {
-        transition: opacity 0.25s;
+        transition: opacity 0.2s;
       }
 
       .hidden {
@@ -39,11 +39,13 @@
         position: absolute;
         left: calc(50% - 8px);
       }
+
+      #content:focus {
+        outline: none;
+      }
     </style>
       </custom-style>
 
-    <a tabindex="-1" style="opacity:0;position:absolute;" id="panel">
-    </a>
     <div id="arrow">
       <svg class="arrow-element">
         <defs id="defs2">
@@ -65,8 +67,16 @@
       <div id="pos" style="width:16px;height:10px"></div>
     </div>
 
-    <mg-balloon-content id="content" no-overlap vertical-align="top" dynamic-align horizontal-align="auto">
-      <slot></slot>
+    <mg-balloon-content
+      id="content"
+      no-overlap
+      vertical-align="top"
+      dynamic-align
+      horizontal-align="auto"
+      on-mousedown="_contentClick"
+      tabindex="0"
+    ><slot></slot>
+    <a href="#" style="opacity:0;position:absolute;" tabindex="1" id="focusMe"></a>
     </mg-balloon-content>
 
   </template>
@@ -82,28 +92,10 @@
       static get properties() { return {
         positionTarget: {
           type: Object,
-          observer: '_positionTargetChanged',
         },
 
         visible: Boolean,
       }}
-
-      _onPositionTargetBlur(e) {
-        Polymer.Async.timeOut.run(() => {
-          /* Attached to another position so ignore the older blur */
-          let originalTarget = e.originalTarget || e.path[0];
-          originalTarget == this.positionTarget && this.close();
-        }, 250);
-      }
-
-      _positionTargetChanged(target,oldTarget) {
-        if (oldTarget) {
-          oldTarget.removeEventListener('blur', this._onPositionTargetBlur.bind(this),true);
-        }
-        if (target) {
-          target.addEventListener('blur', this._onPositionTargetBlur.bind(this),true);
-        }
-      }
 
       connectedCallback() {
         super.connectedCallback();
@@ -120,6 +112,15 @@
           this.close();
         });
         */
+        this.$.content.addEventListener('blur', e => {
+          let pos = this.positionTarget;
+          Polymer.Async.timeOut.run(() => {
+            if (!e.relatedTarget || !this.contains(e.relatedTarget)) {
+              if (pos == this.positionTarget)
+                this.close();
+            }
+          }, 200);
+        },true);
       }
 
       _refit() {
@@ -148,7 +149,8 @@
         Polymer.Async.timeOut.run(() => {
           this.refit();
           this.style.opacity = 1;
-        }, 1);
+          this.$.content.focus();
+        }, 0);
       }
 
       close() {
@@ -156,7 +158,12 @@
         this.style.opacity = 0;
         Polymer.Async.timeOut.run(() => {
           this.style.display = 'none';
-        }, 250);
+        }, 200);
+      }
+
+      _contentClick(e) {
+        //this.positionTarget.focus();
+        //this._DontClose = true;
       }
     }
     customElements.define(MGBalloon.is, MGBalloon);
