@@ -173,7 +173,7 @@
       <iron-collapse class="copied-collapse vertical layout" opened="[[clipboardList.length]]">
 
         <div class="copied-container">
-          <template is="dom-repeat" items="{{clipboardList}}">
+          <template is="dom-repeat" items="{{clipboardList}}" initial-count="5">
 
             <mg-item-image
               key="[[item.key]]"
@@ -208,7 +208,7 @@
         multi>
 
       <!-- XXX Maybe sorting will cause ghost update -->
-      <template is="dom-repeat" items="{{iconList}}" observe="order deleted" sort="{{_reorderPhoto}}">
+      <template is="dom-repeat" items="{{iconList}}" observe="order deleted" sort="{{_reorderPhoto}}" initial-count="5">
 
         <mg-item-image
           key="[[item.key]]"

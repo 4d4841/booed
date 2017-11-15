@@ -39,30 +39,36 @@
         position: absolute;
       }
 
+      paper-spinner {
+        position: fixed;
+        z-index: 1000;
+        bottom: 2px;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        --paper-spinner-stroke-width: 2px"
+      }
+
     </style>
       </custom-style>
 
       <!-- XXX Do something like iron-list -->
-      <dom-repeat
-        items="[[quiltItems]]"
-        mutable-data>
-    <template strip-whitespace>
-      <dom-if if="[[_itemInOffsetRange(item)]]">
-    <template>
-      <mg-thumbnail
-       class="quilt-image"
-       src="[[item.photo]]"
-       style$="[[_computeItemStyle(item,unitWidth,index,2)]]"
-       icons="[[_formatIconsForTags(item.tags)]]"
-       label="[[_formatLabel(item.tags)]]"
-      ></mg-thumbnail>
+    <template is="dom-repeat"
+      strip-whitespace
+      items="[[quiltItems]]"
+      mutable-data
+    > <template is="dom-if" if="[[_itemInOffsetRange(item)]]">
+        <mg-thumbnail
+         class="quilt-image"
+         src="[[item.photo]]"
+         style$="[[_computeItemStyle(item,unitWidth,index,2)]]"
+         icons="[[_formatIconsForTags(item.tags)]]"
+         label="[[_formatLabel(item.tags)]]"
+        ></mg-thumbnail>
+      </template>
     </template>
-      </dom-if>
 
-    </template>
-      </dom-repeat>
-
-    <paper-spinner style="position:fixed;z-index:1000;bottom:2px;left:50%;width:20px;height:20px;--paper-spinner-stroke-width:2px" active="[[loading]]"></paper-spinner>
+    <paper-spinner active="[[loading]]"></paper-spinner>
 
     <iron-scroll-threshold
       style="display:none"
