@@ -3,6 +3,7 @@
 <link rel="import" href="../bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="mg-common-styles.html">
 
 <dom-module id="mg-image-editor">
@@ -45,27 +46,40 @@
         left: 0;
       }
 
-      .close-buttons {
+      .control-buttons {
         position: absolute;
         top: 5px;
         right: 5px;
         color: lightgray;
       }
 
-      .close-buttons paper-icon-button[icon=close] {
+      #thumbnail {
+        pointer-events: none;
+      }
+
+      #thumbnail-balloon {
+        display: none;
+        position: absolute;
+        z-index: 10;
+      }
+
+      .control-buttons paper-icon-button[icon=photo-size-select-large] {
+        color: lightgray;
+      }
+
+      .control-buttons paper-icon-button[icon=close] {
         color: red;
       }
 
-      .close-buttons paper-icon-button[icon=done] {
+      .control-buttons paper-icon-button[icon=done] {
         color: green;
       }
 
-      .close-buttons paper-icon-button:active {
+      .control-buttons paper-icon-button:active {
         color: white;
       }
 
-
-      #canvas {
+      #view {
         background-size: contain;
       }
 
@@ -93,26 +107,49 @@
           </paper-tooltip>
         <span><br>
       </template>
-      <template is="dom-if" if="[[data.name]]"> Name: [[data.name]] <br> </template>
-      Width: [[imageWidth]]<br>
-      Height: [[imageHeight]]<br>
+      <!--
+        <template is="dom-if" if="[[data.name]]"> Name: [[data.name]] <br> </template>
+        Width: [[imageWidth]]<br>
+        Height: [[imageHeight]]<br>
+      -->
     </div>
-    <div class="close-buttons">
-      <paper-icon-button icon="close" on-tap="_deactivateClose">
+    <div class="control-buttons">
+      <paper-icon-button style="overflow:visible" id="update-thumbnail-button" icon="photo-size-select-large" on-tap="_openThumbnailDialog">
       </paper-icon-button>
-      <paper-icon-button icon="done" on-tap="_deactivateSave">
+
+      <paper-icon-button id="close-button" icon="close" on-tap="_deactivateClose">
       </paper-icon-button>
+
+      <paper-icon-button id="save-button" icon="done" on-tap="_deactivateSave">
+      </paper-icon-button>
+
+      <paper-tooltip for="update-thumbnail-button">Update thumbnail</paper-tooltip>
+      <paper-tooltip for="close-button">Close</paper-tooltip>
+      <paper-tooltip for="save-button">Save changes</paper-tooltip>
     </div>
 
     <template is="dom-if" if="[[loading]]">
       <img style="position:absolute" width="200px" height="200px" src="/images/logo-pumpkin-bouncing.svg">
     </template>
 
+    <mg-balloon id="thumbnail-balloon"
+      no-overlap
+      vertical-align="top"
+      dynamic-align
+      horizontal-align="auto"
+      visible="{{thumbShowed}}"
+    > <canvas class="self-center" id="thumbnail" style="border-radius:5px;overflow:hidden;margin:5px;"></canvas>
+      <paper-button class="self-center" on-tap="_saveThumbnail">
+        <iron-icon icon="done"></iron-icon> เซฟ
+      </paper-button>
+    </mg-balloon>
+
+
     <svg
        xmlns:svg="http://www.w3.org/2000/svg"
        xmlns="http://www.w3.org/2000/svg"
        xmlns:xlink="http://www.w3.org/1999/xlink"
-       id="canvas"
+       id="view"
        version="1.1"
        viewBox="0 0 200 200"
        preserveAspectRatio="none"
@@ -199,12 +236,34 @@
           type: Object,
           value: null,
         },
+
+        imageLoader: Object,
       }}
 
       static get observers() { return [
         '_editorRectChanged(dataLeft, dataTop, dataWidth, dataHeight, imageWidth, imageHeight)',
         '_dataRectChanged(data.roi)',
+        '_updateTitle(active, data.name, imageWidth, imageHeight)',
+        '_updateCanvas(thumbShowed, loading)',
       ]}
+
+      _observeB(vv) {
+        console.log(vv);
+      }
+
+      _updateTitle(a, n,w,h) {
+        if (a && !this._OldTitle) {
+          this._OldTitle = document.title;
+        }
+        if (!a && this._OldTitle) {
+          document.title = this._OldTitle;
+          delete this._OldTitle;
+        }
+
+        if (w && h && this._OldTitle) {
+          document.title = `${n} (${w}×${h}) - Booed`;
+        }
+      }
 
       _dataRectChanged(roi) {
         if (roi) {
@@ -252,19 +311,23 @@
         switch(r) {
           case 'top':
             r = t ? 90 : 270;
-            this.$.chevrontop.setAttributeNS(xlink, "href", y > 0 && !t ? '#chevrons' : '#chevron');
+            this.$.chevrontop.setAttributeNS(xlink, "href",
+              y > 0 && !t ? '#chevrons' : y == 0 && t ? '' : '#chevron');
           break;
           case 'left':
             r = t ? 0 : 180;
-            this.$.chevronleft.setAttributeNS(xlink, "href", x > 0 && !t ? '#chevrons' : '#chevron');
+            this.$.chevronleft.setAttributeNS(xlink, "href",
+              x > 0 && !t ? '#chevrons' : x == 0 && t  ? '' : '#chevron');
             break;
           case 'bottom':
             r = t ? 270 : 90;
-            this.$.chevronbottom.setAttributeNS(xlink, "href", y < 1 && !t ? '#chevrons' : '#chevron');
+            this.$.chevronbottom.setAttributeNS(xlink, "href",
+              y < 1 && !t ? '#chevrons' : y == 1 && t  ? '' : '#chevron');
             break;
           case 'right':
             r = t ? 180 : 0;
-            this.$.chevronright.setAttributeNS(xlink, "href", x < 1 && !t ? '#chevrons' : '#chevron');
+            this.$.chevronright.setAttributeNS(xlink, "href",
+              x < 1 && !t ? '#chevrons' : x == 1 && t  ? '' : '#chevron');
             break;
           default: r = r || 0;
         }
@@ -308,24 +371,23 @@
           _EH: 40/vh,
         });
 
-        console.log(vw,vh,"kkk");
-        this.$.canvas.setAttribute('width', vw);
-        this.$.canvas.setAttribute('height', vh);
-        this.$.canvas.setAttribute('viewBox',`0 0 ${w} ${h}`);
+        this.$.view.setAttribute('width', vw);
+        this.$.view.setAttribute('height', vh);
+        this.$.view.setAttribute('viewBox',`0 0 ${w} ${h}`);
 
-        this.set('canvasBB', this.$.canvas.getBoundingClientRect());
+        this.set('viewBB', this.$.view.getBoundingClientRect());
 
       }
 
       _onTrack(e) {
         let originalTarget = e.originalTarget || e.path[0];
-        if (originalTarget != this && originalTarget != this.$.canvas) return;
+        if (originalTarget != this && originalTarget != this.$.view) return;
 
-        if (!this.canvasBB) return;
+        if (!this.viewBB) return;
 
         /* It will store 0..1 in database */
-        let ax = (e.detail.x - this.canvasBB.left) / this.viewWidth;
-        let ay = (e.detail.y - this.canvasBB.top) / this.viewHeight;
+        let ax = (e.detail.x - this.viewBB.left) / this.viewWidth;
+        let ay = (e.detail.y - this.viewBB.top) / this.viewHeight;
         let ew = this._EW;
         let eh = this._EH;
         let ddx = e.detail.ddx / this.viewWidth;
@@ -356,10 +418,10 @@
             }
 
             break;
-          case 'end':
+          case 'end': {
             this.set('tracking', null);
             //this.set('data.roi',[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight]);
-            break;
+          } break;
           case 'track': {
 
             /* XXXX hack to clear selection */
@@ -429,28 +491,36 @@
           this.set('loading', true);
           MGAPP.registerRepresentation(rep, (key,ev,val) => {
             if (key == this.rep) {
-               let img = new Image();
-               img.onload = e => {
+               this.set('imageLoader', new Image());
+/***
+
+Storage Note: To allow pulling image back from storage, it needs to set CORS using gsutil. eg.
+
+gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": ["https://be-booed.firebaseapp.com", "http://localhost:5000"], "responseHeader": ["Content-Type"]}]' ) gs://be-booed.appspot.com
+
+***/
+               this.imageLoader.crossOrigin="anonymous";
+               this.imageLoader.onload = e => {
+                 this._setImageWH(this.imageLoader.naturalWidth,this.imageLoader.naturalHeight);
+                 this.set('src',this.imageLoader.src);
                  this.set('loading', false);
-                 console.log(img.naturalWidth,img.naturalHeight);
-                 this._setImageWH(img.naturalWidth,img.naturalHeight);
-                 this.set('src',img.src);
                };
-               img.src = val;
+               this.imageLoader.src = val;
             }
           });
         } else {
           this.set('src',null);
           this.set('active',false);
+          this.set('imageLoader', null);
 
-          this.$.canvas.setAttribute('viewBox','0 0 200 200');
-          this.$.canvas.setAttribute('width', 200);
-          this.$.canvas.setAttribute('height', 200);
+          this.$.view.setAttribute('viewBox','0 0 200 200');
+          this.$.view.setAttribute('width', 200);
+          this.$.view.setAttribute('height', 200);
         }
       }
 
       _srcChanged(src) {
-        this.$.canvas.style.backgroundImage = `url(${src})`;
+        this.$.view.style.backgroundImage = `url(${src})`;
       }
 
 
@@ -470,7 +540,79 @@
         this._deactivateClose(e)
       }
 
+      _updateCanvas(thumbShowed, loading) {
+        if (thumbShowed && !loading && this.src) {
+
+          let tl = this.imageWidth * this.dataLeft;
+          let tt = this.imageHeight * this.dataTop;
+          let tw = this.imageWidth * this.dataWidth;
+          let th = this.imageHeight * this.dataHeight;
+          let area = (250*250);
+          let w = Math.ceil(Math.sqrt(area * tw/th));
+          let h = Math.ceil(area / w);
+
+          this.$.thumbnail.style.width = w+'px';
+          this.$.thumbnail.style.height = h+'px';
+
+          let canvas = this.$.thumbnail;
+          canvas.width = w;
+          canvas.height = h;
+
+          console.assert(this.imageLoader, "XXX");
+          canvas.getContext('2d').drawImage(this.imageLoader, tl, tt, tw, th, 0, 0, w, h);
+
+        }
+      }
+
+      _openThumbnailDialog(e) {
+
+        this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+          bubbles: true, composed: true, detail:{sender:this}
+        }));
+
+        if (this.$['thumbnail-balloon'].visible) {
+          this.$['thumbnail-balloon'].close();
+          return;
+        }
+
+        this.$['thumbnail-balloon'].positionTarget = this.$['update-thumbnail-button'];
+        this.$['thumbnail-balloon'].open();
+        this.$['thumbnail-balloon'].focus();
+      }
+
+      _saveThumbnail(e) {
+        this.$.thumbnail.toBlob(blob => {
+          let thumbKey = MGAPP.DB.ref('representations').push().key;
+          MGAPP.registerRepresentation(thumbKey, (key,ev,val) => {
+            switch(ev) {
+              case 'src': {
+                /*
+                MGAPP.assignItem(data.item,{
+                  images: {
+                    [data.key]: {
+                      name: data.name,
+                      thumbnail: thumbKey,
+                    }
+                  },
+                });
+                */
+
+              } break;
+              case 'complete': {
+
+                /* This will contain customizations like ROIs, thumbnail, custom name */
+                registerInfo.thumbnail = key;
+                /* Published item, Will also contain tags */
+                registerImageReps();
+
+              } break;
+            }
+          }, blob);
+        },'image/jpeg',0.8);
+      }
+
     }
+
 
     customElements.define(MGImageEditor.is, MGImageEditor);
   </script>

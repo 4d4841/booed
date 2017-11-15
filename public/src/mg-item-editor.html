@@ -234,7 +234,7 @@
 
     </iron-collapse>
 
-    <mg-image-editor id="image-editor" data="{{editingData}}">
+    <mg-image-editor id="image-editor" data="{{editingData}}" blob="{{blob}}">
     </mg-image-editor>
 
   </template>
@@ -290,6 +290,10 @@
         '_checkEmpty(iconList.length)',
         '_editingRoiChanged(editingData.roi)'
       ]}
+
+      _blobChanged(blob) {
+        console.log(blob);
+      }
 
       _editingRoiChanged(roi) {
         if (!this.editingData) return;
@@ -472,8 +476,6 @@
             canvas.width = w;
             canvas.height = h;
             canvas.getContext('2d').drawImage(thumbnailLoader, 0, 0, w, h);
-            let dataURL = canvas.toDataURL('image/jpeg');
-
             canvas.toBlob(blob => {
 
               /* Thumbnail's actual upload should start after finishing image upload */
