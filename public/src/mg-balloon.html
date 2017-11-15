@@ -80,6 +80,7 @@
       horizontal-offset="-10"
       position-target="[[positionTarget]]"
       tabindex="0"
+      on-mousedown="_hackRefocusXXX"
     ><slot></slot>
     <a href="#" style="opacity:0;position:absolute;" tabindex="1" id="focusMe"></a>
     </mg-balloon-content>
@@ -92,6 +93,12 @@
     var _raf = null;
 
     class MGBalloon extends Polymer.mixinBehaviors([Polymer.IronFitBehavior], Polymer.Element) {
+      _hackRefocusXXX(e) {
+        Polymer.Async.timeOut.run(() => {
+          this.$.content.focus();
+        }, 0);
+      }
+
       static get is() { return 'mg-balloon'; }
 
       static get properties() { return {
