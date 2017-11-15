@@ -229,7 +229,7 @@
         z-index:1;
         display: block;
         position: absolute;
-        margin-top: -40px;
+        top: 200px;
         overflow: hidden;
         padding-left: 10px;
         box-sizing: border-box;
@@ -357,10 +357,10 @@
             <dom-if if="[[me.user.email]]">
           <template>
             <!-- begin: user panel -->
-              <iron-image class="photo" src="[[me.user.photoURL]]" sizing="cover"></iron-image>
               <div class="under-photo">
                 <h3>[[me.user.email]]<br>[[me.user.displayName]]</h3>
               </div>
+              <iron-image class="photo" src="[[me.user.photoURL]]" sizing="cover"></iron-image>
 
               <paper-button class="button" on-click="_signOut" class="layout horizontal center-justified">
               <iron-icon icon="coffee" style="color:tomato"></iron-icon> ออกจากระบบ
