@@ -14,12 +14,17 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/iron-fit-behavior/iron-fit-behavior.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="mg-common-styles.html">
 
 <dom-module id="mg-balloon-content">
   <template>
-    <style>
+      <custom-style>
+    <style include="mg-common-styles iron-flex iron-flex-alignment">
       :host {
         display: block;
+        padding: 0 10px 0 10px;
       }
 
       #balloon {
@@ -32,15 +37,12 @@
         padding: 5px 0;
         transition: all 1s;
         min-width: 150px;
+        @apply(--layout-vertical);
+        @apply(--layout-start);
       }
 
-      .hidden {
-        display: none !important;
-      }
-
-      paper-card {
-      }
     </style>
+      </custom-style>
 
     <paper-card id="balloon">
       <slot></slot>

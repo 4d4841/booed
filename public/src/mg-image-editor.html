@@ -179,7 +179,7 @@
 /* TODO */
 /* - Allows resetting ROIs completely. */
 /* - Allows multiple ROIs for any purpose. (eg. for pan-scan animation.) */
-/* - ROIs should only be created by an editing. */
+/* - ROIs should only be created by an editing attempt. */
 /* - Recreate thumbnails.*/
 
     class MGImageEditor extends Polymer.GestureEventListeners(
@@ -246,10 +246,6 @@
         '_updateTitle(active, data.name, imageWidth, imageHeight)',
         '_updateCanvas(thumbShowed, loading)',
       ]}
-
-      _observeB(vv) {
-        console.log(vv);
-      }
 
       _updateTitle(a, n,w,h) {
         if (a && !this._OldTitle) {
@@ -413,8 +409,6 @@
                 this.tracking.h = 1;
               }
             }
-
-            console.log(this.tracking);
 
             break;
           case 'end': {
