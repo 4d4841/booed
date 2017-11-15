@@ -375,19 +375,16 @@
         this.$.view.setAttribute('height', vh);
         this.$.view.setAttribute('viewBox',`0 0 ${w} ${h}`);
 
-        this.set('viewBB', this.$.view.getBoundingClientRect());
-
       }
 
       _onTrack(e) {
         let originalTarget = e.originalTarget || e.path[0];
         if (originalTarget != this && originalTarget != this.$.view) return;
-
-        if (!this.viewBB) return;
+        let viewBB = this.$.view.getBoundingClientRect();
 
         /* It will store 0..1 in database */
-        let ax = (e.detail.x - this.viewBB.left) / this.viewWidth;
-        let ay = (e.detail.y - this.viewBB.top) / this.viewHeight;
+        let ax = (e.detail.x - viewBB.left) / this.viewWidth;
+        let ay = (e.detail.y - viewBB.top) / this.viewHeight;
         let ew = this._EW;
         let eh = this._EH;
         let ddx = e.detail.ddx / this.viewWidth;
@@ -416,6 +413,8 @@
                 this.tracking.h = 1;
               }
             }
+
+            console.log(this.tracking);
 
             break;
           case 'end': {
@@ -560,6 +559,7 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
 
           console.assert(this.imageLoader, "XXX");
           canvas.getContext('2d').drawImage(this.imageLoader, tl, tt, tw, th, 0, 0, w, h);
+          this.$['thumbnail-balloon'].refit();
 
         }
       }
