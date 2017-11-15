@@ -68,6 +68,9 @@
 
       #thumbnail {
         pointer-events: none;
+        border-radius: 5px;
+        overflow: hidden;
+        margin: 5px;
       }
 
       #thumbnail-balloon {
@@ -80,10 +83,12 @@
         color: lightgray;
       }
 
+      .thumbnail-panel-buttons paper-icon-button[icon=close],
       .control-buttons paper-icon-button[icon=close] {
         color: red;
       }
 
+      .thumbnail-panel-buttons paper-icon-button[icon=done],
       .control-buttons paper-icon-button[icon=done] {
         color: green;
       }
@@ -130,10 +135,10 @@
       <paper-icon-button style="overflow:visible" id="update-thumbnail-button" icon="photo-size-select-large" on-tap="_openThumbnailDialog">
       </paper-icon-button>
 
-      <paper-icon-button id="close-button" icon="close" on-tap="_deactivateClose">
+      <paper-icon-button id="save-button" icon="done" on-tap="_deactivateSave">
       </paper-icon-button>
 
-      <paper-icon-button id="save-button" icon="done" on-tap="_deactivateSave">
+      <paper-icon-button id="close-button" icon="close" on-tap="_deactivateClose">
       </paper-icon-button>
 
       <paper-tooltip for="update-thumbnail-button">Update thumbnail</paper-tooltip>
@@ -151,11 +156,15 @@
       dynamic-align
       horizontal-align="auto"
       visible="{{thumbShowed}}"
-    > <canvas class="self-center" id="thumbnail" style="border-radius:5px;overflow:hidden;margin:5px;"></canvas>
-      <paper-button class="self-center" on-tap="_saveThumbnail">
-        <iron-icon icon="done"></iron-icon> เซฟ
-      </paper-button>
+    > <canvas class="self-center" id="thumbnail"></canvas>
+      <div class="horizontal layout end-justified thumbnail-panel-buttons" style="width:100%">
+        <paper-icon-button id="save-thumbnail-button" icon="done" on-tap="_saveThumbnail">
+        </paper-icon-button>
+        <paper-icon-button id="close-thumbnail-panel" icon="close" on-tap="_closeThumbnailPanel">
+        </paper-icon-button>
+      </div>
     </mg-balloon>
+    <paper-tooltip for="save-thumbnail-button">สร้างทั้มเนลใหม่</paper-tooltip>
 
 
     <svg
@@ -587,6 +596,11 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
         this.$['thumbnail-balloon'].focus();
       }
 
+      _closeThumbnailPanel(e) {
+        console.log('huh?');
+        this.$['thumbnail-balloon'].close();
+      }
+
       _saveThumbnail(e) {
         this.$.thumbnail.toBlob(blob => {
           let thumbKey = MGAPP.DB.ref('representations').push().key;
@@ -617,9 +631,7 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
           }, blob);
         },'image/jpeg',0.8);
       }
-
     }
-
 
     customElements.define(MGImageEditor.is, MGImageEditor);
   </script>
