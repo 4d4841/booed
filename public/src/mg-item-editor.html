@@ -144,7 +144,7 @@
           </paper-input>
 
           <paper-button on-tap="_onAddButtonTap">
-            <iron-icon icon="add"></iron-icon> เพิ่มรูป
+            <iron-icon icon="add-photo"></iron-icon> เพิ่มรูป
           </paper-button>
           <template is="dom-if" if="{{selectedImages.length}}">
             <paper-button on-tap="_onDeleteButtonTap">
@@ -173,7 +173,7 @@
       <iron-collapse class="copied-collapse vertical layout" opened="[[clipboardList.length]]">
 
         <div class="copied-container">
-          <template is="dom-repeat" items="{{clipboardList}}" initial-count="5">
+          <template is="dom-repeat" items="{{clipboardList}}">
 
             <mg-item-image
               key="[[item.key]]"
@@ -208,7 +208,7 @@
         multi>
 
       <!-- XXX Maybe sorting will cause ghost update -->
-      <template is="dom-repeat" items="{{iconList}}" observe="order deleted" sort="{{_reorderPhoto}}" initial-count="5">
+      <template is="dom-repeat" items="{{iconList}}" observe="order deleted" sort="{{_reorderPhoto}}">
 
         <mg-item-image
           key="[[item.key]]"
@@ -300,9 +300,6 @@
         '_checkEmpty(iconList.length)',
         '_editingRoiChanged(editingData.roi)'
       ]}
-
-      _blobChanged(blob) {
-      }
 
       _editingRoiChanged(roi) {
         if (!this.editingData) return;
@@ -430,8 +427,6 @@
 
       _uploadReps(uid,itemKey,files) {
         Array.from(files).forEach(imgFile => {
-          let repKey = MGAPP.DB.ref('representations').push().key;
-          let thumbKey = MGAPP.DB.ref('representations').push().key;
           let imageKey =  MGAPP.DB.ref('home').child(uid).child(itemKey).child('images').push().key;
           let imageName = imgFile.name.split('.')[0];
           let coverImageKey = MGAPP.get(['items',itemKey,'cover']) || imageKey;
@@ -441,7 +436,7 @@
           let registerInfo = {};
           function registerImageReps() {
 
-            /* Update once thumbnail and rep are uploaded onto storage */
+            /* Update once thumbnail and rep are both uploaded onto storage */
             if (registerInfo.thumbnail && registerInfo.rep) {
               let registerData = {
                 ['representations/'+registerInfo.rep+'/uid']: uid,
@@ -459,63 +454,10 @@
             }
           }
 
-          /* Data for representing an image in the UI */
-          let icon = {
-            item: itemKey,
-            key: imageKey,
-            thumbnail: thumbKey, /* db representations/repKey contains storage info eg. uid */
-            name: imageName,
-            rep: repKey,
-            _progress: 0,
-          };
-
-          let thumbnailLoader = new Image();
-          let canvas = document.createElement('canvas');
-
-          thumbnailLoader.onload = (e) => {
-            let area = (250*250); /* Default area size for thumbnail */
-            /* Try relying with data sizes rather geometries. */
-            let w = Math.ceil(Math.sqrt(area * thumbnailLoader.width / thumbnailLoader.height));
-            let h = Math.ceil(area / w);
-
-            canvas.width = w;
-            canvas.height = h;
-            canvas.getContext('2d').drawImage(thumbnailLoader, 0, 0, w, h);
-            canvas.toBlob(blob => {
-
-              /* Thumbnail's actual upload should start after finishing image upload */
-              MGAPP.registerRepresentation(thumbKey, (key,ev,val) => {
-                switch(ev) {
-                  case 'src': {
-                    MGAPP.assignItem(itemKey,{
-                      images: {
-                        [imageKey]: {
-                          name: imageName,
-                          thumbnail: thumbKey,
-                        }
-                      },
-                    });
-
-                  } break;
-                  case 'complete': {
-
-                    /* This will contain customizations like ROIs, thumbnail, custom name */
-                    registerInfo.thumbnail = key;
-                    /* Published item, Will also contain tags */
-                    registerImageReps();
-
-                  } break;
-                }
-              }, blob);
-              this.push('iconList',icon);
-
-            },'image/jpeg',0.8);
-          };
-
-          MGAPP.registerRepresentation(repKey, (key,ev,val) => {
-            switch(ev) {
+          MGAPP.registerRepresentation(imgFile, (repKey,repEv,repVal) => {
+            switch(repEv) {
               case 'progress': {
-                this._setPhotoKeyProperty(imageKey, '_progress', (val.bytesTransferred / val.totalBytes * 100).toFixed(2));
+                this._setPhotoKeyProperty(imageKey, '_progress', (repVal.bytesTransferred / repVal.totalBytes * 100).toFixed(2));
               } break;
               case 'complete': {
 
@@ -528,29 +470,83 @@
                 });
 
                 /* This will contain customizations like ROIs, thumbnail, custom name */
-                registerInfo.rep = key;
+                registerInfo.rep = repKey;
                 registerInfo.name = imageName;
                 /* Published item, Will also contain tags */
                 registerImageReps();
 
               } break;
-              case 'src':
-                thumbnailLoader.src = val;
+              case 'src': {
 
-                break;
-              /* case 'task':
-                 XXX Save task for cancellation.
-               */
-            }
+                /* src:repVal here is e.target.result of source image file from FileReader,
+                 * Will use it to generate thumbnail image data.
+                 */
 
-          }, imgFile);
+                let thumbnailLoader = new Image();
+                let canvas = document.createElement('canvas');
+
+                thumbnailLoader.onload = (e) => {
+                  let area = (250*250); /* Default area size for thumbnail */
+                  /* Try relying with data sizes rather geometries. */
+                  let w = Math.ceil(Math.sqrt(area * thumbnailLoader.width / thumbnailLoader.height));
+                  let h = Math.ceil(area / w);
+
+                  canvas.width = w;
+                  canvas.height = h;
+                  canvas.getContext('2d').drawImage(thumbnailLoader, 0, 0, w, h);
+                  canvas.toBlob(blob => {
+
+                    /* Thumbnail's actual upload should start after finishing image upload */
+                    MGAPP.registerRepresentation(blob, (key,ev,val) => {
+                      switch(ev) {
+                        case 'key': {
+
+                          this.push('iconList',{
+                            item: itemKey,
+                            key: imageKey,
+                            thumbnail: key,
+                            name: imageName,
+                            rep: repKey,
+                            _progress: 0,
+                          });
+
+                        } break;
+                        case 'src': {
+                          MGAPP.assignItem(itemKey,{
+                            images: {
+                              [imageKey]: {
+                                name: imageName,
+                                thumbnail: key,
+                              }
+                            },
+                          });
+
+                        } break;
+                        case 'complete': {
+
+                          /* This will contain customizations like ROIs, thumbnail, custom name */
+                          registerInfo.thumbnail = key;
+                          /* Published item, Will also contain tags */
+                          registerImageReps();
+
+                        } break;
+                      }
+                    });
+
+                  },'image/jpeg',0.8);
+                }; /* end thumbnailLoader.onload */
+                thumbnailLoader.src = repVal;
+
+              } break;
+            } /* end repEv switch */
+
+          });
 
         }); /*forEach(files)*/
       }
 
       _filesSelected(e) {
         let files = e.target.files;
-
         if (!files || !files.length) {
           return;
         }
@@ -824,9 +820,10 @@
 
             let currentIdx = this.selectedImages.indexOf(data.key);
 
-            this.set('beforeEditingData',this.iconList[this._indexImage(this.selectedImages[(currentIdx-1+slen) % slen])]);
-            this.set('afterEditingData',this.iconList[this._indexImage(this.selectedImages[(currentIdx+1) % slen])]);
-
+            if (currentIdx != -1) {
+              this.set('beforeEditingData',this.iconList[this._indexImage(this.selectedImages[(currentIdx-1+slen) % slen])]);
+              this.set('afterEditingData',this.iconList[this._indexImage(this.selectedImages[(currentIdx+1) % slen])]);
+            }
           }
         }
       }

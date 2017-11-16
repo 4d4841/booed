@@ -842,8 +842,14 @@
     }
 
     /*XXX UID of other user */
-    registerRepresentation(key,srcCallback,blob,contentType) {
-      if (!key) {
+    registerRepresentation(key,srcCallback,contentType) {
+      let blob = key instanceof Blob ? key : null;
+
+      if (blob) {
+          key = MGAPP.DB.ref('representations').push().key;
+      }
+
+      if (!key && srcCallback) {
         srcCallback(key,'src','images/logo-pumpkin-outline-grayout.svg');
         return;
       }
@@ -973,6 +979,8 @@
       }
       */
 
+      srcCallback(key,'key',true);
+
       /* return function to unsubscribe srcCallback */
       return function(){
         if (rep._callbacks) {
@@ -984,6 +992,7 @@
           }
         }
       };
+
     }
 
     _openHome(e) {

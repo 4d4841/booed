@@ -164,7 +164,7 @@
       visible="{{thumbShowed}}"
     > <canvas class="self-center" id="thumbnail"></canvas>
       <div class="horizontal layout end-justified thumbnail-panel-buttons" style="width:100%">
-        <paper-icon-button id="save-thumbnail-button" icon="done" on-tap="_saveThumbnail">
+        <paper-icon-button id="save-thumbnail-button" icon="done" on-tap="_setThumbnail">
         </paper-icon-button>
         <paper-icon-button id="close-thumbnail-panel" icon="close" on-tap="_closeThumbnailPanel">
         </paper-icon-button>
@@ -276,7 +276,7 @@
 
       static get observers() { return [
         '_editorRectChanged(dataLeft, dataTop, dataWidth, dataHeight, imageWidth, imageHeight)',
-        '_dataRectChanged(data.roi)',
+        /*'_dataRectChanged(data.roi)',*/
         '_updateTitle(active, data.name, imageWidth, imageHeight)',
         '_updateCanvas(thumbShowed, loading)',
       ]}
@@ -295,6 +295,11 @@
         }
       }
 
+      /* XXX Figure how to allow updating by remote editings later.
+         XXX Now it won't work cuz if it updates thumbnail the modified
+         XXX ROI data will be reset.
+         XXX This should be designed along with role-specific ROI datas.
+
       _dataRectChanged(roi) {
         if (roi) {
           this.setProperties({
@@ -305,6 +310,7 @@
           });
         }
       }
+      */
 
       _editorRectChanged(l,t,w,h,iw,ih) {
         if (!this.data) {
@@ -519,7 +525,7 @@
           this.style.opacity = 1;
           this.set('loading', true);
           MGAPP.registerRepresentation(rep, (key,ev,val) => {
-            if (key == this.rep) {
+            if (ev == 'src' && key == this.rep) {
 /***
 
 Storage Note: To allow pulling image back from storage, it needs to set CORS using gsutil. eg.
@@ -612,34 +618,29 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
         this.$['thumbnail-balloon'].close();
       }
 
-      _saveThumbnail(e) {
+      _setThumbnail(e) {
         this.$.thumbnail.toBlob(blob => {
-          let thumbKey = MGAPP.DB.ref('representations').push().key;
-          MGAPP.registerRepresentation(thumbKey, (key,ev,val) => {
-            switch(ev) {
-              case 'src': {
-                /*
-                MGAPP.assignItem(data.item,{
-                  images: {
-                    [data.key]: {
-                      name: data.name,
-                      thumbnail: thumbKey,
-                    }
-                  },
+          MGAPP.registerRepresentation(blob, (key,ev,val) => {
+            switch (ev) {
+              case 'src':
+                MGAPP.assignItem(this.data.item,{
+                  images: { [this.data.key]: { thumbnail: key } },
                 });
-                */
-
-              } break;
+                break;
               case 'complete': {
-
-                /* This will contain customizations like ROIs, thumbnail, custom name */
-                registerInfo.thumbnail = key;
-                /* Published item, Will also contain tags */
-                registerImageReps();
-
+                /* Thumbnail image uploaded, register to the database */
+                let uid = MGAPP.AU.currentUser.uid;
+                MGAPP.DB.ref().update({
+                  ['representations/'+key+'/uid']: uid,
+                  ['home/'+uid+'/items/'+this.data.item+'/images/'+this.data.key+'/thumbnail']: key
+                }, error => {
+                  if (error) {
+                    console.error("ERR",error);
+                  }
+                });
               } break;
             }
-          }, blob);
+          });
         },'image/jpeg',0.8);
       }
 
