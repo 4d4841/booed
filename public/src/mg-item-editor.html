@@ -184,7 +184,7 @@
               deleted="[[item.deleted]]"
               on-tap="_onCopiedTap"
             >
-              <paper-icon-button icon="mode-edit" class="image-edit-button-icon" on-tap="_onEditCopy">
+              <paper-icon-button icon="mode-edit" class="image-edit-button-icon" on-tap="_onEditImage">
               </paper-icon-button>
             </mg-item-image>
 
@@ -234,8 +234,14 @@
 
     </iron-collapse>
 
-    <mg-image-editor id="image-editor" data="{{editingData}}" blob="{{blob}}">
-    </mg-image-editor>
+
+    <mg-image-editor
+      id="image-editor"
+      data="{{editingData}}"
+      blob="{{blob}}"
+      after="[[afterEditingData]]"
+      before="[[beforeEditingData]]"
+    ></mg-image-editor>
 
   </template>
   <script>
@@ -279,9 +285,13 @@
           reflectToAttribute: true,
         },
 
-        editingData: Object,
+        editingData: {
+          type: Object,
+          observer: '_editingDataChanged',
+        },
 
       }}
+
 
       static get observers() { return [
         '_itemKeyChanged(me.user, itemKey)',
@@ -385,10 +395,6 @@
           }
         }
         this._LastTapIndex = e.model.index;
-      }
-
-      _onEditButtonTap(e) {
-
       }
 
       _indexImage(imageKey,cb) {
@@ -810,6 +816,31 @@
         this.set(['clipboardList',idx,'deleted'], this.clipboardList[idx].deleted ? false : true);
       }
 
+      _editingDataChanged(data) {
+        this.set('beforeEditingData',null);
+        this.set('afterEditingData',null);
+        if (data) {
+          let slen = this.selectedImages.length;
+          if (slen) {
+
+            let currentIdx = this.selectedImages.indexOf(data.key);
+
+            this.set('beforeEditingData',this.iconList[this._indexImage(this.selectedImages[(currentIdx-1+slen) % slen])]);
+            this.set('afterEditingData',this.iconList[this._indexImage(this.selectedImages[(currentIdx+1) % slen])]);
+
+            console.log(this.beforeEditingData, this.afterEditingData);
+
+          }
+        }
+      }
+
+
+      _onEditButtonTap(e) {
+        this._indexImage(this.selectedImages[0], idx => {
+          this.set('editingData',this.iconList[idx]);
+        });
+      }
+
       _onCopyButtonTap(e) {
         this.selectedImages.forEach(imageKey => {
           this._indexImage(imageKey, idx => {
@@ -877,19 +908,12 @@
         this.set('itemName', this._ItemName = name || "แกลเลอรี่ไม่มีชื่อ");
       }
 
-      _onEditCopy(e) {
+      _onEditImage(e) {
         let data = e.model.item;
-        data.roi = data.roi || [0,0,1,1];
         this.set('editingData',data);
         e.stopImmediatePropagation();
       }
 
-      _onEditImage(e) {
-        let data = e.model.item;
-        data.roi = data.roi || [0,0,1,1];
-        this.set('editingData',data);
-        e.stopImmediatePropagation();
-      }
 
     }
 

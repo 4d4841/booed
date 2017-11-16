@@ -132,6 +132,12 @@
       -->
     </div>
     <div class="control-buttons">
+      <paper-icon-button id="skip-previous" icon="skip-previous" on-tap="_setPreviousData" hidden$="[[!before]]">
+      </paper-icon-button>
+
+      <paper-icon-button id="skip-next" icon="skip-next" on-tap="_setNextData" hidden$="[[!after]]">
+      </paper-icon-button>
+
       <paper-icon-button style="overflow:visible" id="update-thumbnail-button" icon="photo-size-select-large" on-tap="_openThumbnailDialog">
       </paper-icon-button>
 
@@ -260,6 +266,7 @@
         },
 
         imageLoader: Object,
+
       }}
 
       static get observers() { return [
@@ -487,6 +494,7 @@
 
       _dataChanged(data) {
         if (data) {
+          data.roi || this.set('data.roi', [0,0,1,1] );
           this.setProperties({
             rep: data.rep,
             'dataLeft': data.roi[0],
@@ -506,7 +514,6 @@
           this.set('loading', true);
           MGAPP.registerRepresentation(rep, (key,ev,val) => {
             if (key == this.rep) {
-               this.set('imageLoader', new Image());
 /***
 
 Storage Note: To allow pulling image back from storage, it needs to set CORS using gsutil. eg.
@@ -514,13 +521,14 @@ Storage Note: To allow pulling image back from storage, it needs to set CORS usi
 gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": ["https://be-booed.firebaseapp.com", "http://localhost:5000"], "responseHeader": ["Content-Type"]}]' ) gs://be-booed.appspot.com
 
 ***/
-               this.imageLoader.crossOrigin="anonymous";
-               this.imageLoader.onload = e => {
-                 this._setImageWH(this.imageLoader.naturalWidth,this.imageLoader.naturalHeight);
-                 this.set('src',this.imageLoader.src);
-                 this.set('loading', false);
-               };
-               this.imageLoader.src = val;
+              this.set('imageLoader', new Image());
+              this.imageLoader.crossOrigin="anonymous";
+              this.imageLoader.onload = e => {
+                this._setImageWH(this.imageLoader.naturalWidth,this.imageLoader.naturalHeight);
+                this.set('src',this.imageLoader.src);
+                this.set('loading', false);
+              };
+              this.imageLoader.src = val;
             }
           });
         } else {
@@ -547,7 +555,7 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
         this.style.opacity = 0;
         Polymer.Async.timeOut.run(() => {
           this.set('data',null);
-        }, 500);
+        }, 250);
       }
 
       _deactivateSave(e) {
@@ -597,7 +605,6 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
       }
 
       _closeThumbnailPanel(e) {
-        console.log('huh?');
         this.$['thumbnail-balloon'].close();
       }
 
@@ -631,6 +638,15 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
           }, blob);
         },'image/jpeg',0.8);
       }
+
+      _setPreviousData(e) {
+        this.set('data',this.before);
+      }
+
+      _setNextData(e) {
+        this.set('data',this.after);
+      }
+
     }
 
     customElements.define(MGImageEditor.is, MGImageEditor);
