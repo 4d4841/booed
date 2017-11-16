@@ -84,12 +84,12 @@
       }
 
       .thumbnail-panel-buttons paper-icon-button[icon=close],
-      .control-buttons paper-icon-button[icon=close] {
+      .control-buttons paper-icon-button[icon=close][edited] {
         color: red;
       }
 
       .thumbnail-panel-buttons paper-icon-button[icon=done],
-      .control-buttons paper-icon-button[icon=done] {
+      .control-buttons paper-icon-button[icon=done][edited] {
         color: green;
       }
 
@@ -141,10 +141,10 @@
       <paper-icon-button style="overflow:visible" id="update-thumbnail-button" icon="photo-size-select-large" on-tap="_openThumbnailDialog">
       </paper-icon-button>
 
-      <paper-icon-button id="save-button" icon="done" on-tap="_deactivateSave">
+      <paper-icon-button id="save-button" icon="done" on-tap="_deactivateSave" edited$="{{edited}}">
       </paper-icon-button>
 
-      <paper-icon-button id="close-button" icon="close" on-tap="_deactivateClose">
+      <paper-icon-button id="close-button" icon="close" on-tap="_deactivateClose" edited$="{{edited}}">
       </paper-icon-button>
 
       <paper-tooltip for="update-thumbnail-button">Update thumbnail</paper-tooltip>
@@ -238,6 +238,11 @@
           type: Boolean,
           value: false,
           reflectToAttribute: true,
+        },
+
+        edited: {
+          type: Boolean,
+          value: false,
         },
 
         imageWidth: { type: Number, value: 0 },
@@ -442,6 +447,7 @@
             break;
           case 'end': {
             this.set('tracking', null);
+            this.set('edited',true);
             //this.set('data.roi',[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight]);
           } break;
           case 'track': {
@@ -556,7 +562,9 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
 
       _deactivateSave(e) {
         this.set('data.roi',[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight]);
-        this._deactivateClose(e)
+        this.set('edited',false);
+        if (!this.after)
+          this._deactivateClose(e)
       }
 
       _updateCanvas(thumbShowed, loading) {
