@@ -302,7 +302,6 @@
       ]}
 
       _blobChanged(blob) {
-        console.log(blob);
       }
 
       _editingRoiChanged(roi) {
@@ -827,8 +826,6 @@
 
             this.set('beforeEditingData',this.iconList[this._indexImage(this.selectedImages[(currentIdx-1+slen) % slen])]);
             this.set('afterEditingData',this.iconList[this._indexImage(this.selectedImages[(currentIdx+1) % slen])]);
-
-            console.log(this.beforeEditingData, this.afterEditingData);
 
           }
         }

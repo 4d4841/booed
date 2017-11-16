@@ -547,10 +547,6 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
       }
 
 
-      _test(e) {
-        console.log(e);
-      }
-
       _deactivateClose(e) {
         this.style.opacity = 0;
         Polymer.Async.timeOut.run(() => {
