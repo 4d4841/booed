@@ -169,10 +169,9 @@
         let thumbnail = MGAPP.get(['items',itemKey,'images',imageKey,'thumbnail']);
         if (thumbnail) {
           let uid = MGAPP.AU.currentUser.uid;
-          MGAPP.registerRepresentation(thumbnail, (key,ev,val) => {
-              if (ev == 'src') this._setPhotoKeyProperty(itemKey, '_src', val);
-            }
-          );
+          MGAPP.registerRepresentation(thumbnail, { src: (key,src) => {
+            this._setPhotoKeyProperty(itemKey, '_src', src);
+          }});
         }
       }
 
@@ -270,17 +269,6 @@
                 MGAPP.assignItem(snapshot.key,{cover:coverSnapshot.val()});
                 this._setCover(snapshot.key, coverSnapshot.val());
             });
-
-            /* Only allow updating item thumbnail/cover once uploading first image*/
-            /*
-            ref.child('images').orderByChild('order').once('child_added', function(imageSnapshot){
-              MGAPP.registerRepresentation(imageSnapshot.val().rep, function(key,ev,val){
-                if (ev == 'src') {
-                  this._setPhotoKeyProperty(snapshot.key,'_src',val);
-                }
-              }.bind(this));
-            }.bind(this));
-            */
 
           },function(error){},this);
         }

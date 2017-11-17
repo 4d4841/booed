@@ -234,7 +234,6 @@
 
     </iron-collapse>
 
-
     <mg-image-editor
       id="image-editor"
       data="{{editingData}}"
@@ -298,27 +297,57 @@
         '_itemNameChanged(me.user, itemRole, itemName)',
         '_selectedImagesChanged(selectedImages.splices)',
         '_checkEmpty(iconList.length)',
-        '_editingRoiChanged(editingData.roi)'
+        '_editingRoiChanged(editingData.roi)',
+        '_editingThumbnailChanged(editingData.thumbnail)'
       ]}
 
+      /* XXX monitor changes in editingData ROI, needs to do this with thumbnail */
       _editingRoiChanged(roi) {
         if (!this.editingData) return;
 
-        let uid = MGAPP.AU.currentUser.uid;
-        let itemKey = this.itemKey;
-        let imageKey = this.editingData.key;
+        /* Only sync if not in clipboard */
         if (this.editingData.item) {
+          let uid = MGAPP.AU.currentUser.uid;
+
+          /* If roi is full whole, reset it */
           if (roi && roi[0] == 0 && roi[1] == 0 && roi[2] == 1 && roi[3] == 1) {
             roi = null;
           }
 
-          MGAPP.DB.ref().update({['home/'+uid+'/items/'+itemKey+'/images/'+imageKey+'/roi']: roi}, error => {
-            if (error) {
-              console.error("ERR",error);
-            }
+          MGAPP.DB.ref().update({['home/'+uid+'/items/'+this.editingData.item+'/images/'+this.editingData.key+'/roi']: roi}, error => {
+            error && console.error("ERR",error);
           });
 
         }
+      }
+
+      /* XXX Try merging with _editingRoiChanged */
+      _editingThumbnailChanged(thumbnail) {
+        if (!this.editingData) return;
+        if (!this.editingData.thumbnail) return; /* XXX prevent deleting thumbnail for now. */
+
+        /* Updated thumbnail is a part of an item, update and sync the item */
+        if (this.editingData.item) {
+          let uid = MGAPP.AU.currentUser.uid;
+          let registerData = {
+            ['representations/'+thumbnail+'/uid']: uid,
+          };
+
+          MGAPP.assignItem( this.editingData.item, {
+            images: { [this.editingData.key]: { thumbnail: thumbnail } },
+          });
+
+          registerData['home/'+uid+'/items/'+this.editingData.item+'/images/'+this.editingData.key+'/thumbnail'] = thumbnail;
+
+          MGAPP.DB.ref().update(registerData, error => {
+            error && console.error("ERR",error);
+          });
+
+        } else {
+          let idx = this.clipboardList.indexOf(this.editingData);
+          this.notifyPath(['clipboardList',idx,'thumbnail']);
+        }
+
       }
 
       _checkEmpty(len) {
@@ -454,91 +483,82 @@
             }
           }
 
-          MGAPP.registerRepresentation(imgFile, (repKey,repEv,repVal) => {
-            switch(repEv) {
-              case 'progress': {
-                this._setPhotoKeyProperty(imageKey, '_progress', (repVal.bytesTransferred / repVal.totalBytes * 100).toFixed(2));
-              } break;
-              case 'complete': {
+          MGAPP.registerRepresentation(imgFile, {
+            progress: (repKey,progress) => {
+                this._setPhotoKeyProperty(imageKey, '_progress', (progress.bytesTransferred / progress.totalBytes * 100).toFixed(2));
+            },
+            complete: (repKey,complete) => {
+              MGAPP.assignItem(itemKey,{
+                images: {
+                  [imageKey]: {
+                    rep: repKey,
+                  }
+                },
+              });
 
-                MGAPP.assignItem(itemKey,{
-                  images: {
-                    [imageKey]: {
-                      rep: repKey,
-                    }
-                  },
-                });
+              /* This will contain customizations like ROIs, thumbnail, custom name */
+              registerInfo.rep = repKey;
+              registerInfo.name = imageName;
+              /* Published item, Will also contain tags */
+              registerImageReps();
+            },
+            src: (repKey,src) => {
 
-                /* This will contain customizations like ROIs, thumbnail, custom name */
-                registerInfo.rep = repKey;
-                registerInfo.name = imageName;
-                /* Published item, Will also contain tags */
-                registerImageReps();
+              /* src here is e.target.result of source image file from FileReader,
+               * Will use it to generate thumbnail image data.
+               */
 
-              } break;
-              case 'src': {
+              let thumbnailLoader = new Image();
+              let canvas = document.createElement('canvas');
 
-                /* src:repVal here is e.target.result of source image file from FileReader,
-                 * Will use it to generate thumbnail image data.
-                 */
+              thumbnailLoader.onload = (e) => {
+                let area = (250*250); /* Default area size for thumbnail */
+                /* Try relying with data sizes rather geometries. */
+                let w = Math.ceil(Math.sqrt(area * thumbnailLoader.width / thumbnailLoader.height));
+                let h = Math.ceil(area / w);
 
-                let thumbnailLoader = new Image();
-                let canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                canvas.getContext('2d').drawImage(thumbnailLoader, 0, 0, w, h);
+                canvas.toBlob(blob => {
 
-                thumbnailLoader.onload = (e) => {
-                  let area = (250*250); /* Default area size for thumbnail */
-                  /* Try relying with data sizes rather geometries. */
-                  let w = Math.ceil(Math.sqrt(area * thumbnailLoader.width / thumbnailLoader.height));
-                  let h = Math.ceil(area / w);
+                  /* Thumbnail's actual upload should start after finishing image upload */
+                  MGAPP.registerRepresentation(blob, {
+                    key: key => {
 
-                  canvas.width = w;
-                  canvas.height = h;
-                  canvas.getContext('2d').drawImage(thumbnailLoader, 0, 0, w, h);
-                  canvas.toBlob(blob => {
+                      this.push('iconList',{
+                        item: itemKey,
+                        key: imageKey,
+                        thumbnail: key,
+                        name: imageName,
+                        rep: repKey,
+                        _progress: 0,
+                      });
 
-                    /* Thumbnail's actual upload should start after finishing image upload */
-                    MGAPP.registerRepresentation(blob, (key,ev,val) => {
-                      switch(ev) {
-                        case 'key': {
-
-                          this.push('iconList',{
-                            item: itemKey,
-                            key: imageKey,
-                            thumbnail: key,
+                    },
+                    src: (key,src) => {
+                      MGAPP.assignItem(itemKey,{
+                        images: {
+                          [imageKey]: {
                             name: imageName,
-                            rep: repKey,
-                            _progress: 0,
-                          });
+                            thumbnail: key,
+                          }
+                        },
+                      });
+                    },
+                    complete: key => {
+                      /* This will contain customizations like ROIs, thumbnail, custom name */
+                      registerInfo.thumbnail = key;
+                      /* Published item, Will also contain tags */
+                      registerImageReps();
+                    },
+                  });
 
-                        } break;
-                        case 'src': {
-                          MGAPP.assignItem(itemKey,{
-                            images: {
-                              [imageKey]: {
-                                name: imageName,
-                                thumbnail: key,
-                              }
-                            },
-                          });
+                },'image/jpeg',0.8);
+              }; /* end thumbnailLoader.onload */
+              thumbnailLoader.src = src;
 
-                        } break;
-                        case 'complete': {
-
-                          /* This will contain customizations like ROIs, thumbnail, custom name */
-                          registerInfo.thumbnail = key;
-                          /* Published item, Will also contain tags */
-                          registerImageReps();
-
-                        } break;
-                      }
-                    });
-
-                  },'image/jpeg',0.8);
-                }; /* end thumbnailLoader.onload */
-                thumbnailLoader.src = repVal;
-
-              } break;
-            } /* end repEv switch */
+            }
 
           });
 
@@ -632,6 +652,7 @@
 
           if (this.editingData && this.editingData.key == imgRef.key) {
             this.set('editingData.roi', val.roi);
+            this.set('editingData.thumbnail', val.thumbnail);
           }
 
           MGAPP.assignItem(itemKey,{
@@ -842,6 +863,7 @@
               name: this.iconList[idx].name,
               thumbnail: this.iconList[idx].thumbnail,
               rep: this.iconList[idx].rep,
+              roi: this.iconList[idx].roi,
             };
             this.push('clipboardList', copy);
           });
