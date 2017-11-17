@@ -703,10 +703,6 @@
   window.performance && performance.mark && performance.mark('mg-app - before register');
 
   /* MG stands for MoonGom as in moongom119 AKA. Moon HyunA */
-  var MG = {
-    LOCAL:'local',
-  };
-
   var MGAPP; /* Shortcut for application main, initialized in connectedCallback */
 
   class MGApp extends Polymer.Element {
@@ -863,20 +859,29 @@
       if (!rep) {
         rep = {contentType:contentType};
         this.set('representations.'+key, rep);
-      } else if (rep.contentType === MG.LOCAL && contentType !== MG.LOCAL ){
-        /* XXX Convert dataURI to Blob to upload */
-
       }
+
+      /*
+       else if (rep.contentType === MG.LOCAL && contentType !== MG.LOCAL ){
+
+        let image = new Image();
+        let canvas = document.createElement('canvas');
+        image.onload =
+      }
+      */
 
       if (blob) {
         let uid = this.AU.currentUser.uid;
-        let repSTRef = this.ST.ref('UID').child(uid).child('DATA').child(key);
+
         /* Task begin. Upload the blob onto storage. */
+        let repSTRef = this.ST.ref('UID').child(uid).child('DATA').child(key);
+
         let metadata = {
           contentType: contentType || 'image/jpeg',
         }
 
         let task = repSTRef.put(blob,metadata);
+        let taskEnded = false;
 
         /* If uploader didn't specify srcCallback then _callbacks could be empty.
          * It sill allocates an empty list to prevent another registration from solving
@@ -891,7 +896,6 @@
           rep._callbacks.push(srcCallback);
         }
 
-        if (task)
         task.on( firebase.storage.TaskEvent.STATE_CHANGED, snapshot => {
             rep._callbacks.forEach(function(cb){
               if (cb.progress) cb.progress(key,snapshot);
@@ -901,15 +905,15 @@
               if (cb.error) cb.error(key,error);
             });
           }, () => {
+
             let registerData = {
               ['representations/'+key+'/uid']: uid,
             };
 
             this.DB.ref().update(registerData, error => {
-              error && console.error("ERR",error);
 
               rep._callbacks.forEach(function(cb){
-                if (cb.complete) cb.complete(key,true); /* XXX false on cancellation */
+                if (cb.complete) cb.complete(key,error);
               });
 
               if (rep.src) {
@@ -918,7 +922,10 @@
                  */
                 delete rep._callbacks;
               }
+
+              taskEnded = true;
             });
+
           }
         ); /*End of uploading task*/
 
@@ -933,10 +940,7 @@
             else if (typeof cb === 'function') cb(key, 'src', e.target.result);
           });
 
-          if (task.snapshot.state === "SUCCESS") {
-            /* src didn't exist when task ended so it didn't delete the callbacks yet,
-             * let task delete it once it's done.
-             */
+          if (taskEnded) {
             delete rep._callbacks;
           }
         };
