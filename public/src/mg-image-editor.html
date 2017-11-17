@@ -77,6 +77,7 @@
         display: none;
         position: absolute;
         z-index: 10;
+        transition: width 1s, height 1s;
       }
 
       .control-buttons paper-icon-button[icon=photo-size-select-large] {
@@ -99,6 +100,7 @@
 
       #view {
         background-size: contain;
+        pointer-events: none;
       }
 
       /*
@@ -161,8 +163,7 @@
       vertical-align="top"
       dynamic-align
       horizontal-align="auto"
-      visible="{{thumbShowed}}"
-    > <canvas class="self-center" id="thumbnail"></canvas>
+    > <!--<div class="self-center" id="thumbnail"></div>--><img src="/images/logo-pumpkin-bouncing.svg" class="self-center" id="thumbnail">
       <div class="horizontal layout end-justified thumbnail-panel-buttons" style="width:100%">
         <paper-icon-button id="save-thumbnail-button" icon="done" on-tap="_setThumbnail">
         </paper-icon-button>
@@ -174,30 +175,30 @@
 
 
     <svg
-       xmlns:svg="http://www.w3.org/2000/svg"
-       xmlns="http://www.w3.org/2000/svg"
-       xmlns:xlink="http://www.w3.org/1999/xlink"
-       id="view"
-       version="1.1"
-       viewBox="0 0 200 200"
-       preserveAspectRatio="none"
-       width="0"
-       height="0"
-       overflow="visible"
-       hidden$="[[loading]]">
+      xmlns:svg="http://www.w3.org/2000/svg"
+      xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      id="view"
+      version="1.1"
+      viewBox="0 0 200 200"
+      preserveAspectRatio="none"
+      width="0"
+      height="0"
+      overflow="visible"
+      hidden$="[[loading]]">
 
-       <defs>
-         <path id="chevrons" d="M -2.6,4.6 -7.2,0 -2.6,-4.6 -4,-6 -10,0 -4,6 Z M 2.6,4.6 7.2,0 2.6,-4.6 4,-6 10,0 4,6 Z" style$="[[_styleArrow(tracking)]]"/>
-         <path id="chevron" d="M -2.6,4.6 -7.2,0 -2.6,-4.6 -4,-6 -10,0 -4,6 Z" style$="[[_styleArrow(tracking)]]"/>
-       </defs>
+      <defs>
+        <path id="chevrons" d="M -2.6,4.6 -7.2,0 -2.6,-4.6 -4,-6 -10,0 -4,6 Z M 2.6,4.6 7.2,0 2.6,-4.6 4,-6 10,0 4,6 Z" style$="[[_styleArrow(tracking)]]"/>
+        <path id="chevron" d="M -2.6,4.6 -7.2,0 -2.6,-4.6 -4,-6 -10,0 -4,6 Z" style$="[[_styleArrow(tracking)]]"/>
+      </defs>
 
-       <path d$="[[rPath]]" style$="[[_styleBorder(tracking)]]"/>
-       <path d$="[[rPathInner]]" style$="[[_styleBorderInner(tracking)]]"/>
+      <path d$="[[rPath]]" style$="[[_styleBorder(tracking)]]"/>
+      <path d$="[[rPathInner]]" style$="[[_styleBorderInner(tracking)]]"/>
 
-       <use id="chevrontop" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataMidW,dataTop,'top')]]" />
-       <use id="chevronleft" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataLeft,dataMidH,'left')]]" />
-       <use id="chevronbottom" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataMidW,dataBottom,'bottom')]]" />
-       <use id="chevronright" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataRight,dataMidH,'right')]]" />
+      <use id="chevrontop" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataMidW,dataTop,'top')]]" />
+      <use id="chevronleft" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataLeft,dataMidH,'left')]]" />
+      <use id="chevronbottom" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataMidW,dataBottom,'bottom')]]" />
+      <use id="chevronright" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataRight,dataMidH,'right')]]" />
 
     </svg>
 
@@ -208,7 +209,8 @@
 /* - Allows resetting ROIs completely. */
 /* - Allows multiple ROIs for any purpose. (eg. for pan-scan animation.) */
 /* - ROIs should only be created by an editing attempt. */
-/* - Recreate thumbnails.*/
+/* - Allows representations to have other representations as src. */
+/* - Allows representations to have ROIs, that would be useful for temporary data. */
 
     class MGImageEditor extends Polymer.GestureEventListeners(
       Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)
@@ -278,8 +280,9 @@
         '_editorRectChanged(dataLeft, dataTop, dataWidth, dataHeight, imageWidth, imageHeight)',
         /*'_dataRectChanged(data.roi)',*/
         '_updateTitle(active, data.name, imageWidth, imageHeight)',
-        '_updateCanvas(thumbShowed, loading)',
+        '_dataThumbnail(data.thumbnail)',
       ]}
+
 
       _updateTitle(a, n,w,h) {
         if (a && !this._OldTitle) {
@@ -382,6 +385,8 @@
         },true);
         Polymer.Gestures.addListener(this, 'track', e => this._onTrack(e));
       }
+
+
 
       _setImageWH(w,h) {
         if (!w || !h) return;
@@ -504,7 +509,20 @@
         }
       }
 
+      _dataThumbnail(thumbnail) {
+        thumbnail && MGAPP.registerRepresentation(thumbnail, {
+          src: (key,src) => { if (key == this.data.thumbnail) {
+            this.$.thumbnail.src = src;
+            /* XXX balloon should wrap refit() to have this automatic */
+            Polymer.Async.timeOut.run(() => {
+             this.$['thumbnail-balloon'].refit();
+            }, 0);
+          }}
+        });
+      }
+
       _dataChanged(data) {
+        this.set('edited',false);
         if (data) {
           data.roi || this.set('data.roi', [0,0,1,1] );
           this.setProperties({
@@ -514,6 +532,7 @@
             'dataWidth': data.roi[2],
             'dataHeight': data.roi[3],
           });
+
         } else {
           this.set('rep', null);
         }
@@ -524,8 +543,8 @@
           this.set('active',true);
           this.style.opacity = 1;
           this.set('loading', true);
-          MGAPP.registerRepresentation(rep, (key,ev,val) => {
-            if (ev == 'src' && key == this.rep) {
+          MGAPP.registerRepresentation(rep, {
+            src: (key,src) => { if (key == this.rep) {
 /***
 
 Storage Note: To allow pulling image back from storage, it needs to set CORS using gsutil. eg.
@@ -540,8 +559,8 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
                 this.set('src',this.imageLoader.src);
                 this.set('loading', false);
               };
-              this.imageLoader.src = val;
-            }
+              this.imageLoader.src = src;
+            }}
           });
         } else {
           this.set('src',null);
@@ -573,31 +592,6 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
           this._deactivateClose(e)
       }
 
-      _updateCanvas(thumbShowed, loading) {
-        if (thumbShowed && !loading && this.src) {
-
-          let tl = this.imageWidth * this.dataLeft;
-          let tt = this.imageHeight * this.dataTop;
-          let tw = this.imageWidth * this.dataWidth;
-          let th = this.imageHeight * this.dataHeight;
-          let area = (250*250);
-          let w = Math.ceil(Math.sqrt(area * tw/th));
-          let h = Math.ceil(area / w);
-
-          this.$.thumbnail.style.width = w+'px';
-          this.$.thumbnail.style.height = h+'px';
-
-          let canvas = this.$.thumbnail;
-          canvas.width = w;
-          canvas.height = h;
-
-          console.assert(this.imageLoader, "XXX");
-          canvas.getContext('2d').drawImage(this.imageLoader, tl, tt, tw, th, 0, 0, w, h);
-          this.$['thumbnail-balloon'].refit();
-
-        }
-      }
-
       _openThumbnailDialog(e) {
 
         this.dispatchEvent(new CustomEvent('close-contextual-menu', {
@@ -619,27 +613,37 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
       }
 
       _setThumbnail(e) {
-        this.$.thumbnail.toBlob(blob => {
-          MGAPP.registerRepresentation(blob, (key,ev,val) => {
-            switch (ev) {
-              case 'src':
-                MGAPP.assignItem(this.data.item,{
-                  images: { [this.data.key]: { thumbnail: key } },
-                });
-                break;
-              case 'complete': {
-                /* Thumbnail image uploaded, register to the database */
-                let uid = MGAPP.AU.currentUser.uid;
-                MGAPP.DB.ref().update({
-                  ['representations/'+key+'/uid']: uid,
-                  ['home/'+uid+'/items/'+this.data.item+'/images/'+this.data.key+'/thumbnail']: key
-                }, error => {
-                  if (error) {
-                    console.error("ERR",error);
-                  }
-                });
-              } break;
-            }
+
+        let tl = this.imageWidth * this.dataLeft;
+        let tt = this.imageHeight * this.dataTop;
+        let tw = this.imageWidth * this.dataWidth;
+        let th = this.imageHeight * this.dataHeight;
+        let area = (250*250);
+        let w = Math.ceil(Math.sqrt(area * tw/th));
+        let h = Math.ceil(area / w);
+
+        /* XXX Rather creating thumbnail data now, it should be better
+         * to replace the thumbnail with the rep and store the thumbnail ROI
+         * separatedly in data. Will look back at this once implementing
+         * mutileple ROIs as it may also need a definition for temporary representations.
+         */
+        let canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+
+        let imageKey = this.data.key;
+
+        console.assert(this.imageLoader, "XXX");
+        canvas.getContext('2d').drawImage(this.imageLoader, tl, tt, tw, th, 0, 0, w, h);
+        canvas.toBlob(blob => {
+
+          MGAPP.registerRepresentation(blob, {
+            complete: (key,complete) => {
+              /* Thumbnail image uploaded, matching image before update */
+              if (this.data.key == imageKey) {
+                this.set('data.thumbnail',key);
+              }
+            },
           });
         },'image/jpeg',0.8);
       }
