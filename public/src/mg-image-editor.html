@@ -433,6 +433,9 @@
 
         switch (e.detail.state) {
           case 'start':
+            /* Hack to prevent tracking locked into some kind of drag mode with a double-clicking */
+            e.preventDefault();
+
             this.tracking = {l: 0, t: 0, w: 0, h: 0};
 
             if (ax >= this.dataLeft + ew && ax < this.dataRight - ew
