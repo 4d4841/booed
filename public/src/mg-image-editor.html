@@ -71,6 +71,7 @@
         border-radius: 5px;
         overflow: hidden;
         margin: 5px;
+        border: 1px solid gray;
       }
 
       #thumbnail-balloon {
@@ -163,7 +164,16 @@
       vertical-align="top"
       dynamic-align
       horizontal-align="auto"
-    > <!--<div class="self-center" id="thumbnail"></div>--><img src="/images/logo-pumpkin-bouncing.svg" class="self-center" id="thumbnail">
+    > <!--<div class="self-center" id="thumbnail"></div>-->
+      <!--<img src="/images/logo-pumpkin-bouncing.svg" class="self-center" id="thumbnail">-->
+      <mg-image
+        id="thumbnail"
+        src="/images/logo-pumpkin-bouncing.svg"
+        class="self-center"
+        loaded="{{thumbnailLoaded}}"
+        roi="[[data.roiThumbnail]]"
+      >
+      </mg-image>
       <div class="horizontal layout end-justified thumbnail-panel-buttons" style="width:100%">
         <paper-icon-button id="save-thumbnail-button" icon="done" on-tap="_setThumbnail">
         </paper-icon-button>
@@ -236,6 +246,12 @@
           value: null,
         },
 
+        thumbnailLoaded: {
+          type: Boolean,
+          value: false,
+          observer: '_thumbNailLoaded',
+        },
+
         active: {
           type: Boolean,
           value: false,
@@ -280,7 +296,7 @@
         '_editorRectChanged(dataLeft, dataTop, dataWidth, dataHeight, imageWidth, imageHeight)',
         /*'_dataRectChanged(data.roi)',*/
         '_updateTitle(active, data.name, imageWidth, imageHeight)',
-        '_dataThumbnail(data.thumbnail)',
+        '_dataThumbnailChanged(data.thumbnail)',
       ]}
 
 
@@ -385,8 +401,6 @@
         },true);
         Polymer.Gestures.addListener(this, 'track', e => this._onTrack(e));
       }
-
-
 
       _setImageWH(w,h) {
         if (!w || !h) return;
@@ -512,16 +526,37 @@
         }
       }
 
-      _dataThumbnail(thumbnail) {
+      _dataThumbnailChanged(thumbnail) {
         thumbnail && MGAPP.registerRepresentation(thumbnail, {
           src: (key,src) => { if (key == this.data.thumbnail) {
             this.$.thumbnail.src = src;
             /* XXX balloon should wrap refit() to have this automatic */
             Polymer.Async.timeOut.run(() => {
-             this.$['thumbnail-balloon'].refit();
+              this.$['thumbnail-balloon'].refit();
             }, 0);
           }}
         });
+      }
+
+      _thumbNailLoaded(loaded) {
+        if (loaded) {
+          let area = (250*250);
+          let tw = this.$.thumbnail.naturalWidth;
+          let th = this.$.thumbnail.naturalHeight;
+
+          if (this.data && this.data.roiThumbnail) {
+            tw *= this.data.roiThumbnail[2];
+            th *= this.data.roiThumbnail[3];
+          }
+
+          let w = Math.ceil(Math.sqrt(area * tw/th));
+          let h = Math.ceil(area / w);
+
+          this.$.thumbnail.setProperties({
+            width: w,
+            height: h,
+          });
+        }
       }
 
       _dataChanged(data) {
@@ -530,10 +565,10 @@
           data.roi || this.set('data.roi', [0,0,1,1] );
           this.setProperties({
             rep: data.rep,
-            'dataLeft': data.roi[0],
-            'dataTop': data.roi[1],
-            'dataWidth': data.roi[2],
-            'dataHeight': data.roi[3],
+            dataLeft: data.roi[0],
+            dataTop: data.roi[1],
+            dataWidth: data.roi[2],
+            dataHeight: data.roi[3],
           });
 
         } else {
@@ -580,7 +615,6 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
         this.$.view.style.backgroundImage = `url(${src})`;
       }
 
-
       _deactivateClose(e) {
         this.style.opacity = 0;
         Polymer.Async.timeOut.run(() => {
@@ -616,39 +650,9 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
       }
 
       _setThumbnail(e) {
-
-        let tl = this.imageWidth * this.dataLeft;
-        let tt = this.imageHeight * this.dataTop;
-        let tw = this.imageWidth * this.dataWidth;
-        let th = this.imageHeight * this.dataHeight;
-        let area = (250*250);
-        let w = Math.ceil(Math.sqrt(area * tw/th));
-        let h = Math.ceil(area / w);
-
-        /* XXX Rather creating thumbnail data now, it should be better
-         * to replace the thumbnail with the rep and store the thumbnail ROI
-         * separatedly in data. Will look back at this once implementing
-         * mutileple ROIs as it may also need a definition for temporary representations.
-         */
-        let canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-
-        let imageKey = this.data.key;
-
-        console.assert(this.imageLoader, "XXX");
-        canvas.getContext('2d').drawImage(this.imageLoader, tl, tt, tw, th, 0, 0, w, h);
-        canvas.toBlob(blob => {
-
-          MGAPP.registerRepresentation(blob, {
-            complete: (key,complete) => {
-              /* Thumbnail image uploaded, matching image before update */
-              if (this.data.key == imageKey) {
-                this.set('data.thumbnail',key);
-              }
-            },
-          });
-        },'image/jpeg',0.8);
+        this.setProperties({
+          'data.roiThumbnail':[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight],
+        });
       }
 
       _setPreviousData(e) {

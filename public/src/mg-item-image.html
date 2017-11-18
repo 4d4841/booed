@@ -15,135 +15,136 @@
 <link rel="import" href="mg-thumbnail.html">
 
 <dom-module id="mg-item-image">
-  <template strip-whitespace>
-      <custom-style>
-    <style include="mg-common-styles iron-flex iron-flex-alignment">
-      :host {
-        position: relative;
-      }
+<template strip-whitespace>
+  <custom-style>
+<style include="mg-common-styles iron-flex iron-flex-alignment">
+  :host {
+    position: relative;
+  }
 
-      :host(.iron-selected) {
-        --mg-thumbnail : {
-          background-color: tomato;
-        };
-      }
+  :host(.iron-selected) {
+    --mg-thumbnail : {
+      background-color: tomato;
+    };
+  }
 
-      paper-progress {
-        position: absolute;
-        top: 5px;
-        width: calc(100% - 10px);
-        pointer-events: none;
-        border-radius: 2px;
-        z-index:3;
-      }
+  paper-progress {
+    position: absolute;
+    top: 5px;
+    width: calc(100% - 10px);
+    pointer-events: none;
+    border-radius: 2px;
+    z-index:3;
+  }
 
-      .selection-order {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(100,40,0,0.4);
-        color: white;
-        font-size: 60px;
-        font-weight: normal;
-        text-align: center;
-        line-height: 110px;
-        text-decoration: none;
-      }
+  .selection-order {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(100,40,0,0.4);
+    color: white;
+    font-size: 60px;
+    font-weight: normal;
+    text-align: center;
+    line-height: 110px;
+    text-decoration: none;
+  }
 
-    </style>
-      </custom-style>
+</style>
+  </custom-style>
 
-  <mg-thumbnail
-    src="[[src]]"
-    icon="photo"
-    label="[[name]]"
-    deleted$="[[deleted]]"
-    placeholder='images/logo-pumpkin-outline-grayout.svg'
-    transition="1.5s"
-    spinner
-  >
-    <template is="dom-if" if="{{showSelectionOrder}}">
-      <div class="selection-order">
-        [[selectionOrder]]
-      </div>
-    </template>
-
-    <template is="dom-if" if="{{showProgress}}">
-      <paper-progress
-        value="[[progress]]"
-      ></paper-progress>
-    </template>
-
-    <slot></slot>
-  </mg-thumbnail>
-
+<mg-thumbnail
+  src="[[src]]"
+  roi="[[roi]]"
+  icon="photo"
+  label="[[name]]"
+  deleted$="[[deleted]]"
+  placeholder='images/logo-pumpkin-outline-grayout.svg'
+  transition="1.5s"
+  spinner
+>
+  <template is="dom-if" if="{{showSelectionOrder}}">
+    <div class="selection-order">
+      [[selectionOrder]]
+    </div>
   </template>
-  <script>
-    class MGItemImage extends Polymer.GestureEventListeners(Polymer.Element) {
-      static get is() { return 'mg-item-image'; }
 
-      static get properties() { return {
-        /* If itemKey and key are set, edits will be synced. */
-        itemKey: {
-          type: String,
-        },
+  <template is="dom-if" if="{{showProgress}}">
+    <paper-progress
+      value="[[progress]]"
+    ></paper-progress>
+  </template>
 
-        key: {
-          type: String,
-        },
+  <slot></slot>
+</mg-thumbnail>
 
-        thumbnail: {
-          type: String,
-          value: '',
-          observer: '_thumbnailChanged',
-        },
+</template>
+<script>
+class MGItemImage extends Polymer.Element {
+  static get is() { return 'mg-item-image'; }
 
-        name: String,
+  static get properties() { return {
+    /* If itemKey and key are set, edits will be synced. */
+    itemKey: {
+      type: String,
+    },
 
-        progress: Number,
-        showProgress: {
-          type: Boolean,
-          computed: '_computeShowProgress(progress)',
-        },
+    key: {
+      type: String,
+    },
 
-        selectionOrder: String,
-        showSelectionOrder: {
-          type: Boolean,
-          computed: '_computeShowSelectionOrder(selectionOrder)',
-        },
+    thumbnail: {
+      type: String,
+      value: '',
+      observer: '_thumbnailChanged',
+    },
+
+    name: String,
+
+    progress: Number,
+    showProgress: {
+      type: Boolean,
+      computed: '_computeShowProgress(progress)',
+    },
+
+    selectionOrder: String,
+    showSelectionOrder: {
+      type: Boolean,
+      computed: '_computeShowSelectionOrder(selectionOrder)',
+    },
 
 
-      }}
+  }}
 
-      static get observers() { return [
-      ]}
+  static get observers() { return [
+  ]}
 
-      _thumbnailChanged(repKey) {
-        if (repKey) {
-          let uid = MGAPP.AU.currentUser.uid;
-          this.set('src',null);
-          MGAPP.registerRepresentation(repKey, { src: (key,src) => {
-            if (key == this.thumbnail) this.set('src',src);
-          }});
-        }
-        else {
-          this.set('src','images/logo-pumpkin-outline-grayout.svg');
-        }
-      }
-
-      _computeShowProgress(progress) {
-        if (typeof(progress) == "undefined") return false;
-        if (progress == 100) return false;
-        return true;
-      }
-
-      _computeShowSelectionOrder(selectionOrder) {
-        if (selectionOrder) return true;
-        return false;
-      }
-
+  _thumbnailChanged(repKey) {
+    if (repKey) {
+      let uid = MGAPP.AU.currentUser.uid;
+      this.set('src',null);
+      MGAPP.registerRepresentation(repKey, { src: (key,src) => {
+        if (key == this.thumbnail) this.set('src',src);
+      }});
     }
+    else {
+      this.set('src','images/logo-pumpkin-outline-grayout.svg');
+    }
+  }
 
-    customElements.define(MGItemImage.is, MGItemImage);
-  </script>
+  _computeShowProgress(progress) {
+    if (typeof(progress) == "undefined") return false;
+    if (progress == 100) return false;
+    return true;
+  }
+
+  _computeShowSelectionOrder(selectionOrder) {
+    if (selectionOrder) return true;
+    return false;
+  }
+
+}
+
+customElements.define(MGItemImage.is, MGItemImage);
+</script>
 </dom-module>

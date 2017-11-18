@@ -36,7 +36,7 @@
 
   <script>
 
-    class MGImage extends Polymer.GestureEventListeners(Polymer.Element) {
+    class MGImage extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element) {
 
       static get is() { return 'mg-image'; }
 
@@ -44,10 +44,19 @@
 
         alt: String,
 
+        width: {
+          type: Number,
+        },
+
+        height: {
+          type: Number,
+        },
+        /*
         storage: {
           type: String,
           observer: '_storageChanged',
         },
+        */
 
         src: {
           type: String,
@@ -92,7 +101,7 @@
       }}
 
       static get observers() { return [
-        '_roiChanged(roi,naturalWidth,naturalHeight)',
+        '_roiChanged(roi,naturalWidth,naturalHeight,width,height)',
       ]}
 
       _transitionChanged(trans) {
@@ -111,10 +120,15 @@
       }
 
       /* XXX Add a property to prevent scaling of cover mode, just for keeping ROIs in frames */
-      _roiChanged(roi, nw, nh) {
+      _roiChanged(roi, nw, nh, width, height) {
+        this.set('loaded',false);
+
+        if (width && width != 'auto') this.style.width = width+'px';
+        if (height && height != 'auto') this.style.height = height+'px';
+
         if (roi && nw && nh) {
-          let vw = this.clientWidth;
-          let vh = this.clientHeight;
+          let vw = this.width || this.clientWidth;
+          let vh = this.height || this.clientHeight;
 
           /* convert 0..1 to natural geometry */
           let l = roi[0] * nw;
@@ -130,11 +144,13 @@
             vw = vh * w/h;
           }
 
+
           let s = vw/w;
 
           let x = (this.clientWidth-vw)/2 - l*s;
           let y = (this.clientHeight-vh)/2 - t*s;
 
+          /*
           if (x > 0) {
             x = 0;
           } else if (x + nw*s < this.clientWidth) {
@@ -146,6 +162,7 @@
           } else if (y + nh*s < this.clientHeight) {
             y = this.clientHeight - nh*s;
           }
+          */
 
           this.set('sizing', `${nw*s}px ${nh*s}px`);
           this.set('positioning', `${x}px ${y}px`);
@@ -153,6 +170,7 @@
           this.set('sizing', 'cover');
           this.set('positioning', 'center');
         }
+        this.set('loaded',true);
       }
 
       _srcChanged(src) {
@@ -165,55 +183,19 @@
               return;
             }
 
-            this.set('loaded',true);
             this.style.backgroundImage = 'url(\'' + imgLoader.src + '\')';
             this.setProperties({
               naturalWidth: imgLoader.naturalWidth,
               naturalHeight: imgLoader.naturalHeight,
             });
+            this.set('loaded',true);
           };
           imgLoader.src = src;
         } else {
           if (!this.placeholder) {
             this.style.backgroundImage = 'none';
           } else this.style.backgroundImage = 'url(\'' + this.placeholder + '\')';
-          this.set('loaded',true);
-        }
-      }
-
-      disconnectedCallback() {
-        super.disconnectedCallback();
-      }
-
-      _removeListener() {
-        let img = MGIMAGES[this.storage];
-        for (let i = 0,listener; listener = img.listeners[i] ; ++i) {
-          if (this == listener) {
-            img.listeners.splice(i,1);
-            return;
-          }
-        }
-      }
-
-      _updateProgress(progress) {
-        if (progress == 100) {
-          this.set('src',MGIMAGES[this.storage].src);
-        }
-      }
-
-      _storageChanged(storage) {
-        if (storage) {
-          if (MGIMAGES[storage]) {
-            if (MGIMAGES[storage].src) {
-              this.set('src',MGIMAGES[storage].src);
-            } else if (MGIMAGES[storage].listeners) {
-              MGIMAGES[storage].listeners.push(this);
-            }
-          }
-
-          MGAPP.ST.ref(storage).getDownloadURL().then(function(url){
-            this.set('src', url);
-          }.bind(this));
+          this.set('loaded',false);
         }
       }
 
