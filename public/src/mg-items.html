@@ -83,10 +83,10 @@
         <iron-icon icon="add"></iron-icon> สร้าง
       </paper-button>
 
-      <iron-selector class="items-container" attr-for-selected="name" selected="[[itemKey]]">
+      <iron-selector class="items-container" attr-for-selected="key" selected="[[itemKey]]">
       <template is="dom-repeat" items="[[itemList]]" mutable-data>
         <mg-thumbnail
-          name="[[item.key]]"
+          key="[[item.key]]"
           label="[[_formatLabel(item.name)]]"
           icon="[[_formatRoleIcon(item.role)]]"
           src="[[item._src]]"
