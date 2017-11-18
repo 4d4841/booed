@@ -562,6 +562,10 @@
       _dataChanged(data) {
         this.set('edited',false);
         if (data) {
+          this.set('active',true);
+          this.style.opacity = 1;
+          this.set('loading', true);
+
           data.roi || this.set('data.roi', [0,0,1,1] );
           this.setProperties({
             rep: data.rep,
@@ -573,14 +577,12 @@
 
         } else {
           this.set('rep', null);
+          this.set('active',false);
         }
       }
 
       _repChanged(rep) {
         if (rep) {
-          this.set('active',true);
-          this.style.opacity = 1;
-          this.set('loading', true);
           MGAPP.registerRepresentation(rep, {
             src: (key,src) => { if (key == this.rep) {
 /***
@@ -602,7 +604,6 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
           });
         } else {
           this.set('src',null);
-          this.set('active',false);
           this.set('imageLoader', null);
 
           this.$.view.setAttribute('viewBox','0 0 200 200');
@@ -652,6 +653,7 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
       _setThumbnail(e) {
         this.setProperties({
           'data.roiThumbnail':[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight],
+          'data.thumbnail':this.data.rep,
         });
       }
 
