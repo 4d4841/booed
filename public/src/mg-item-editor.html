@@ -328,7 +328,12 @@
         if (!roi) return;
         let itemKey = this.editingData.item;
 
+        let idx = this.clipboardList.indexOf(this.editingData);
+        this.notifyPath(['clipboardList',idx,'thumbnail']);
+        this.notifyPath(['clipboardList',idx,'roiThumbnail']);
+
         if (itemKey) {
+
           /* If data isn't on clipboard, bake a thumbnail from roiThumbnail. */
           let imageKey = this.editingData.key;
           let editor = this.$['image-editor'];
@@ -351,8 +356,11 @@
             MGAPP.registerRepresentation(thumbnailBlob, {
               complete: (thumbnailKey,complete) => {
 
+                /* Delete roiThumbnail since it has been baked */
+                this.set('editingData.roiThumbnail', null);
+
                 MGAPP.assignItem( itemKey, {
-                  images: { [itemKey]: { thumbnail: thumbnailKey } },
+                  images: { [imageKey]: { thumbnail: thumbnailKey } },
                 });
 
                 let uid = MGAPP.AU.currentUser.uid;
@@ -364,17 +372,11 @@
                 MGAPP.DB.ref().update(registerData, error => {
                   error && console.error("ERR",error);
                 });
+
               },
             });
           }, 'image/jpeg',0.8);
 
-          /* Delete roiThumbnail since it has been baked */
-          this.set('editingData.roiThumbnail', null);
-
-        } else {
-          let idx = this.clipboardList.indexOf(this.editingData);
-          this.notifyPath(['clipboardList',idx,'thumbnail']);
-          this.notifyPath(['clipboardList',idx,'roiThumbnail']);
         }
       }
 
@@ -950,13 +952,70 @@
 
         path+='/images/';
         let coverKey = MGAPP.get(['items',itemKey,'cover']);
+        let area = (250*250);
+        let waitThumbnails = 0;
+
         this.clipboardList.forEach((data,index) => {
           if (data.deleted) return;
           let imageKey = ref.push().key;
           coverKey = coverKey || imageKey;
           registerData[path+imageKey+'/name'] = data.name || null;
-          registerData[path+imageKey+'/thumbnail'] = data.thumbnail || null;
           registerData[path+imageKey+'/rep'] = data.rep || null;
+
+          if (data.roiThumbnail) {
+            waitThumbnails++;
+            MGAPP.registerRepresentation(data.rep,{src: (key,src) => {
+
+              let imageLoader = new Image();
+              imageLoader.crossOrigin="anonymous";
+              imageLoader.onload = e => {
+                let width = imageLoader.naturalWidth;
+                let height = imageLoader.naturalHeight;
+
+                let tl = width * data.roiThumbnail[0];
+                let tt = height * data.roiThumbnail[1];
+                let tw = width * data.roiThumbnail[2];
+                let th = height * data.roiThumbnail[3];
+
+                let w = Math.ceil(Math.sqrt(area * tw/th));
+                let h = Math.ceil(area / w);
+
+                let canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                canvas.getContext('2d').drawImage(imageLoader, tl, tt, tw, th, 0, 0, w, h);
+                canvas.toBlob( thumbnailBlob => {
+                  MGAPP.registerRepresentation( thumbnailBlob, {
+                    complete: (thumbnailKey,complete) => {
+
+                      MGAPP.assignItem(itemKey, {
+                        images: {[imageKey]: {thumbnail: thumbnailKey}},
+                      });
+                      registerData[path+imageKey+'/thumbnail'] = thumbnailKey;
+
+                      waitThumbnails--;
+                      if (waitThumbnails == 0) {
+                        MGAPP.DB.ref().update(registerData, error => {
+                          if (!error) {
+                          } else {
+                            console.error("ERR",error);
+                          }
+                        });
+                      }
+                    },
+                  });
+                }, 'image/jpeg',0.8);
+              };
+              imageLoader.src = src;
+
+            }});
+            let canvas = document.createElement('canvas');
+
+
+
+          } else {
+            registerData[path+imageKey+'/thumbnail'] = data.thumbnail || null;
+          }
         });
 
         registerData['home/'+uid+'/items/'+itemKey+'/cover'] = coverKey;
@@ -964,12 +1023,14 @@
         /* XXX Should it also update local? Or should it rely only on query events? */
         /* XXX Need to try off-line. */
 
-        MGAPP.DB.ref().update(registerData, error => {
-          if (!error) {
-          } else {
-            console.error("ERR",error);
-          }
-        });
+        if (waitThumbnails == 0) {
+          MGAPP.DB.ref().update(registerData, error => {
+            if (!error) {
+            } else {
+              console.error("ERR",error);
+            }
+          });
+        }
       }
 
       newItem(role,name) {
