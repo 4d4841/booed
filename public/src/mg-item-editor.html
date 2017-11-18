@@ -480,7 +480,7 @@
         this._LastTapIndex = e.model.index;
       }
 
-      _indexImage(imageKey,cb) {
+      _indexImage(imageKey,cb,nacb) {
         /* XXX optimize later
         if (!this._ImageMap) {
           this._ImageMap = newMap();
@@ -492,14 +492,17 @@
         }
         */
 
-        for (let i = 0, data; data = this.iconList[i]; ++i) {
+        let i, data;
+        for (i = 0; data = this.iconList[i]; ++i) {
           //this._ImageMap.set(data.key, i);
           if (data.key == imageKey) {
-            if (cb) { cb(i); }
+            if (cb) { cb(i,data); }
 
             return i;
           }
         }
+
+        if (nacb) { nacb(cb);}
         return -1;
       }
 
@@ -654,6 +657,29 @@
         MGAPP.DB.ref().update(registerData, error => { if (!error) {} });
 
         this._uploadReps(uid,itemKey,files);
+      }
+
+      /* Set image thumbnails from global notification */
+      setItem(path,value) {
+        switch(path[2]) {
+          case 'images': {
+
+            switch(path.length) {
+              case 4: {
+                this._indexImage(path[3],null,cb => {
+                  this.push('iconList', {item:path[1], key:path[3]});
+                });
+
+              } break;
+              case 5: {
+                this._indexImage(path[3],idx => {
+                  this.set(['iconList',idx,path[4]], value);
+                });
+              } break;
+            }
+
+          } break;
+        }
       }
 
       _onItemSnapshot(snapshot) {
@@ -986,11 +1012,12 @@
                 canvas.getContext('2d').drawImage(imageLoader, tl, tt, tw, th, 0, 0, w, h);
                 canvas.toBlob( thumbnailBlob => {
                   MGAPP.registerRepresentation( thumbnailBlob, {
-                    complete: (thumbnailKey,complete) => {
-
+                    key: thumbnailKey => {
                       MGAPP.assignItem(itemKey, {
                         images: {[imageKey]: {thumbnail: thumbnailKey}},
                       });
+                    },
+                    complete: (thumbnailKey,complete) => {
                       registerData[path+imageKey+'/thumbnail'] = thumbnailKey;
 
                       waitThumbnails--;
