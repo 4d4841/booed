@@ -26,6 +26,8 @@
         background-repeat: no-repeat;
         background-position: center;
         box-sizing: border-box;
+
+        @apply(--mg-image);
       }
 
     </style>
@@ -104,13 +106,6 @@
         '_roiChanged(roi,naturalWidth,naturalHeight,width,height)',
       ]}
 
-      _transitionChanged(trans) {
-        if (trans) {
-//          this.style.transition = 'background '+trans+', background-position 0s, background-size 0s';
-//          this.style.transitionDuration = '0s';
-        }
-      }
-
       _sizingChanged(sizing) {
         this.style.backgroundSize = sizing;
       }
@@ -127,8 +122,10 @@
         if (height && height != 'auto') this.style.height = height+'px';
 
         if (roi && nw && nh) {
-          let vw = this.width || this.clientWidth;
-          let vh = this.height || this.clientHeight;
+          width = width || this.clientWidth;
+          height = height || this.clientHeight;
+          let vw = width;
+          let vh = height;
 
           /* convert 0..1 to natural geometry */
           let l = roi[0] * nw;
@@ -144,25 +141,10 @@
             vw = vh * w/h;
           }
 
-
           let s = vw/w;
 
-          let x = (this.clientWidth-vw)/2 - l*s;
-          let y = (this.clientHeight-vh)/2 - t*s;
-
-          /*
-          if (x > 0) {
-            x = 0;
-          } else if (x + nw*s < this.clientWidth) {
-            x = this.clientWidth - nw*s;
-          }
-
-          if (y > 0) {
-            y = 0;
-          } else if (y + nh*s < this.clientHeight) {
-            y = this.clientHeight - nh*s;
-          }
-          */
+          let x = (width-vw)/2 - l*s;
+          let y = (height-vh)/2 - t*s;
 
           this.set('sizing', `${nw*s}px ${nh*s}px`);
           this.set('positioning', `${x}px ${y}px`);
@@ -207,7 +189,6 @@
 
         if (!placeholder) {
           this.style.backgroundImage = "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)";
-//          this.style.backgroundImage = "url(\'data:image/svg+xml;utf8,<svg class=\"shadow\" xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"0 0 200000 0\"></svg>\')";
         } else {
           this.style.backgroundImage = 'url(\'' + placeholder + '\')';
         }

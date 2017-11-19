@@ -294,7 +294,7 @@
 
       static get observers() { return [
         '_editorRectChanged(dataLeft, dataTop, dataWidth, dataHeight, imageWidth, imageHeight)',
-        /*'_dataRectChanged(data.roi)',*/
+        '_dataRectChanged(data.roi)',
         '_updateTitle(active, data.name, imageWidth, imageHeight)',
         '_dataThumbnailChanged(data.thumbnail)',
       ]}
@@ -314,11 +314,6 @@
         }
       }
 
-      /* XXX Figure how to allow updating by remote editings later.
-         XXX Now it won't work cuz if it updates thumbnail the modified
-         XXX ROI data will be reset.
-         XXX This should be designed along with role-specific ROI datas.
-
       _dataRectChanged(roi) {
         if (roi) {
           this.setProperties({
@@ -329,7 +324,6 @@
           });
         }
       }
-      */
 
       _editorRectChanged(l,t,w,h,iw,ih) {
         if (!this.data) {

@@ -988,6 +988,7 @@
           registerData[path+imageKey+'/name'] = data.name || null;
           registerData[path+imageKey+'/rep'] = data.rep || null;
 
+          /* If thumbnails were virtually defined with ROIs, it bakes them first */
           if (data.roiThumbnail) {
             waitThumbnails++;
             MGAPP.registerRepresentation(data.rep,{src: (key,src) => {

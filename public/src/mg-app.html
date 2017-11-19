@@ -193,13 +193,14 @@
       }
 
       .head-logo {
-        border-radius: 30px;
+        border-radius: 10px 10px 0 0;
         @apply(--layout-flex);
         @apply(--layout-horizontal);
         min-width: 100px;
         max-width: 180px;
         /*min-width:  calc(var(--booed-logo-height) * 3.7);*/
         height: var(--booed-header-height);
+        --paper-button-ink-color: white;
 
         background-image: url(/images/logo-sat/logo-B-sat.svg), url(/images/logo-sat/logo-o-sat.svg), url(/images/logo-sat/logo-oo-sat.svg), url(/images/logo-sat/logo-e-sat.svg), url(/images/logo-sat/logo-d-sat.svg);
         background-size:
@@ -850,7 +851,7 @@
       let key, blob = keyOrBlob instanceof Blob ? keyOrBlob : null;
 
       if (blob) {
-          key = MGAPP.DB.ref('representations').push().key;
+          key = this.DB.ref('representations').push().key;
       } else {
         key = keyOrBlob;
       }
