@@ -449,11 +449,15 @@
           case 'start':
             /* Hack to prevent tracking locked into some kind of drag mode with a double-clicking */
             e.preventDefault();
+            if (e.detail.sourceEvent.shiftKey) {
+              this._KeepAspect = this.dataWidth/this.dataHeight;
+            }
 
             this.tracking = {l: 0, t: 0, w: 0, h: 0};
 
             if (ax >= this.dataLeft + ew && ax < this.dataRight - ew
               && ay >= this.dataTop + eh && ay < this.dataBottom - eh) {
+              /* Mousedown in the middle */
               this.tracking.l = 1;
               this.tracking.t = 1;
             } else {
@@ -462,6 +466,11 @@
                 this.tracking.w = -1;
               } else if (ax >= this.dataRight - ew) {
                 this.tracking.w = 1;
+                /*
+                if (this._KeepAspect) {
+                  this.tracking.t = this._KeepAspect;
+                }
+                */
               }
 
               if (ay < this.dataTop + eh) {
@@ -477,6 +486,7 @@
             this.set('tracking', null);
             this.set('edited',true);
             //this.set('data.roi',[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight]);
+            delete this._KeepAspect;
           } break;
           case 'track': {
 
@@ -487,40 +497,32 @@
               window.getSelection().removeAllRanges();
             }
 
-            if (this.tracking.l) {
-              let l = this.dataLeft + ddx;
-              this.set('dataLeft',l > 1 ? 1 : l);
-            }
-            if (this.tracking.t) {
-              let t = this.dataTop + ddy;
-              this.set('dataTop', t > 1 ? 1 : t);
-            }
-            if (this.tracking.w) {
-              let w = this.dataWidth + ddx * this.tracking.w;
-              this.set('dataWidth', w < 0 ? 0 : w);
-            }
-            if (this.tracking.h) {
-              let h = this.dataHeight + ddy * this.tracking.h;
-              this.set('dataHeight', h < 0 ? 0 : h);
+            let ll = this.dataLeft + this.tracking.l * ddx;
+
+            let tt = this.dataTop + this.tracking.t * ddy;
+
+            let ww = this.dataWidth + this.tracking.w * ddx;
+
+            let hh = this.dataHeight + this.tracking.h * ddy;
+
+            if (ll < 0) {
+              ww = ww + ll; ll = 0;
+            } else if (ll + ww > 1) {
+              ww = 1 - ll;
             }
 
-            if (this.dataLeft < 0) {
-              let w = this.dataWidth + this.dataLeft;
-              this.set('dataWidth', w < 0 ? 0 : w);
-              this.set('dataLeft', 0);
-            } else if (this.dataLeft + this.dataWidth > 1) {
-              let w = 1 - this.dataLeft;
-              this.set('dataWidth', w < 0 ? 0 : w);
+            if (tt < 0) {
+              hh = hh + tt; tt = 0;
+            } else if (tt + hh > 1) {
+              hh = 1 - tt;
             }
 
-            if (this.dataTop < 0) {
-              let h = this.dataHeight + this.dataTop;
-              this.set('dataHeight', h < 0 ? 0 : h);
-              this.set('dataTop', 0);
-            } else if (this.dataTop + this.dataHeight > 1) {
-              let h = 1 - this.dataTop;
-              this.set('dataHeight', h < 0 ? 0 : h);
-            }
+            this.setProperties({
+              dataLeft: ll > 1 ? 1 : ll < 0 ? 0 : ll,
+              dataTop: tt > 1 ? 1 : tt < 0 ? 0 : tt,
+              dataWidth: ww < 0 ? 0 : ww,
+              dataHeight: hh < 0 ? 0 : hh,
+            });
 
           } break;
         }
