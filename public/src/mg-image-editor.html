@@ -453,7 +453,12 @@
               this._KeepAspect = this.dataWidth/this.dataHeight;
             }
 
-            this.tracking = {l: 0, t: 0, w: 0, h: 0};
+            this.tracking = {
+              ax: ax, ay: ay,
+              ll:this.dataLeft, tt: this.dataTop,
+              ww: this.dataWidth, hh: this.dataHeight,
+              l: 0, t: 0, w: 0, h: 0,
+            };
 
             if (ax >= this.dataLeft + ew && ax < this.dataRight - ew
               && ay >= this.dataTop + eh && ay < this.dataBottom - eh) {
@@ -466,11 +471,6 @@
                 this.tracking.w = -1;
               } else if (ax >= this.dataRight - ew) {
                 this.tracking.w = 1;
-                /*
-                if (this._KeepAspect) {
-                  this.tracking.t = this._KeepAspect;
-                }
-                */
               }
 
               if (ay < this.dataTop + eh) {
@@ -489,6 +489,8 @@
             delete this._KeepAspect;
           } break;
           case 'track': {
+            let dx = ax - this.tracking.ax;
+            let dy = ay - this.tracking.ay;
 
             /* XXXX hack to clear selection */
             if ( document.selection ) {
@@ -497,13 +499,10 @@
               window.getSelection().removeAllRanges();
             }
 
-            let ll = this.dataLeft + this.tracking.l * ddx;
-
-            let tt = this.dataTop + this.tracking.t * ddy;
-
-            let ww = this.dataWidth + this.tracking.w * ddx;
-
-            let hh = this.dataHeight + this.tracking.h * ddy;
+            let ll = this.tracking.ll + this.tracking.l * dx;
+            let tt = this.tracking.tt + this.tracking.t * dy;
+            let ww = this.tracking.ww + this.tracking.w * dx;
+            let hh = this.tracking.hh + this.tracking.h * dy;
 
             if (ll < 0) {
               ww = ww + ll; ll = 0;
@@ -517,11 +516,68 @@
               hh = 1 - tt;
             }
 
+            if (this._KeepAspect) {
+              if (this.tracking.l == 1 && this.tracking.w == -1
+                && this.tracking.t == 1 && this.tracking.h == -1 ) {
+
+                if (ww/hh < this._KeepAspect) {
+                  hh = ww / this._KeepAspect;
+                  tt = this.tracking.tt + this.tracking.hh - hh;
+                } else {
+                  ww = hh * this._KeepAspect;
+                  ll = this.tracking.ll + this.tracking.ww - ww;
+                }
+
+              } else if (this.tracking.l == 0 && this.tracking.w == 1
+                && this.tracking.t == 1 && this.tracking.h == -1 ) {
+
+                if (ww/hh < this._KeepAspect) {
+                  hh = ww / this._KeepAspect;
+                  tt = this.tracking.tt + this.tracking.hh - hh;
+                } else {
+                  ww = hh * this._KeepAspect;
+                }
+
+              } else if (this.tracking.l == 1 && this.tracking.w == -1
+                && this.tracking.t == 0 && this.tracking.h == 1 ) {
+
+                if (ww/hh < this._KeepAspect) {
+                  hh = ww / this._KeepAspect;
+                } else {
+                  ww = hh * this._KeepAspect;
+                  ll = this.tracking.ll + this.tracking.ww - ww;
+                }
+
+              } else if (this.tracking.w == 1 && this.tracking.h == 1) {
+
+                if (ww/hh < this._KeepAspect) {
+                  hh = ww / this._KeepAspect;
+                } else {
+                  ww = hh * this._KeepAspect;
+                }
+
+              } else if (this.tracking.w) {
+                tt -= ((ww / this._KeepAspect) - hh) * 0.5;
+                hh = ww / this._KeepAspect;
+              } else if (this.tracking.h) {
+                ll -= ((hh * this._KeepAspect) - ww) * 0.5;
+                ww = hh * this._KeepAspect;
+              }
+            }
+
+            /* XXX */
+
+            ll = ll > 1 ? 1 : ll < 0 ? 0 : ll;
+            ww = ww < 0 ? 0 : ll + ww > 1 ? 1 - ll : ww;
+
+            tt = tt > 1 ? 1 : tt < 0 ? 0 : tt;
+            hh = hh < 0 ? 0 : tt + hh > 1 ? 1 - tt : hh;
+
             this.setProperties({
-              dataLeft: ll > 1 ? 1 : ll < 0 ? 0 : ll,
-              dataTop: tt > 1 ? 1 : tt < 0 ? 0 : tt,
-              dataWidth: ww < 0 ? 0 : ww,
-              dataHeight: hh < 0 ? 0 : hh,
+              dataLeft: ll,
+              dataTop: tt,
+              dataWidth: ww,
+              dataHeight: hh,
             });
 
           } break;
