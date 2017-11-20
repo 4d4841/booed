@@ -94,7 +94,7 @@
   </template>
   <script>
   (function(){
-    var _MGUserAppMenu = { selected: "", entries: [
+    var _MGUserAppMenu = { entries: [
             { name:"profile", path:"/user/profile", icon:"face-female", title:"โพรไฟล์"},
             { name:"order", path:"/user/order", icon:"credit-card", title:"รายการสั่งซื้อ"},
             { name:"items", path:"/user/items", icon:"widgets", title:"ไอเท็ม",
@@ -129,7 +129,7 @@
               ]} },
               */
 
-    var _MGUserMenu = { entries: [
+    var _MGProfileMenu = { entries: [
             { name: "user-menu",
               icon: "account-box",
               submenu: { entries:[
@@ -143,7 +143,7 @@
           ]};
 
 
-    var _MGUserAppSignInMenu = { entries: [
+    var _MGSignInMenu = { entries: [
             { name: "profile", path: "/user/profile", icon: "lock", title: "เข้าสู่ระบบ"},
             { name: "help", icon: "help", title: "ความช่วยเหลือ",
               submenu: { entries: [
@@ -157,23 +157,19 @@
       static get is() { return 'mg-user'; }
 
       static get properties() { return {
-        /*
+
         route: {
           type: Object,
-          notify: true
+          notify: true,
+          observer: '_routeChanged'
         },
-        */
-
-        route: Object,
 
         subroute: {
           type: Object,
-          notify: true
         },
 
         routeData: {
           type: Object,
-          notify: true
         },
 
         page: {
@@ -195,53 +191,64 @@
 
         userMenu: {
           type: Object,
+          observer: '_userMenuChanged',
+        },
+
+        userMenuSelected: {
+          type: String,
+          observer: '_userMenuSelectedChanged',
+        },
+
+        profileMenu: {
+          type: Object,
           notify: true
         },
 
         visible: {
           type: Boolean,
           reflectToAttribute: true,
-          value: false
+          value: false,
+          observer: '_visibleChanged',
         },
       }}
 
       static get observers() { return [
-        '_routeDataChanged(routeData)',
         '_userChanged(me.user)',
-        '_visibleChanged(visible, menu, me)',
-        '_selectedChanged(menu.selected)',
+        '_menuSelectedChanged(menu.selected)',
       ]}
 
-      _visibleChanged( visible , menu, me) {
-        if (visible && menu && me) {
-          if (this.me.user) {
-            this.set('menu', _MGUserAppMenu);
-          }
-          else {
-            this.set('menu', _MGUserAppSignInMenu);
-          }
+      _userMenuChanged(userMenu) {
+        if (this.visible) {
+          this.set('menu',userMenu);
+          this.set('menu.selected', this.userMenuSelected);
+        }
+      }
+
+      _visibleChanged( visible ) {
+        if (visible) {
+          this.set('menu',this.userMenu);
+          this.set('menu.selected', this.userMenuSelected);
         }
       }
 
       _setMenu(menu) {
-        if (this.visible) {
-          if (this.menu && menu) {
-            menu.selected = this.menu.selected;
-          }
-          this.set('menu', menu);
+        if (this.menu && menu) {
+          menu.selected = this.menu.selected;
         }
+        this.set('menu', menu);
       }
 
       _userChanged(user) {
         if (user) {
-          _MGUserMenu.entries[0].title = this.me.user.email;
-          _MGUserMenu.entries[0].submenu.action = this._onUserMenu.bind(this);
-          this.set('userMenu', _MGUserMenu);
+          this.set('userMenu', _MGUserAppMenu);
 
-          this._setMenu(_MGUserAppMenu);
+          _MGProfileMenu.entries[0].title = this.me.user.email;
+          _MGProfileMenu.entries[0].submenu.action = this._onProfileMenu.bind(this);
+          this.set('profileMenu', _MGProfileMenu);
+
         } else {
-          this._setMenu(_MGUserAppSignInMenu);
-          this.set('userMenu', { entries: [
+          this.set('userMenu', _MGSignInMenu);
+          this.set('profileMenu', { entries: [
             { action:this._signGoogle.bind(this), name: "profile", icon: "google", title: "เข้าสู่ระบบด้วยบัญชีกูเกิ้ล"},
           ]});
         }
@@ -251,32 +258,41 @@
         console.log("sign g");
       }
 
-      _selectedChanged(selected) {
-        if (this.visible) {
+      _menuSelectedChanged(selected) {
+        if (this.menu == this.userMenu) {
+          this.set('page', selected);
+        }
+      }
+
+      _setMenuSelected(selected) {
+        if (this.menu == this.userMenu) {
           for(let i = 0; i < this.menu.entries.length; ++i) {
             if (this.menu.entries[i].name == selected) {
-
-              this.set('routeData.page', selected);
               this.set('page', selected);
               return;
             }
           }
-          this.set('page', 'profile');
         }
       }
 
-      _routeDataChanged( routeData ) {
-        if (this.visible) {
-          this.set('menu.selected', routeData.page || 'profile');
+      _userMenuSelectedChanged(selected) {
+        this._setMenuSelected(selected);
+      }
+
+      _routeChanged( route) {
+        if (route.prefix == '/user') {
+          let page = this.routeData.page;
+          this.set('userMenuSelected', page);
         }
       }
 
-      _pageChanged( pg ) {
+      _pageChanged( page ) {
         this.dispatchEvent(new CustomEvent('change-section', {
           bubbles: true,
           composed: true,
-          detail: {title: pg && pg[0].toUpperCase() + pg.slice(1)}
+          detail: {title: page && page[0].toUpperCase() + page.slice(1)}
          }));
+         this.set('routeData.page',page);
       }
 
       _onProfileMenu (e) {

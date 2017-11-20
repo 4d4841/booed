@@ -320,7 +320,7 @@
         */
       }
 
-      #drawer-contents #user-menu {
+      #drawer-contents #profile-menu {
         border-bottom: 1px dashed tomato;
         --mg-menu-collapse: {
           border-radius: 5px 0 0 5px;
@@ -519,7 +519,7 @@
           <mg-badge-button id="fmPicker" icon="wc" path-style="fill:lightpink" ></mg-badge-button>
           <mg-badge-button id="languae-button" icon="language" path-style="fill:blue" ></mg-badge-button>
           <mg-cart-button id="cart-button" cart="{{cart}}" ></mg-cart-button>
-          <mg-profile-button id="profile-button" route="{{route}}" me="[[me]]" menu="[[userMenu]]"></mg-profile-button>
+          <mg-profile-button id="profile-button" route="{{route}}" me="[[me]]" menu="[[profileMenu]]"></mg-profile-button>
           </div>
 
         </div>
@@ -565,7 +565,7 @@
     </app-header>
 
           <mg-balloon id="balloon" no-overlap vertical-align="top" dynamic-align horizontal-align="auto" hidden$="[[smallScreen]]">
-            <mg-menu style="min-width:200px; padding:0" menu="[[submenu]]"></mg-menu>
+            <mg-menu path="{{route.path}}" style="min-width:200px; padding:0" menu="[[submenu]]"></mg-menu>
           </mg-balloon>
 
 
@@ -578,8 +578,8 @@
           <paper-icon-button class="photo-button" on-tap="_openProfile" icon$="[[_computeMeIcon(me.user.photoURL)]]" src="[[me.user.photoURL]]"></paper-icon-button>
           <h3 class="self-center">[[me.user.displayName]]</h3>
         </div>
-        <mg-menu id="user-menu" menu="[[userMenu]]"></mg-menu>
-        <mg-menu id="app-menu" menu="[[menu]]"></mg-menu>
+        <mg-menu path="{{route.path}}" id="profile-menu" menu="[[profileMenu]]"></mg-menu>
+        <mg-menu path="{{route.path}}" id="app-menu" menu="[[menu]]"></mg-menu>
       </div>
     </app-drawer>
     </template>
@@ -595,7 +595,7 @@
       <mg-user
         id="user"
         menu="{{menu}}"
-        user-menu="{{userMenu}}"
+        profile-menu="{{profileMenu}}"
         name="user"
         me="{{me}}"
         items="{{items}}"
