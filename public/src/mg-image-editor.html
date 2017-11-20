@@ -203,7 +203,7 @@
       </defs>
 
       <path d$="[[rPath]]" style$="[[_styleBorder(tracking)]]"/>
-      <path d$="[[rPathInner]]" style$="[[_styleBorderInner(tracking)]]"/>
+      <path d$="[[rPathInner]]" style$="[[_styleBorderInner(tracking,showAspectLock)]]"/>
 
       <use id="chevrontop" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataMidW,dataTop,'top')]]" />
       <use id="chevronleft" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataLeft,dataMidH,'left')]]" />
@@ -345,7 +345,10 @@
         return tracking ? 'fill:rgba(0,0,0,0.9);stroke:none' : 'fill:none;stroke-width:1;stroke:black';
       }
 
-      _styleBorderInner(tracking) {
+      _styleBorderInner(tracking,lock) {
+        if (lock) {
+          return tracking ? 'fill:none;stroke:none' : 'fill:none;stroke-width:1;stroke:red;stroke-dasharray:3,3';
+        }
         return tracking ? 'fill:none;stroke:none' : 'fill:none;stroke-width:1;stroke:white;stroke-dasharray:3,3';
       }
 
@@ -394,6 +397,45 @@
           this._setImageWH( this.imageWidth, this.imageHeight );
         },true);
         Polymer.Gestures.addListener(this, 'track', e => this._onTrack(e));
+
+        document.addEventListener('keydown', e => {
+          if (this.active) {
+            if (!e.ctrlKey) {
+              e.preventDefault();
+            }
+
+            switch(e.key) {
+              case 'ArrowLeft':
+                this.set('data',this.before);
+                break;
+              case 'ArrowRight':
+                this.set('data',this.after);
+                break;
+              case 'Shift':
+                this.set('showAspectLock', true);
+                break;
+            }
+          }
+        });
+
+        document.addEventListener('keyup', e => {
+          if (this.active) {
+            if (!e.ctrlKey) {
+              e.preventDefault();
+            }
+
+            switch(e.key) {
+              case 'Escape':
+                e.preventDefault();
+                this._deactivateClose(e);
+              break;
+              case 'Shift':
+                this.set('showAspectLock', false);
+                break;
+            }
+          }
+        });
+
       }
 
       _setImageWH(w,h) {
