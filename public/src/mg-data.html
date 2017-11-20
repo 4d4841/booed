@@ -20,32 +20,41 @@
 <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-storage.js"></script>
 <script>
 
-function MGDeepSet(target, path, object) {
+/* MGDeepSet is used to set a deep property of a Polymer Object.
+ * It only supports object in a path and scalar array.
+ * It can not be used to set a particular array item.
+ * To delete a deep property, set null as the counter-value
+ * in the structure of the object argument.
+ */
+function MGDeepSet(polymerElement, path, object) {
   if (typeof object === 'object') {
     if (object === null) {
-      target.set(path, null);
+      polymerElement.set(path, null);
       return;
     }
     if (Array.isArray(object)) {
-      let old = target.get(path);
+      let old = polymerElement.get(path);
       if (!Array.isArray(old)
         || old.length != object.length
         || !old.every((v,i) => v === object[i])) {
           /* Only set if not equal */
-          target.set(path, object);
+          polymerElement.set(path, object);
       }
       return;
     }
-    if (typeof target.get(path) !== 'object') {
-      target.set(path, {});
+    if (typeof polymerElement.get(path) !== 'object') {
+      polymerElement.set(path, {});
     }
     Object.keys(object).forEach(key => {
-      MGDeepSet(target, path+'.'+key, object[key]);
+      MGDeepSet(polymerElement, path+'.'+key, object[key]);
     });
   } else {
-    target.set(path, object);
+    polymerElement.set(path, object);
   }
 }
+
+/* MHA stands for Moon HyunA */
+var MHA;
 
 class MGData extends Polymer.Element {
 
@@ -58,11 +67,13 @@ class MGData extends Polymer.Element {
     items: {
       type: Object,
       value: {},
+      notify: true,
     },
 
     representations: {
       type: Object,
       value: {},
+      notify: true,
     },
 
   }}
@@ -70,8 +81,8 @@ class MGData extends Polymer.Element {
   static get observers() { return [
   ]}
 
-  connectedCallback() {
-    super.connectedCallback();
+  constructor() {
+    super();
     var config = {
       apiKey: "AIzaSyDyJuzvmpg4jRPs9VE_Mpne8vdysEZGxbo",
       authDomain: "be-booed.firebaseapp.com",
@@ -81,12 +92,13 @@ class MGData extends Polymer.Element {
       messagingSenderId: "1079409265314"
     };
 
-    if (!MGAPP) {
+    if (!MHA) {
       let MGFIRE = firebase.initializeApp(config);
       this.DB = MGFIRE.database();
       this.ST = MGFIRE.storage();
       this.AU = MGFIRE.auth();
-      MGAPP = this;
+      MHA = this;
+      console.log("Application got initialized with Moon HyunA's lo❤e.");
     }
   }
 

@@ -469,6 +469,8 @@
     </style>
       </custom-style>
 
+    <mg-data items="{{items}}"></mg-data>
+
     <app-location route="{{route}}"></app-location>
     <app-route
         route="{{route}}"
@@ -674,37 +676,9 @@
     };
   })();
 
-  function MGDeepSet(target, path, object) {
-    if (typeof object === 'object') {
-      if (object === null) {
-        target.set(path, null);
-        return;
-      }
-      if (Array.isArray(object)) {
-        let old = target.get(path);
-        if (!Array.isArray(old)
-          || old.length != object.length
-          || !old.every((v,i) => v === object[i])) {
-            /* Only set if not equal */
-            target.set(path, object);
-        }
-        return;
-      }
-      if (typeof target.get(path) !== 'object') {
-        target.set(path, {});
-      }
-      Object.keys(object).forEach(key => {
-        MGDeepSet(target, path+'.'+key, object[key]);
-      });
-    } else {
-      target.set(path, object);
-    }
-  }
-
   window.performance && performance.mark && performance.mark('mg-app - before register');
 
   /* MG stands for MoonGom as in moongom119 AKA. Moon HyunA */
-  var MGAPP; /* Shortcut for application main, initialized in connectedCallback */
 
   class MGApp extends Polymer.Element {
 
@@ -713,19 +687,6 @@
     static get properties() { return {
       me: {
         type: Object,
-      },
-
-      /* Items here is for caching known snapshot of items to distribute
-      change notifications but the listening will only be in mg-items and to
-      specific items currently on display */
-      items: {
-        type: Object,
-        value: {},
-      },
-
-      representations: {
-        type: Object,
-        value: {},
       },
 
       route: {
@@ -771,14 +732,7 @@
 
     static get observers() { return [
       '_routePageChanged(routeData.page)',
-      /*'_onMenuSelected(menu.selected)',*/
-      /*'_productsDataChanged(productsData.splices)',*/
     ]}
-
-    /*
-    _onMenuSelected(change){
-    }
-    */
 
     _itemsChanged(splices) {
       //console.log(">",splices);
@@ -789,12 +743,6 @@
       window.performance && performance.mark && performance.mark('mg-app.created');
     }
 
-    /*
-    disconnectedCallback() {
-      super.disconnectedCallback();
-    }
-    */
-
     connectedCallback() {
       super.connectedCallback();
       //subsub = this.$.balloon;
@@ -803,24 +751,6 @@
 
       window.addEventListener('scroll', this._onScroll.bind(this));
       window.addEventListener('resize', this._onResize.bind(this));
-
-      /* XXX prevent double connectedCallback() calls when 404 redirect happens */
-      var config = {
-        apiKey: "AIzaSyDyJuzvmpg4jRPs9VE_Mpne8vdysEZGxbo",
-        authDomain: "be-booed.firebaseapp.com",
-        databaseURL: "https://be-booed.firebaseio.com",
-        projectId: "be-booed",
-        storageBucket: "be-booed.appspot.com",
-        messagingSenderId: "1079409265314"
-      };
-
-      if (!MGAPP) {
-        let MGFIRE = firebase.initializeApp(config);
-        this.DB = MGFIRE.database();
-        this.ST = MGFIRE.storage();
-        this.AU = MGFIRE.auth();
-        MGAPP = this;
-      }
 
       this.addEventListener('add-cart-item', (e)=>this._onAddCartItem(e));
       this.addEventListener('announce', (e)=>this._onAnnounce(e));
@@ -838,188 +768,6 @@
       });
 
       this._notifyNetworkStatus();
-    }
-
-    assignItem(itemKey, itemData) {
-      MGDeepSet(this,'items.'+itemKey, itemData);
-    }
-
-    /*XXX UID of other user */
-    registerRepresentation( keyOrBlob, srcCallback, contentType ) {
-      console.assert(keyOrBlob,"XXX");
-
-      let key, blob = keyOrBlob instanceof Blob ? keyOrBlob : null;
-
-      if (blob) {
-          key = this.DB.ref('representations').push().key;
-      } else {
-        key = keyOrBlob;
-      }
-
-      let rep = this.representations[key];
-      if (!rep) {
-        rep = {contentType:contentType};
-        this.set('representations.'+key, rep);
-      }
-
-      /*
-       else if (rep.contentType === MG.LOCAL && contentType !== MG.LOCAL ){
-
-        let image = new Image();
-        let canvas = document.createElement('canvas');
-        image.onload =
-      }
-      */
-
-      if (blob) {
-        let uid = this.AU.currentUser.uid;
-
-        /* Task begin. Upload the blob onto storage. */
-        let repSTRef = this.ST.ref('UID').child(uid).child('DATA').child(key);
-
-        let metadata = {
-          contentType: contentType || 'image/jpeg',
-        }
-
-        let task = repSTRef.put(blob,metadata);
-        let taskEnded = false;
-
-        /* If uploader didn't specify srcCallback then _callbacks could be empty.
-         * It sill allocates an empty list to prevent another registration from solving
-         * URL as it's going to use the given Blob as source.
-         */
-        //console.assert(!rep._callbacks, "_callbacks already exists, reupload isn't correctly implemented yet.");
-        rep._callbacks = rep._callbacks || [];
-        if (srcCallback) {
-          /* expose task once to the uploading call */
-          if (srcCallback.task) srcCallback.task(key, task);
-
-          rep._callbacks.push(srcCallback);
-        }
-
-        task.on( firebase.storage.TaskEvent.STATE_CHANGED, snapshot => {
-            rep._callbacks.forEach(function(cb){
-              if (cb.progress) cb.progress(key,snapshot);
-            });
-          }, error => {
-            rep._callbacks.forEach(function(cb){
-              if (cb.error) cb.error(key,error);
-            });
-          }, () => {
-
-            let registerData = {
-              ['representations/'+key+'/uid']: uid,
-            };
-
-            this.DB.ref().update(registerData, error => {
-
-              rep._callbacks.forEach(function(cb){
-                if (cb.complete) cb.complete(key,error);
-              });
-
-              if (rep.src) {
-                /* Whichever done last must delete the callbacks, existing src means
-                 * that the reader already solved it.
-                 */
-                delete rep._callbacks;
-              }
-
-              taskEnded = true;
-            });
-
-          }
-        ); /*End of uploading task*/
-
-        /* Read blob as src and create thumbnail */
-        var reader = new FileReader();
-        reader.onload = e => {
-
-          this.set(['representations',key,'src'], e.target.result);
-
-          rep._callbacks.forEach(function(cb){
-            if (cb.src) cb.src(key, e.target.result)
-            else if (typeof cb === 'function') cb(key, 'src', e.target.result);
-          });
-
-          if (taskEnded) {
-            delete rep._callbacks;
-          }
-        };
-        reader.readAsDataURL(blob);
-
-      } /* end if(blob) */
-      else if (srcCallback) {
-        if (rep._callbacks) {
-          /* _callbacks exists, it could be either getting src or an uploading in progress. */
-          if (rep.src) {
-            /* if src was resolved, just call it a day */
-            if (srcCallback.src) srcCallback.src(key, rep.src);
-          } else {
-            /* or join the waiting campfire */
-            rep._callbacks.push(srcCallback);
-          }
-        } else if (!rep.src) {
-          /* no callback and no src, so no chance it is getting src, so let's get it now */
-          rep._callbacks = [srcCallback];
-
-          this.DB.ref('representations').child(key).child('uid').once('value', snapshot => {
-            let uid = snapshot.val();
-            if (uid) {
-              let repSTRef = this.ST.ref('UID').child(uid).child('DATA').child(key);
-              repSTRef.getDownloadURL().then(url => {
-                this.set(['representations',key,'src'], url);
-                rep._callbacks.forEach(function(cb){
-                  if (cb.src) cb.src(key,url);
-                });
-                delete rep._callbacks;
-              }).catch(error => {
-                /* This might have been invoked before the upload task started by any following registerRep call.
-                 * Please don't do that!
-                 */
-                console.warn(`Representation src for ${key} does not exist. Callback has not been released.`,error);
-              });
-            }
-
-            console.assert(uid, key, "XXX UID not found, should wait?");
-
-          });
-        } else /* src has been resolved */ {
-          if (srcCallback.src) srcCallback.src(key, rep.src);
-        }
-      }
-
-
-
-      /*
-      else if (!rep._callbacks && !rep.src) {
-
-        rep._callbacks = rep._callbacks || [];
-        rep._callbacks.push(srcCallback);
-
-        storageRef.child(key).getDownloadURL().then(function(url){
-          this.set(['representations',key,'src'], url);
-          rep._callbacks.forEach(function(cb){ cb(url); });
-          delete rep._callbacks;
-        }.bind(this));
-      } else if (rep._callbacks){
-        rep._callbacks.push(srcCallback);
-      }
-      */
-
-      if (srcCallback && srcCallback.key) srcCallback.key(key,key);
-
-      /* return function to unsubscribe srcCallback */
-      return function(){
-        if (rep._callbacks) {
-          /* Replace the _callbacks not to interrupt the on-going forEach */
-          rep._callbacks = rep._callbacks.slice();
-          let idx = rep._callbacks.indexOf(srcCallback);
-          if (idx >= 0) {
-            rep._callbacks.splice(idx,1);
-          }
-        }
-      };
-
     }
 
     _openHome(e) {
@@ -1049,35 +797,8 @@
       return [];
     }
 
-    /*
-    _productsDataChanged(splices) {
-      if (splices) {
-        for (let i=0, s; s = splices.indexSplices[i]; ++i) {
-          var p = this.productsData[s.index];
-          this.products[p.$key] = p;
-
-          if (p.sale > 0) {
-            this.categories.sales.products[p.$key] = p;
-          }
-
-          for (let key in p.tags) {
-            let cate = this.categories[key];
-            if (cate) {
-              cate.products = Object.assign( cate.products||{}, {[p.$key]:p} );
-            }
-            else {
-              this.categories[key] = {name:key, products:{[p.$key]:p}};
-            }
-          }
-        }
-
-        this.categories = MGCopyObject(this.categories);
-        this.products = MGCopyObject(this.products);
-      }
-    }
-    */
-
     _routePageChanged(page) {
+
       if (this.page === 'list') {
         this._listScrollTop = window.pageYOffset;
       }
@@ -1193,12 +914,6 @@
       }
       */
     }
-
-    /*
-    _onMeButtonClick(e) {
-      this.set('route.path','user');
-    }
-    */
 
     _openModelSubmenu(model,expand) {
       for(let i = 0, sub; sub = this.menu.entries[i]; ++i) {

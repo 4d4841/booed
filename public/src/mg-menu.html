@@ -203,6 +203,11 @@
           type: Object,
           notify: true,
         },
+
+        path: {
+          type: Object,
+          notify: true,
+        }
       }}
 
       static get observers() { return [
@@ -224,7 +229,7 @@
           bubbles: true, composed: true, detail:{sender:null}}));
 
         if (e.model.item.path) {
-          MGAPP.set('route.path',e.model.item.path);
+          this.set('path',e.model.item.path);
         } else if (e.model.item.action) {
           e.model.item.action(e);
         } else if (this.menu.action) {

@@ -17,6 +17,7 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="mg-data.html">
 <link rel="import" href="mg-common-styles.html">
 
 <dom-module id="mg-image-editor">
@@ -648,7 +649,7 @@
       }
 
       _dataThumbnailChanged(thumbnail) {
-        thumbnail && MGAPP.registerRepresentation(thumbnail, {
+        thumbnail && MHA.registerRepresentation(thumbnail, {
           src: (key,src) => { if (key == this.data.thumbnail) {
             this.$.thumbnail.src = src;
             /* XXX balloon should wrap refit() to have this automatic */
@@ -704,7 +705,7 @@
 
       _repChanged(rep) {
         if (rep) {
-          MGAPP.registerRepresentation(rep, {
+          MHA.registerRepresentation(rep, {
             src: (key,src) => { if (key == this.rep) {
 /***
 

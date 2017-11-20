@@ -121,9 +121,9 @@ class MGItemImage extends Polymer.Element {
 
   _thumbnailChanged(repKey) {
     if (repKey) {
-      let uid = MGAPP.AU.currentUser.uid;
+      let uid = MHA.AU.currentUser.uid;
       this.set('src',null);
-      MGAPP.registerRepresentation(repKey, { src: (key,src) => {
+      MHA.registerRepresentation(repKey, { src: (key,src) => {
         if (key == this.thumbnail) this.set('src',src);
       }});
     }

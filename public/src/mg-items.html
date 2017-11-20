@@ -166,10 +166,10 @@
           this._setPhotoKeyProperty(itemKey, '_src', 'images/logo-pumpkin-face-grayout.svg');
           return;
         }
-        let thumbnail = MGAPP.get(['items',itemKey,'images',imageKey,'thumbnail']);
+        let thumbnail = MHA.get(['items',itemKey,'images',imageKey,'thumbnail']);
         if (thumbnail) {
-          let uid = MGAPP.AU.currentUser.uid;
-          MGAPP.registerRepresentation(thumbnail, { src: (key,src) => {
+          let uid = MHA.AU.currentUser.uid;
+          MHA.registerRepresentation(thumbnail, { src: (key,src) => {
             this._setPhotoKeyProperty(itemKey, '_src', src);
           }});
         }
@@ -201,7 +201,7 @@
           let imageKey = path[3];
           this.itemList.every((item,index) => {
             if (itemKey == item.key &&
-              imageKey == MGAPP.get(['items',itemKey,'cover'])) {
+              imageKey == MHA.get(['items',itemKey,'cover'])) {
               this._setCover(itemKey,imageKey);
               return false;
             }
@@ -235,7 +235,7 @@
           delete this._UidChangedCallback;
         }
         if (uid) {
-          this._UidChangedCallback = {ref:MGAPP.DB.ref('home').child(uid).child('items')};
+          this._UidChangedCallback = {ref:MHA.DB.ref('home').child(uid).child('items')};
           this._UidChangedCallback.cb
            = this._UidChangedCallback.ref.on('child_added', function(snapshot) {
             let val = snapshot.val();
@@ -256,12 +256,12 @@
             }
 
             val._uid = uid;
-            MGAPP.assignItem(snapshot.key,val);
+            MHA.assignItem(snapshot.key,val);
 
-            let itemRef = MGAPP.DB.ref('home')
-                                  .child(uid)
-                                  .child('items')
-                                  .child(snapshot.key);
+            let itemRef = MHA.DB.ref('home')
+                                .child(uid)
+                                .child('items')
+                                .child(snapshot.key);
 
             /* Listen to name changes */
             itemRef.child('name').on('value', nameSnapshot => {
@@ -270,7 +270,7 @@
 
             /* Listen to images changes */
             itemRef.child('cover').on('value', coverSnapshot => {
-                MGAPP.assignItem(snapshot.key,{cover:coverSnapshot.val()});
+                MHA.assignItem(snapshot.key,{cover:coverSnapshot.val()});
                 this._setCover(snapshot.key, coverSnapshot.val());
             });
 
