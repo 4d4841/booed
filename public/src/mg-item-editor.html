@@ -222,10 +222,12 @@
           deleted="[[item.deleted]]"
           on-tap="_onItemTap"
         >
+        <!--
           <template is="dom-if" if="{{_isEditable(item._progress,item.rep)}}">
             <paper-icon-button icon="mode-edit" class="image-edit-button-icon" on-tap="_onEditImage">
             </paper-icon-button>
           </template>
+        -->
         </mg-item-image>
 
       </template>
@@ -734,10 +736,12 @@
           val.deleted = val.deleted || null;
           val.roi = val.roi || null;
 
+          /*
           if (this.editingData && this.editingData.key == imgRef.key) {
             this.set('editingData.roi', val.roi);
             this.set('editingData.thumbnail', val.thumbnail);
           }
+          */
 
           MGAPP.assignItem(itemKey,{
             images:{
@@ -774,7 +778,6 @@
 
             } else { /* update current icon's event-value */
               this.setProperties({
-                ['iconList.'+idx+'.key']: imageKey,
                 ['iconList.'+idx+'.thumbnail']: image.thumbnail,
                 ['iconList.'+idx+'.rep']: image.rep,
                 ['iconList.'+idx+'.name']: image.name,
@@ -782,6 +785,13 @@
                 ['iconList.'+idx+'.deleted']: image.deleted ? true : false,
                 ['iconList.'+idx+'.order']: image.order || order,
               });
+
+              if (this.editingData && this.editingData.key == imageKey) {
+                this.notifyPath('editingData.thumbnail');
+                this.notifyPath('editingData.rep');
+                this.notifyPath('editingData.name');
+                this.notifyPath('editingData.roi');
+              }
 
             }
 
@@ -920,24 +930,28 @@
         this.set('beforeEditingData',null);
         this.set('afterEditingData',null);
         if (data) {
-          let slen = this.selectedImages.length;
+          let slen = this._EditingSelection.length;
           if (slen) {
 
-            let currentIdx = this.selectedImages.indexOf(data.key);
+            let currentIdx = this._EditingSelection.indexOf(data.key);
 
             if (currentIdx != -1) {
-              this.set('beforeEditingData',this.iconList[this._indexImage(this.selectedImages[(currentIdx-1+slen) % slen])]);
-              this.set('afterEditingData',this.iconList[this._indexImage(this.selectedImages[(currentIdx+1) % slen])]);
+              this.set('beforeEditingData',this.iconList[this._indexImage(this._EditingSelection[(currentIdx-1+slen) % slen])]);
+              this.set('afterEditingData',this.iconList[this._indexImage(this._EditingSelection[(currentIdx+1) % slen])]);
             }
           }
+        } else {
+          this._EditingSelection.splice(0,this._EditingSelection.length);
         }
       }
 
 
       _onEditButtonTap(e) {
-        this._indexImage(this.selectedImages[0], idx => {
+        this._EditingSelection = [].concat(this.selectedImages);
+        this._indexImage(this._EditingSelection[0], idx => {
           this.set('editingData',this.iconList[idx]);
         });
+        this.splice('selectedImages',0,this.selectedImages.length);
       }
 
       _onCopyButtonTap(e) {
