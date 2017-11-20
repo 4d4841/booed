@@ -78,7 +78,6 @@
       </custom-style>
 
     <div class="vertical layout" style="min-width:150px;height:100vh; border-right:1px dashed tomato">
-
       <paper-button id="new-item" on-tap="_openNewItemMenu">
         <iron-icon icon="add"></iron-icon> สร้าง
       </paper-button>
@@ -150,12 +149,22 @@
           type: Boolean,
           value: false,
         },
+
+        route: {
+          type: Object,
+          notify: true,
+          observer: '_routeChanged',
+        },
+        routeData: {
+          type: Object,
+          notify: true,
+          observer: '_routeDataChanged',
+        },
       }}
 
       static get observers() { return [
         '_itemsChanged(items.*)',
         '_itemKeyChanged(itemKey)',
-        '_routeDataChanged(routeData)',
         '_userChanged(me.user.uid)',
         '_visibleChanged(visible)',
 //        '_onNewItemSelected(newItemSelected)',
@@ -219,8 +228,11 @@
       }
 
       _visibleChanged(visible) {
-        if (!visible) {
-          this.set('itemKey',null);
+        if (visible) {
+          this.set('itemKey',this.itemKey || this._CurrentItemKey);
+        } else {
+          this._CurrentItemKey = this.itemKey;
+          this.set('itemKey', null);
         }
       }
 
@@ -296,8 +308,6 @@
       }
 
       _onThumbClick(e) {
-        this.dispatchEvent(new CustomEvent('close-contextual-menu', {
-          bubbles: true, composed: true, detail:{sender:this}}));
         this.set('route.path',"/"+e.model.item.key);
       }
 
@@ -313,7 +323,17 @@
       }
 
       _itemKeyChanged(newItemId) {
-        this.set('route.path', newItemId ? "/"+newItemId : "");
+        //this.set('route.path', newItemId ? "/"+newItemId : "");
+        this.set('routeData.itemKey',newItemId)
+      }
+
+
+      _routeChanged(route) {
+        if (route.prefix == '/user/items') {
+          if (this.itemKey || this._CurrentItemKey) {
+            this.set('route.path', '/'+(this.itemKey || this._CurrentItemKey));
+          }
+        }
       }
 
       _routeDataChanged(routeData) {
