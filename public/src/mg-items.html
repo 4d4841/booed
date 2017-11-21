@@ -90,7 +90,7 @@
           icon="[[_formatRoleIcon(item.role)]]"
           src="[[item._src]]"
           class="item"
-          on-click="_onThumbClick"
+          on-click="_onThumbnailClick"
         ></mg-thumbnail>
       </template>
       </iron-selector>
@@ -307,8 +307,8 @@
         }
       }
 
-      _onThumbClick(e) {
-        this.set('route.path',"/"+e.model.item.key);
+      _onThumbnailClick(e) {
+        this.set('itemKey',e.model.item.key);
       }
 
       _onSelectedItemType(e) {
@@ -323,15 +323,18 @@
       }
 
       _itemKeyChanged(newItemId) {
-        //this.set('route.path', newItemId ? "/"+newItemId : "");
-        this.set('routeData.itemKey',newItemId)
+        if (this.route) {
+          this.set('route.path',newItemId);
+        }
       }
 
 
       _routeChanged(route) {
         if (route.prefix == '/user/items') {
-          if (this.itemKey || this._CurrentItemKey) {
-            this.set('route.path', '/'+(this.itemKey || this._CurrentItemKey));
+          /* Checks if it was editing an item, set the URL back to the item */
+          let key = this.itemKey || this._CurrentItemKey;
+          if (key && !route.path) {
+            this.set('route.path', key);
           }
         }
       }
