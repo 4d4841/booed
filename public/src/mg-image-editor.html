@@ -30,7 +30,7 @@
         position: absolute;
         width: 0;
         height: 0;
-        @apply(--layout-horizontal);
+        @apply(--layout-vertical);
         @apply(--layout-center-justified);
         @apply(--layout-center);
         background-color: black;
@@ -47,8 +47,7 @@
         height:100%;
         top: 0;
         left: 0;
-        display: block;
-        @apply(--layout-horizontal);
+        @apply(--layout-vertical);
         @apply(--layout-center-justified);
         @apply(--layout-center);
       }
@@ -58,13 +57,6 @@
         position: absolute;
         top: 0;
         left: 0;
-      }
-
-      .control-buttons {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        color: lightgray;
       }
 
       #thumbnail {
@@ -82,21 +74,36 @@
         transition: width 1s, height 1s;
       }
 
-      .control-buttons paper-icon-button[icon=photo-size-select-large] {
+      .control-panel {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: calc(100% - 10px);
+      }
+
+      .edit-buttons {
+        color: lightgray;
+      }
+
+      .edit-buttons paper-icon-button[icon=photo-size-select-large] {
         color: lightgray;
       }
 
       .thumbnail-panel-buttons paper-icon-button[icon=close],
-      .control-buttons paper-icon-button[icon=close][edited] {
+      .edit-buttons paper-icon-button[icon=close][edited] {
         color: red;
       }
 
       .thumbnail-panel-buttons paper-icon-button[icon=done],
-      .control-buttons paper-icon-button[icon=done][edited] {
+      .edit-buttons paper-icon-button[icon=done][edited] {
         color: green;
       }
 
-      .control-buttons paper-icon-button:active {
+      .edit-buttons paper-icon-button:active {
+        color: white;
+      }
+
+      .navigator-buttons paper-icon-button {
         color: white;
       }
 
@@ -120,40 +127,45 @@
 
     <div class="image-info" hidden$="[[loading]]">
       <template is="dom-if" if="[[!data.item]]">
-        <span>Clipboard Data<iron-icon style="--iron-icon-height:15px" icon="help"></iron-icon>
+        <span>clipboard data<iron-icon style="--iron-icon-height:15px" icon="help"></iron-icon>
           <paper-tooltip>
-            Editing clipboard data is not associated with an item until
+            editing clipboard data is not associated with an item until
             pasting into an item triggers the server syncing.
-            Until then all the modifications have hitherto been kept
+            until then all the modifications have hitherto been kept
             locally within the clipboard.
           </paper-tooltip>
-        <span><br>
+        </span><br>
       </template>
       <!--
-        <template is="dom-if" if="[[data.name]]"> Name: [[data.name]] <br> </template>
-        Width: [[imageWidth]]<br>
-        Height: [[imageHeight]]<br>
+        <template is="dom-if" if="[[data.name]]"> name: [[data.name]] <br> </template>
+        width: [[imagewidth]]<br>
+        height: [[imageheight]]<br>
       -->
     </div>
-    <div class="control-buttons">
-      <paper-icon-button id="skip-previous" icon="skip-previous" on-tap="_setPreviousData" hidden$="[[!before]]">
-      </paper-icon-button>
+    <div class="control-panel horizontal layout justified">
+      <div style="width:120px"></div>
+      <div class="navigator-buttons" hidden$="{{_hidesNavigator(before,data)}}">
+        <paper-icon-button id="skip-previous" icon="skip-previous" on-tap="_setPreviousData" hidden$="[[!before]]">
+        </paper-icon-button>
 
-      <paper-icon-button id="skip-next" icon="skip-next" on-tap="_setNextData" hidden$="[[!after]]">
-      </paper-icon-button>
+        <paper-icon-button id="skip-next" icon="skip-next" on-tap="_setNextData" hidden$="[[!after]]">
+        </paper-icon-button>
+      </div>
+      <div class="edit-buttons">
 
-      <paper-icon-button style="overflow:visible" id="update-thumbnail-button" icon="photo-size-select-large" on-tap="_openThumbnailDialog">
-      </paper-icon-button>
+        <paper-icon-button style="overflow:visible" id="update-thumbnail-button" icon="photo-size-select-large" on-tap="_openThumbnailDialog">
+        </paper-icon-button>
 
-      <paper-icon-button id="save-button" icon="done" on-tap="_deactivateSave" edited$="{{edited}}">
-      </paper-icon-button>
+        <paper-icon-button id="save-button" icon="done" on-tap="_deactivateSave" edited$="{{edited}}">
+        </paper-icon-button>
 
-      <paper-icon-button id="close-button" icon="close" on-tap="_deactivateClose" edited$="{{edited}}">
-      </paper-icon-button>
+        <paper-icon-button id="close-button" icon="close" on-tap="_deactivateClose" edited$="{{edited}}">
+        </paper-icon-button>
 
-      <paper-tooltip for="update-thumbnail-button">Update thumbnail</paper-tooltip>
-      <paper-tooltip for="close-button">Close</paper-tooltip>
-      <paper-tooltip for="save-button">Save changes</paper-tooltip>
+        <paper-tooltip for="update-thumbnail-button">Update thumbnail</paper-tooltip>
+        <paper-tooltip for="close-button">Close</paper-tooltip>
+        <paper-tooltip for="save-button">Save changes</paper-tooltip>
+      </div>
     </div>
 
     <template is="dom-if" if="[[loading]]">
@@ -204,7 +216,7 @@
       </defs>
 
       <path d$="[[rPath]]" style$="[[_styleBorder(tracking)]]"/>
-      <path d$="[[rPathInner]]" style$="[[_styleBorderInner(tracking,showAspectLock)]]"/>
+      <path d$="[[rPathInner]]" style$="[[_styleBorderInner(tracking,showsAspectLock)]]"/>
 
       <use id="chevrontop" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataMidW,dataTop,'top')]]" />
       <use id="chevronleft" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataLeft,dataMidH,'left')]]" />
@@ -300,6 +312,10 @@
         '_dataThumbnailChanged(data.thumbnail)',
       ]}
 
+      _hidesNavigator(before, data) {
+        if (before == data) return true;
+        return false;
+      }
 
       _updateTitle(a, n,w,h) {
         if (a && !this._OldTitle) {
@@ -413,7 +429,7 @@
                 this.set('data',this.after);
                 break;
               case 'Shift':
-                this.set('showAspectLock', true);
+                this.set('showsAspectLock', true);
                 break;
             }
           }
@@ -431,7 +447,7 @@
                 this._deactivateClose(e);
               break;
               case 'Shift':
-                this.set('showAspectLock', false);
+                this.set('showsAspectLock', false);
                 break;
             }
           }
