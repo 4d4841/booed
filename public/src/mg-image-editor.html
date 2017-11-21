@@ -215,8 +215,8 @@
         <path id="chevron" d="M -2.6,4.6 -7.2,0 -2.6,-4.6 -4,-6 -10,0 -4,6 Z" style$="[[_styleArrow(tracking)]]"/>
       </defs>
 
-      <path d$="[[rPath]]" style$="[[_styleBorder(tracking)]]"/>
-      <path d$="[[rPathInner]]" style$="[[_styleBorderInner(tracking,showsAspectLock)]]"/>
+      <path d$="[[rPath]]" style$="[[_styleBorder(scaleFactor,tracking)]]"/>
+      <path d$="[[rPathInner]]" style$="[[_styleBorderInner(scaleFactor,tracking,showsAspectLock)]]"/>
 
       <use id="chevrontop" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataMidW,dataTop,'top')]]" />
       <use id="chevronleft" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataLeft,dataMidH,'left')]]" />
@@ -358,15 +358,12 @@
 
       }
 
-      _styleBorder(tracking) {
-        return tracking ? 'fill:rgba(0,0,0,0.9);stroke:none' : 'fill:none;stroke-width:1;stroke:black';
+      _styleBorder(lw,tracking) {
+        return tracking ? 'fill:rgba(0,0,0,0.9);stroke:none' : 'fill:none;stroke-width:'+lw+';stroke:black';
       }
 
-      _styleBorderInner(tracking,lock) {
-        if (lock) {
-          return tracking ? 'fill:none;stroke:none' : 'fill:none;stroke-width:1;stroke:red;stroke-dasharray:3,3';
-        }
-        return tracking ? 'fill:none;stroke:none' : 'fill:none;stroke-width:1;stroke:white;stroke-dasharray:3,3';
+      _styleBorderInner(lw,tracking,lock) {
+        return tracking ? 'fill:none;stroke:none' : 'fill:none;stroke-width:'+lw+';stroke:'+(lock?'orange':'white')+';stroke-dasharray:'+lw*3+','+lw*3;
       }
 
       _styleArrow(tracking) {
