@@ -786,10 +786,9 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
       }
 
       _setThumbnail(e) {
-        this.setProperties({
-          'data.roiThumbnail':[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight],
-          'data.thumbnail':this.data.rep,
-        });
+        this.data.thumbnail = this.data.rep;
+        this.set('data.roiThumbnail',[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight]);
+        this.notifyPath('data.thumbnail');
       }
 
       _setPreviousData(e) {
