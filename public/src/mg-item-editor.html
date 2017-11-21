@@ -927,6 +927,7 @@
       }
 
       _editingDataChanged(data) {
+        this._EditingSelection = this._EditingSelection || [];
         this.set('beforeEditingData',null);
         this.set('afterEditingData',null);
         if (data) {
