@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<!--
+ .................................................................................................
+:::BSDB'::BSDB'::BSDB':::::BSDB':::BSDBS'::BSDBS'::BSDB'::::BSD'::BSDBS'::BSDBS'::BSDB'::::::BSD'::
+::BSDBSD BSDBSD :.BSDBS':BSDBS .:BSD ..BSD  ...BSD 'BSDBS':BSD .BSD ..BSD  ...BSD :BSDBS'::BSDB .::
+::COPYRIGHT2017 ::.BS BSDB .BS :BSD .::.BSD :::.BSD :BS .BSDB .BSD .:::BSD ::::BSD :BS BSDB BS .:::
+:::BSDSTYLEBSD .:::BS  BS .:BS :BSD ::::BSD ::::BSD :BS ::BSD :BSD :::::...::::BSD :BS :BS  BS ::::
+::::.LICENSE .::::BSD .:..::BS 'BSD ::::BSD ::::BSD :BS :::BS :BSD ::BSDBS'::::BSD :BS ::..:BS ':::
+:::::::BSD .::::BSDB .::::::BSD 'BSD'::BSD .:::BSD .BSD :::BSD':BSD'::.BSD :::BSD .BSD :::::BSDB'::
+::::::::B .::::::BS .:::::::.BSD ::BSDBS .:BSDBS  :BSD .::::BSD :.BSDBS BS BSDB .:BSD .:::::.BS .::
+`::::::::.::::::::..::::::::::...:::.....:::.....:::...::::::...:::.............:::...::::::::..::'
+-->
+
+/* XXX Make item behavior */
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="mg-common-styles.html">
+<link rel="import" href="mg-input.html">
+<link rel="import" href="mg-item-image.html">
+<link rel="import" href="mg-image-editor.html">
+
+
+<dom-module id="mg-gallery-editor">
+  <template strip-whitespace>
+      <custom-style>
+    <style is="custom-style" include="mg-common-styles iron-flex iron-flex-alignment">
+      :host {
+        min-height: 80vh;
+        background-size: contain;
+        background-repeat: no-repeat;
+      }
+
+      :host([empty]) {
+        background-image: url(/images/logo-pumpkin-light.svg);
+        border-radius: 5px;
+      }
+
+      .file-item {
+        width: 100%;
+        position: relative;
+      }
+
+      #image-selector {
+        @apply(--layout-horizontal);
+        @apply(--layout-wrap);
+        padding: 0px;
+        height: 100%;
+      }
+
+      .copied-collapse {
+        background-color: white;
+        border-radius: 5px;
+        margin-bottom: 20px;
+      }
+
+      .copied-container {
+        @apply(--layout-horizontal);
+        @apply(--layout-wrap);
+        box-shadow: inset 1px 1px 1px var(--app-shadow-color);
+        border-radius: 5px;
+        padding: 5px;
+        margin: 5px;
+        background-color: rgba(0,0,0,0.02);
+      }
+
+      /*
+      .cancel-copy-button {
+        @apply(--layout-self-end);
+        color:white;
+        --iron-icon-stroke-color:rgba(0,0,0,0.2);
+        pointer-events: none;
+      }
+      */
+
+      .image-edit-button-icon {
+        opacity: 0.6;
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 25px;
+        height: 25px;
+        @apply(--layout-self-end);
+        z-index: 3;
+        color: black;
+        background-color: white;
+        box-shadow: inset 1px -1px 1px var(--app-shadow-color);
+        border-radius: 0 0 0 25%;
+        padding: 3px;
+        --iron-icon-width: 20px;
+        --iron-icon-height: 20px;
+        transition: opacity 1s;
+      }
+
+      .image-icon {
+        margin: 0 5px 5px 0;
+        width: 120px;
+        height: 120px;
+      }
+
+      .copied-icon {
+        margin: 0 5px 5px 0;
+        width: 80px;
+        height: 80px;
+      }
+
+      .copied-icon:hover .image-edit-button-icon {
+        opacity: 1;
+      }
+
+      .image-icon:hover .image-edit-button-icon {
+        opacity: 1;
+      }
+
+      .image-icon.iron-selected .image-edit-button-icon {
+        opacity: 0;
+      }
+
+
+
+    </style>
+      </custom-style>
+
+    <iron-collapse class="vertical layout" opened="[[itemKey]]">
+
+      <div class="horizontal layout end wrap">
+        <template is="dom-if" if="{{loading}}">
+          <img height="62px" src="images/logo-bounce.svg">
+        </template>
+
+        <template is="dom-if" if="{{!loading}}">
+          <paper-input
+            label="ชื่อแกลเลอรี่"
+            focused="{{focusedName}}"
+            always-float-label="[[focusedName]]"
+            value="{{itemName}}"
+          >
+            <iron-icon icon="[[_iconForRole(itemRole)]]" slot="prefix"></iron-icon>
+          </paper-input>
+
+          <paper-button on-tap="_onAddButtonTap">
+            <iron-icon icon="add-photo"></iron-icon> เพิ่มรูป
+          </paper-button>
+          <template is="dom-if" if="{{selectedImages.length}}">
+            <paper-button on-tap="_onDeleteButtonTap">
+              <iron-icon icon="delete"></iron-icon> ลบ
+            </paper-button>
+            <paper-button on-tap="_onReorderButtonTap">
+              <iron-icon icon="reorder"></iron-icon> เรียง
+            </paper-button>
+            <paper-button on-tap="_onCopyButtonTap">
+              <iron-icon icon="content-copy"></iron-icon> ก๊อปปี้
+            </paper-button>
+            <paper-button on-tap="_onEditButtonTap">
+              <iron-icon icon="mode-edit"></iron-icon> แก้ไข
+            </paper-button>
+            <paper-button on-tap="_onCancelButtonTap">
+              <iron-icon icon="cancel"></iron-icon> ยกเลิก
+            </paper-button>
+          </template>
+        </template>
+
+        <input type="file" id="fileInput" on-change="_filesSelected" hidden multiple>
+
+      </div>
+
+      <iron-collapse class="copied-collapse vertical layout" opened="[[clipboardList.length]]">
+
+        <div class="copied-container">
+          <template is="dom-repeat" items="{{clipboardList}}">
+
+            <mg-item-image
+              key="[[item.key]]"
+              class="copied-icon"
+              thumbnail="[[item.thumbnail]]"
+              rep="[[item.rep]]"
+              roi="[[item.roiThumbnail]]"
+              name="[[item.name]]"
+              deleted="[[item.deleted]]"
+              on-tap="_onCopiedTap"
+            >
+              <paper-icon-button icon="mode-edit" class="image-edit-button-icon" on-tap="_onEditImage">
+              </paper-icon-button>
+            </mg-item-image>
+
+          </template>
+        </div>
+
+        <div class="horizontal layout center-justified wrap">
+          <paper-button class="horizontal layout start-justified" on-tap="_onPasteClipboardTap">
+            <iron-icon icon="content-paste"></iron-icon> เพิ่มลงแกลเลอรี่
+          </paper-button>
+          <paper-button class="horizontal layout start-justified" on-tap="_onClearClipboardTap">
+            <iron-icon icon="cancel"></iron-icon> เคลียร์คลิปบอร์ด
+          </paper-button>
+        </div>
+      </iron-collapse>
+
+      <iron-selector
+        id="image-selector"
+        attr-for-selected="key"
+        selected-values="{{selectedImages}}"
+        multi>
+
+      <!-- XXX Maybe sorting will cause ghost update -->
+      <template is="dom-repeat" items="{{iconList}}" observe="order deleted" sort="{{_reorderPhoto}}">
+
+        <mg-item-image
+          key="[[item.key]]"
+          class="image-icon"
+          thumbnail="[[item.thumbnail]]"
+          rep="[[item.rep]]"
+          progress="[[item._progress]]"
+          name="[[item.key]]"
+          selection-order="[[item._selectionOrder]]"
+          deleted="[[item.deleted]]"
+          on-tap="_onItemTap"
+        >
+        <!--
+          <template is="dom-if" if="{{_isEditable(item._progress,item.rep)}}">
+            <paper-icon-button icon="mode-edit" class="image-edit-button-icon" on-tap="_onEditImage">
+            </paper-icon-button>
+          </template>
+        -->
+        </mg-item-image>
+
+      </template>
+
+      </iron-selector>
+
+    </iron-collapse>
+
+    <mg-image-editor
+      id="image-editor"
+      data="{{editingData}}"
+      blob="{{blob}}"
+      after="[[afterEditingData]]"
+      before="[[beforeEditingData]]"
+    ></mg-image-editor>
+
+  </template>
+  <script>
+    class MGGalleryEditor extends Polymer.Element {
+      static get is() { return 'mg-gallery-editor'; }
+
+      static get properties() { return {
+        files: Object,
+
+        itemKey: {
+          type: String,
+          notify: true,
+        },
+
+        itemRole: {
+          type: String,
+        },
+
+        itemName: {
+          type: String,
+          notify: true,
+        },
+
+        iconList: {
+          type: Array,
+          value: [],
+        },
+
+        clipboardList: {
+          type: Array,
+          value: [],
+        },
+
+        selectedImages: {
+          type: Array,
+        },
+
+        empty: {
+          type: Boolean,
+          notify: true,
+          reflectToAttribute: true,
+        },
+
+        editingData: {
+          type: Object,
+          observer: '_editingDataChanged',
+        },
+
+      }}
+
+      static get observers() { return [
+        '_itemKeyChanged(me.user, itemKey)',
+        '_itemNameChanged(me.user, itemRole, itemName)',
+        '_selectedImagesChanged(selectedImages.splices)',
+        '_checkEmpty(iconList.length)',
+        '_editingROIChanged(editingData.roi)',
+        '_editingROIThumbnailChanged(editingData.roiThumbnail)',
+        /*'_editingThumbnailChanged(editingData.thumbnail)',*/
+      ]}
+
+      /* XXX monitor changes in editingData ROI, needs to do this with thumbnail */
+      _editingROIChanged(roi) {
+        if (!this.editingData) return;
+
+        /* Only sync if not in clipboard */
+        if (this.editingData.item) {
+          let uid = MHA.AU.currentUser.uid;
+
+          /* If roi is full whole, reset it */
+          if (roi && roi[0] == 0 && roi[1] == 0 && roi[2] == 1 && roi[3] == 1) {
+            roi = null;
+          }
+
+          MHA.DB.ref().update({['home/'+uid+'/items/'+this.editingData.item+'/images/'+this.editingData.key+'/roi']: roi}, error => {
+            error && console.error("ERR",error);
+          });
+
+        }
+      }
+
+      /* A thumbnail is defined for current rep in the editor */
+      _editingROIThumbnailChanged(roi) {
+        if (!this.editingData) return;
+        if (!roi) return;
+        let itemKey = this.editingData.item;
+
+        let idx = this.clipboardList.indexOf(this.editingData);
+        this.notifyPath(['clipboardList',idx,'thumbnail']);
+        this.notifyPath(['clipboardList',idx,'roiThumbnail']);
+
+        if (itemKey) {
+
+          /* If data isn't on clipboard, bake a thumbnail from roiThumbnail. */
+          let imageKey = this.editingData.key;
+          let editor = this.$['image-editor'];
+
+          let tl = editor.imageWidth * editor.dataLeft;
+          let tt = editor.imageHeight * editor.dataTop;
+          let tw = editor.imageWidth * editor.dataWidth;
+          let th = editor.imageHeight * editor.dataHeight;
+          let area = (250*250);
+          let w = Math.ceil(Math.sqrt(area * tw/th));
+          let h = Math.ceil(area / w);
+
+          let canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+
+          console.assert(editor.imageLoader, "No Image in editor!");
+          canvas.getContext('2d').drawImage(editor.imageLoader, tl, tt, tw, th, 0, 0, w, h);
+          canvas.toBlob(thumbnailBlob => {
+            MHA.registerRepresentation(thumbnailBlob, {
+              complete: (thumbnailKey,complete) => {
+
+                /* Delete roiThumbnail since it has been baked */
+                this.set('editingData.roiThumbnail', null);
+
+                MHA.assignItem( itemKey, {
+                  images: { [imageKey]: { thumbnail: thumbnailKey } },
+                });
+
+                let uid = MHA.AU.currentUser.uid;
+                let registerData = {
+                  ['representations/'+thumbnailKey+'/uid']: uid,
+                  ['home/'+uid+'/items/'+itemKey+'/images/'+imageKey+'/thumbnail']: thumbnailKey,
+                };
+
+                MHA.DB.ref().update(registerData, error => {
+                  error && console.error("ERR",error);
+                });
+
+              },
+            });
+          }, 'image/jpeg',0.8);
+
+        }
+      }
+
+      _XeditingThumbnailChanged(thumbnail) {
+        if (!this.editingData) return;
+        if (!this.editingData.thumbnail) return; /* XXX prevent deleting thumbnail for now. */
+
+        /* Updated thumbnail is a part of an item, update and sync the item */
+        if (this.editingData.item) {
+          let uid = MHA.AU.currentUser.uid;
+          let registerData = {
+            ['representations/'+thumbnail+'/uid']: uid,
+          };
+
+          MHA.assignItem( this.editingData.item, {
+            images: { [this.editingData.key]: { thumbnail: thumbnail } },
+          });
+
+          registerData['home/'+uid+'/items/'+this.editingData.item+'/images/'+this.editingData.key+'/thumbnail'] = thumbnail;
+
+          MHA.DB.ref().update(registerData, error => {
+            error && console.error("ERR",error);
+          });
+
+        } else {
+          let idx = this.clipboardList.indexOf(this.editingData);
+          this.notifyPath(['clipboardList',idx,'thumbnail']);
+        }
+
+      }
+
+      _checkEmpty(len) {
+        this.set('empty', len?false:true);
+      }
+
+      _reorderPhoto(a,b) {
+        if (a.deleted) {
+          if (b.deleted) {
+            if (a.key < b.key) {
+              return -1;
+            }
+          }
+          return 1;
+        }
+        if (b.deleted) {
+          return -1;
+        }
+
+        if (a.order) {
+          if (b.order) {
+            return a.order - b.order;
+          }
+          return -1;
+        } else if (b.order) {
+          return 1;
+        }
+
+        if (a.key < b.key) {
+          return -1;
+        }
+
+        return 1;
+      }
+
+      _isEditable(progress,rep) {
+        if (!rep) return false;
+        if (progress && progress != 100) return false;
+        if (progress === 0) return false;
+        return true;
+      }
+
+      _selectedImagesChanged(changes) {
+        if (changes) {
+          /* Remove number from deselected photo */
+          changes.indexSplices.forEach(splice => {
+            splice.removed.forEach(removedKey => {
+              this._setPhotoKeyProperty(removedKey,'_selectionOrder',null);
+            })
+          });
+
+          let orderNumber = 0;
+          this.selectedImages.forEach(key => {
+            this._setPhotoKeyProperty(key,'_selectionOrder',++orderNumber);
+          });
+        }
+      }
+
+      _onItemTap(e) {
+
+        if (e.detail.sourceEvent.shiftKey) {
+          if (typeof(this._LastTapIndex) == "undefined") {
+            this._LastTapIndex = -1;
+          }
+
+          let inc = this._LastTapIndex < e.model.index ? 1 : -1;
+
+          for (let i = this._LastTapIndex + inc; inc > 0 ? i < e.model.index : i > e.model.index; i+=inc) {
+            this.$['image-selector'].selectIndex(i);
+          }
+        }
+        this._LastTapIndex = e.model.index;
+      }
+
+      _indexImage(imageKey,cb,nacb) {
+        /* XXX optimize later
+        if (!this._ImageMap) {
+          this._ImageMap = newMap();
+        }
+
+        let idx = this._ImageMap.get(imageKey);
+        if (this.iconList.length > idx &&  this.iconList[idx].key == imageKey) {
+          return idx;
+        }
+        */
+
+        let i, data;
+        for (i = 0; data = this.iconList[i]; ++i) {
+          //this._ImageMap.set(data.key, i);
+          if (data.key == imageKey) {
+            if (cb) { cb(i,data); }
+
+            return i;
+          }
+        }
+
+        if (nacb) { nacb(cb);}
+        return -1;
+      }
+
+      _setPhotoKeyProperty(key,prop,val) {
+        let idx = this._indexImage(key);
+        if (idx !== -1) {
+          if (this.iconList[idx][prop] != val) {
+            this.set(['iconList',idx,prop],val);
+          }
+        }
+      }
+
+      _uploadReps(uid,itemKey,files) {
+        Array.from(files).forEach(imgFile => {
+          let imageKey =  MHA.DB.ref('home').child(uid).child(itemKey).child('images').push().key;
+          let imageName = imgFile.name.split('.')[0];
+          let coverImageKey = MHA.get(['items',itemKey,'cover']) || imageKey;
+
+          MHA.assignItem(itemKey,{ cover: coverImageKey });
+
+          let registerInfo = {};
+          function registerImageReps() {
+
+            /* Update once thumbnail and rep are both uploaded onto storage */
+            if (registerInfo.thumbnail && registerInfo.rep) {
+              let registerData = {
+                ['representations/'+registerInfo.rep+'/uid']: uid,
+                ['representations/'+registerInfo.thumbnail+'/uid']: uid,
+                ['home/'+uid+'/items/'+itemKey+'/cover']: coverImageKey,
+                ['home/'+uid+'/items/'+itemKey+'/images/'+imageKey+'/thumbnail']: registerInfo.thumbnail,
+                ['home/'+uid+'/items/'+itemKey+'/images/'+imageKey+'/rep']: registerInfo.rep,
+                ['home/'+uid+'/items/'+itemKey+'/images/'+imageKey+'/name']: registerInfo.name,
+              }
+              MHA.DB.ref().update(registerData, error => {
+                if (error) {
+                  console.error("ERR",error);
+                }
+              });
+            }
+          }
+
+          MHA.registerRepresentation(imgFile, {
+            progress: (repKey,progress) => {
+                this._setPhotoKeyProperty(imageKey, '_progress', (progress.bytesTransferred / progress.totalBytes * 100).toFixed(2));
+            },
+            complete: (repKey,complete) => {
+              MHA.assignItem(itemKey,{
+                images: {
+                  [imageKey]: {
+                    rep: repKey,
+                  }
+                },
+              });
+
+              /* This will contain customizations like ROIs, thumbnail, custom name */
+              registerInfo.rep = repKey;
+              registerInfo.name = imageName;
+              /* Published item, Will also contain tags */
+              registerImageReps();
+            },
+            src: (repKey,src) => {
+
+              /* src here is e.target.result of source image file from FileReader,
+               * Will use it to generate thumbnail image data.
+               */
+
+              let thumbnailLoader = new Image();
+              let canvas = document.createElement('canvas');
+
+              thumbnailLoader.onload = (e) => {
+                let area = (250*250); /* Default area size for thumbnail */
+                /* Try relying with data sizes rather geometries. */
+                let w = Math.ceil(Math.sqrt(area * thumbnailLoader.width / thumbnailLoader.height));
+                let h = Math.ceil(area / w);
+
+                canvas.width = w;
+                canvas.height = h;
+                canvas.getContext('2d').drawImage(thumbnailLoader, 0, 0, w, h);
+                canvas.toBlob(blob => {
+
+                  /* Thumbnail's actual upload should start after finishing image upload */
+                  MHA.registerRepresentation(blob, {
+                    key: key => {
+
+                      this.push('iconList',{
+                        item: itemKey,
+                        key: imageKey,
+                        thumbnail: key,
+                        name: imageName,
+                        rep: repKey,
+                        _progress: 0,
+                      });
+
+                    },
+                    src: (key,src) => {
+                      MHA.assignItem(itemKey,{
+                        images: {
+                          [imageKey]: {
+                            name: imageName,
+                            thumbnail: key,
+                          }
+                        },
+                      });
+                    },
+                    complete: key => {
+                      /* This will contain customizations like ROIs, thumbnail, custom name */
+                      registerInfo.thumbnail = key;
+                      /* Published item, Will also contain tags */
+                      registerImageReps();
+                    },
+                  });
+
+                },'image/jpeg',0.8);
+              }; /* end thumbnailLoader.onload */
+              thumbnailLoader.src = src;
+
+            }
+
+          });
+
+        }); /*forEach(files)*/
+      }
+
+      _filesSelected(e) {
+        let files = e.target.files;
+        if (!files || !files.length) {
+          return;
+        }
+
+        let itemKey = this.itemKey;
+        let uid = MHA.AU.currentUser.uid;
+        let role = this.itemRole;
+        let name = this.itemName;
+
+        console.assert(role, "Role is missing");
+
+        MHA.assignItem(itemKey,{
+            _uid: uid,
+            name: name,
+            role: role,
+            time: firebase.database.ServerValue.TIMESTAMP,
+        });
+
+        var registerData = {};
+        registerData['home/'+uid+'/items/'+itemKey+'/role'] = role;
+        registerData['home/'+uid+'/items/'+itemKey+'/name'] = name;
+        registerData['items/'+itemKey+'/uid'] = uid;
+        registerData['items/'+itemKey+'/role'] = role;
+        registerData['items/'+itemKey+'/name'] = name;
+        registerData['items/'+itemKey+'/public'] = false;
+
+        MHA.DB.ref().update(registerData, error => { if (!error) {} });
+
+        this._uploadReps(uid,itemKey,files);
+      }
+
+      /* Set image thumbnails from global notification */
+      setItem(path,value) {
+        switch(path[2]) {
+          case 'images': {
+
+            switch(path.length) {
+              case 4: {
+                this._indexImage(path[3],null,cb => {
+                  this.push('iconList', {item:path[1], key:path[3]});
+                });
+
+              } break;
+              case 5: {
+                this._indexImage(path[3],idx => {
+                  this.set(['iconList',idx,path[4]], value);
+                });
+              } break;
+            }
+
+          } break;
+        }
+      }
+
+      _onItemSnapshot(snapshot) {
+        let itemKey = snapshot.key;
+        let v = snapshot.val();
+
+        this.set('loading', false);
+
+        if (v) {
+
+          if (!v.role) {
+            /* If files got uploaded beforehand */
+            return;
+          }
+
+          MHA.assignItem(itemKey,{
+            _uid: snapshot.ref.parent.parent.key,
+            name: v.name,
+            role: v.role,
+            time: v.time,
+            cover: v.cover,
+          });
+
+        } else if (!this.itemRole) {
+          /* This is not creating a new item, just reset url & return */
+          this.set('itemKey', null);
+          return;
+        } else if (!v) {
+          /* Creating a new item */
+          return;
+        }
+
+        /* Continue updating UI only if it's a snapshot of current item */
+        if (snapshot.key != this.itemKey) {
+          return;
+        }
+
+        /* Updating UI. Check against current key */
+
+        this.set('itemRole',v.role);
+        this.set('itemName',this._ItemName = v.name);
+
+        let storageRef = MHA.ST.ref('UID').child(MHA.AU.currentUser.uid).child('DATA');
+
+
+        /* Sort unsynced (uploading in progress) images after server's entries. */
+        let images = Object.assign({}, MHA.get(['items',this.itemKey,'images']));
+        let entries = [];
+
+        snapshot.child('images').forEach(imgRef => {
+          let val = imgRef.val();
+          val.deleted = val.deleted || null;
+          val.roi = val.roi || null;
+
+          /*
+          if (this.editingData && this.editingData.key == imgRef.key) {
+            this.set('editingData.roi', val.roi);
+            this.set('editingData.thumbnail', val.thumbnail);
+          }
+          */
+
+          MHA.assignItem(itemKey,{
+            images:{
+              [imgRef.key]: val,
+            }
+          });
+
+          entries.push([imgRef.key, imgRef.val()]);
+          delete images[imgRef.key]; /* Filter server records */
+        });
+        /* Add local records XXX seems bad cuz it didn't update local ? */
+        Object.entries(images).forEach( entry => entries.push(entry));
+
+        entries.forEach(([imageKey,image,order]) => {
+            /* update current iconList */
+
+            let idx = this._indexImage(imageKey);
+            if (idx === -1) {
+
+              if (snapshot.key == itemKey) {
+                let icon = {
+                  item: itemKey,
+                  key: imageKey,
+                  thumbnail: image.thumbnail,
+                  rep: image.rep,
+                  name: image.name,
+                  order: image.order,
+                  deleted: image.deleted,
+                  roi: image.roi,
+                };
+
+                this.push('iconList', icon);
+              }
+
+            } else { /* update current icon's event-value */
+              this.set('iconList.'+idx+'.thumbnail', image.thumbnail);
+              this.set('iconList.'+idx+'.rep', image.rep);
+              this.set('iconList.'+idx+'.name', image.name);
+              this.set('iconList.'+idx+'.roi', image.roi);
+              this.set('iconList.'+idx+'.deleted', image.deleted ? true : false);
+              this.set('iconList.'+idx+'.order', image.order || order);
+
+              if (this.editingData && this.editingData.key == imageKey) {
+                this.notifyPath('editingData.thumbnail');
+                this.notifyPath('editingData.rep');
+                this.notifyPath('editingData.name');
+                this.notifyPath('editingData.roi');
+              }
+
+            }
+
+          }
+        );
+      }
+
+      _getDataError(error) {
+        console.error("ERR", error);
+        this._ItemReference.off('value', this._onItemSnapshot, this);
+        delete this._ItemReference;
+      }
+
+      _itemKeyChanged(user, itemKey) {
+
+        delete this._LastTapIndex;
+
+        this.iconList.forEach((icon,index) => {
+          this.set(['iconList',index,'thumbnail'],null);
+        });
+
+        this.set('iconList',[]);
+//        this.splice('iconList',0,this.iconList.length);
+
+        if (this._ItemReference) {
+          this._ItemReference.off('value', this._onItemSnapshot, this);
+          delete this._ItemReference;
+        }
+
+        if (!user || !itemKey) {
+          return;
+        }
+
+        this._ItemName = "ไอเท็มไม่มีชื่อ";
+        this.set('itemName',this._ItemName);
+
+        if (this.selectedImages) {
+          this.splice('selectedImages',0,this.selectedImages.length);
+        }
+
+        this.set('loading', true);
+        this._ItemReference = MHA.DB.ref('home').child(MHA.AU.currentUser.uid)
+                                    .child('items').child(itemKey);
+        this._ItemReference.on('value', this._onItemSnapshot, this._getDataError, this);
+
+      }
+
+      _itemNameChanged(user, itemRole, itemName) {
+        if (!user || !itemRole || (itemName == this._ItemName)) {
+          return;
+        }
+
+        if (itemName || itemName === "") {
+
+          delete this._ItemName;
+          var registerData = {};
+          registerData['items/'+this.itemKey+'/uid'] = user.uid;
+          registerData['items/'+this.itemKey+'/name'] = itemName;
+          registerData['items/'+this.itemKey+'/role'] = this.itemRole;
+          registerData['home/'+user.uid+'/items/'+this.itemKey+'/name'] = itemName;
+          registerData['home/'+user.uid+'/items/'+this.itemKey+'/role'] = itemRole;
+          registerData['home/'+user.uid+'/items/'+this.itemKey+'/time'] = firebase.database.ServerValue.TIMESTAMP;
+
+          MHA.DB.ref().update(registerData, function(error){
+            if (error) {
+              console.error("ERR",error);
+            }
+          });
+        }
+      }
+
+      _formatSize(bytes) {
+        const base = 1024;
+        const unit = ~~(Math.log(bytes) / Math.log(base));
+        const dec = Math.max(0, Math.min(3, unit - 1));
+        const size = parseFloat((bytes / Math.pow(base, unit)).toFixed(dec));
+        return size + ' ' + ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'][unit];
+      }
+
+      _iconForRole(role) {
+        return MGIconForRole(role);
+      }
+
+      _onAddButtonTap(e) {
+        this.$.fileInput.value = '';
+        this.$.fileInput.click();
+      }
+
+      _onReorderButtonTap(e) {
+        let registerData = {};
+        let autoNumber = this.selectedImages.length;
+
+        this.iconList.map((item, idx) => {
+          return {index: idx, order:item.order|| Number.MAX_SAFE_INTEGER};
+        })
+        .sort((a,b) => a.order - b.order)
+        .map(item => this.iconList[item.index])
+        .forEach(icon => {
+            if (icon._selectionOrder == 1) {
+              registerData['home/'+MHA.AU.currentUser.uid+'/items/'+this.itemKey+'/cover'] = icon.key;
+            }
+            registerData['home/'+MHA.AU.currentUser.uid+'/items/'+this.itemKey+'/images/'+icon.key+'/order'] = icon._selectionOrder || ++autoNumber;
+        });
+
+
+        MHA.DB.ref().update(registerData, error => {
+          console.assert(!error,"ERR updating order");
+        });
+        this.splice('selectedImages',0,this.selectedImages.length);
+      }
+
+      _onDeleteButtonTap(e) {
+        let registerData = {};
+        let selectedImages = this.selectedImages;
+
+        this.selectedImages.forEach(selectedKey => {
+          let del = MHA.get(['items',this.itemKey,'images',selectedKey,'deleted']) ? null:true;
+          MHA.assignItem(this.itemKey, {images:{[selectedKey]:{deleted:del}}});
+          registerData['home/'+MHA.AU.currentUser.uid+'/items/'+this.itemKey+'/images/'+selectedKey+'/deleted'] = del;
+        });
+        this.splice('selectedImages',0,this.selectedImages.length);
+
+        MHA.DB.ref().update(registerData, error => {
+            console.assert(!error,"ERR updating deletion");
+        });
+      }
+
+      _onCancelButtonTap(e) {
+          this.splice('selectedImages',0,this.selectedImages.length);
+      }
+
+      _onCopiedTap(e) {
+        //Toggles deleted true and it won't be pasted.
+        let idx = this.clipboardList.indexOf(e.model.item);
+        this.set(['clipboardList',idx,'deleted'], this.clipboardList[idx].deleted ? false : true);
+      }
+
+      _editingDataChanged(data) {
+        this._EditingSelection = this._EditingSelection || [];
+        this.set('beforeEditingData',null);
+        this.set('afterEditingData',null);
+        if (data) {
+          let slen = this._EditingSelection.length;
+          if (slen) {
+
+            let currentIdx = this._EditingSelection.indexOf(data.key);
+
+            if (currentIdx != -1) {
+              this.set('beforeEditingData',this.iconList[this._indexImage(this._EditingSelection[(currentIdx-1+slen) % slen])]);
+              this.set('afterEditingData',this.iconList[this._indexImage(this._EditingSelection[(currentIdx+1) % slen])]);
+            }
+          }
+        } else {
+          this._EditingSelection.splice(0,this._EditingSelection.length);
+        }
+      }
+
+
+      _onEditButtonTap(e) {
+        this._EditingSelection = [].concat(this.selectedImages);
+        this._indexImage(this._EditingSelection[0], idx => {
+          this.set('editingData',this.iconList[idx]);
+        });
+        this.splice('selectedImages',0,this.selectedImages.length);
+      }
+
+      _onCopyButtonTap(e) {
+        this.selectedImages.forEach(imageKey => {
+          this._indexImage(imageKey, idx => {
+            let copy = {
+              name: this.iconList[idx].name,
+              thumbnail: this.iconList[idx].thumbnail,
+              rep: this.iconList[idx].rep,
+              roi: this.iconList[idx].roi,
+            };
+            this.push('clipboardList', copy);
+          });
+        });
+
+        this.splice('selectedImages',0,this.selectedImages.length);
+      }
+
+      _onClearClipboardTap(e) {
+        this.splice('clipboardList',0,this.clipboardList.length);
+      }
+
+      _onPasteClipboardTap(e) {
+        console.assert(this.clipboardList.length,"Empty clipboard?");
+
+        let uid = MHA.AU.currentUser.uid;
+        let itemKey = this.itemKey;
+        let path = 'home/'+uid+'/items/'+itemKey;
+        let ref = MHA.DB.ref('home').child(uid).child(itemKey).child('images');
+        let registerData = {
+          ['items/'+itemKey+'/public']: false,
+          ['items/'+itemKey+'/uid']: uid,
+          ['items/'+itemKey+'/role']: this.itemRole,
+          ['items/'+itemKey+'/name']: this.itemName,
+          [path+'/role']: this.itemRole,
+          [path+'/name']: this.itemName,
+        };
+
+        path+='/images/';
+        let coverKey = MHA.get(['items',itemKey,'cover']);
+        let area = (250*250);
+        let waitThumbnails = 0;
+
+        this.clipboardList.forEach((data,index) => {
+          if (data.deleted) return;
+          let imageKey = ref.push().key;
+          coverKey = coverKey || imageKey;
+          registerData[path+imageKey+'/name'] = data.name || null;
+          registerData[path+imageKey+'/rep'] = data.rep || null;
+
+          /* If thumbnails were virtually defined with ROIs, it bakes them first */
+          if (data.roiThumbnail) {
+            waitThumbnails++;
+            MHA.registerRepresentation(data.rep,{src: (key,src) => {
+
+              let imageLoader = new Image();
+              imageLoader.crossOrigin="anonymous";
+              imageLoader.onload = e => {
+                let width = imageLoader.naturalWidth;
+                let height = imageLoader.naturalHeight;
+
+                let tl = width * data.roiThumbnail[0];
+                let tt = height * data.roiThumbnail[1];
+                let tw = width * data.roiThumbnail[2];
+                let th = height * data.roiThumbnail[3];
+
+                let w = Math.ceil(Math.sqrt(area * tw/th));
+                let h = Math.ceil(area / w);
+
+                let canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                canvas.getContext('2d').drawImage(imageLoader, tl, tt, tw, th, 0, 0, w, h);
+                canvas.toBlob( thumbnailBlob => {
+                  MHA.registerRepresentation( thumbnailBlob, {
+                    key: thumbnailKey => {
+                      MHA.assignItem(itemKey, {
+                        images: {[imageKey]: {thumbnail: thumbnailKey}},
+                      });
+                    },
+                    complete: (thumbnailKey,complete) => {
+                      registerData[path+imageKey+'/thumbnail'] = thumbnailKey;
+
+                      waitThumbnails--;
+                      if (waitThumbnails == 0) {
+                        MHA.DB.ref().update(registerData, error => {
+                          if (!error) {
+                          } else {
+                            console.error("ERR",error);
+                          }
+                        });
+                      }
+                    },
+                  });
+                }, 'image/jpeg',0.8);
+              };
+              imageLoader.src = src;
+
+            }});
+            let canvas = document.createElement('canvas');
+
+
+
+          } else {
+            registerData[path+imageKey+'/thumbnail'] = data.thumbnail || null;
+          }
+        });
+
+        registerData['home/'+uid+'/items/'+itemKey+'/cover'] = coverKey;
+
+        /* XXX Should it also update local? Or should it rely only on query events? */
+        /* XXX Need to try off-line. */
+
+        if (waitThumbnails == 0) {
+          MHA.DB.ref().update(registerData, error => {
+            if (!error) {
+            } else {
+              console.error("ERR",error);
+            }
+          });
+        }
+      }
+
+      newItem(role,name) {
+        let key = MHA.DB.ref('items').push().key;
+        this.set('itemRole', role);
+        this.set('itemKey', key);
+         /* Only update UI name without server registration */
+        this.set('itemName', this._ItemName = name || "แกลเลอรี่ไม่มีชื่อ");
+      }
+
+      _onEditImage(e) {
+        let data = e.model.item;
+        this.set('editingData',data);
+        e.stopImmediatePropagation();
+      }
+
+
+    }
+
+    customElements.define(MGGalleryEditor.is, MGGalleryEditor);
+  </script>
+</dom-module>

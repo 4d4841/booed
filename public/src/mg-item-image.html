@@ -84,15 +84,6 @@ class MGItemImage extends Polymer.Element {
   static get is() { return 'mg-item-image'; }
 
   static get properties() { return {
-    /* If itemKey and key are set, edits will be synced. */
-    itemKey: {
-      type: String,
-    },
-
-    key: {
-      type: String,
-    },
-
     thumbnail: {
       type: String,
       value: '',
@@ -112,7 +103,6 @@ class MGItemImage extends Polymer.Element {
       type: Boolean,
       computed: '_computeShowSelectionOrder(selectionOrder)',
     },
-
 
   }}
 

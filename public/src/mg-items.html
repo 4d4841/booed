@@ -20,7 +20,7 @@
 <link rel="import" href="mg-icons.html">
 <link rel="import" href="mg-balloon.html">
 <link rel="import" href="mg-menu.html">
-<link rel="import" href="mg-item-editor.html">
+<link rel="import" href="mg-gallery-editor.html">
 <link rel="import" href="mg-thumbnail.html">
 
 
@@ -102,11 +102,11 @@
       <mg-menu selected-item="{{newItemSelected}}" menu="[[newMenu]]"></mg-menu>
     </mg-balloon>
 
-    <mg-item-editor
+    <mg-gallery-editor
       id="editor"
       me="[[me]]"
       item-key="{{itemKey}}"
-    ></mg-item-editor>
+    ></mg-gallery-editor>
 
     <app-route
         route="{{route}}"
