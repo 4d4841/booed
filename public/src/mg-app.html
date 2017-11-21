@@ -36,6 +36,7 @@
 <link rel="import" href="mg-menu.html">
 
 <link href="https://fonts.googleapis.com/css?family=Mitr:300|Gloria+Hallelujah" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Henny+Penny" rel="stylesheet">
 <!-- Since 'home' is the default route, eagerly load it. -->
 <!--
 <link rel="import" href="mg-common-styles.html"><link href="https://fonts.googleapis.com/css?family=Gloria+Hallelujah" rel="stylesheet">
@@ -383,18 +384,12 @@
         background-color: var(--booed-header-background);
       }
 
-      footer > a :nth-child(1) { color: #ff5555; }
-      footer > a :nth-child(2) { color: #ffb155; }
-      footer > a :nth-child(3) { color: #abc837; }
-      footer > a :nth-child(4) { color: #37c5c8; }
-      footer > a :nth-child(5) { color: #d493ff; }
-
-      footer > a {
+      footer a {
         color: var(--app-primary-color);
         text-decoration: none;
       }
 
-      footer > a:hover {
+      footer a:hover {
         text-decoration: underline;
       }
 
@@ -610,7 +605,13 @@
 
     <footer>
     <a class="horizontal layout center" href="about"><iron-icon class="self-start" style="--iron-icon-width:15px;" icon="copyright"></iron-icon> 2017 <img style="padding: 0; margin: -2px 0 0 5px; vertical-align: middle; height:14px" src="/images/logo-sat/logo-packed-sat.svg"></a>
-    <a class="horizontal layout" href="https://www.polymer-project.org/">Made with <iron-icon class="self-start" style="--iron-icon-width:15px;padding-left: 3px" icon="polymer"></iron-icon></a>
+    <span class="horizontal layout">
+      <a class="horizontal layout" href="https://www.polymer-project.org/">With <iron-icon class="self-start" style="--iron-icon-width:15px;padding-left: 3px;--iron-icon-fill-color: dodgerblue" icon="polymer"></iron-icon></a>
+      <iron-icon class="self-start" style="--iron-icon-width:15px;" icon="add"></iron-icon>
+      <a class="horizontal layout" href="https://www.youtube.com/watch?v=uAALIM_5u1Q">
+      <iron-icon class="self-start" style="--iron-icon-width:15px;padding-right: 3px;--iron-icon-fill-color: tomato" icon="favorite"></iron-icon>
+        <font style="font-family: 'Henny Penny', cursive;">Moon HyunA</font></a>
+    </span>
     </footer>
 
     <!-- a11y announcer -->
