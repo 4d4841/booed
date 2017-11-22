@@ -184,10 +184,6 @@
         /* border-top: 1px dashed var(--booed-menu-color) */
       }
 
-      .menu-bar iron-icon {
-        margin-right:8px;
-      }
-
       div.header-filler {
         @apply(--layout-flex);
         min-width: 320px;
@@ -281,12 +277,17 @@
         };
       }
 
-      paper-tab iron-icon.expand-more {
+      paper-tab iron-icon.expand-more-icon {
         --iron-icon-fill-color: gray;
       }
 
-      paper-tab:hover iron-icon.expand-more {
+      paper-tab:hover iron-icon.expand-more-icon {
         --iron-icon-fill-color: tomato;
+      }
+
+      .tab-icon {
+        margin-right:8px;
+        --iron-icon-fill-color: var(--app-accent-color);
       }
 
       #drawer {
@@ -376,17 +377,26 @@
         bottom: 0;
         left: 0;
         right: 0;
-        line-height: 24px;
+        height: 34px;
         position: fixed;
         --iron-icon-fill-color: var(--app-primary-color);
-        @apply(--layout-horizontal);
-        @apply(--layout-around-justified);
+        @apply(--layout-vertical);
         user-select: none;
+      }
+
+      .page-end {
+        background: linear-gradient( transparent 0, var(--booed-header-background) 10px);
+        width:100%;
+        height:10px;
+      }
+
+      .footer {
+        height: 24px;
         box-shadow: inset 0px 5px 6px -3px var(--app-shadow-color);
         background-color: #e5e8ea;
       }
 
-      footer a {
+      .footer a {
         color: var(--app-primary-color);
         padding: 0 5px;
         text-decoration: none;
@@ -394,7 +404,7 @@
         transition: background-color 1s;
       }
 
-      footer a:hover {
+      .footer a:hover {
         background-color: white;
       }
 
@@ -541,14 +551,14 @@
               <paper-tab
                 name="[[item.name]]"
                 on-tap="_onMenuTap">
-                <iron-icon icon="[[item.icon]]"></iron-icon>
+                <iron-icon class="tab-icon" icon="[[item.icon]]"></iron-icon>
 
                 [[item.title]]
 
                   <dom-if if="[[item.submenu]]">
                 <template>
                 <div on-tap="_onMenuTapExpand">
-                <iron-icon class="expand-more" icon="expand-more"></iron-icon>
+                <iron-icon class="expand-more-icon" icon="expand-more"></iron-icon>
                 </div>
                 </template>
                   </dom-if>
@@ -609,14 +619,20 @@
 
 
     <footer>
-    <a class="horizontal layout center" href="about"><iron-icon class="self-start" style="--iron-icon-width:15px;" icon="copyright"></iron-icon> 2017 <img style="padding: 0; margin: -2px 0 0 5px; vertical-align: middle; height:14px" src="/images/logo-sat/logo-packed-sat.svg"></a>
-    <span class="horizontal layout">
-      <a class="horizontal layout" href="https://www.polymer-project.org/">With <iron-icon class="self-start" style="--iron-icon-width:15px;padding-left: 3px;--iron-icon-fill-color: dodgerblue" icon="polymer"></iron-icon></a>
-      <iron-icon class="self-start" style="--iron-icon-width:15px;" icon="add"></iron-icon>
-      <a class="horizontal layout" href="https://www.youtube.com/watch?v=uAALIM_5u1Q">
-      <iron-icon class="self-start" style="--iron-icon-width:15px;padding-right: 3px;--iron-icon-fill-color: tomato" icon="favorite"></iron-icon>
-        <font style="font-family: 'Henny Penny', cursive;color:purple">Moon HyunA</font></a>
-    </span>
+      <div class="page-end"></div>
+      <div class="footer horizontal layout around-justified center">
+        <a class="horizontal layout center" href="about">
+          <iron-icon style="--iron-icon-width:15px;" icon="copyright"></iron-icon> 2017 <img style="padding: 0; margin: -2px 0 0 5px; vertical-align: middle; height:14px" src="/images/logo-sat/logo-packed-sat.svg">
+        </a>
+        <div class="horizontal layout center">
+          <a class="horizontal layout center" href="https://www.polymer-project.org/">With <iron-icon style="--iron-icon-width:15px;padding-left: 3px;--iron-icon-fill-color: dodgerblue" icon="polymer"></iron-icon></a>
+          <iron-icon style="--iron-icon-width:15px;" icon="add"></iron-icon>
+          <a class="horizontal layout center" href="https://www.youtube.com/watch?v=uAALIM_5u1Q">
+            <iron-icon style="--iron-icon-width:15px;padding-right: 3px;--iron-icon-fill-color: tomato" icon="favorite"></iron-icon>
+            <font style="font-family: 'Henny Penny', cursive;color:purple">Moon HyunA</font>
+          </a>
+        </div>
+      </div>
     </footer>
 
     <!-- a11y announcer -->
