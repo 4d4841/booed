@@ -39,14 +39,20 @@
         position: absolute;
       }
 
-      paper-spinner {
+      .spinner {
         position: fixed;
         z-index: 1000;
-        bottom: 2px;
-        left: 50%;
-        width: 20px;
-        height: 20px;
-        --paper-spinner-stroke-width: 2px"
+        bottom: -15px;
+        left: calc(50% - 22px);
+        height: 45px;
+        opacity: 0;
+        transition: opacity 0.5s;
+        pointer-events: none;
+        user-select: none;
+      }
+
+      .spinner[active] {
+        opacity: 1;
       }
 
     </style>
@@ -68,7 +74,11 @@
       </template>
     </template>
 
-    <paper-spinner active="[[loading]]"></paper-spinner>
+    <!--
+    <paper-spinner class="spinner" active="[[loading]]"></paper-spinner>
+    -->
+
+    <img draggable="false" class="spinner" height="50px" src="images/logo-bounce.svg" active$="[[loading]]">
 
     <iron-scroll-threshold
       style="display:none"
