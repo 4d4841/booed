@@ -334,6 +334,7 @@
           /* Checks if it was editing an item, set the URL back to the item */
           let key = this.itemKey || this._CurrentItemKey;
           if (key && !route.path) {
+            delete this._CurrentItemKey; /* Delete or it will keep bouncing back trying */
             this.set('route.path', key);
           }
         }
