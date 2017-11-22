@@ -213,10 +213,13 @@
       <defs>
         <path id="chevrons" d="M -2.6,4.6 -7.2,0 -2.6,-4.6 -4,-6 -10,0 -4,6 Z M 2.6,4.6 7.2,0 2.6,-4.6 4,-6 10,0 4,6 Z" style$="[[_styleArrow(tracking)]]"/>
         <path id="chevron" d="M -2.6,4.6 -7.2,0 -2.6,-4.6 -4,-6 -10,0 -4,6 Z" style$="[[_styleArrow(tracking)]]"/>
+        <path id="lock" d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"></path>
       </defs>
+      <use xlink:href="#lock" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataLeft,dataTop,0,0.8)]]" style$="[[_styleLock(scaleFactor,tracking,showsAspectLock)]]"/>
+
 
       <path d$="[[rPath]]" style$="[[_styleBorder(scaleFactor,tracking)]]"/>
-      <path d$="[[rPathInner]]" style$="[[_styleBorderInner(scaleFactor,tracking,showsAspectLock)]]"/>
+      <path d$="[[rPathInner]]" style$="[[_styleBorderOver(scaleFactor,tracking,showsAspectLock)]]"/>
 
       <use id="chevrontop" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataMidW,dataTop,'top')]]" />
       <use id="chevronleft" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataLeft,dataMidH,'left')]]" />
@@ -230,10 +233,9 @@
 
 /* TODO */
 /* - Allows resetting ROIs completely. */
-/* - Allows multiple ROIs for any purpose. (eg. for pan-scan animation.) */
+/* - Allows multiple ROIs for any purpose. (eg. for pan-scan animation,temporary) */
 /* - ROIs should only be created by an editing attempt. */
 /* - Allows representations to have other representations as src. */
-/* - Allows representations to have ROIs, that would be useful for temporary data. */
 
     class MGImageEditor extends Polymer.GestureEventListeners(
       Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)
@@ -358,19 +360,27 @@
 
       }
 
-      _styleBorder(lw,tracking) {
-        return tracking ? 'fill:rgba(0,0,0,0.9);stroke:none' : 'fill:none;stroke-width:'+lw+';stroke:black';
+      _styleLock(lw,tracking,lock) {
+        return lock
+          ? tracking ? 'fill:none;stroke:none' : 'fill:orange;stroke-width:'+lw+';stroke:orange);'
+          : 'fill:none;stroke:none';
       }
 
-      _styleBorderInner(lw,tracking,lock) {
-        return tracking ? 'fill:none;stroke:none' : 'fill:none;stroke-width:'+lw+';stroke:'+(lock?'orange':'white')+';stroke-dasharray:'+lw*3+','+lw*3;
+      _styleBorderOver(lw,tracking,lock) {
+        return tracking ? 'fill:none;stroke:none' : 'fill:none;stroke-width:'+lw*1.3+';stroke:'+(lock?'orange':'white')+';stroke-dasharray:'+lw*3+','+lw*3;
+      }
+
+      _styleBorder(lw,tracking) {
+        lw*=1.3;
+        return tracking ? 'fill:rgba(0,0,0,0.9);stroke:none' : 'fill:none;stroke-width:'+lw*1.3+';stroke:black';
       }
 
       _styleArrow(tracking) {
         return tracking ? 'fill:rgba(255,255,255,0.3);stroke:none' : 'fill:white;stroke-width:1;stroke:black';
       }
 
-      _translateArrows(s,t,w,h,x,y,r) {
+      _translateArrows(s,t,w,h,x,y,r,ss) {
+        ss = ss || 1;
         x = x || 0;
         y = y || 0;
         let xlink = "http://www.w3.org/1999/xlink";
@@ -400,7 +410,7 @@
 
         let ret = `translate(${x*w},${y*h})`;
         if (r) ret += ` rotate(${r})`;
-        ret+= ` scale(${1.2*s})`;
+        ret+= ` scale(${1.2*s*ss})`;
 
         return ret;
       }
@@ -425,8 +435,9 @@
               case 'ArrowRight':
                 this.set('data',this.after);
                 break;
-              case 'Shift':
+              case 'Control':
                 this.set('showsAspectLock', true);
+                this._KeepAspect = this.dataWidth/this.dataHeight;
                 break;
             }
           }
@@ -443,8 +454,9 @@
                 e.preventDefault();
                 this._deactivateClose(e);
               break;
-              case 'Shift':
+              case 'Control':
                 this.set('showsAspectLock', false);
+                delete this._KeepAspect;
                 break;
             }
           }
@@ -499,9 +511,6 @@
           case 'start':
             /* Hack to prevent tracking locked into some kind of drag mode with a double-clicking */
             e.preventDefault();
-            if (e.detail.sourceEvent.shiftKey) {
-              this._KeepAspect = this.dataWidth/this.dataHeight;
-            }
 
             this.tracking = {
               ax: ax, ay: ay,
