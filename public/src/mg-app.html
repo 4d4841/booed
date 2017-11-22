@@ -170,6 +170,7 @@
         z-index: 1;
 
         background-color: #e5e8ea;
+        box-shadow: inset 0px -1px 6px -3px var(--app-shadow-color);
       }
 
       .menu-bar {
@@ -380,17 +381,21 @@
         --iron-icon-fill-color: var(--app-primary-color);
         @apply(--layout-horizontal);
         @apply(--layout-around-justified);
-
-        background-color: var(--booed-header-background);
+        user-select: none;
+        box-shadow: inset 0px 5px 6px -3px var(--app-shadow-color);
+        background-color: #e5e8ea;
       }
 
       footer a {
         color: var(--app-primary-color);
+        padding: 0 5px;
         text-decoration: none;
+        border-radius: 5px;
+        transition: background-color 1s;
       }
 
       footer a:hover {
-        text-decoration: underline;
+        background-color: white;
       }
 
       #menu-button {
@@ -610,7 +615,7 @@
       <iron-icon class="self-start" style="--iron-icon-width:15px;" icon="add"></iron-icon>
       <a class="horizontal layout" href="https://www.youtube.com/watch?v=uAALIM_5u1Q">
       <iron-icon class="self-start" style="--iron-icon-width:15px;padding-right: 3px;--iron-icon-fill-color: tomato" icon="favorite"></iron-icon>
-        <font style="font-family: 'Henny Penny', cursive;">Moon HyunA</font></a>
+        <font style="font-family: 'Henny Penny', cursive;color:purple">Moon HyunA</font></a>
     </span>
     </footer>
 
