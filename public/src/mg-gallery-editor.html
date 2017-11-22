@@ -11,13 +11,13 @@
 `::::::::.::::::::..::::::::::...:::.....:::.....:::...::::::...:::.............:::...::::::::..::'
 -->
 
-/* XXX Make item behavior */
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="mg-item-editor.html">
 <link rel="import" href="mg-common-styles.html">
 <link rel="import" href="mg-input.html">
 <link rel="import" href="mg-item-image.html">
@@ -126,47 +126,6 @@
 
     <iron-collapse class="vertical layout" opened="[[itemKey]]">
 
-      <div class="horizontal layout end wrap">
-        <template is="dom-if" if="{{loading}}">
-          <img height="62px" src="images/logo-bounce.svg">
-        </template>
-
-        <template is="dom-if" if="{{!loading}}">
-          <paper-input
-            label="ชื่อแกลเลอรี่"
-            focused="{{focusedName}}"
-            always-float-label="[[focusedName]]"
-            value="{{itemName}}"
-          >
-            <iron-icon icon="[[_iconForRole(itemRole)]]" slot="prefix"></iron-icon>
-          </paper-input>
-
-          <paper-button on-tap="_onAddButtonTap">
-            <iron-icon icon="add-photo"></iron-icon> เพิ่มรูป
-          </paper-button>
-          <template is="dom-if" if="{{selectedImages.length}}">
-            <paper-button on-tap="_onDeleteButtonTap">
-              <iron-icon icon="delete"></iron-icon> ลบ
-            </paper-button>
-            <paper-button on-tap="_onReorderButtonTap">
-              <iron-icon icon="reorder"></iron-icon> เรียง
-            </paper-button>
-            <paper-button on-tap="_onCopyButtonTap">
-              <iron-icon icon="content-copy"></iron-icon> ก๊อปปี้
-            </paper-button>
-            <paper-button on-tap="_onEditButtonTap">
-              <iron-icon icon="mode-edit"></iron-icon> แก้ไข
-            </paper-button>
-            <paper-button on-tap="_onCancelButtonTap">
-              <iron-icon icon="cancel"></iron-icon> ยกเลิก
-            </paper-button>
-          </template>
-        </template>
-
-        <input type="file" id="fileInput" on-change="_filesSelected" hidden multiple>
-
-      </div>
-
       <iron-collapse class="copied-collapse vertical layout" opened="[[clipboardList.length]]">
 
         <div class="copied-container">
@@ -199,6 +158,53 @@
         </div>
       </iron-collapse>
 
+
+      <div class="horizontal layout end wrap">
+        <template is="dom-if" if="{{loading}}">
+          <img height="62px" src="images/logo-bounce.svg">
+        </template>
+
+        <template is="dom-if" if="{{!loading}}">
+          <paper-input
+            label="ชื่อแกลเลอรี่"
+            focused="{{focusedName}}"
+            always-float-label="[[focusedName]]"
+            value="{{itemName}}"
+          >
+            <iron-icon icon="[[_iconForRole(itemRole)]]" slot="prefix"></iron-icon>
+          </paper-input>
+
+          <paper-button on-tap="_onAddButtonTap">
+            <iron-icon icon="add-photo"></iron-icon> เพิ่มรูป
+          </paper-button>
+          <template is="dom-if" if="[[iconList.length]]">
+            <paper-button on-tap="_onSelectAllButtonTap">
+              <iron-icon icon="select-all"></iron-icon> เลือกหมด
+            </paper-button>
+          </template>
+          <template is="dom-if" if="[[selectedImages.length]]">
+            <paper-button on-tap="_onDeleteButtonTap">
+              <iron-icon icon="delete"></iron-icon> ลบ
+            </paper-button>
+            <paper-button on-tap="_onEditButtonTap">
+              <iron-icon icon="mode-edit"></iron-icon> แก้ไข
+            </paper-button>
+            <paper-button on-tap="_onReorderButtonTap">
+              <iron-icon icon="reorder"></iron-icon> เรียง
+            </paper-button>
+            <paper-button on-tap="_onCopyButtonTap">
+              <iron-icon icon="content-copy"></iron-icon> ก๊อปปี้
+            </paper-button>
+            <paper-button on-tap="_onCancelButtonTap">
+              <iron-icon icon="cancel"></iron-icon> ยกเลิก
+            </paper-button>
+          </template>
+        </template>
+
+        <input type="file" id="fileInput" on-change="_filesSelected" hidden multiple>
+
+      </div>
+
       <iron-selector
         id="image-selector"
         attr-for-selected="key"
@@ -214,7 +220,7 @@
           thumbnail="[[item.thumbnail]]"
           rep="[[item.rep]]"
           progress="[[item._progress]]"
-          name="[[item.key]]"
+          name="[[item.name]]"
           selection-order="[[item._selectionOrder]]"
           deleted="[[item.deleted]]"
           on-tap="_onItemTap"
@@ -243,25 +249,11 @@
 
   </template>
   <script>
-    class MGGalleryEditor extends Polymer.Element {
+    class MGGalleryEditor extends MGItemEditor {
       static get is() { return 'mg-gallery-editor'; }
 
       static get properties() { return {
         files: Object,
-
-        itemKey: {
-          type: String,
-          notify: true,
-        },
-
-        itemRole: {
-          type: String,
-        },
-
-        itemName: {
-          type: String,
-          notify: true,
-        },
 
         iconList: {
           type: Array,
@@ -275,6 +267,7 @@
 
         selectedImages: {
           type: Array,
+          value: [],
         },
 
         empty: {
@@ -291,8 +284,6 @@
       }}
 
       static get observers() { return [
-        '_itemKeyChanged(me.user, itemKey)',
-        '_itemNameChanged(me.user, itemRole, itemName)',
         '_selectedImagesChanged(selectedImages.splices)',
         '_checkEmpty(iconList.length)',
         '_editingROIChanged(editingData.roi)',
@@ -807,54 +798,12 @@
           this.set(['iconList',index,'thumbnail'],null);
         });
 
-        this.set('iconList',[]);
-//        this.splice('iconList',0,this.iconList.length);
+        this.splice('iconList',0,this.iconList.length);
 
-        if (this._ItemReference) {
-          this._ItemReference.off('value', this._onItemSnapshot, this);
-          delete this._ItemReference;
-        }
+        this.splice('selectedImages',0,this.selectedImages.length);
 
-        if (!user || !itemKey) {
-          return;
-        }
+        super._itemKeyChanged(user, itemKey);
 
-        this._ItemName = "ไอเท็มไม่มีชื่อ";
-        this.set('itemName',this._ItemName);
-
-        if (this.selectedImages) {
-          this.splice('selectedImages',0,this.selectedImages.length);
-        }
-
-        this.set('loading', true);
-        this._ItemReference = MHA.DB.ref('home').child(MHA.AU.currentUser.uid)
-                                    .child('items').child(itemKey);
-        this._ItemReference.on('value', this._onItemSnapshot, this._getDataError, this);
-
-      }
-
-      _itemNameChanged(user, itemRole, itemName) {
-        if (!user || !itemRole || (itemName == this._ItemName)) {
-          return;
-        }
-
-        if (itemName || itemName === "") {
-
-          delete this._ItemName;
-          var registerData = {};
-          registerData['items/'+this.itemKey+'/uid'] = user.uid;
-          registerData['items/'+this.itemKey+'/name'] = itemName;
-          registerData['items/'+this.itemKey+'/role'] = this.itemRole;
-          registerData['home/'+user.uid+'/items/'+this.itemKey+'/name'] = itemName;
-          registerData['home/'+user.uid+'/items/'+this.itemKey+'/role'] = itemRole;
-          registerData['home/'+user.uid+'/items/'+this.itemKey+'/time'] = firebase.database.ServerValue.TIMESTAMP;
-
-          MHA.DB.ref().update(registerData, function(error){
-            if (error) {
-              console.error("ERR",error);
-            }
-          });
-        }
       }
 
       _formatSize(bytes) {
@@ -863,10 +812,6 @@
         const dec = Math.max(0, Math.min(3, unit - 1));
         const size = parseFloat((bytes / Math.pow(base, unit)).toFixed(dec));
         return size + ' ' + ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'][unit];
-      }
-
-      _iconForRole(role) {
-        return MGIconForRole(role);
       }
 
       _onAddButtonTap(e) {
@@ -1079,20 +1024,11 @@
         }
       }
 
-      newItem(role,name) {
-        let key = MHA.DB.ref('items').push().key;
-        this.set('itemRole', role);
-        this.set('itemKey', key);
-         /* Only update UI name without server registration */
-        this.set('itemName', this._ItemName = name || "แกลเลอรี่ไม่มีชื่อ");
-      }
-
       _onEditImage(e) {
         let data = e.model.item;
         this.set('editingData',data);
         e.stopImmediatePropagation();
       }
-
 
     }
 

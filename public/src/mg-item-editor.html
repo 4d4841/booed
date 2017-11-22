@@ -12,15 +12,6 @@
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
-<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
-<link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="mg-common-styles.html">
-<link rel="import" href="mg-input.html">
-<link rel="import" href="mg-item-image.html">
-<link rel="import" href="mg-image-editor.html">
 
 <dom-module id="mg-item-editor">
   <template strip-whitespace>
@@ -30,8 +21,6 @@
       static get is() { return 'mg-item-editor'; }
 
       static get properties() { return {
-        files: Object,
-
         itemKey: {
           type: String,
           notify: true,
@@ -46,175 +35,17 @@
           notify: true,
         },
 
+        loading: {
+          type: Boolean,
+          notify: true,
+        },
+
       }}
 
       static get observers() { return [
         '_itemKeyChanged(me.user, itemKey)',
         '_itemNameChanged(me.user, itemRole, itemName)',
-        '_selectedImagesChanged(selectedImages.splices)',
-        '_editingROIChanged(editingData.roi)',
-        '_editingROIThumbnailChanged(editingData.roiThumbnail)',
-        /*'_editingThumbnailChanged(editingData.thumbnail)',*/
       ]}
-
-      /* XXX monitor changes in editingData ROI, needs to do this with thumbnail */
-      _editingROIChanged(roi) {
-        if (!this.editingData) return;
-
-        /* Only sync if not in clipboard */
-        if (this.editingData.item) {
-          let uid = MHA.AU.currentUser.uid;
-
-          /* If roi is full whole, reset it */
-          if (roi && roi[0] == 0 && roi[1] == 0 && roi[2] == 1 && roi[3] == 1) {
-            roi = null;
-          }
-
-          MHA.DB.ref().update({['home/'+uid+'/items/'+this.editingData.item+'/images/'+this.editingData.key+'/roi']: roi}, error => {
-            error && console.error("ERR",error);
-          });
-
-        }
-      }
-
-      /* A thumbnail is defined for current rep in the editor */
-      _editingROIThumbnailChanged(roi) {
-        if (!this.editingData) return;
-        if (!roi) return;
-        let itemKey = this.editingData.item;
-
-        let idx = this.clipboardList.indexOf(this.editingData);
-        this.notifyPath(['clipboardList',idx,'thumbnail']);
-        this.notifyPath(['clipboardList',idx,'roiThumbnail']);
-
-        if (itemKey) {
-
-          /* If data isn't on clipboard, bake a thumbnail from roiThumbnail. */
-          let imageKey = this.editingData.key;
-          let editor = this.$['image-editor'];
-
-          let tl = editor.imageWidth * editor.dataLeft;
-          let tt = editor.imageHeight * editor.dataTop;
-          let tw = editor.imageWidth * editor.dataWidth;
-          let th = editor.imageHeight * editor.dataHeight;
-          let area = (250*250);
-          let w = Math.ceil(Math.sqrt(area * tw/th));
-          let h = Math.ceil(area / w);
-
-          let canvas = document.createElement('canvas');
-          canvas.width = w;
-          canvas.height = h;
-
-          console.assert(editor.imageLoader, "No Image in editor!");
-          canvas.getContext('2d').drawImage(editor.imageLoader, tl, tt, tw, th, 0, 0, w, h);
-          canvas.toBlob(thumbnailBlob => {
-            MHA.registerRepresentation(thumbnailBlob, {
-              complete: (thumbnailKey,complete) => {
-
-                /* Delete roiThumbnail since it has been baked */
-                this.set('editingData.roiThumbnail', null);
-
-                MHA.assignItem( itemKey, {
-                  images: { [imageKey]: { thumbnail: thumbnailKey } },
-                });
-
-                let uid = MHA.AU.currentUser.uid;
-                let registerData = {
-                  ['representations/'+thumbnailKey+'/uid']: uid,
-                  ['home/'+uid+'/items/'+itemKey+'/images/'+imageKey+'/thumbnail']: thumbnailKey,
-                };
-
-                MHA.DB.ref().update(registerData, error => {
-                  error && console.error("ERR",error);
-                });
-
-              },
-            });
-          }, 'image/jpeg',0.8);
-
-        }
-      }
-
-      _XeditingThumbnailChanged(thumbnail) {
-        if (!this.editingData) return;
-        if (!this.editingData.thumbnail) return; /* XXX prevent deleting thumbnail for now. */
-
-        /* Updated thumbnail is a part of an item, update and sync the item */
-        if (this.editingData.item) {
-          let uid = MHA.AU.currentUser.uid;
-          let registerData = {
-            ['representations/'+thumbnail+'/uid']: uid,
-          };
-
-          MHA.assignItem( this.editingData.item, {
-            images: { [this.editingData.key]: { thumbnail: thumbnail } },
-          });
-
-          registerData['home/'+uid+'/items/'+this.editingData.item+'/images/'+this.editingData.key+'/thumbnail'] = thumbnail;
-
-          MHA.DB.ref().update(registerData, error => {
-            error && console.error("ERR",error);
-          });
-
-        } else {
-          let idx = this.clipboardList.indexOf(this.editingData);
-          this.notifyPath(['clipboardList',idx,'thumbnail']);
-        }
-
-      }
-
-
-      _reorderPhoto(a,b) {
-        if (a.deleted) {
-          if (b.deleted) {
-            if (a.key < b.key) {
-              return -1;
-            }
-          }
-          return 1;
-        }
-        if (b.deleted) {
-          return -1;
-        }
-
-        if (a.order) {
-          if (b.order) {
-            return a.order - b.order;
-          }
-          return -1;
-        } else if (b.order) {
-          return 1;
-        }
-
-        if (a.key < b.key) {
-          return -1;
-        }
-
-        return 1;
-      }
-
-      _isEditable(progress,rep) {
-        if (!rep) return false;
-        if (progress && progress != 100) return false;
-        if (progress === 0) return false;
-        return true;
-      }
-
-      _selectedImagesChanged(changes) {
-        if (changes) {
-          let orderNumber = 0;
-          /* Remove number from deselected photo */
-          changes.indexSplices.forEach(splice => {
-            splice.removed.forEach(removedKey => {
-              this._setPhotoKeyProperty(removedKey,'_selectionOrder',null);
-            })
-          });
-
-          this.selectedImages.forEach(key => {
-            this._setPhotoKeyProperty(key,'_selectionOrder',++orderNumber);
-          });
-        }
-      }
 
       onItemSnapshot(snapshot) {
         console.log("override this");
@@ -239,6 +70,8 @@
 
         this._ItemName = "ไอเท็มไม่มีชื่อ";
         this.set('itemName',this._ItemName);
+
+        this.set('loading', true);
 
         this._ItemReference = MHA.DB.ref('home').child(MHA.AU.currentUser.uid)
                                     .child('items').child(itemKey);
@@ -271,7 +104,15 @@
       }
 
       _iconForRole(role) {
-        return MGIconForRole(role);
+        switch(role) {
+          case "product": return "local-mall";
+          case "article": return "local-library";
+          case "collection": return "group-work";
+          case "gallery": return "photo-library";
+          case "photo": return "photo";
+          case "sales": return "sales-baht";
+          default: return role;
+        }
       }
 
       newItem(role,name) {
