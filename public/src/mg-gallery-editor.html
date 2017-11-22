@@ -913,6 +913,12 @@
         });
       }
 
+      _onSelectAllButtonTap(e) {
+        for (let i = 0; i < this.iconList.length; i++) {
+          this.$['image-selector'].selectIndex(i);
+        }
+      }
+
       _onCancelButtonTap(e) {
           this.splice('selectedImages',0,this.selectedImages.length);
       }
