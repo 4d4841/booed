@@ -82,6 +82,10 @@
         '_itemNameChanged(me.user, itemRole, itemName)',
       ]}
 
+      setItem(path,value) {
+        console.error("Subclass must override this.");
+      }
+
       onItemSnapshot(snapshot) {
         console.error("Subclass must override this.");
       }

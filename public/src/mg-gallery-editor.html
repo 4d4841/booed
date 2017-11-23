@@ -472,6 +472,7 @@
 
       /* Set image thumbnails from global notification */
       setItem(path,value) {
+
         switch(path[2]) {
           case 'images': {
 
@@ -487,6 +488,8 @@
                   this.set(['iconList',idx,path[4]], value);
                 });
               } break;
+              default:
+              break;
             }
 
           } break;
@@ -537,6 +540,7 @@
 
 
         /* Sort unsynced (uploading in progress) images after server's entries. */
+        /* XXX IE Object.assign() */
         let images = Object.assign({}, MHA.get(['items',this.itemKey,'images']));
         let entries = [];
 
@@ -558,8 +562,9 @@
             }
           });
 
-          entries.push([imgRef.key, imgRef.val()]);
-          delete images[imgRef.key]; /* Filter server records */
+          entries.push([imgRef.key, val]);
+          /* Filter database records to only keep progressing entries. */
+          delete images[imgRef.key];
         });
         /* Add local records XXX seems bad cuz it didn't update local ? */
         Object.entries(images).forEach( entry => entries.push(entry));
@@ -590,7 +595,7 @@
               this.set('iconList.'+idx+'.rep', image.rep);
               this.set('iconList.'+idx+'.name', image.name);
               this.set('iconList.'+idx+'.roi', image.roi);
-              this.set('iconList.'+idx+'.deleted', image.deleted ? true : false);
+              this.set('iconList.'+idx+'.deleted', image.deleted);
               this.set('iconList.'+idx+'.order', image.order || order);
 
               if (this.editingData && this.editingData.key == imageKey) {

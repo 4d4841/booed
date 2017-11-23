@@ -341,6 +341,13 @@
             dataWidth: roi[2],
             dataHeight: roi[3],
           });
+        } else {
+          this.setProperties({
+            dataLeft: 0,
+            dataTop: 0,
+            dataWidth: 1,
+            dataHeight: 1,
+          });
         }
       }
 
@@ -546,18 +553,6 @@
             this.set('edited',true);
             //this.set('data.roi',[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight]);
             delete this._KeepAspect;
-
-            /* Update database */
-            let item = this.data.item;
-            if (item) {
-              let roi = (this.dataLeft == 0 && this.dataTop == 0 && this.dataWidth == 1 && this.dataHeight == 1)
-                ? null
-                : [this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight];
-
-                MHA.DB.ref().update({['home/'+MHA.AU.currentUser.uid+'/items/'+item+'/images/'+this.editingData.key+'/roi']: roi}, error => {
-                  error && console.error("ERR",error);
-                });
-            }
 
           } break;
           case 'track': {
@@ -781,7 +776,19 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
       }
 
       _deactivateSave(e) {
-        this.set('data.roi',[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight]);
+        let roi = (this.dataLeft == 0 && this.dataTop == 0 && this.dataWidth == 1 && this.dataHeight == 1)
+          ? null
+          : [this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight];
+        this.set('data.roi', roi);
+        /* Update database */
+        let itemKey = this.data.item;
+        if (itemKey) {
+
+            MHA.DB.ref().update({['home/'+MHA.AU.currentUser.uid+'/items/'+itemKey+'/images/'+this.data.key+'/roi']: roi}, error => {
+              error && console.error("ERR",error);
+            });
+        }
+
         this.set('edited',false);
         if (!this.after)
           this._deactivateClose(e)
