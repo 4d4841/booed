@@ -12,9 +12,29 @@
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
 
 <dom-module id="mg-item-editor">
   <template strip-whitespace>
+
+    <template is="dom-if" if="{{loading}}">
+      <img height="62px" src="images/logo-bounce.svg">
+    </template>
+
+    <template is="dom-if" if="{{!loading}}">
+      <paper-input
+        label="ชื่อแกลเลอรี่"
+        focused="{{focusedName}}"
+        always-float-label="[[focusedName]]"
+        value="{{itemName}}"
+      >
+        <iron-icon icon="[[_iconForRole(itemRole)]]" slot="prefix"></iron-icon>
+      </paper-input>
+
+    </template>
+
   </template>
   <script>
     class MGItemEditor extends Polymer.Element {
@@ -40,6 +60,21 @@
           notify: true,
         },
 
+        clipboardList: {
+          type: Array,
+          notify: true,
+        },
+
+        pastedData: {
+          type: Array,
+          observer: '_pastedDataChanged',
+        },
+
+        editing: {
+          type: Boolean,
+          notify: true,
+        },
+
       }}
 
       static get observers() { return [
@@ -48,10 +83,14 @@
       ]}
 
       onItemSnapshot(snapshot) {
-        console.log("override this");
+        console.error("Subclass must override this.");
       }
 
-      _getDataError(error) {
+      _pastedDataChanged(paste) {
+        console.error("Subclass must override this.");
+      }
+
+      onDataError(error) {
         console.error("ERR", error);
         this._ItemReference.off('value', this.onItemSnapshot, this);
         delete this._ItemReference;
@@ -75,7 +114,7 @@
 
         this._ItemReference = MHA.DB.ref('home').child(MHA.AU.currentUser.uid)
                                     .child('items').child(itemKey);
-        this._ItemReference.on('value', this._onItemSnapshot, this._getDataError, this);
+        this._ItemReference.on('value', this.onItemSnapshot, this.onDataError, this);
       }
 
       _itemNameChanged(user, itemRole, itemName) {

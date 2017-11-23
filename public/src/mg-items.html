@@ -22,7 +22,7 @@
 <link rel="import" href="mg-menu.html">
 <link rel="import" href="mg-gallery-editor.html">
 <link rel="import" href="mg-thumbnail.html">
-
+<link rel="import" href="mg-clipboard.html">
 
 <dom-module id="mg-items">
   <template strip-whitespace>
@@ -102,11 +102,20 @@
       <mg-menu selected-item="{{newItemSelected}}" menu="[[newMenu]]"></mg-menu>
     </mg-balloon>
 
-    <mg-gallery-editor
-      id="editor"
-      me="[[me]]"
-      item-key="{{itemKey}}"
-    ></mg-gallery-editor>
+    <div>
+      <mg-clipboard
+        clipboard-list="{{clipboardList}}"
+        pasted-data="{{pastedData}}"
+      ></mg-clipboard>
+
+      <mg-gallery-editor
+        id="editor"
+        me="[[me]]"
+        item-key="{{itemKey}}"
+        clipboard-list="{{clipboardList}}"
+        pasted-data="{{pastedData}}"
+      ></mg-gallery-editor>
+    </div>
 
     <app-route
         route="{{route}}"
@@ -160,6 +169,7 @@
           notify: true,
           observer: '_routeDataChanged',
         },
+
       }}
 
       static get observers() { return [

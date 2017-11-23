@@ -93,11 +93,11 @@ class MGData extends Polymer.Element {
     };
 
     if (!MHA) {
-      let MGFIRE = firebase.initializeApp(config);
-      this.DB = MGFIRE.database();
-      this.ST = MGFIRE.storage();
-      this.AU = MGFIRE.auth();
       MHA = this;
+      let MGFIRE = firebase.initializeApp(config);
+      MHA.DB = MGFIRE.database();
+      MHA.ST = MGFIRE.storage();
+      MHA.AU = MGFIRE.auth();
       console.log('Application got initialized with lo❤e for', {"Moon HyunA's":{cats:['Moya','Hoya','Spikey'],husband:'Steve',songs:['Cricket Song','Remedy','Doong Doong']}});
     }
   }
@@ -265,6 +265,7 @@ class MGData extends Polymer.Element {
     };
 
   }
+
 }
 
 customElements.define(MGData.is, MGData);
