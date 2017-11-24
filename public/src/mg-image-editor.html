@@ -817,11 +817,14 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
       _setThumbnail(e) {
         let itemKey = this.data.item;
         if (!itemKey) {
-          /* Do not generate icon if editing clipboard data */
+          /* Does not generate icon if editing clipboard data (no itemKey).
+           * Stores roiThumbnail which will be used to generate the thumbnail
+           * when pasting and replaces thumbnail rep with the image rep so it
+           * will regenerate thumbnail from the original image.
+           */
 
-          this.data.thumbnail = this.data.rep;
           this.set('data.roiThumbnail',[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight]);
-          this.notifyPath('data.thumbnail');
+          this.set('data.thumbnail',this.data.rep);
 
           return;
         }
@@ -829,11 +832,14 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
         let imageKey = this.data.key;
         console.assert(imageKey, "No image key?!?");
 
+        /* Generating thumbnail with canvas */
+        let area = (250*250);
+
         let tl = this.imageWidth * this.dataLeft;
         let tt = this.imageHeight * this.dataTop;
         let tw = this.imageWidth * this.dataWidth;
         let th = this.imageHeight * this.dataHeight;
-        let area = (250*250);
+
         let w = Math.ceil(Math.sqrt(area * tw/th));
         let h = Math.ceil(area / w);
 
@@ -842,6 +848,7 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
         canvas.height = h;
 
         console.assert(this.imageLoader, "No Image in this!?");
+
         canvas.getContext('2d').drawImage(this.imageLoader, tl, tt, tw, th, 0, 0, w, h);
         canvas.toBlob(thumbnailBlob => {
           MHA.registerRepresentation(thumbnailBlob, {
