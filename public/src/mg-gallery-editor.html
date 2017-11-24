@@ -71,14 +71,13 @@
 
       <div id="gallery-editor" class="horizontal layout end wrap">
 
-        <template is="dom-if" if="{{!loading}}">
             <div style="display:inline-block">
           <paper-icon-button icon="add-photo" on-tap="_onAddButtonTap"></paper-icon-button>
           <paper-tooltip>เพิ่มรูป</paper-tooltip>
             </div>
 
             <div style="display:inline-block">
-          <paper-icon-button icon="content-copy" on-click="_onCopyButtonTap"></paper-icon-button>
+          <paper-icon-button icon="[[copyIcon]]" on-click="_onCopyButtonTap"></paper-icon-button>
           <paper-tooltip>[[copyMethod]]</paper-tooltip>
             </div>
 
@@ -112,7 +111,6 @@
               </div>
 
           </template>
-        </template>
 
         <input type="file" id="fileInput" on-change="_filesSelected" hidden multiple>
 
@@ -180,6 +178,12 @@
       }
 
       static get properties() { return {
+        itemRole: {
+          type: String,
+          value: "gallery",
+          readOnly: true,
+        },
+
         files: Object,
 
         iconList: {
@@ -206,9 +210,18 @@
         copyMethod: {
           type: String,
           computed: '_computeCopyMethod(selectedImages.length)'
-        }
+        },
+
+        copyIcon: {
+          type: String,
+          computed: '_computeCopyIcon(selectedImages.length)'
+        },
 
       }}
+
+      _computeCopyIcon(selectedLen) {
+        return selectedLen ? "content-copy-selection" : "content-copy";
+      }
 
       _computeCopyMethod(selectedLen) {
         return selectedLen ? 'ก๊อปปี้ที่เลือก' : 'ก๊อปปี้แกลเลอรี่';
@@ -471,22 +484,34 @@
       }
 
       /* Set image thumbnails from global notification */
-      setItem(path,value) {
+      updateChanges(path,value) {
+        let itemKey = path[1];
+        let itemProperty = path[2];
 
-        switch(path[2]) {
+        switch(itemProperty) {
+          case 'name': {
+            this.set('itemName', this._ItemName = value);
+          } break;
           case 'images': {
+            let imageKey = path[3];
 
             switch(path.length) {
               case 4: {
-                this._indexImage(path[3],null,cb => {
-                  this.push('iconList', {item:path[1], key:path[3]});
+                this._indexImage(imageKey,null,cb => {
+                  this.push('iconList', {item:itemKey, key:imageKey});
                 });
-
               } break;
               case 5: {
-                this._indexImage(path[3],idx => {
-                  this.set(['iconList',idx,path[4]], value);
+                let imageProperty = path[4];
+                this._indexImage(imageKey,idx => {
+                  this.set(['iconList',idx,imageProperty], value);
                 });
+
+                if (this.editingData && this.editingData.key == imageKey) {
+                  /* XXX Just handle the roi for now. */
+                  if (imageProperty == 'roi')
+                    this.notifyPath('editingData.roi');
+                }
               } break;
               default:
               break;
@@ -496,128 +521,13 @@
         }
       }
 
-      onItemSnapshot(snapshot) {
-        let itemKey = snapshot.key;
-        let v = snapshot.val();
-
-        this.set('loading', false);
-
-        if (v) {
-
-          if (!v.role) {
-            /* If files got uploaded beforehand */
-            return;
-          }
-
-          MHA.assignItem(itemKey,{
-            _uid: snapshot.ref.parent.parent.key,
-            name: v.name,
-            role: v.role,
-            time: v.time,
-            cover: v.cover,
-          });
-
-        } else if (!this.itemRole) {
-          /* This is not creating a new item, just reset url & return */
-          this.set('itemKey', null);
-          return;
-        } else if (!v) {
-          /* Creating a new item */
-          return;
-        }
-
-        /* Continue updating UI only if it's a snapshot of current item */
-        if (snapshot.key != this.itemKey) {
-          return;
-        }
-
-        /* Updating UI. Check against current key */
-
-        this.set('itemRole',v.role);
-        this.set('itemName',this._ItemName = v.name);
-
-        let storageRef = MHA.ST.ref('UID').child(MHA.AU.currentUser.uid).child('DATA');
-
-
-        /* Sort unsynced (uploading in progress) images after server's entries. */
-        /* XXX IE Object.assign() */
-        let images = Object.assign({}, MHA.get(['items',this.itemKey,'images']));
-        let entries = [];
-
-        snapshot.child('images').forEach(imgRef => {
-          let val = imgRef.val();
-          val.deleted = val.deleted || null;
-          val.roi = val.roi || null;
-
-          /*
-          if (this.editingData && this.editingData.key == imgRef.key) {
-            this.set('editingData.roi', val.roi);
-            this.set('editingData.thumbnail', val.thumbnail);
-          }
-          */
-
-          MHA.assignItem(itemKey,{
-            images:{
-              [imgRef.key]: val,
-            }
-          });
-
-          entries.push([imgRef.key, val]);
-          /* Filter database records to only keep progressing entries. */
-          delete images[imgRef.key];
-        });
-        /* Add local records XXX seems bad cuz it didn't update local ? */
-        Object.entries(images).forEach( entry => entries.push(entry));
-
-        entries.forEach(([imageKey,image,order]) => {
-            /* update current iconList */
-
-            let idx = this._indexImage(imageKey);
-            if (idx === -1) {
-
-              if (snapshot.key == itemKey) {
-                let icon = {
-                  item: itemKey,
-                  key: imageKey,
-                  thumbnail: image.thumbnail,
-                  rep: image.rep,
-                  name: image.name,
-                  order: image.order,
-                  deleted: image.deleted,
-                  roi: image.roi,
-                };
-
-                this.push('iconList', icon);
-              }
-
-            } else { /* update current icon's event-value */
-              this.set('iconList.'+idx+'.thumbnail', image.thumbnail);
-              this.set('iconList.'+idx+'.rep', image.rep);
-              this.set('iconList.'+idx+'.name', image.name);
-              this.set('iconList.'+idx+'.roi', image.roi);
-              this.set('iconList.'+idx+'.deleted', image.deleted);
-              this.set('iconList.'+idx+'.order', image.order || order);
-
-              if (this.editingData && this.editingData.key == imageKey) {
-                this.notifyPath('editingData.thumbnail');
-                this.notifyPath('editingData.rep');
-                this.notifyPath('editingData.name');
-                this.notifyPath('editingData.roi');
-              }
-
-            }
-
-          }
-        );
-      }
-
       _getDataError(error) {
         console.error("ERR", error);
         this._ItemReference.off('value', this._onItemSnapshot, this);
         delete this._ItemReference;
       }
 
-      _itemKeyChanged(user, itemKey) {
+      _itemKeyChanged(itemKey) {
 
         delete this._LastTapIndex;
 
@@ -629,8 +539,39 @@
 
         this.splice('selectedImages',0,this.selectedImages.length);
 
-        super._itemKeyChanged(user, itemKey);
+        super._itemKeyChanged(itemKey);
 
+        let item = MHA.get('items.'+itemKey);
+        for(let prop in item) {
+          switch(prop) {
+            case '_uid':
+              break;
+            case 'name':
+              this.set('itemName', this._ItemName = item.name);
+              break;
+            case 'role':
+              console.assert('gallery' == item.role, "XXX");
+              break;
+            case 'images': {
+              let allImages = item.images;
+              for (let imageKey in allImages) {
+                let image = allImages[imageKey];
+                let icon = {
+                  item: itemKey,
+                  key: imageKey,
+                  thumbnail: image.thumbnail,
+                  rep: image.rep,
+                  name: image.name,
+                  order: image.order,
+                  deleted: image.deleted,
+                  roi: image.roi,
+                };
+                this.push('iconList', icon);
+              }
+            } break;
+            default:
+          }
+        }
       }
 
       _formatSize(bytes) {
@@ -799,12 +740,19 @@
                 let canvas = document.createElement('canvas');
                 canvas.width = w;
                 canvas.height = h;
+
                 canvas.getContext('2d').drawImage(imageLoader, tl, tt, tw, th, 0, 0, w, h);
                 canvas.toBlob( thumbnailBlob => {
                   MHA.registerRepresentation( thumbnailBlob, {
                     key: thumbnailKey => {
+                      /* Rather waits until upload complete, announces the
+                       * instances immediately to catch up with user actions.
+                       * Doing this will show empty loading thumbnails.
+                       * Since it will use a returned locally stored dataURI generated
+                       * from Blob it doesn't need the uploading process to complete.
+                       */
                       MHA.assignItem(itemKey, {
-                        images: {[imageKey]: {thumbnail: thumbnailKey}},
+                        images: {[imageKey]: {thumbnail: thumbnailKey, roiThumbnail: null}},
                       });
                     },
                     complete: (thumbnailKey,complete) => {

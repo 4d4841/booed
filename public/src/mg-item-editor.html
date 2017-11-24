@@ -19,21 +19,14 @@
 <dom-module id="mg-item-editor">
   <template strip-whitespace>
 
-    <template is="dom-if" if="{{loading}}">
-      <img height="62px" src="images/logo-bounce.svg">
-    </template>
-
-    <template is="dom-if" if="{{!loading}}">
-      <paper-input
-        label="ชื่อแกลเลอรี่"
-        focused="{{focusedName}}"
-        always-float-label="[[focusedName]]"
-        value="{{itemName}}"
-      >
-        <iron-icon icon="[[_iconForRole(itemRole)]]" slot="prefix"></iron-icon>
-      </paper-input>
-
-    </template>
+    <paper-input
+      label="ชื่อแกลเลอรี่"
+      focused="{{focusedName}}"
+      always-float-label="[[focusedName]]"
+      value="{{itemName}}"
+    >
+      <iron-icon icon="[[_iconForRole(itemRole)]]" slot="prefix"></iron-icon>
+    </paper-input>
 
   </template>
   <script>
@@ -44,6 +37,7 @@
         itemKey: {
           type: String,
           notify: true,
+          observer: '_itemKeyChanged',
         },
 
         itemRole: {
@@ -52,11 +46,6 @@
 
         itemName: {
           type: String,
-          notify: true,
-        },
-
-        loading: {
-          type: Boolean,
           notify: true,
         },
 
@@ -75,50 +64,62 @@
           notify: true,
         },
 
+        currentEditor: {
+          type: Object,
+          notify: true,
+        },
+
+        defaultName: {
+          type: String,
+          value: 'แกลเลอรี่ใหม่',
+          readOnly: true,
+        },
       }}
 
       static get observers() { return [
-        '_itemKeyChanged(me.user, itemKey)',
         '_itemNameChanged(me.user, itemRole, itemName)',
       ]}
+
+      _setItemKey(key) {
+        console.log(key);
+        super._setItemKey(key);
+      }
 
       setItem(path,value) {
         console.error("Subclass must override this.");
       }
 
+      /*
       onItemSnapshot(snapshot) {
         console.error("Subclass must override this.");
       }
+      */
 
       _pastedDataChanged(paste) {
         console.error("Subclass must override this.");
       }
 
+      /*
       onDataError(error) {
         console.error("ERR", error);
         this._ItemReference.off('value', this.onItemSnapshot, this);
         delete this._ItemReference;
       }
+      */
 
-      _itemKeyChanged(user, itemKey) {
+      _itemKeyChanged(itemKey) {
 
-        if (this._ItemReference) {
-          this._ItemReference.off('value', this.onItemSnapshot, this);
-          delete this._ItemReference;
-        }
-
-        if (!user || !itemKey) {
+        if (!itemKey) {
+          if (this.currentEditor == this) {
+            this.set('currentEditor',null);
+          }
           return;
         }
 
-        this._ItemName = "ไอเท็มไม่มีชื่อ";
+        this.set('currentEditor',this);
+
+        this._ItemName = this.defaultName;
         this.set('itemName',this._ItemName);
-
-        this.set('loading', true);
-
-        this._ItemReference = MHA.DB.ref('home').child(MHA.AU.currentUser.uid)
-                                    .child('items').child(itemKey);
-        this._ItemReference.on('value', this.onItemSnapshot, this.onDataError, this);
       }
 
       _itemNameChanged(user, itemRole, itemName) {
