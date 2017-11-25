@@ -124,13 +124,9 @@ class MGData extends Polymer.Element {
       this.set('representations.'+key, rep);
     }
 
-    /*
-     else if (rep.contentType === MG.LOCAL && contentType !== MG.LOCAL ){
-
-      let image = new Image();
-      let canvas = document.createElement('canvas');
-      image.onload =
-    }
+    /* TODO
+     * - Define a local status for JS generated images so they can be decided
+     *   later if they'd actually require cloud storage.
     */
 
     if (blob) {
