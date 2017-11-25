@@ -82,7 +82,7 @@
       <iron-icon icon="add"></iron-icon> สร้าง
     </paper-button>
 
-    <iron-selector class="items-container" attr-for-selected="key" selected="[[itemKey]]">
+    <iron-selector class="items-container" attr-for-selected="key" selected="[[selectedItemKey]]">
     <template is="dom-repeat" items="[[itemList]]" mutable-data>
       <mg-thumbnail
         key="[[item.key]]"
@@ -99,7 +99,7 @@
 
 
   <mg-balloon id="new-item-balloon" no-overlap vertical-align="top" dynamic-align horizontal-align="auto">
-    <mg-menu selected-item="{{newItemSelected}}" menu="[[newMenu]]"></mg-menu>
+    <mg-menu menu="[[newItemMenu]]"></mg-menu>
   </mg-balloon>
 
   <div style="margin-left:20px">
@@ -109,18 +109,16 @@
     ></mg-clipboard>
 
     <mg-gallery-editor
-      id="editor"
+      id="gallery-editor"
       me="[[me]]"
-      item-key="{{galleryKey}}"
       clipboard-list="{{clipboardList}}"
       pasted-data="{{pastedData}}"
-      current-editor="{{currentEditor}}"
     ></mg-gallery-editor>
   </div>
 
   <app-route
       route="{{route}}"
-      pattern="/:itemKey"
+      pattern="/:selectedItemKey"
       data="{{routeData}}"
       tail="{{subroute}}">
   </app-route>
@@ -144,7 +142,7 @@
           {name:"galleries", icon:"photo-library", title:"แกลเลอรี่" },
         ]}
       },
-      newMenu: {
+      newItemMenu: {
         type: Object,
         value: {
           entries: [
@@ -171,19 +169,29 @@
         observer: '_routeDataChanged',
       },
 
-      defaultName: {
-        type: String,
-        value: 'ไอเท่มใหม่',
-        readOnly: true,
+      editor: {
+        type: Object,
+        observer: '_editorChanged',
       },
+
+      selectedItemKey: {
+        type: String,
+      },
+      selectedItemRole: {
+        type: String,
+        observer: '_selectedItemRoleChanged'
+      }
     }}
+
+    _selectedItemRoleChanged(role) {
+      this.set('editor', this.$[role+'-editor']);
+    }
 
     static get observers() { return [
       '_itemsChanged(items.*)',
-      '_uidItemKeyChanged(me.user.uid, itemKey)',
+      '_uidSelectedItemKeyChanged(me.user.uid, selectedItemKey)',
       '_userChanged(me.user.uid)',
       '_visibleChanged(visible)',
-//        '_onNewItemSelected(newItemSelected)',
     ]}
 
     _setCover(itemKey,imageKey) {
@@ -210,8 +218,8 @@
       if (path.length < 2) return;
       let itemKey = path[1];
 
-      if (this.currentEditor && itemKey == this.currentEditor.itemKey) {
-        this.currentEditor.updateChanges(path,change.value);
+      if (this.editor && itemKey == this.editor.itemKey) {
+        this.editor.updateChanges(path,change.value);
       }
 
       if (path.length == 3 && path[2] == 'cover') {
@@ -239,15 +247,18 @@
     connectedCallback() {
       super.connectedCallback();
       window.addEventListener('close-contextual-menu', this._closeSubmenu.bind(this));
-      this.menu.action = this._onSelectedItemType.bind(this);
-      this.newMenu.action = this._onNewItemTap.bind(this);
+      this.menu.action = e => this._onSelectedItemType(e);
+      this.newItemMenu.action = e => this._onNewItem(e);
     }
 
     _visibleChanged(visible) {
       if (visible) {
-        this.set('itemKey',this.itemKey || this._CurrentItemKey);
+        this.setProperties({
+          selectedItemKey: this.selectedItemKey || this._CurrentItemKey,
+          selectedItemRole: this.selectedItemRole,
+        });
       } else {
-        this._CurrentItemKey = this.itemKey;
+        this._CurrentItemKey = this.selectedItemKey;
         this.set('itemKey', null);
       }
     }
@@ -324,32 +335,48 @@
     }
 
     _onThumbnailClick(e) {
-      this.set('itemKey',e.model.item.key);
+      this.setProperties({
+        selectedItemKey: e.model.item.key,
+        selectedItemRole: e.model.item.role,
+      });
+      this.editor.set('itemKey',this.selectedItemKey);
     }
 
     _onSelectedItemType(e) {
-      console.log("should display only", e.model.item.name);
+      console.log("Not yet implemented. Should display only", e.model.item.name);
     }
 
-    _onNewItemTap(e) {
+    _editorChanged(newEditor, oldEditor) {
+      if (oldEditor) {
+        oldEditor.set('itemKey',null);
+      }
+      newEditor.set('itemKey',this.selectedItemKey);
+    }
+
+    _onNewItem(e) {
       this._closeSubmenu(e);
       if (e.model.item.name == 'gallery') {
-        this.$.editor.newItem('gallery', this.defaultName); //XXX add date:time
+        let key = MHA.DB.ref('items').push().key;
+        this.setProperties({
+          selectedItemKey: key,
+          selectedItemRole: e.model.item.name,
+        });
+        this.editor.set('itemKey',this.selectedItemKey);
       }
     }
 
-    _uidItemKeyChanged(uid, itemKey) {
+    _uidSelectedItemKeyChanged(uid, selectedItemKey) {
       if (this._ItemReference) {
         this._ItemReference.off('value', this._ItemCallback);
         delete this._ItemCallback;
         delete this._ItemReference;
       }
 
-      if (!uid || !itemKey) {
+      if (!uid || !selectedItemKey) {
         return;
       }
 
-      this._ItemReference = MHA.DB.ref('home').child(uid).child('items').child(itemKey);
+      this._ItemReference = MHA.DB.ref('home').child(uid).child('items').child(selectedItemKey);
       this._ItemCallback = this._ItemReference.on('value', itemSS => {
 
         let v = itemSS.val();
@@ -358,13 +385,13 @@
             /* If files got uploaded beforehand */
             return;
           }
-          this.set('editorRole', v.role);
+
+          this.set('selectedItemRole',v.role);
 
           if (v.role != 'gallery') { this.set('galleryKey', null); }
           if (v.role != 'article') { this.set('articleKey', null); }
           if (v.role != 'product') { this.set('productKey', null); }
           if (v.role != 'collection') { this.set('collectionKey', null); }
-          this.set(v.role+'Key', itemKey);
 
           let item = {
             _uid: uid,
@@ -378,7 +405,7 @@
             let val = imgRef.val();
 
                 item.images = item.images || {};
-              item.images[imgRef.key] = item.images[imgRef.key] || {};
+              item.images[imgRef.key] = item.images[imgRef.key] || val;
             item.images[imgRef.key].deleted = val.deleted || null;
             item.images[imgRef.key].roi = val.roi || null;
 
@@ -386,9 +413,12 @@
 
           MHA.assignItem(itemSS.key,item);
 
-        } else if (!this.editorRole) {
+        } else if (!this.selectedItemRole) {
           /* editorRole isn't defined. This is not creating a new item. */
-          this.set('itemKey', null);
+          this.set('selectedItemKey', null);
+          if (this.route) {
+            this.set('route.path', '');
+          }
         }
 
       }, error => {
@@ -399,15 +429,14 @@
 
 
       if (this.route) {
-        this.set('route.path', itemKey);
+        this.set('route.path', selectedItemKey);
       }
     }
-
 
     _routeChanged(route) {
       if (route.prefix == '/user/items') {
         /* Checks if it was editing an item, set the URL back to the item */
-        let key = this.itemKey || this._CurrentItemKey;
+        let key = this.selectedItemKey || this._CurrentItemKey;
         if (key && !route.path) {
           delete this._CurrentItemKey; /* Delete or it will keep bouncing back trying */
           this.set('route.path', key);
@@ -416,18 +445,13 @@
     }
 
     _routeDataChanged(routeData) {
-      if (routeData.itemKey) {
-        this.set('itemKey', routeData.itemKey);
+      if (routeData.selectedItemKey) {
+        this.set('selectedItemKey', routeData.selectedItemKey);
       }
     }
 
-    /*
-    _onNewItemSelected(newItemSelected) {
-    }
-    */
-
     disconnectedCallback() {
-      delete this.newMenu.target;
+      delete this.newItemMenu.target;
       super.disconnectedCallback();
     }
 

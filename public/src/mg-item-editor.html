@@ -64,14 +64,9 @@
           notify: true,
         },
 
-        currentEditor: {
-          type: Object,
-          notify: true,
-        },
-
         defaultName: {
           type: String,
-          value: 'แกลเลอรี่ใหม่',
+          value: 'ไอเท็มใหม่',
           readOnly: true,
         },
       }}
@@ -80,12 +75,7 @@
         '_itemNameChanged(me.user, itemRole, itemName)',
       ]}
 
-      _setItemKey(key) {
-        console.log(key);
-        super._setItemKey(key);
-      }
-
-      setItem(path,value) {
+      updateChanges(path,value) {
         console.error("Subclass must override this.");
       }
 
@@ -108,16 +98,6 @@
       */
 
       _itemKeyChanged(itemKey) {
-
-        if (!itemKey) {
-          if (this.currentEditor == this) {
-            this.set('currentEditor',null);
-          }
-          return;
-        }
-
-        this.set('currentEditor',this);
-
         this._ItemName = this.defaultName;
         this.set('itemName',this._ItemName);
       }

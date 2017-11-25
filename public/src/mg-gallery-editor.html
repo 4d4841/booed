@@ -217,6 +217,11 @@
           computed: '_computeCopyIcon(selectedImages.length)'
         },
 
+        defaultName: {
+          type: String,
+          value: 'แกลเลอรี่ใหม่',
+          readOnly: true,
+        },
       }}
 
       _computeCopyIcon(selectedLen) {
@@ -470,13 +475,14 @@
             time: firebase.database.ServerValue.TIMESTAMP,
         });
 
-        var registerData = {};
-        registerData['home/'+uid+'/items/'+itemKey+'/role'] = role;
-        registerData['home/'+uid+'/items/'+itemKey+'/name'] = name;
-        registerData['items/'+itemKey+'/uid'] = uid;
-        registerData['items/'+itemKey+'/role'] = role;
-        registerData['items/'+itemKey+'/name'] = name;
-        registerData['items/'+itemKey+'/public'] = false;
+        var registerData = {
+          ['home/'+uid+'/items/'+itemKey+'/role']: role,
+          ['home/'+uid+'/items/'+itemKey+'/name']: name,
+          ['items/'+itemKey+'/uid']: uid,
+          ['items/'+itemKey+'/role']: role,
+          ['items/'+itemKey+'/name']: name,
+          ['items/'+itemKey+'/public']: false,
+        };
 
         MHA.DB.ref().update(registerData, error => { if (!error) {} });
 
@@ -506,15 +512,9 @@
                 this._indexImage(imageKey,idx => {
                   this.set(['iconList',idx,imageProperty], value);
                 });
-
-                if (this.editingData && this.editingData.key == imageKey) {
-                  /* XXX Just handle the roi for now. */
-                  if (imageProperty == 'roi')
-                    this.notifyPath('editingData.roi');
-                }
               } break;
               default:
-              break;
+                break;
             }
 
           } break;
@@ -636,7 +636,15 @@
           this.splice('selectedImages',0,this.selectedImages.length);
       }
 
-      _editingDataChanged(data) {
+      _editingDataChanged(data,oldData) {
+
+        this.unlinkPaths('editingData');
+        let idx = this.iconList.indexOf(data);
+        if (idx != -1) {
+          /* Receiving server update */
+          this.linkPaths('editingData',['iconList',idx]);
+        }
+
         this._EditingSelection = this._EditingSelection || [];
         this.set('beforeEditingData',null);
         this.set('afterEditingData',null);
