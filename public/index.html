@@ -27,19 +27,22 @@
     }
 
     mg-app[unresolved] {
+    }
+
+    #loadingscreen {
+      align-items: center;
+      justify-content: center;
       display: flex;
       flex-direction: row;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: center;
-      min-height: 101vh;
-      line-height: 68px;
-      text-align: center;
-      font-size: 16px;
-      font-weight: 600;
-      letter-spacing: 0.3em;
-      padding: 0 16px;
-      overflow: visible;
+      position: fixed;
+      width: 100vw;
+      height: 100vh;
+      z-index: 100;
+      background-color: white;
+      top: 0;
+      left: 0;
+      transition: opacity 2s;
+      opacity: 1;
     }
 
   </style>
@@ -47,7 +50,8 @@
 </head>
 <body>
 
-  <mg-app unresolved><img src="images/logo-bounce.svg"></mg-app>
+  <div id="loadingscreen"><img src="images/logo-bounce.svg"></div>
+  <mg-app unresolved></mg-app>
 
   <script src="bower_components/webcomponentsjs/webcomponents-loader.js"></script>
   <link rel="import" href="src/mg-app.html">

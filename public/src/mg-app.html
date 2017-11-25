@@ -775,6 +775,12 @@
       // Custom elements polyfill safe way to indicate an element has been upgraded.
       this.removeAttribute('unresolved');
 
+      let loadingscreen = document.querySelector('#loadingscreen');
+      loadingscreen.style.opacity = 0;
+      Polymer.Async.timeOut.run(() => {
+        loadingscreen.remove();
+      }, 5000);
+
       window.addEventListener('scroll', this._onScroll.bind(this));
       window.addEventListener('resize', this._onResize.bind(this));
 
