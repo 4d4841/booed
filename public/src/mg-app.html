@@ -50,7 +50,6 @@
         display: block;
         position: relative;
         transition: padding-top 0.5s;
-        padding-top: 100px;
         /*min-height: calc(100vh - 145px);*/
         /* 5px wider than height to prevent layout resetting due to scrollbar on/off */
         --app-primary-color: #213; /*sienna;*/
@@ -65,11 +64,12 @@
         --booed-outter-color: #f9f6f6;
 /*        --booed-menu-focus-color: tomato;*/
         --booed-menu-focus-color: var(--app-primary-color);
-        --booed-header-height: 35px;
-        --booed-logo-margin: 4px;
-        --booed-logo-height: calc(var(--booed-header-height) - var(--booed-logo-margin) * 2);
-        --booed-title-height: 320px;
+        --booed-title-height: 35px;
         --booed-menu-height: 30px;
+        --booed-header-height: 65px;
+        --booed-logo-margin: 4px;
+        --booed-logo-height: calc(var(--booed-title-height) - var(--booed-logo-margin) * 2);
+
         --booed-menu-font: {
           font-family: 'Mitr', sans-serif;
           font-size: 16px;
@@ -81,6 +81,7 @@
 /*        padding-top: calc(var(--booed-header-height) + var(--booed-title-height) + var(--booed-menu-height) + 50px);*/
         color: var(--app-primary-color);
         background-color: var(--booed-contents-background);
+        padding-top: 100px;
       }
 
       app-header {
@@ -96,77 +97,17 @@
           url(/images/season.jpg);
         */
 
-        /*
-        background: url(/images/season.jpg);
-        background-position: center bottom;
-        background-repeat: no-repeat;
-        */
-        height: calc(var(--booed-header-height) + var(--booed-menu-height));
-        /*
-        --app-header-shadow: {
-          box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.2);
-          height: 10px;
-          bottom: -10px;
-        };
-
-        --app-header-background-rear-layer: {
-          background-color: var(--booed-contents-background);
-          color: var(--app-primary-color);
-        };
-        */
-      }
-
-      /*
-      .header {
-        background-color: var(--booed-header-background);
         height: var(--booed-header-height);
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
-        @apply(--layout-center-justified);
-        position:absolute;
-        width:100%;
-        padding:0;
-        top:0;
-      }
-      */
-
-      .title-bar {
-/*        height: var(--booed-title-height); */
-      }
-
-      /*
-      .title-bar-navigator {
-        position:absolute;
-        left:0;
-        font-size: 20px;
-        width: 100%;
-        height:30px;
-      }
-      */
-
-      .videoframe {
-        position: absolute;
-        @apply --layout-horizontal;
-        @apply --layout-center-justified;
-        max-width:1440px;
-        height: var(--booed-title-height);
-        overflow:hidden;
-        left:0;
-      }
-
-      .videoframe > video {
-        height: 290px;
-        margin-top:30px;
       }
 
       .tool-bar {
         @apply --layout-vertical;
       }
 
-      .header-bar {
+      .title-bar {
         @apply --layout-horizontal;
         position: relative;
-        height: var(--booed-header-height);
+        height: var(--booed-title-height);
         /*overflow: hidden;*/
         width: 100%;
         padding:0;
@@ -190,7 +131,7 @@
       div.header-filler {
         @apply(--layout-flex);
         min-width: 320px;
-        height: var(--booed-header-height);
+        height: var(--booed-title-height);
       }
 
       .head-logo {
@@ -200,7 +141,7 @@
         min-width: 100px;
         max-width: 180px;
         /*min-width:  calc(var(--booed-logo-height) * 3.7);*/
-        height: var(--booed-header-height);
+        height: var(--booed-title-height);
         --paper-button-ink-color: white;
 
         background-image: url(/images/logo-sat/logo-B-sat.svg), url(/images/logo-sat/logo-o-sat.svg), url(/images/logo-sat/logo-oo-sat.svg), url(/images/logo-sat/logo-e-sat.svg), url(/images/logo-sat/logo-d-sat.svg);
@@ -411,7 +352,7 @@
       }
 
       .footer a:hover {
-        background-color: whitesmoke;
+        background-color: var(--booed-contents-background);
         box-shadow: 0 2px 4px rgba(0,0,0,0.3);
       }
 
@@ -440,12 +381,11 @@
       @media (max-width: 767px) {
         :host {
           /*padding-top: calc(var(--booed-header-height) + var(--booed-title-height) + var(--booed-menu-height));*/
-          padding-top:50px;
-          --booed-title-height: 170px;
+          padding-top:70px;
         }
 
         #pages {
-          min-height: calc(100vh - 50px);
+          min-height: calc(100vh - 70px);
         }
 
         #profile-button {
@@ -463,10 +403,6 @@
           background-repeat: no-repeat;
           background-position: center var(--booed-logo-margin);
           transition: background-position 0.25s;
-        }
-
-        .videoframe {
-          margin-top: var(--booed-menu-height);
         }
 
         footer {
@@ -519,7 +455,7 @@
           </video>
           -->
       <div class="tool-bar">
-        <div class="header-bar horizontal layout center-justified">
+        <div class="title-bar horizontal layout center-justified">
           <div class="layout horizontal" style="position:absolute;left:0">
               <template is="dom-if" if="[[_shouldRenderDrawer]]">
             <mg-badge-button
