@@ -51,7 +51,8 @@
         position: relative;
         transition: padding-top 0.5s;
         padding-top: 150px;
-        min-height: calc(100vh - 145px); /* 5px wider than height to prevent layout resetting due to scrollbar on/off */
+        /*min-height: calc(100vh - 145px);*/
+        /* 5px wider than height to prevent layout resetting due to scrollbar on/off */
         --app-primary-color: #213; /*sienna;*/
         --app-secondary-color: #757575;
         --app-accent-color: #172C50;
@@ -367,9 +368,10 @@
         margin-right: 10px;
       }
 
-      iron-pages {
+      #pages {
         max-width: 1440px;
         margin: 0 auto;
+        min-height: calc(100vh - 150px); /* 5px wider than height to prevent layout resetting due to scrollbar on/off */
       }
 
       footer {
@@ -437,8 +439,11 @@
         :host {
           /*padding-top: calc(var(--booed-header-height) + var(--booed-title-height) + var(--booed-menu-height));*/
           padding-top:50px;
-          min-height: calc(100vh - 50px);
           --booed-title-height: 170px;
+        }
+
+        #pages {
+          min-height: calc(100vh - 50px);
         }
 
         #profile-button {
@@ -600,6 +605,7 @@
       </dom-if>
 
     <iron-pages
+      id="pages"
       role="main"
       selected="[[page]]"
       attr-for-selected="name"
@@ -771,8 +777,6 @@
 
     connectedCallback() {
       super.connectedCallback();
-      //subsub = this.$.balloon;
-      // Custom elements polyfill safe way to indicate an element has been upgraded.
       this.removeAttribute('unresolved');
 
       let loadingscreen = document.querySelector('#loadingscreen');

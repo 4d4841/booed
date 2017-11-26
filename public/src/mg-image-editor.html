@@ -190,8 +190,6 @@
       <div class="horizontal layout end-justified thumbnail-panel-buttons" style="width:100%">
         <paper-icon-button id="save-thumbnail-button" icon="done" on-tap="_setThumbnail">
         </paper-icon-button>
-        <paper-icon-button id="close-thumbnail-panel" icon="close" on-tap="_closeThumbnailPanel">
-        </paper-icon-button>
       </div>
     </mg-balloon>
     <paper-tooltip for="save-thumbnail-button">สร้างทั้มเนลใหม่</paper-tooltip>
@@ -213,13 +211,12 @@
       <defs>
         <path id="chevrons" d="M -2.6,4.6 -7.2,0 -2.6,-4.6 -4,-6 -10,0 -4,6 Z M 2.6,4.6 7.2,0 2.6,-4.6 4,-6 10,0 4,6 Z" style$="[[_styleArrow(tracking)]]"/>
         <path id="chevron" d="M -2.6,4.6 -7.2,0 -2.6,-4.6 -4,-6 -10,0 -4,6 Z" style$="[[_styleArrow(tracking)]]"/>
-        <path id="lock" d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"></path>
+        <path id="lock" d="M16 10h-2v2h2v-2zm0 4h-2v2h2v-2zm-8-4H6v2h2v-2zm4 0h-2v2h2v-2zm8-6H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12z"></path>
       </defs>
-      <use xlink:href="#lock" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataLeft,dataTop,0,0.8)]]" style$="[[_styleLock(scaleFactor,tracking,showsAspectLock)]]"/>
-
+      <use xlink:href="#lock" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataLeft,dataTop,0,0.8)]]" style$="[[_styleLock(scaleFactor,tracking,keepAspect)]]"/>
 
       <path d$="[[rPath]]" style$="[[_styleBorder(scaleFactor,tracking)]]"/>
-      <path d$="[[rPathInner]]" style$="[[_styleBorderOver(scaleFactor,tracking,showsAspectLock)]]"/>
+      <path d$="[[rPathInner]]" style$="[[_styleBorder(scaleFactor,tracking,keepAspect,1)]]"/>
 
       <use id="chevrontop" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataMidW,dataTop,'top')]]" />
       <use id="chevronleft" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataLeft,dataMidH,'left')]]" />
@@ -369,18 +366,23 @@
       }
 
       _styleLock(lw,tracking,lock) {
-        return lock
-          ? tracking ? 'fill:none;stroke:none' : 'fill:orange;stroke-width:'+lw+';stroke:orange);'
-          : 'fill:none;stroke:none';
-      }
-
-      _styleBorderOver(lw,tracking,lock) {
-        return tracking ? 'fill:none;stroke:none' : 'fill:none;stroke-width:'+lw*1.3+';stroke:'+(lock?'orange':'white')+';stroke-dasharray:'+lw*3+','+lw*3;
-      }
-
-      _styleBorder(lw,tracking) {
         lw*=1.3;
-        return tracking ? 'fill:rgba(0,0,0,0.9);stroke:none' : 'fill:none;stroke-width:'+lw*1.3+';stroke:black';
+        return lock ?
+          tracking ?
+            'fill:none;stroke:none' :
+            'fill:gold;stroke-width:'+lw/2+';stroke:black' :
+          'fill:none;stroke:none';
+      }
+
+      _styleBorder(lw,tracking,lock,over) {
+        lw*=1.3;
+        return over ?
+          tracking ?
+            'fill:none;stroke:none' :
+            'fill:none;stroke-width:'+lw+';stroke:'+(lock?'gold':'white')+';stroke-dasharray:'+lw*3+','+lw*3 :
+          tracking ?
+            'fill:rgba(0,0,0,0.9);stroke:none' :
+            'fill:none;stroke-width:'+lw+';stroke:black';
       }
 
       _styleArrow(tracking) {
@@ -444,8 +446,7 @@
                 this.set('data',this.after);
                 break;
               case 'Control':
-                this.set('showsAspectLock', true);
-                this._KeepAspect = this.dataWidth/this.dataHeight;
+                this.set('keepAspect', this.dataWidth/this.dataHeight);
                 break;
             }
           }
@@ -463,8 +464,7 @@
                 this._deactivateClose(e);
               break;
               case 'Control':
-                this.set('showsAspectLock', false);
-                delete this._KeepAspect;
+                this.set('keepAspect', null);
                 break;
             }
           }
@@ -553,7 +553,6 @@
             this.set('tracking', null);
             this.set('edited',true);
             //this.set('data.roi',[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight]);
-            delete this._KeepAspect;
 
           } break;
           case 'track': {
@@ -584,7 +583,7 @@
               hh = 1 - tt;
             }
 
-            if (this._KeepAspect) {
+            if (this.keepAspect) {
               if (this.tracking.l == 1 && this.tracking.t == 1
                 && this.tracking.w == 0 && this.tracking.h == 0) {
 
@@ -603,56 +602,56 @@
 
               } else if (this.tracking.l == 1 && this.tracking.w == -1
                 && this.tracking.t == 1 && this.tracking.h == -1 ) {
-                if (ww/hh < this._KeepAspect) {
-                  hh = ww / this._KeepAspect;
+                if (ww/hh < this.keepAspect) {
+                  hh = ww / this.keepAspect;
                   tt = this.tracking.tt + this.tracking.hh - hh;
                 } else {
-                  ww = hh * this._KeepAspect;
+                  ww = hh * this.keepAspect;
                   ll = this.tracking.ll + this.tracking.ww - ww;
                 }
               } else if (this.tracking.l == 0 && this.tracking.w == 1
                 && this.tracking.t == 1 && this.tracking.h == -1 ) {
-                if (ww/hh < this._KeepAspect) {
-                  hh = ww / this._KeepAspect;
+                if (ww/hh < this.keepAspect) {
+                  hh = ww / this.keepAspect;
                   tt = this.tracking.tt + this.tracking.hh - hh;
                 } else {
-                  ww = hh * this._KeepAspect;
+                  ww = hh * this.keepAspect;
                 }
               } else if (this.tracking.l == 1 && this.tracking.w == -1
                 && this.tracking.t == 0 && this.tracking.h == 1 ) {
-                if (ww/hh < this._KeepAspect) {
-                  hh = ww / this._KeepAspect;
+                if (ww/hh < this.keepAspect) {
+                  hh = ww / this.keepAspect;
                 } else {
-                  ww = hh * this._KeepAspect;
+                  ww = hh * this.keepAspect;
                   ll = this.tracking.ll + this.tracking.ww - ww;
                 }
               } else if (this.tracking.w == 1 && this.tracking.h == 1) {
-                if (ww/hh < this._KeepAspect) {
-                  hh = ww / this._KeepAspect;
+                if (ww/hh < this.keepAspect) {
+                  hh = ww / this.keepAspect;
                 } else {
-                  ww = hh * this._KeepAspect;
+                  ww = hh * this.keepAspect;
                 }
               } else if (this.tracking.w) {
-                tt -= ((ww / this._KeepAspect) - hh) * 0.5;
-                hh = ww / this._KeepAspect;
+                tt -= ((ww / this.keepAspect) - hh) * 0.5;
+                hh = ww / this.keepAspect;
 
                 if (tt < 0) { tt = 0; }
                 if (tt + hh > 1) { tt = 1 - hh; }
                 if (tt < 0) {
                   hh = 1;
-                  ww = hh * this._KeepAspect;
+                  ww = hh * this.keepAspect;
                   ll = this.tracking.ll + this.tracking.ww - ww;
                 }
 
               } else if (this.tracking.h) {
-                ll -= ((hh * this._KeepAspect) - ww) * 0.5;
-                ww = hh * this._KeepAspect;
+                ll -= ((hh * this.keepAspect) - ww) * 0.5;
+                ww = hh * this.keepAspect;
 
                 if (ll < 0) { ll = 0; }
                 if (ll + ww > 1) { ll = 1 - ww; }
                 if (ll < 0) {
                   ww = 1;
-                  hh = ww / this._KeepAspect;
+                  hh = ww / this.keepAspect;
                   tt = this.tracking.tt + this.tracking.hh - hh;
                 }
               }
@@ -809,10 +808,6 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
         this.$['thumbnail-balloon'].positionTarget = this.$['update-thumbnail-button'];
         this.$['thumbnail-balloon'].open();
         this.$['thumbnail-balloon'].focus();
-      }
-
-      _closeThumbnailPanel(e) {
-        this.$['thumbnail-balloon'].close();
       }
 
       _setThumbnail(e) {

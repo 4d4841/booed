@@ -55,7 +55,9 @@
     .items-container {
       @apply(--layout-vertical);
       padding: 20px;
-      height: 100%;
+      height: calc(100vh - 265px);
+      margin-top: 10px;
+      overflow-y: scroll;
     }
 
     .item {
@@ -72,6 +74,12 @@
 
     a {
       text-decoration: none;
+    }
+
+    @media (max-width: 767px) {
+      .items-container {
+        height: calc(100vh - 140px);
+      }
     }
 
   </style>
