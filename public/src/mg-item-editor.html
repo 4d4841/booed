@@ -37,6 +37,7 @@
         itemKey: {
           type: String,
           notify: true,
+          value: null,
           observer: '_itemKeyChanged',
         },
 
@@ -52,11 +53,6 @@
         clipboardList: {
           type: Array,
           notify: true,
-        },
-
-        pastedData: {
-          type: Array,
-          observer: '_pastedDataChanged',
         },
 
         editing: {

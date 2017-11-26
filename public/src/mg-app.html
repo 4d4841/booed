@@ -50,13 +50,15 @@
         display: block;
         position: relative;
         transition: padding-top 0.5s;
-        padding-top: 150px;
+        padding-top: 100px;
         /*min-height: calc(100vh - 145px);*/
         /* 5px wider than height to prevent layout resetting due to scrollbar on/off */
         --app-primary-color: #213; /*sienna;*/
         --app-secondary-color: #757575;
         --app-accent-color: #172C50;
-        --app-shadow-color: rgba(47,27,56,0.3);
+        --app-shadow-color: rgba(57,27,56,0.3);
+        --disabled-text-color: var(--app-shadow-color);
+
         --booed-header-background: white;/*rgba(255,250,250,0.95);var(--app-accent-color);*/ /*#f4eed7;*/
         --booed-contents-background: var(--booed-header-background);
         --booed-menu-color: salmon;
@@ -371,7 +373,7 @@
       #pages {
         max-width: 1440px;
         margin: 0 auto;
-        min-height: calc(100vh - 150px); /* 5px wider than height to prevent layout resetting due to scrollbar on/off */
+        min-height: calc(100vh - 100px); /* 5px wider than height to prevent layout resetting due to scrollbar on/off */
       }
 
       footer {

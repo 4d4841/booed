@@ -27,13 +27,14 @@
       <custom-style>
     <style is="custom-style" include="mg-common-styles iron-flex iron-flex-alignment">
       :host {
-        min-height: 80vh;
+        display: block;
         background-size: contain;
         background-repeat: no-repeat;
+        @apply(--layout-vertical);
+        @apply(--layout-flex);
       }
 
       :host([empty]) {
-        background-image: url(/images/logo-pumpkin-light.svg);
         border-radius: 5px;
       }
 
@@ -45,10 +46,14 @@
       #image-selector {
         @apply(--layout-horizontal);
         @apply(--layout-wrap);
-        padding: 0px;
-        height: 100%;
+        @apply(--layout-flex);
+        @apply(--layout-start-aligned);
+        padding: 0 0 24px 0;
+        overflow-y: scroll;
       }
 
+      #gallery-editor {
+      }
       /*
       .cancel-copy-button {
         @apply(--layout-self-end);
@@ -64,91 +69,99 @@
         height: 120px;
       }
 
+      @media (max-width: 767px) {
+        #image-selector {
+          padding: 0;
+        }
+
+        #gallery-editor {
+          padding-bottom: 15px;
+        }
+
+      }
+
     </style>
       </custom-style>
 
-    <iron-collapse class="vertical layout" opened="[[itemKey]]">
+    <div id="gallery-editor" class="horizontal layout wrap end" hidden$="[[!itemKey]]">
 
-      <div id="gallery-editor" class="horizontal layout end wrap">
+        <div style="display:inline-block">
+      <paper-icon-button icon="add-photo" on-tap="_onAddButtonTap"></paper-icon-button>
+      <paper-tooltip>เพิ่มรูป</paper-tooltip>
+        </div>
 
-            <div style="display:inline-block">
-          <paper-icon-button icon="add-photo" on-tap="_onAddButtonTap"></paper-icon-button>
-          <paper-tooltip>เพิ่มรูป</paper-tooltip>
-            </div>
+        <div style="display:inline-block">
+      <paper-icon-button icon="[[copyIcon]]" on-click="_onCopyButtonTap"></paper-icon-button>
+      <paper-tooltip>[[copyMethod]]</paper-tooltip>
+        </div>
 
-            <div style="display:inline-block">
-          <paper-icon-button icon="[[copyIcon]]" on-click="_onCopyButtonTap"></paper-icon-button>
-          <paper-tooltip>[[copyMethod]]</paper-tooltip>
-            </div>
+        <div style="display:inline-block">
+      <paper-icon-button disabled="[[!clipboardList.length]]" icon="content-paste" on-click="_onPasteButtonTap"></paper-icon-button>
+      <paper-tooltip>แปะ</paper-tooltip>
+        </div>
 
-              <template is="dom-if" if="[[iconList.length]]">
-            <div style="display:inline-block">
-          <paper-icon-button icon="select-all" on-click="_onSelectAllButtonTap"></paper-icon-button>
-          <paper-tooltip>เลือกหมด</paper-tooltip>
-            </div>
-              </template>
+        <div style="display:inline-block">
+      <paper-icon-button disabled="[[!clipboardList.length]]" icon="content-clear" on-click="_onClearButtonTap"></paper-icon-button>
+      <paper-tooltip>ล้าง</paper-tooltip>
+        </div>
 
-          <template is="dom-if" if="[[selectedImages.length]]">
+        <div style="display:inline-block">
+      <paper-icon-button disabled="[[!iconList.length]]" icon="select-all" on-click="_onSelectAllButtonTap"></paper-icon-button>
+      <paper-tooltip>เลือกหมด</paper-tooltip>
+        </div>
 
-              <div style="display:inline-block">
-            <paper-icon-button icon="delete" on-click="_onDeleteButtonTap"></paper-icon-button>
-            <paper-tooltip>ลบรูป</paper-tooltip>
-              </div>
+        <div style="display:inline-block">
+      <paper-icon-button disabled="[[!selectedImages.length]]" icon="delete" on-click="_onDeleteButtonTap"></paper-icon-button>
+      <paper-tooltip>ลบรูป</paper-tooltip>
+        </div>
 
-              <div style="display:inline-block">
-            <paper-icon-button icon="mode-edit" on-click="_onEditButtonTap"></paper-icon-button>
-            <paper-tooltip>แก้ไข</paper-tooltip>
-              </div>
+        <div style="display:inline-block">
+      <paper-icon-button disabled="[[!selectedImages.length]]" icon="mode-edit" on-click="_onEditButtonTap"></paper-icon-button>
+      <paper-tooltip>แก้ไข</paper-tooltip>
+        </div>
 
-              <div style="display:inline-block">
-            <paper-icon-button icon="reorder" on-click="_onReorderButtonTap"></paper-icon-button>
-            <paper-tooltip>เรียง</paper-tooltip>
-              </div>
+        <div style="display:inline-block">
+      <paper-icon-button disabled="[[!selectedImages.length]]" icon="reorder" on-click="_onReorderButtonTap"></paper-icon-button>
+      <paper-tooltip>เรียง</paper-tooltip>
+        </div>
 
-              <div style="display:inline-block">
-            <paper-icon-button icon="cancel" on-click="_onCancelButtonTap"></paper-icon-button>
-            <paper-tooltip>ยกเลือกที่เลือก</paper-tooltip>
-              </div>
+        <div style="display:inline-block">
+      <paper-icon-button disabled="[[!selectedImages.length]]" icon="cancel" on-click="_onCancelButtonTap"></paper-icon-button>
+      <paper-tooltip>ยกเลือกที่เลือก</paper-tooltip>
+        </div>
 
-          </template>
+      <input type="file" id="fileInput" on-change="_filesSelected" hidden multiple>
 
-        <input type="file" id="fileInput" on-change="_filesSelected" hidden multiple>
+    </div>
 
-      </div>
+    <iron-selector
+      id="image-selector"
+      attr-for-selected="key"
+      selected-values="{{selectedImages}}"
+      multi>
+    <template is="dom-repeat" items="{{iconList}}" observe="order deleted" sort="{{_reorderPhoto}}">
 
-      <iron-selector
-        id="image-selector"
-        attr-for-selected="key"
-        selected-values="{{selectedImages}}"
-        multi>
+      <mg-item-image
+        key="[[item.key]]"
+        class="image-icon"
+        thumbnail="[[item.thumbnail]]"
+        rep="[[item.rep]]"
+        progress="[[item._progress]]"
+        name="[[item.name]]"
+        selection-order="[[item._selectionOrder]]"
+        deleted="[[item.deleted]]"
+        on-tap="_onItemTap"
+      >
+      <!--
+        <template is="dom-if" if="{{_isEditable(item._progress,item.rep)}}">
+          <paper-icon-button icon="mode-edit" class="image-edit-button-icon" on-tap="_onEditImage">
+          </paper-icon-button>
+        </template>
+      -->
+      </mg-item-image>
 
-      <!-- XXX Maybe sorting will cause ghost update -->
-      <template is="dom-repeat" items="{{iconList}}" observe="order deleted" sort="{{_reorderPhoto}}">
-
-        <mg-item-image
-          key="[[item.key]]"
-          class="image-icon"
-          thumbnail="[[item.thumbnail]]"
-          rep="[[item.rep]]"
-          progress="[[item._progress]]"
-          name="[[item.name]]"
-          selection-order="[[item._selectionOrder]]"
-          deleted="[[item.deleted]]"
-          on-tap="_onItemTap"
-        >
-        <!--
-          <template is="dom-if" if="{{_isEditable(item._progress,item.rep)}}">
-            <paper-icon-button icon="mode-edit" class="image-edit-button-icon" on-tap="_onEditImage">
-            </paper-icon-button>
-          </template>
-        -->
-        </mg-item-image>
-
-      </template>
-
-      </iron-selector>
-
-    </iron-collapse>
+    </template>
+    </iron-selector>
 
     <mg-image-editor
       id="image-editor"
@@ -697,7 +710,12 @@
         this.splice('selectedImages',0,this.selectedImages.length);
       }
 
-      _pastedDataChanged(paste) {
+      _onClearButtonTap(e) {
+        this.splice('clipboardList', 0, this.clipboardList.length);
+      }
+
+      _onPasteButtonTap(e) {
+        let paste = this.clipboardList.filter(item => { return item.deleted ? false : true; });
         console.assert(paste.length, "Empty pasted data");
 
         let uid = MHA.AU.currentUser.uid;

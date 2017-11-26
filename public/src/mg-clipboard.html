@@ -24,7 +24,6 @@
       .copied-collapse {
         background-color: white;
         border-radius: 5px;
-        margin-bottom: 20px;
       }
 
       .copied-container {
@@ -70,34 +69,23 @@
       </custom-style>
 
     <iron-collapse class="copied-collapse vertical layout" opened="[[clipboardList.length]]">
-
       <div class="copied-container">
-        <template is="dom-repeat" items="{{clipboardList}}">
 
-          <mg-item-image
-            key="[[item.key]]"
-            class="copied-icon"
-            thumbnail="[[item.thumbnail]]"
-            rep="[[item.rep]]"
-            roi="[[item.roiThumbnail]]"
-            name="[[item.name]]"
-            deleted="[[item.deleted]]"
-            on-tap="_onCopiedTap"
-          >
-            <paper-icon-button icon="mode-edit" class="image-edit-button-icon" on-tap="_onEditImage">
-            </paper-icon-button>
-          </mg-item-image>
+          <template is="dom-repeat" items="{{clipboardList}}">
+        <mg-item-image
+          key="[[item.key]]"
+          class="copied-icon"
+          thumbnail="[[item.thumbnail]]"
+          rep="[[item.rep]]"
+          roi="[[item.roiThumbnail]]"
+          name="[[item.name]]"
+          deleted="[[item.deleted]]"
+          on-tap="_onCopiedTap"
+        > <paper-icon-button icon="mode-edit" class="image-edit-button-icon" on-tap="_onEditImage">
+          </paper-icon-button>
+        </mg-item-image>
+          </template>
 
-        </template>
-      </div>
-
-      <div class="horizontal layout center-justified wrap">
-        <paper-button class="horizontal layout start-justified" on-tap="_onPasteClipboardTap">
-          <iron-icon icon="content-paste"></iron-icon> เพิ่มลงแกลเลอรี่
-        </paper-button>
-        <paper-button class="horizontal layout start-justified" on-tap="_onClearClipboardTap">
-          <iron-icon icon="cancel"></iron-icon> เคลียร์คลิปบอร์ด
-        </paper-button>
       </div>
     </iron-collapse>
 
@@ -122,12 +110,6 @@
           notify: true,
         },
 
-        pastedData: {
-          type: Array,
-          notify: true,
-          readOnly: true,
-        },
-
         imageEditing: {
           type: Object,
           notify: true,
@@ -137,14 +119,6 @@
 
       static get observers() { return [
       ]}
-
-      _onClearClipboardTap(e) {
-        this.splice('clipboardList', 0, this.clipboardList.length);
-      }
-
-      _onPasteClipboardTap(e) {
-        this._setPastedData( this.clipboardList.filter(item => { return item.deleted ? false : true; }));
-      }
 
       _onCopiedTap(e) {
         //Toggles deleted true and it won't be pasted.

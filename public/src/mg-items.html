@@ -52,10 +52,17 @@
       margin: 0;
     }
 
+    .side-bar {
+      @apply(--layout-vertical);
+      min-width: 150px;
+      height: calc(100vh - 100px);
+      border-right:1px dashed tomato;
+    }
+
     .items-container {
       @apply(--layout-vertical);
       padding: 20px;
-      height: calc(100vh - 265px);
+      height: calc(100vh - 215px);
       margin-top: 10px;
       overflow-y: scroll;
     }
@@ -66,10 +73,21 @@
       margin-bottom: 5px;
     }
 
+    .editor-container {
+      margin-left: 20px;
+      width: 100%;
+      @apply(--layout-vertical);
+      height: calc(100vh - 100px);
+    }
+
+    mg-clipboard {
+      margin-right: 20px;
+    }
+
     #editor {
       margin: 0 20px 20px 20px;
       width: 100%;
-      height: 100%;
+      @apply(--layout-flex);
     }
 
     a {
@@ -80,12 +98,21 @@
       .items-container {
         height: calc(100vh - 140px);
       }
+
+      .side-bar {
+        height: calc(100vh - 50px);
+      }
+
+      .editor-container {
+        height: calc(100vh - 50px);
+      }
+
     }
 
   </style>
     </custom-style>
 
-  <div class="vertical layout" style="min-width:150px;height:100vh; border-right:1px dashed tomato">
+  <div class="side-bar">
     <paper-button id="new-item" on-tap="_openNewItemMenu">
       <iron-icon icon="add"></iron-icon> สร้าง
     </paper-button>
@@ -110,14 +137,16 @@
     <mg-menu menu="[[newItemMenu]]"></mg-menu>
   </mg-balloon>
 
-  <div style="margin-left:20px">
+  <div class="editor-container">
     <mg-clipboard
+      class="flex"
       clipboard-list="{{clipboardList}}"
       pasted-data="{{pastedData}}"
     ></mg-clipboard>
 
     <mg-gallery-editor
       id="gallery-editor"
+      class="flex"
       me="[[me]]"
       clipboard-list="{{clipboardList}}"
       pasted-data="{{pastedData}}"
