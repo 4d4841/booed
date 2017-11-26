@@ -13,6 +13,7 @@
 
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="mg-button.html">
 <link rel="import" href="mg-icons.html">
 
@@ -23,8 +24,8 @@
       :host {
         display: block;
         color: var(--app-secondary-color);
-        @apply(--layout-vertical);
-        @apply(--layout-center);
+        @apply --layout-vertical;
+        @apply --layout-center;
       }
 
       iron-icon {
@@ -44,9 +45,9 @@
         border-radius: 50%;
         padding: 20px;
         overflow: hidden;
-        @apply(--layout-vertical);
-        @apply(--layout-center);
-        @apply(--layout-end-justified);
+        @apply --layout-vertical;
+        @apply --layout-center;
+        @apply --layout-end-justified;
       }
 
       .button {
@@ -55,8 +56,8 @@
         height: 80px;
         background: tomato;
         --paper-button: {
-          @apply(--layout-vertical);
-          @apply(--layout-start-justified);
+          @apply --layout-vertical;
+          @apply --layout-start-justified;
           font-family: 'Mitr', sans-serif;
           font-size: 16px;
           font-weight: bold;

@@ -14,7 +14,7 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="mg-item-editor.html">
 <link rel="import" href="mg-common-styles.html">
 <link rel="import" href="mg-input.html">
@@ -30,8 +30,8 @@
         display: block;
         background-size: contain;
         background-repeat: no-repeat;
-        @apply(--layout-vertical);
-        @apply(--layout-flex);
+        @apply --layout-vertical;
+        @apply --layout-flex;
       }
 
       :host([empty]) {
@@ -44,24 +44,16 @@
       }
 
       #image-selector {
-        @apply(--layout-horizontal);
-        @apply(--layout-wrap);
-        @apply(--layout-flex);
-        @apply(--layout-start-aligned);
+        @apply --layout-horizontal;
+        @apply --layout-wrap;
+        @apply --layout-flex;
+        @apply --layout-start-aligned;
         padding: 0 0 24px 0;
         overflow-y: scroll;
       }
 
       #gallery-editor {
       }
-      /*
-      .cancel-copy-button {
-        @apply(--layout-self-end);
-        color:white;
-        --iron-icon-stroke-color:rgba(0,0,0,0.2);
-        pointer-events: none;
-      }
-      */
 
       .image-icon {
         margin: 0 5px 5px 0;
@@ -166,7 +158,6 @@
     <mg-image-editor
       id="image-editor"
       data="{{editingData}}"
-      blob="{{blob}}"
       after="[[afterEditingData]]"
       before="[[beforeEditingData]]"
     ></mg-image-editor>
@@ -219,6 +210,8 @@
           type: Object,
           observer: '_editingDataChanged',
         },
+        afterEditingData: Object,
+        beforeEditingData: Object,
 
         copyMethod: {
           type: String,

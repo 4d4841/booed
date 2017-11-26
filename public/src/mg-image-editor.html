@@ -17,8 +17,11 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
-<link rel="import" href="mg-data.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="mg-common-styles.html">
+<link rel="import" href="mg-data.html">
+<link rel="import" href="mg-image.html">
+<link rel="import" href="mg-balloon.html">
 
 <dom-module id="mg-image-editor">
   <template strip-whitespace>
@@ -30,9 +33,9 @@
         position: absolute;
         width: 0;
         height: 0;
-        @apply(--layout-vertical);
-        @apply(--layout-center-justified);
-        @apply(--layout-center);
+        @apply --layout-vertical;
+        @apply --layout-center-justified;
+        @apply --layout-center;
         background-color: black;
         opacity: 0;
         transition: opacity 0.25s;
@@ -47,9 +50,9 @@
         height:100%;
         top: 0;
         left: 0;
-        @apply(--layout-vertical);
-        @apply(--layout-center-justified);
-        @apply(--layout-center);
+        @apply --layout-vertical;
+        @apply --layout-center-justified;
+        @apply --layout-center;
       }
 
       .image-info {
@@ -246,6 +249,8 @@
           notify: true,
           observer: '_dataChanged',
         },
+        after: Object,
+        before: Object,
 
         rep: {
           type: String,
@@ -288,11 +293,16 @@
         dataMidH: {type:Number, value: 0.5},
         dataMidW: {type:Number, value: 0.5},
 
+        dataRight: Number,
+        dataBottom: Number,
+
         scaleFactor: { type: Number, value: 1 },
+        keepAspect: Number,
         rPath: {
           type: String,
           value: "M 0 0 v 0 h 0 v 0 Z",
         },
+        rPathInner: String,
 
         loading: Boolean,
 

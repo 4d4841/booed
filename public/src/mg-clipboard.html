@@ -12,9 +12,11 @@
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="mg-common-styles.html">
 <link rel="import" href="mg-item-image.html">
+<link rel="import" href="mg-image-editor.html">
 
 <dom-module id="mg-clipboard">
   <template strip-whitespace>
@@ -27,8 +29,8 @@
       }
 
       .copied-container {
-        @apply(--layout-horizontal);
-        @apply(--layout-wrap);
+        @apply --layout-horizontal;
+        @apply --layout-wrap;
         box-shadow: inset 1px 1px 1px var(--app-shadow-color);
         border-radius: 5px;
         padding: 5px;
@@ -53,7 +55,7 @@
         top: 0;
         width: 25px;
         height: 25px;
-        @apply(--layout-self-end);
+        @apply --layout-self-end;
         z-index: 3;
         color: black;
         background-color: white;
@@ -92,9 +94,6 @@
     <mg-image-editor
       id="image-editor"
       data="{{editingData}}"
-      blob="{{blob}}"
-      after="[[afterEditingData]]"
-      before="[[beforeEditingData]]"
     ></mg-image-editor>
 
 
@@ -115,6 +114,7 @@
           notify: true,
         },
 
+        editingData: Object,
       }}
 
       static get observers() { return [

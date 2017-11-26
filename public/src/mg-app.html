@@ -16,6 +16,7 @@
 <link rel="import" href="../bower_components/app-layout/app-scroll-effects/effects/waterfall.html">
 <link rel="import" href="../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
 <link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
 <link rel="import" href="../bower_components/app-layout/helpers/helpers.html">
 <link rel="import" href="../bower_components/app-route/app-location.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
@@ -34,6 +35,10 @@
 <link rel="import" href="mg-balloon.html">
 <link rel="import" href="mg-list.html">
 <link rel="import" href="mg-menu.html">
+<link rel="import" href="mg-data.html">
+<link rel="import" href="mg-user.html">
+<link rel="import" href="mg-about.html">
+<link rel="import" href="mg-404-warning.html">
 
 <link href="https://fonts.googleapis.com/css?family=Mitr:300|Gloria+Hallelujah" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css?family=Henny+Penny" rel="stylesheet">
@@ -129,15 +134,15 @@
       }
 
       div.header-filler {
-        @apply(--layout-flex);
+        @apply --layout-flex;
         min-width: 320px;
         height: var(--booed-title-height);
       }
 
       .head-logo {
         border-radius: 10px 10px 0 0;
-        @apply(--layout-flex);
-        @apply(--layout-horizontal);
+        @apply --layout-flex;
+        @apply --layout-horizontal;
         min-width: 100px;
         max-width: 180px;
         /*min-width:  calc(var(--booed-logo-height) * 3.7);*/
@@ -154,14 +159,6 @@
         background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
         background-position: 10px var(--booed-logo-margin), calc(20% + 18px) var(--booed-logo-margin), calc(40% + 18px) var(--booed-logo-margin), calc(60% + 18px) var(--booed-logo-margin), calc(80% + 18px) var(--booed-logo-margin);
       }
-
-      /*
-      div.logo {
-        @apply(--layout-flex);
-        height: var(--booed-header-height);
-        color: transparent;
-      }
-      */
 
       .left-bar-item {
         width: 40px;
@@ -183,7 +180,7 @@
 
       paper-tabs,
       paper-tab {
-        @apply(--layout-horizontal);
+        @apply --layout-horizontal;
         padding:0;
         cursor: ew-resize;
       }
@@ -243,12 +240,12 @@
       }
 
       #drawer-contents {
-        @apply(--layout-vertical);
+        @apply --layout-vertical;
         overflow: hidden;
       }
 
       #drawer-contents #profile-container {
-        @apply(--layout-vertical);
+        @apply --layout-vertical;
         background: tomato;
         color: white;
       }
@@ -285,7 +282,7 @@
 
       #drawer-contents .photo-button {
         margin: 20px 0 10px 0;
-        @apply(--layout-self-center);
+        @apply --layout-self-center;
         height: 120px;
         width: 120px;
         box-sizing: border-box;
@@ -303,8 +300,8 @@
         padding: 5px 0;
         font-family: 'Mitr', sans-serif;
         font-size: 16px;
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
+        @apply --layout-horizontal;
+        @apply --layout-center;
       }
 
       #drawer-contents h3 iron-icon {
@@ -326,7 +323,7 @@
         height: 34px;
         position: fixed;
         --iron-icon-fill-color: var(--app-primary-color);
-        @apply(--layout-vertical);
+        @apply --layout-vertical;
         user-select: none;
       }
 
@@ -496,7 +493,7 @@
               <dom-repeat items="[[menu.entries]]">
             <template strip-whitespace>
               <paper-tab
-                name="[[item.name]]"
+                name$="[[item.name]]"
                 on-tap="_onMenuTap">
                 <iron-icon class="tab-icon" icon="[[item.icon]]"></iron-icon>
 
@@ -667,6 +664,8 @@
         type: Object,
       },
 
+      routeData: Object,
+
       page: {
         type: String,
         reflectToAttribute: true,
@@ -680,6 +679,8 @@
       submenu: {
         type: Object,
       },
+
+      drawerOpened: Boolean,
 
       appItems: {
         type: Object,

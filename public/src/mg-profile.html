@@ -14,6 +14,7 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
@@ -60,7 +61,7 @@
       mg-button.single-button,
       mg-button.upper-button,
       mg-button.lower-button {
-        @apply(--layout-vertical);
+        @apply --layout-vertical;
         padding:0;
         margin:0;
       }
@@ -93,7 +94,7 @@
         width: 100%;
         height: 40px;
         --paper-button: {
-          @apply(--layout-horizontal);
+          @apply --layout-horizontal;
           font-family: 'Mitr', sans-serif;
           font-size: 16px;
           font-weight: bold;
@@ -145,7 +146,7 @@
 
       .main-frame {
         width:240px;
-        @apply(--layout-vertical)
+        @apply --layout-vertical;
         transition: opacity 0.5s;
         background-color: white;
         box-shadow: 1px 1px 5px var(--app-shadow-color);
@@ -181,8 +182,8 @@
       .main-info {
         width:220px;
         box-sizing: border-box;
-        @apply(--layout-vertical)
-        @apply(--layout-end-justified);
+        @apply --layout-vertical;
+        @apply --layout-end-justified;
         transition: opacity 0.5s;
         box-shadow: 1px 1px 3px var(--app-shadow-color);
         border-radius: 5px;
@@ -199,8 +200,8 @@
         padding: 5px 0;
         font-family: 'Mitr', sans-serif;
         font-size: 16px;
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
+        @apply --layout-horizontal;
+        @apply --layout-center;
       }
 
       h3 iron-icon {

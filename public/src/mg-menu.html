@@ -69,12 +69,12 @@
         width: calc(100% - 14px);
         overflow:hidden;
         border: 1px solid rgba(255,255,255,0.5);
-        @apply(--mg-menu-collapse);
+        @apply --mg-menu-collapse;
       }
 
       .menu-item,
       .submenu-item {
-        @apply(--booed-menu-font);
+        @apply --booed-menu-font;
         --paper-item-selected: { background: transparent };
         --paper-item-focused-before: { opacity: 0 };
         --paper-item-selected-weight: normal;
@@ -82,13 +82,13 @@
         margin: 0;
         padding:0;
         min-height: var(--mg-menu-height);
-        @apply(--mg-menu-item);
+        @apply --mg-menu-item;
         color: var(--app-primary-color);
       }
 
       .submenu-item:last-of-type,
       .menu-item:last-of-type {
-        @apply(--mg-menu-last-item);
+        @apply --mg-menu-last-item;
       }
 
       paper-listbox {
@@ -106,14 +106,14 @@
         border-radius: 0;
         padding: 0 10px 0 14px;
         margin: 0;
-        @apply(--mg-menu-button);
+        @apply --mg-menu-button;
         --paper-button: {
           text-transform: none;
           color: var(--app-primary-color);
-          @apply(--layout-horizontal);
-          @apply(--layout-start-justified);
-          @apply(--booed-menu-font);
-          @apply(--layout-end);
+          @apply --layout-horizontal;
+          @apply --layout-start-justified;
+          @apply --booed-menu-font;
+          @apply --layout-end;
           --paper-button-ink-color: red;
           overflow: hidden;
         }
@@ -147,7 +147,7 @@
                 <dom-if if="[[item]]">
               <template>
               <paper-button style="min-height:var(--mg-menu-height)" class="horizontal layout center" on-tap="_onMenuButtonTap">
-                <iron-icon class="menu-item-icon" icon="[[item.icon]]" style="[[_computeIconColorStyle(item)]]"></iron-icon>
+                <iron-icon class="menu-item-icon" icon="[[item.icon]]" style$="[[_computeIconColorStyle(item)]]"></iron-icon>
                   [[item.title]]
               </paper-button>
               </template>
@@ -175,7 +175,7 @@
           <paper-item tabindex="-1" class="menu-item horizontal layout center start-justified">
 
             <paper-button style="min-height:var(--mg-menu-height)" class="horizontal layout center" on-tap="_onMenuButtonTap">
-              <iron-icon class="menu-item-icon" icon="[[item.icon]]" style="[[_computeIconColorStyle(item)]]"></iron-icon>
+              <iron-icon class="menu-item-icon" icon="[[item.icon]]" style$="[[_computeIconColorStyle(item)]]"></iron-icon>
                 [[item.title]]
             </paper-button>
 
@@ -207,7 +207,9 @@
         path: {
           type: Object,
           notify: true,
-        }
+        },
+
+        trans: Object,
       }}
 
       static get observers() { return [

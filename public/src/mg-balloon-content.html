@@ -37,8 +37,8 @@
         padding: 5px 0;
         transition: all 1s;
         min-width: 150px;
-        @apply(--layout-vertical);
-        @apply(--layout-start);
+        @apply --layout-vertical;
+        @apply --layout-start;
       }
 
     </style>
@@ -52,6 +52,11 @@
   <script>
     class MGBalloonContent extends Polymer.mixinBehaviors([Polymer.IronFitBehavior], Polymer.Element) {
       static get is() { return 'mg-balloon-content'; }
+
+      static get properties() { return {
+        positionTarget: Object,
+      }}
+
     }
     customElements.define(MGBalloonContent.is, MGBalloonContent);
   </script>

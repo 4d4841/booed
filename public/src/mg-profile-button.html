@@ -82,8 +82,8 @@
         border-radius: 5px;
         overflow: hidden;
         box-sizing: border-box;
-        @apply(--layout-vertical);
-        @apply(--layout-end-justified);
+        @apply --layout-vertical;
+        @apply --layout-end-justified;
         position: absolute;
         top: 36px;
         right: 0;
@@ -103,11 +103,11 @@
         height: 40px;
         width: 100%;
         --paper-button: {
-          @apply(--layout-horizontal);
-          @apply(--layout-start-justified);
+          @apply --layout-horizontal;
+          @apply --layout-start-justified;
           font-family: 'Mitr', sans-serif;
           font-size: 16px;
-        }
+        };
       }
 
       .button:not(:last-of-type) {
@@ -221,6 +221,7 @@
           type: Object,
           notify: true
         },
+        menu: Object,
       }}
 
       static get observers() { return [

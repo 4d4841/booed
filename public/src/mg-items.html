@@ -53,14 +53,14 @@
     }
 
     .side-bar {
-      @apply(--layout-vertical);
+      @apply --layout-vertical;
       min-width: 150px;
       height: calc(100vh - 100px);
       border-right:1px dashed tomato;
     }
 
     .items-container {
-      @apply(--layout-vertical);
+      @apply --layout-vertical;
       padding: 20px;
       height: calc(100vh - 215px);
       margin-top: 10px;
@@ -76,7 +76,7 @@
     .editor-container {
       margin-left: 20px;
       width: 100%;
-      @apply(--layout-vertical);
+      @apply --layout-vertical;
       height: calc(100vh - 100px);
     }
 
@@ -87,7 +87,7 @@
     #editor {
       margin: 0 20px 20px 20px;
       width: 100%;
-      @apply(--layout-flex);
+      @apply --layout-flex;
     }
 
     a {
@@ -141,7 +141,6 @@
     <mg-clipboard
       class="flex"
       clipboard-list="{{clipboardList}}"
-      pasted-data="{{pastedData}}"
     ></mg-clipboard>
 
     <mg-gallery-editor
@@ -149,7 +148,6 @@
       class="flex"
       me="[[me]]"
       clipboard-list="{{clipboardList}}"
-      pasted-data="{{pastedData}}"
     ></mg-gallery-editor>
   </div>
 
@@ -165,6 +163,8 @@
   class MGItems extends Polymer.Element {
     static get is() { return 'mg-items'; }
     static get properties() { return {
+      me: Object,
+
       selectedItem: Number,
       itemList: {
         type: Array,
@@ -205,6 +205,7 @@
         notify: true,
         observer: '_routeDataChanged',
       },
+      subroute: Object,
 
       editor: {
         type: Object,
@@ -217,7 +218,9 @@
       selectedItemRole: {
         type: String,
         observer: '_selectedItemRoleChanged'
-      }
+      },
+
+      items: Object,
     }}
 
     _selectedItemRoleChanged(role) {

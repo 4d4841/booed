@@ -13,7 +13,8 @@
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../bower_components/paper-spinner/paper-spinner.html">
+<link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="mg-common-styles.html">
 <link rel="import" href="mg-icons.html">
 
@@ -22,7 +23,7 @@
       <custom-style>
     <style include="mg-common-styles iron-flex iron-flex-alignment">
       :host {
-        @apply(--layout-vertical);
+        @apply --layout-vertical;
         margin-top:-3px;
       }
 
@@ -133,7 +134,8 @@
         value: {
           type: String,
           value: null
-        }
+        },
+        spinnerActive: Boolean,
       }}
 
       static get observers() { return [
