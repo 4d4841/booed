@@ -28,19 +28,19 @@
     <style is="custom-style" include="mg-common-styles iron-flex iron-flex-alignment">
       :host {
         display: block;
-        background-size: contain;
-        background-repeat: no-repeat;
+        background-size: 60%;
+        background-position: center;
         @apply --layout-vertical;
         @apply --layout-flex;
-      }
-
-      :host([empty]) {
         border-radius: 5px;
       }
 
-      .file-item {
-        width: 100%;
-        position: relative;
+      :host([empty]) {
+        background-image: url(/images/logo-pumpkin-light.svg);
+      }
+
+      :host([dropenter]){
+        background-image: url(/images/logo-pumpkin-light.svg);
       }
 
       #image-selector {
@@ -75,8 +75,9 @@
     </style>
       </custom-style>
 
-    <div id="gallery-editor" class="horizontal layout wrap end" hidden$="[[!itemKey]]">
+    <div id="gallery-editor" ondrop="_onDrop" class="vertical layout" hidden$="[[!itemKey]]">
 
+      <div id="control-panel" class="horizontal layout wrap end" >
         <div style="display:inline-block">
       <paper-icon-button icon="add-photo" on-tap="_onAddButtonTap"></paper-icon-button>
       <paper-tooltip>เพิ่มรูป</paper-tooltip>
@@ -122,8 +123,8 @@
       <paper-tooltip>ยกเลือกที่เลือก</paper-tooltip>
         </div>
 
+      </div>
       <input type="file" id="fileInput" on-change="_filesSelected" hidden multiple>
-
     </div>
 
     <iron-selector
@@ -228,7 +229,38 @@
           value: 'แกลเลอรี่ใหม่',
           readOnly: true,
         },
+
+        dropenter: {
+          type: Boolean,
+          reflectToAttribute: true,
+        },
       }}
+
+      connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener('dragover', e => {
+          if (!this.itemKey) {
+            return;
+          }
+          e.preventDefault();
+          this.set('dropenter',true);
+        });
+        this.addEventListener('dragleave', e => {
+          if (!this.itemKey) {
+            return;
+          }
+          e.preventDefault();
+          this.set('dropenter',false);
+        });
+        this.addEventListener('drop', e => {
+          if (!this.itemKey) {
+            return;
+          }
+          e.preventDefault();
+          this.set('dropenter',false);
+          this._uploadFiles(e.dataTransfer.files);
+        });
+      }
 
       _computeCopyIcon(selectedLen) {
         return selectedLen ? "content-copy-selection" : "content-copy";
@@ -462,7 +494,10 @@
       }
 
       _filesSelected(e) {
-        let files = e.target.files;
+        this._uploadFiles(e.target.files);
+      }
+
+      _uploadFiles(files) {
         if (!files || !files.length) {
           return;
         }
@@ -586,6 +621,10 @@
         const dec = Math.max(0, Math.min(3, unit - 1));
         const size = parseFloat((bytes / Math.pow(base, unit)).toFixed(dec));
         return size + ' ' + ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'][unit];
+      }
+
+      _onDrop(e) {
+        console.log(e);
       }
 
       _onAddButtonTap(e) {

@@ -19,7 +19,16 @@
 <dom-module id="mg-item-editor">
   <template strip-whitespace>
 
+      <custom-style>
+    <style>
+    #name-editor {
+      margin-left: 8px;
+      margin-right: 20px;
+    }
+    </style>
+      </custom-style>
     <paper-input
+      id="name-editor"
       label="ชื่อแกลเลอรี่"
       focused="{{focusedName}}"
       always-float-label="[[focusedName]]"
