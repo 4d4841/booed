@@ -21,15 +21,33 @@
 
       <custom-style>
     <style>
+
+    :host {
+      display: block;
+      background-size: 60%;
+      background-position: center;
+      @apply --layout-vertical;
+      @apply --layout-flex;
+      border-radius: 5px;
+    }
+
+    :host([nokey]){
+      display: none;
+    }
+
     #name-editor {
       margin-left: 8px;
       margin-right: 20px;
     }
+
+    @media (max-width: 767px) {
+    }
+
     </style>
       </custom-style>
     <paper-input
       id="name-editor"
-      label="ชื่อแกลเลอรี่"
+      label="[[_formatLabelDescription(itemRole)]]"
       focused="{{focusedName}}"
       always-float-label="[[focusedName]]"
       value="{{itemName}}"
@@ -43,6 +61,12 @@
       static get is() { return 'mg-item-editor'; }
 
       static get properties() { return {
+        nokey: {
+          type: Boolean,
+          notify: true,
+          reflectToAttribute: true,
+        },
+
         itemKey: {
           type: String,
           notify: true,
@@ -105,6 +129,9 @@
       */
 
       _itemKeyChanged(itemKey) {
+        this.set('nokey',itemKey ? false : true);
+        console.log('pr',itemKey,this.itemRole,this.nokey);
+
         this._ItemName = this.defaultName;
         this.set('itemName',this._ItemName);
       }
@@ -132,6 +159,10 @@
             }
           });
         }
+      }
+
+      _formatLabelDescription(role) {
+        return role.charAt(0).toUpperCase() + role.slice(1)+' Name';
       }
 
       _iconForRole(role) {
