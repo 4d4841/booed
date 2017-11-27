@@ -20,6 +20,7 @@
 <link rel="import" href="mg-icons.html">
 <link rel="import" href="mg-balloon.html">
 <link rel="import" href="mg-menu.html">
+<link rel="import" href="mg-product-editor.html">
 <link rel="import" href="mg-gallery-editor.html">
 <link rel="import" href="mg-thumbnail.html">
 <link rel="import" href="mg-clipboard.html">
@@ -163,6 +164,13 @@
       class="flex"
       clipboard-list="{{clipboardList}}"
     ></mg-clipboard>
+
+    <mg-product-editor
+      id="product-editor"
+      class="flex"
+      me="[[me]]"
+      clipboard-list="{{clipboardList}}"
+    ></mg-product-editor>
 
     <mg-gallery-editor
       id="gallery-editor"
@@ -422,6 +430,13 @@
     _onNewItem(e) {
       this._closeSubmenu(e);
       if (e.model.item.name == 'gallery') {
+        let key = MHA.DB.ref('items').push().key;
+        this.setProperties({
+          selectedItemKey: key,
+          selectedItemRole: e.model.item.name,
+        });
+        this.editor.set('itemKey',this.selectedItemKey);
+      } else if (e.model.item.name == 'product') {
         let key = MHA.DB.ref('items').push().key;
         this.setProperties({
           selectedItemKey: key,
