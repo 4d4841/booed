@@ -54,7 +54,7 @@
 
     .side-bar {
       @apply --layout-vertical;
-      min-width: 150px;
+      min-width: 300px;
       height: calc(100vh - 100px);
       border-right:1px dashed tomato;
     }
@@ -68,8 +68,8 @@
     }
 
     .item {
-      width: 100px;
-      height: 100px;
+      width: 250px;
+      height: 200px;
       margin-bottom: 5px;
     }
 
@@ -95,6 +95,19 @@
     }
 
     @media (max-width: 767px) {
+      mg-thumbnail > div {
+        display: none;
+      }
+
+      .item {
+        width: 100px;
+        height: 100px;
+      }
+
+      .side-bar {
+        min-width: 150px;
+      }
+
       .items-container {
         height: calc(100vh - 140px);
       }
@@ -107,6 +120,10 @@
         height: calc(100vh - 70px);
       }
 
+    }
+
+    mg-thumbnail iron-icon {
+      margin-left: 10px;
     }
 
   </style>
@@ -126,7 +143,11 @@
         src="[[item._src]]"
         class="item"
         on-click="_onThumbnailClick"
-      ></mg-thumbnail>
+      >
+        <div slot="label">
+          <iron-icon icon="photo"></iron-icon>×[[_formatImagesCount(item.images)]]
+        </div>
+      </mg-thumbnail>
     </template>
     </iron-selector>
 
@@ -307,6 +328,10 @@
       return MGIconForRole(role);
     }
 
+    _formatImagesCount(images) {
+      return images ? Object.entries(images).length: 0;
+    }
+
     _userChanged(uid) {
       this.set('itemList',[]);
       if (this._UidChangedCallback) {
@@ -329,8 +354,9 @@
              */
             this.unshift('itemList',{
               key: snapshot.key,
-              role:val.role,
-              name:val.name,
+              role: val.role,
+              name: val.name,
+              images: val.images,
             }) - 1;
           }
 

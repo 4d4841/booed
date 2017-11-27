@@ -69,6 +69,16 @@
         z-index:1;
       }
 
+      ::slotted(*) {
+        --iron-icon-width: 15px;
+        text-align: center;
+        line-height: 25px;
+        height: 20px;
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
+        text-transform: none;
+      }
+
       .label {
         position: absolute;
         bottom: 0;
@@ -158,7 +168,7 @@
             <template is="dom-repeat" items="{{_formatIcons(icons)}}">
               <iron-icon class="icon" style$="[[_formatIconStyle(item)]]" icon="[[item]]"></iron-icon>
             </template>
-            <div id="labelSpan">[[label]]</div>
+            <div id="labelSpan">[[label]]</div><slot name="label"></slot>
           </div>
         </template>
         <slot></slot>
@@ -231,31 +241,6 @@
         return Object.keys(icons);
       }
 
-      /*
-      connectedCallback() {
-        super.connectedCallback();
-        Polymer.Gestures.addListener(this, 'track', this.handleTap.bind(this));
-      }
-      disconnectedCallback(){
-        super.disconnectedCallback();
-      }
-      */
-
-      handleTap(e) {
-        console.log(e);
-      }
-
-      /*
-      _onMOver(e) {
-        if (this.$.labelSpan.offsetWidth > this.offsetWidth) {
-          this.$.tooltip.show();
-        }
-      }
-
-      _onMOut(e) {
-        this.$.tooltip.hide();
-      }
-      */
     }
 
     customElements.define(MGThumbnail.is, MGThumbnail);
