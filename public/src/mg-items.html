@@ -243,15 +243,11 @@
       },
       selectedItemRole: {
         type: String,
-        observer: '_selectedItemRoleChanged'
+        observer: '_selectedItemRoleChanged',
       },
 
       items: Object,
     }}
-
-    _selectedItemRoleChanged(role) {
-      this.set('editor', this.$[role+'-editor']);
-    }
 
     static get observers() { return [
       '_itemsChanged(items.*)',
@@ -315,6 +311,10 @@
       window.addEventListener('close-contextual-menu', this._closeSubmenu.bind(this));
       this.menu.action = e => this._onSelectedItemType(e);
       this.newItemMenu.action = e => this._onNewItem(e);
+    }
+
+    _selectedItemRoleChanged(role) {
+      this.set('editor', this.$[role+'-editor']);
     }
 
     _visibleChanged(visible) {
@@ -426,21 +426,11 @@
 
     _onNewItem(e) {
       this._closeSubmenu(e);
-      if (e.model.item.name == 'gallery') {
-        let key = MHA.DB.ref('items').push().key;
-        this.setProperties({
-          selectedItemKey: key,
-          selectedItemRole: e.model.item.name,
-        });
-        this.editor.set('itemKey',this.selectedItemKey);
-      } else if (e.model.item.name == 'product') {
-        let key = MHA.DB.ref('items').push().key;
-        this.setProperties({
-          selectedItemKey: key,
-          selectedItemRole: e.model.item.name,
-        });
-        this.editor.set('itemKey',this.selectedItemKey);
-      }
+
+      this.setProperties({
+        selectedItemKey: this.$[e.model.item.name+'-editor'].newItem(),
+        selectedItemRole: e.model.item.name,
+      });
     }
 
     _uidSelectedItemKeyChanged(uid, selectedItemKey) {

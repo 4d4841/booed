@@ -23,7 +23,7 @@ var MGClipboard;
   let MGClipboardInstances = [];
   let MGClipboardNotifying = false;
 
-  class MGClipboardImpl extends Polymer.Element {
+  MGClipboard = class MGClipboardImpl extends Polymer.Element {
     static get is() { return 'mg-clipboard'; }
 
     static get properties() { return {
@@ -50,13 +50,16 @@ var MGClipboard;
       }
     }
 
-    constructor() {
-      super();
+    connectedCallback() {
+      super.connectedCallback();
       MGClipboardInstances.push(this);
     }
-  }
 
-  MGClipboard = MGClipboardImpl;
+    disconnectedCallback() {
+      MGClipboardInstances.splice(MGClipboardInstances.indexOf(this),1);
+      super.disconnectedCallback();
+    }
+  }
 
   customElements.define(MGClipboard.is, MGClipboard);
 })();

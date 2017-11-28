@@ -17,166 +17,165 @@
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 
 <dom-module id="mg-item-editor">
-  <template strip-whitespace>
+<template strip-whitespace>
 
-      <custom-style>
-    <style>
+    <custom-style>
+  <style>
 
-    :host {
-      display: block;
-      background-size: 60%;
-      background-position: center;
-      @apply --layout-vertical;
-      @apply --layout-flex;
-      border-radius: 5px;
+  :host {
+    display: block;
+    background-size: 60%;
+    background-position: center;
+    @apply --layout-vertical;
+    @apply --layout-flex;
+    border-radius: 5px;
+  }
+
+  :host([nokey]){
+    display: none;
+  }
+
+  #name-editor {
+    margin-left: 8px;
+    margin-right: 20px;
+  }
+
+  @media (max-width: 767px) {
+  }
+
+  </style>
+    </custom-style>
+  <paper-input
+    id="name-editor"
+    label="[[_formatLabelDescription(itemRole)]]"
+    focused="{{focusedName}}"
+    always-float-label="[[focusedName]]"
+    value="{{itemName}}"
+  >
+    <iron-icon icon="[[iconForRole(itemRole)]]" slot="prefix"></iron-icon>
+  </paper-input>
+
+</template>
+<script>
+class MGItemEditor extends Polymer.Element {
+  static get is() { return 'mg-item-editor'; }
+
+  static get properties() { return {
+    nokey: {
+      type: Boolean,
+      notify: true,
+      reflectToAttribute: true,
+    },
+
+    itemKey: {
+      type: String,
+      notify: true,
+      value: null,
+      observer: '_itemKeyChanged',
+    },
+
+    itemRole: {
+      type: String,
+    },
+
+    itemName: {
+      type: String,
+      notify: true,
+    },
+
+    clipboardList: {
+      type: Array,
+      notify: true,
+    },
+
+    editing: {
+      type: Boolean,
+      notify: true,
+    },
+
+    defaultName: {
+      type: String,
+      value: 'ไอเท็มใหม่',
+      readOnly: true,
+    },
+
+    me: Object,
+  }}
+
+  static get observers() { return [
+    '_itemNameChanged(me.user, itemRole, itemName)',
+  ]}
+
+  updateChanges(path,value) {
+    console.error("Subclass must override this.");
+  }
+
+  /*
+  onItemSnapshot(snapshot) {
+    console.error("Subclass must override this.");
+  }
+  */
+
+  _pastedDataChanged(paste) {
+    console.error("Subclass must override this.");
+  }
+
+  /*
+  onDataError(error) {
+    console.error("ERR", error);
+    this._ItemReference.off('value', this.onItemSnapshot, this);
+    delete this._ItemReference;
+  }
+  */
+
+  _itemKeyChanged(itemKey) {
+    this.set('nokey',itemKey ? false : true);
+
+    this._ItemName = this.defaultName;
+    this.set('itemName',this._ItemName);
+  }
+
+  _itemNameChanged(user, itemRole, itemName) {
+    if (!user || !itemRole || (itemName == this._ItemName)) {
+      return;
     }
 
-    :host([nokey]){
-      display: none;
-    }
+    if (itemName || itemName === "") {
 
-    #name-editor {
-      margin-left: 8px;
-      margin-right: 20px;
-    }
+      delete this._ItemName;
+      var registerData = {
+        ['items/'+this.itemKey+'/uid']: user.uid,
+        ['items/'+this.itemKey+'/name']: itemName,
+        ['items/'+this.itemKey+'/role']: this.itemRole,
+        ['home/'+user.uid+'/items/'+this.itemKey+'/name']: itemName,
+        ['home/'+user.uid+'/items/'+this.itemKey+'/role']: itemRole,
+        ['home/'+user.uid+'/items/'+this.itemKey+'/time']: firebase.database.ServerValue.TIMESTAMP,
+      };
 
-    @media (max-width: 767px) {
-    }
-
-    </style>
-      </custom-style>
-    <paper-input
-      id="name-editor"
-      label="[[_formatLabelDescription(itemRole)]]"
-      focused="{{focusedName}}"
-      always-float-label="[[focusedName]]"
-      value="{{itemName}}"
-    >
-      <iron-icon icon="[[iconForRole(itemRole)]]" slot="prefix"></iron-icon>
-    </paper-input>
-
-  </template>
-  <script>
-    class MGItemEditor extends Polymer.Element {
-      static get is() { return 'mg-item-editor'; }
-
-      static get properties() { return {
-        nokey: {
-          type: Boolean,
-          notify: true,
-          reflectToAttribute: true,
-        },
-
-        itemKey: {
-          type: String,
-          notify: true,
-          value: null,
-          observer: '_itemKeyChanged',
-        },
-
-        itemRole: {
-          type: String,
-        },
-
-        itemName: {
-          type: String,
-          notify: true,
-        },
-
-        clipboardList: {
-          type: Array,
-          notify: true,
-        },
-
-        editing: {
-          type: Boolean,
-          notify: true,
-        },
-
-        defaultName: {
-          type: String,
-          value: 'ไอเท็มใหม่',
-          readOnly: true,
-        },
-
-        me: Object,
-      }}
-
-      static get observers() { return [
-        '_itemNameChanged(me.user, itemRole, itemName)',
-      ]}
-
-      updateChanges(path,value) {
-        console.error("Subclass must override this.");
-      }
-
-      /*
-      onItemSnapshot(snapshot) {
-        console.error("Subclass must override this.");
-      }
-      */
-
-      _pastedDataChanged(paste) {
-        console.error("Subclass must override this.");
-      }
-
-      /*
-      onDataError(error) {
-        console.error("ERR", error);
-        this._ItemReference.off('value', this.onItemSnapshot, this);
-        delete this._ItemReference;
-      }
-      */
-
-      _itemKeyChanged(itemKey) {
-        this.set('nokey',itemKey ? false : true);
-
-        this._ItemName = this.defaultName;
-        this.set('itemName',this._ItemName);
-      }
-
-      _itemNameChanged(user, itemRole, itemName) {
-        if (!user || !itemRole || (itemName == this._ItemName)) {
-          return;
+      MHA.DB.ref().update(registerData, function(error){
+        if (error) {
+          console.error("ERR",error);
         }
-
-        if (itemName || itemName === "") {
-
-          delete this._ItemName;
-          var registerData = {
-            ['items/'+this.itemKey+'/uid']: user.uid,
-            ['items/'+this.itemKey+'/name']: itemName,
-            ['items/'+this.itemKey+'/role']: this.itemRole,
-            ['home/'+user.uid+'/items/'+this.itemKey+'/name']: itemName,
-            ['home/'+user.uid+'/items/'+this.itemKey+'/role']: itemRole,
-            ['home/'+user.uid+'/items/'+this.itemKey+'/time']: firebase.database.ServerValue.TIMESTAMP,
-          };
-
-          MHA.DB.ref().update(registerData, function(error){
-            if (error) {
-              console.error("ERR",error);
-            }
-          });
-        }
-      }
-
-      _formatLabelDescription(role) {
-        return role.charAt(0).toUpperCase() + role.slice(1)+' Name';
-      }
-
-      iconForRole(role) {
-        return MGIconForRole(role);
-      }
-
-      newItem(role,name) {
-        let key = MHA.DB.ref('items').push().key;
-        this.set('itemRole', role);
-        this.set('itemKey', key);
-         /* Only update UI name without server registration */
-        this.set('itemName', this._ItemName = name || "แกลเลอรี่ไม่มีชื่อ");
-      }
+      });
     }
+  }
 
-    customElements.define(MGItemEditor.is, MGItemEditor);
-  </script>
+  _formatLabelDescription(role) {
+    return role.charAt(0).toUpperCase() + role.slice(1)+' Name';
+  }
+
+  iconForRole(role) {
+    return MGIconForRole(role);
+  }
+
+  newItem(name) {
+    name = name || this.defaultName;
+    this.set('itemKey', MHA.DB.ref('items').push().key);
+    this.set('itemName', this._ItemName = name);
+    return this.itemKey;
+  }
+}
+
+customElements.define(MGItemEditor.is, MGItemEditor);
+</script>
 </dom-module>
