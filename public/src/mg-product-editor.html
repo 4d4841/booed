@@ -15,6 +15,7 @@
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="mg-clipboard.html">
 <link rel="import" href="mg-item-editor.html">
 <link rel="import" href="mg-common-styles.html">
 <link rel="import" href="mg-input.html">
@@ -30,32 +31,35 @@
     #product-editor {
     }
 
-    #new-item {
-      margin-left: 25px;
-      width: 150px;
-      padding:0;
-      height:40px;
-      box-shadow: 1px 1px 2px var(--app-shadow-color);
-      --paper-button: {
-        font-family: 'Mitr', sans-serif;
-        font-size: 16px;
-        background-color: tomato;
-        color: white;
-      }
-    }
-
   </style>
     </custom-style>
 
+  <mg-clipboard clipboard-list="{{clipboardList}}"></mg-clipboard>
+
   <div id="product-editor" class="vertical layout" hidden$="[[!itemKey]]">
-    <paper-button id="new-item" on-tap="_openNewItemMenu">
-      <iron-icon icon="add-photo"></iron-icon> สร้างแกลเลอรี่
-    </paper-button>
+
+    <div id="control-panel" class="horizontal layout wrap end" >
+
+        <div style="display:inline-block">
+      <paper-icon-button icon="add-gallery" on-tap="_onAddGalleryTap"></paper-icon-button>
+      <paper-tooltip>เพิ่มแกลเลอรี่</paper-tooltip>
+        </div>
+
+        <div style="display:inline-block">
+      <paper-icon-button disabled="[[!clipboardList.length]]" icon="content-paste" on-click="_onPasteButtonTap"></paper-icon-button>
+      <paper-tooltip>แปะ</paper-tooltip>
+        </div>
+
+    </div>
+
+
   </div>
+  [[galleryItemKey]]
   <mg-gallery-editor
     id="gallery-editor"
     class="flex"
     me="[[me]]"
+    item-key="{{galleryItemKey}}"
     clipboard-list="{{clipboardList}}"
   ></mg-gallery-editor>
 
@@ -94,6 +98,14 @@
 
     static get observers() { return [
     ]}
+
+    _onAddGalleryTap(e) {
+      this.$['gallery-editor'].newItem('แกลเลอรี่ของ'+this.itemName);
+    }
+
+    _onPasteButtonTap(e) {
+
+    }
 
   }
 
