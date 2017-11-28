@@ -56,6 +56,7 @@ function MGDeepSet(polymerElement, path, object) {
 /* MHA stands for Moon HyunA */
 var MHA;
 
+(function() {
 class MGData extends Polymer.Element {
 
   static get is() { return 'mg-data'; }
@@ -265,6 +266,7 @@ class MGData extends Polymer.Element {
 }
 
 customElements.define(MGData.is, MGData);
+})();
 
 </script>
 </dom-module>
