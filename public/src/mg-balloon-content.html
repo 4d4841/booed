@@ -24,17 +24,12 @@
     <style include="mg-common-styles iron-flex iron-flex-alignment">
       :host {
         display: block;
-        padding: 0 10px 0 10px;
       }
 
       #balloon {
         display: block;
         border-radius: 5px;
         overflow: hidden;
-        box-sizing: border-box;
-        width: fit-content;
-        height: fit-content;
-        padding: 5px 0;
         transition: all 1s;
         min-width: 150px;
         @apply --layout-vertical;
@@ -56,7 +51,6 @@
       static get properties() { return {
         positionTarget: Object,
       }}
-
     }
     customElements.define(MGBalloonContent.is, MGBalloonContent);
   </script>

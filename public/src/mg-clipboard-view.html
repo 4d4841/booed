@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<!--
+ .................................................................................................
+:::BSDB'::BSDB'::BSDB':::::BSDB':::BSDBS'::BSDBS'::BSDB'::::BSD'::BSDBS'::BSDBS'::BSDB'::::::BSD'::
+::BSDBSD BSDBSD :.BSDBS':BSDBS .:BSD ..BSD  ...BSD 'BSDBS':BSD .BSD ..BSD  ...BSD :BSDBS'::BSDB .::
+::COPYRIGHT2017 ::.BS BSDB .BS :BSD .::.BSD :::.BSD :BS .BSDB .BSD .:::BSD ::::BSD :BS BSDB BS .:::
+:::BSDSTYLEBSD .:::BS  BS .:BS :BSD ::::BSD ::::BSD :BS ::BSD :BSD :::::...::::BSD :BS :BS  BS ::::
+::::.LICENSE .::::BSD .:..::BS 'BSD ::::BSD ::::BSD :BS :::BS :BSD ::BSDBS'::::BSD :BS ::..:BS ':::
+:::::::BSD .::::BSDB .::::::BSD 'BSD'::BSD .:::BSD .BSD :::BSD':BSD'::.BSD :::BSD .BSD :::::BSDB'::
+::::::::B .::::::BS .:::::::.BSD ::BSDBS .:BSDBS  :BSD .::::BSD :.BSDBS BS BSDB .:BSD .:::::.BS .::
+`::::::::.::::::::..::::::::::...:::.....:::.....:::...::::::...:::.............:::...::::::::..::'
+-->
+
+<link rel="import" href="mg-clipboard.html">
+
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="mg-common-styles.html">
+<link rel="import" href="mg-item-image.html">
+<link rel="import" href="mg-image-editor.html">
+
+<dom-module id="mg-clipboard-view">
+<template strip-whitespace>
+    <custom-style>
+  <style is="custom-style" include="mg-common-styles iron-flex iron-flex-alignment">
+
+    .copied-collapse {
+      background-color: white;
+      border-radius: 5px;
+    }
+
+    .copied-container {
+      @apply --layout-horizontal;
+      @apply --layout-wrap;
+      box-shadow: inset 1px 1px 1px var(--app-shadow-color);
+      border-radius: 5px;
+      padding: 5px;
+      margin: 5px;
+      background-color: rgba(0,0,0,0.02);
+    }
+
+    .copied-icon {
+      margin: 0 5px 5px 0;
+      width: 80px;
+      height: 80px;
+    }
+
+    .copied-icon:hover .image-edit-button-icon {
+      opacity: 1;
+    }
+
+    .image-edit-button-icon {
+      opacity: 0.6;
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 25px;
+      height: 25px;
+      @apply --layout-self-end;
+      z-index: 3;
+      color: black;
+      background-color: white;
+      box-shadow: inset 1px -1px 1px var(--app-shadow-color);
+      border-radius: 0 0 0 25%;
+      padding: 3px;
+      --iron-icon-width: 20px;
+      --iron-icon-height: 20px;
+      transition: opacity 1s;
+    }
+
+  </style>
+    </custom-style>
+
+  <iron-collapse class="copied-collapse vertical layout" opened="[[clipboardList.length]]">
+    <div class="copied-container">
+
+        <template is="dom-repeat" items="{{clipboardList}}">
+      <mg-item-image
+        key="[[item.key]]"
+        icon="[[_formatRoleIcon(item.role)]]"
+        class="copied-icon"
+        thumbnail="[[item.thumbnail]]"
+        rep="[[item.rep]]"
+        roi="[[item.roiThumbnail]]"
+        name="[[item.name]]"
+        deleted="[[item.deleted]]"
+        on-tap="_onItemTap"
+      > <paper-icon-button icon="mode-edit" class="image-edit-button-icon" on-tap="_onEditImage">
+        </paper-icon-button>
+      </mg-item-image>
+        </template>
+
+    </div>
+  </iron-collapse>
+
+  <mg-image-editor
+    id="image-editor"
+    data="{{editingData}}"
+  ></mg-image-editor>
+
+</template>
+<script>
+class MGClipboardView extends MGClipboard {
+  static get is() { return 'mg-clipboard-view'; }
+
+  static get properties() { return {
+    editingData: Object,
+  }}
+
+  static get observers() { return [
+  ]}
+
+  _formatRoleIcon(role){
+    return MGIconForRole(role);
+  }
+
+  _onItemTap(e) {
+    //Toggles deleted true and it won't be pasted.
+    let idx = this.clipboardList.indexOf(e.model.item);
+    this.set(['clipboardList',idx,'deleted'], this.clipboardList[idx].deleted ? false : true);
+  }
+
+  _onEditImage(e) {
+    let data = e.model.item;
+    this.set('editingData',data);
+    e.stopImmediatePropagation();
+  }
+
+
+}
+
+customElements.define(MGClipboardView.is, MGClipboardView);
+</script>
+</dom-module>
