@@ -56,7 +56,7 @@
 <mg-thumbnail
   src="[[src]]"
   roi="[[roi]]"
-  icon="photo"
+  icon="[[icon]]"
   label="[[name]]"
   deleted$="[[deleted]]"
   placeholder='images/logo-pumpkin-outline-grayout.svg'
@@ -93,6 +93,7 @@ class MGItemImage extends Polymer.Element {
     name: String,
     key: String,
     src: String,
+    icon: String,
     rep: String,
     roi: Array,
     deleted: Boolean,

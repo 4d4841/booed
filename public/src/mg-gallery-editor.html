@@ -135,6 +135,7 @@
         key="[[item.key]]"
         class="image-icon"
         thumbnail="[[item.thumbnail]]"
+        icon='photo'
         rep="[[item.rep]]"
         progress="[[item._progress]]"
         name="[[item.name]]"
@@ -188,6 +189,36 @@
 
         files: Object,
 
+        /* iconList collects item data to be displayed, copied and pasted.
+           Each array-item may contains..
+
+          [key] : Data ID.
+
+          <role> : The role of this entry, can only be 'photo' in iconList but
+            could be any kind of data in clipboard, eg. gallery, product, etc.
+
+          [item] : The key of owner of this data.
+
+          [name] : Display name of the data.
+
+          <thumbnail> : The thumbnail image representing data, a thumbnail of a
+            photo or a cover image of a gallery.
+
+          [rep] : Optionally representing source of the thumbnail.
+          [roi] : Defiing the region of interest of rep.
+          [roiThumbnail] : Defining the part of rep that will be used as thumbnail.
+            This property only exist locally so it isn't neccessary to generate
+            the actual thumbnail data before the needs of syncing over the server.
+
+          [order] : In gallery, this will be used to sort photos. It doesn't get
+            copied along with other properties.
+
+          [deleted] : A deleted state of the data. By design user data will never
+            be deleted. Just turn into an obsolete state.
+
+          TODO
+          - Type this object somewhere.
+        */
         iconList: {
           type: Array,
           value: [],
@@ -453,6 +484,7 @@
 
                       this.push('iconList',{
                         item: itemKey,
+                        role: 'photo',
                         key: imageKey,
                         thumbnail: key,
                         name: imageName,
@@ -527,44 +559,17 @@
         this._uploadReps(uid,itemKey,files);
       }
 
-      /* Set image thumbnails from global notification */
-      updateChanges(path,value) {
-        let itemKey = path[1];
-        let itemProperty = path[2];
-
-        switch(itemProperty) {
-          case 'name': {
-            this.set('itemName', this._ItemName = value);
-          } break;
-          case 'images': {
-            let imageKey = path[3];
-
-            switch(path.length) {
-              case 4: {
-                this._indexImage(imageKey,null,cb => {
-                  this.push('iconList', {item:itemKey, key:imageKey});
-                });
-              } break;
-              case 5: {
-                let imageProperty = path[4];
-                this._indexImage(imageKey,idx => {
-                  this.set(['iconList',idx,imageProperty], value);
-                });
-              } break;
-              default:
-                break;
-            }
-
-          } break;
-        }
-      }
-
       _getDataError(error) {
         console.error("ERR", error);
         this._ItemReference.off('value', this._onItemSnapshot, this);
         delete this._ItemReference;
       }
 
+      /* TODO
+       * - Unify data updating function, this and updateChanges.
+       *   Could start by turning mg-data into a wrapper arond
+       *   a global class data.
+       */
       _itemKeyChanged(itemKey) {
 
         delete this._LastTapIndex;
@@ -584,6 +589,9 @@
           switch(prop) {
             case '_uid':
               break;
+            case 'cover':
+              this.set('itemCover',item.cover);
+              break;
             case 'name':
               this.set('itemName', this._ItemName = item.name);
               break;
@@ -596,6 +604,7 @@
                 let image = allImages[imageKey];
                 let icon = {
                   item: itemKey,
+                  role: 'photo',
                   key: imageKey,
                   thumbnail: image.thumbnail,
                   rep: image.rep,
@@ -611,6 +620,42 @@
           }
         }
       }
+
+      /* Set image thumbnails from global notification */
+      updateChanges(path,value) {
+        let itemKey = path[1];
+        let itemProperty = path[2];
+
+        switch(itemProperty) {
+          case 'cover': {
+            this.set('itemCover',value);
+          } break;
+          case 'name': {
+            this.set('itemName', this._ItemName = value);
+          } break;
+          case 'images': {
+            let imageKey = path[3];
+
+            switch(path.length) {
+              case 4: {
+                this._indexImage(imageKey,null,cb => {
+                  this.push('iconList', {item:itemKey, key:imageKey, role:'photo'});
+                });
+              } break;
+              case 5: {
+                let imageProperty = path[4];
+                this._indexImage(imageKey,idx => {
+                  this.set(['iconList',idx,imageProperty], value);
+                });
+              } break;
+              default:
+                break;
+            }
+
+          } break;
+        }
+      }
+
 
       _formatSize(bytes) {
         const base = 1024;
@@ -719,6 +764,15 @@
         if (this.selectedImages.length == 0) {
           /* Copy as gallery  */
 
+          let copy = {
+            item: this.itemKey,
+            role: this.itemRole,
+            name: this.itemName,
+            thumbnail: MHA.items[this.itemKey].images[this.itemCover].thumbnail,
+          }
+
+          this.push('clipboardList',copy);
+
           return;
         }
 
@@ -726,7 +780,7 @@
         this.selectedImages.forEach(imageKey => {
           this._indexImage(imageKey, idx => {
             let copy = {
-              role: 'image',
+              role: 'photo',
               name: this.iconList[idx].name,
               thumbnail: this.iconList[idx].thumbnail,
               rep: this.iconList[idx].rep,
@@ -766,7 +820,9 @@
         let waitThumbnails = 0; /* waiting counter for all completions */
 
         paste.forEach((data,index) => {
-          if (data.deleted || data.role != 'image') return;
+          if (data.deleted || data.role != 'photo') return;
+          /* XXX Will pull data off item.gallery */
+
 
           let imageKey = ref.push().key;
           coverKey = coverKey || imageKey;

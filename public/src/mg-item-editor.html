@@ -52,7 +52,7 @@
       always-float-label="[[focusedName]]"
       value="{{itemName}}"
     >
-      <iron-icon icon="[[_iconForRole(itemRole)]]" slot="prefix"></iron-icon>
+      <iron-icon icon="[[iconForRole(itemRole)]]" slot="prefix"></iron-icon>
     </paper-input>
 
   </template>
@@ -130,7 +130,6 @@
 
       _itemKeyChanged(itemKey) {
         this.set('nokey',itemKey ? false : true);
-        console.log('pr',itemKey,this.itemRole,this.nokey);
 
         this._ItemName = this.defaultName;
         this.set('itemName',this._ItemName);
@@ -165,16 +164,8 @@
         return role.charAt(0).toUpperCase() + role.slice(1)+' Name';
       }
 
-      _iconForRole(role) {
-        switch(role) {
-          case "product": return "local-mall";
-          case "article": return "local-library";
-          case "collection": return "group-work";
-          case "gallery": return "photo-library";
-          case "photo": return "photo";
-          case "sales": return "sales-baht";
-          default: return role;
-        }
+      iconForRole(role) {
+        return MGIconForRole(role);
       }
 
       newItem(role,name) {
