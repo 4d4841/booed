@@ -130,19 +130,18 @@ class MGItemEditor extends Polymer.Element {
 
   _itemKeyChanged(itemKey) {
     this.set('nokey',itemKey ? false : true);
-
-    this._ItemName = this.defaultName;
-    this.set('itemName',this._ItemName);
+    this.set('itemName',this.defaultName);
   }
 
   _itemNameChanged(user, itemRole, itemName) {
-    if (!user || !itemRole || (itemName == this._ItemName)) {
+    if (!user || !itemRole || (!this.focusedName)) {
+      console.log('no update');
       return;
     }
+    console.log('update');
 
     if (itemName || itemName === "") {
 
-      delete this._ItemName;
       var registerData = {
         ['items/'+this.itemKey+'/uid']: user.uid,
         ['items/'+this.itemKey+'/name']: itemName,
@@ -169,9 +168,8 @@ class MGItemEditor extends Polymer.Element {
   }
 
   newItem(name) {
-    name = name || this.defaultName;
     this.set('itemKey', MHA.DB.ref('items').push().key);
-    this.set('itemName', this._ItemName = name);
+    this.set('itemName', name || this.defaultName);
     return this.itemKey;
   }
 }
