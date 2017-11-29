@@ -135,10 +135,8 @@ class MGItemEditor extends Polymer.Element {
 
   _itemNameChanged(user, itemRole, itemName) {
     if (!user || !itemRole || (!this.focusedName)) {
-      console.log('no update');
       return;
     }
-    console.log('update');
 
     if (itemName || itemName === "") {
 

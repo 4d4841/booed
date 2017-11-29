@@ -19,17 +19,18 @@
 <script>
 var MGClipboard;
 (function() {
-  let MGClipboardData = [];
-  let MGClipboardInstances = [];
-  let MGClipboardNotifying = false;
+  let __MGClipboardData = [];
 
-  MGClipboard = class MGClipboardImpl extends Polymer.Element {
+  let __MGClipboardInstances = [];
+  let __MGClipboardNotifying = false;
+
+  MGClipboard = class __MGClipboard extends Polymer.Element {
     static get is() { return 'mg-clipboard'; }
 
     static get properties() { return {
       clipboardList: {
         type: Array,
-        value: MGClipboardData,
+        value: __MGClipboardData,
         notify: true,
       },
     }}
@@ -39,24 +40,24 @@ var MGClipboard;
     ]}
 
     _clipboardChanged(splices) {
-      if (!MGClipboardNotifying && splices) {
-        MGClipboardNotifying = true;
-        MGClipboardInstances.forEach(instance => {
+      if (!__MGClipboardNotifying && splices) {
+        __MGClipboardNotifying = true;
+        __MGClipboardInstances.forEach(instance => {
           if (instance != this) {
             instance.notifySplices('clipboardList', splices);
           }
         });
-        MGClipboardNotifying = false;
+        __MGClipboardNotifying = false;
       }
     }
 
     connectedCallback() {
       super.connectedCallback();
-      MGClipboardInstances.push(this);
+      __MGClipboardInstances.push(this);
     }
 
     disconnectedCallback() {
-      MGClipboardInstances.splice(MGClipboardInstances.indexOf(this),1);
+      __MGClipboardInstances.splice(__MGClipboardInstances.indexOf(this),1);
       super.disconnectedCallback();
     }
   }
