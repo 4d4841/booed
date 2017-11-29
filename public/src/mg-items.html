@@ -55,7 +55,7 @@
 
     .side-bar {
       @apply --layout-vertical;
-      min-width: 300px;
+      min-width: 250px;
       height: calc(100vh - 100px);
       border-right:1px dashed tomato;
     }
@@ -69,7 +69,7 @@
     }
 
     .item {
-      width: 250px;
+      width: 200px;
       height: 200px;
       margin-bottom: 5px;
     }
@@ -135,19 +135,16 @@
       <iron-icon icon="add"></iron-icon> สร้าง
     </paper-button>
 
-    <iron-selector class="items-container" attr-for-selected="key" selected="[[selectedItemKey]]">
+    <iron-selector class="items-container" attr-for-selected="key" selected="[[itemKey]]">
     <template is="dom-repeat" items="[[itemList]]" mutable-data>
       <mg-thumbnail
         key="[[item.key]]"
-        label="[[_formatLabel(item.name)]]"
+        label="[[_formatLabel(item.images,item.name)]]"
         icon="[[_formatRoleIcon(item.role)]]"
         src="[[item._src]]"
         class="item"
         on-click="_onThumbnailClick"
       >
-        <div slot="label">
-          <iron-icon icon="photo"></iron-icon>×[[_formatImagesCount(item.images)]]
-        </div>
       </mg-thumbnail>
     </template>
     </iron-selector>
@@ -179,7 +176,7 @@
 
   <app-route
       route="{{route}}"
-      pattern="/:selectedItemKey"
+      pattern="/:itemKey"
       data="{{routeData}}"
       tail="{{subroute}}">
   </app-route>
@@ -191,11 +188,25 @@
     static get properties() { return {
       me: Object,
 
-      selectedItem: Number,
+      items: Object,
+
       itemList: {
         type: Array,
         value: [],
       },
+
+      itemKey: {
+        type: String,
+      },
+      itemRole: {
+        type: String,
+      },
+
+      editor: {
+        type: Object,
+        computed: '_computeSelectEditor(itemRole)'
+      },
+
       menu: {
         type: Object,
         value: { entries: [
@@ -228,32 +239,17 @@
       },
       routeData: {
         type: Object,
-        notify: true,
-        observer: '_routeDataChanged',
       },
       subroute: Object,
 
-      editor: {
-        type: Object,
-        observer: '_editorChanged',
-      },
-
-      selectedItemKey: {
-        type: String,
-      },
-      selectedItemRole: {
-        type: String,
-        observer: '_selectedItemRoleChanged',
-      },
-
-      items: Object,
     }}
 
     static get observers() { return [
       '_itemsChanged(items.*)',
-      '_uidSelectedItemKeyChanged(me.user.uid, selectedItemKey)',
+      '_uidItemKeyChanged(me.user.uid, itemKey)',
       '_userChanged(me.user.uid)',
       '_visibleChanged(visible)',
+      '_routeDataItemKeyChanged(routeData.itemKey)',
     ]}
 
     _setCover(itemKey,imageKey) {
@@ -270,9 +266,9 @@
       }
     }
 
-    _formatLabel(str) {
-      if (str) return str;
-      return "(ไม่มีชื่อ)"
+    _formatLabel(images,str) {
+      str = str || "(ไม่มีชื่อ)";
+      return "×" + (images ? Object.entries(images).length: 0) +" "+ str;
     }
 
     _itemsChanged(change) {
@@ -313,28 +309,17 @@
       this.newItemMenu.action = e => this._onNewItem(e);
     }
 
-    _selectedItemRoleChanged(role) {
-      this.set('editor', this.$[role+'-editor']);
-    }
-
     _visibleChanged(visible) {
       if (visible) {
-        this.setProperties({
-          selectedItemKey: this.selectedItemKey || this._CurrentItemKey,
-          selectedItemRole: this.selectedItemRole,
-        });
+        this.set('itemKey', this.itemKey || this._CurrentItemKey);
       } else {
-        this._CurrentItemKey = this.selectedItemKey;
+        this._CurrentItemKey = this.itemKey;
         this.set('itemKey', null);
       }
     }
 
     _formatRoleIcon(role) {
       return MGIconForRole(role);
-    }
-
-    _formatImagesCount(images) {
-      return images ? Object.entries(images).length: 0;
     }
 
     _userChanged(uid) {
@@ -406,46 +391,42 @@
     }
 
     _onThumbnailClick(e) {
-      this.setProperties({
-        selectedItemKey: e.model.item.key,
-        selectedItemRole: e.model.item.role,
-      });
-      this.editor.set('itemKey',this.selectedItemKey);
+      this.set('itemKey',e.model.item.key);
     }
 
     _onSelectedItemType(e) {
-      console.log("Not yet implemented. Should display only", e.model.item.name);
+      console.log("Not yet implemented. Should display only ->", e.model.item.name);
     }
 
-    _editorChanged(newEditor, oldEditor) {
-      if (oldEditor) {
-        oldEditor.set('itemKey',null);
+    _computeSelectEditor(newRole) {
+      let newEditor = this.$[newRole+'-editor'];
+
+      if (this.editor && this.editor !== newEditor) {
+        this.editor.set('itemKey',null);
       }
-      newEditor.set('itemKey',this.selectedItemKey);
+
+      return newEditor;
     }
 
     _onNewItem(e) {
       this._closeSubmenu(e);
-
-      this.setProperties({
-        selectedItemKey: this.$[e.model.item.name+'-editor'].newItem(),
-        selectedItemRole: e.model.item.name,
-      });
+      this.set('itemRole',e.model.item.name);
+      this.set('itemKey',this.editor.newItem());
     }
 
-    _uidSelectedItemKeyChanged(uid, selectedItemKey) {
-      if (this._ItemReference) {
-        this._ItemReference.off('value', this._ItemCallback);
-        delete this._ItemCallback;
-        delete this._ItemReference;
+    _uidItemKeyChanged(uid, itemKey) {
+      if (this._Unsubscribe) {
+        this._Unsubscribe();
       }
 
-      if (!uid || !selectedItemKey) {
+      if (!uid || !itemKey) {
         return;
       }
 
-      this._ItemReference = MHA.DB.ref('home').child(uid).child('items').child(selectedItemKey);
-      this._ItemCallback = this._ItemReference.on('value', itemSS => {
+      let ref,callback;
+      this._Unsubscribe = () => {ref.off('value', callback); delete this._Unsubscribe};
+      ref = MHA.DB.ref('home').child(uid).child('items').child(itemKey);
+      callback = ref.on('value', itemSS => {
 
         let v = itemSS.val();
         if (v) {
@@ -454,7 +435,8 @@
             return;
           }
 
-          this.set('selectedItemRole',v.role);
+          this.set('itemRole',v.role);
+          this.editor.set('itemKey',itemKey);
 
           if (v.role != 'gallery') { this.set('galleryKey', null); }
           if (v.role != 'article') { this.set('articleKey', null); }
@@ -481,9 +463,9 @@
 
           MHA.assignItem(itemSS.key,item);
 
-        } else if (!this.selectedItemRole) {
+        } else if (!this.itemRole) {
           /* editorRole isn't defined. This is not creating a new item. */
-          this.set('selectedItemKey', null);
+          this.set('itemKey', null);
           if (this.route) {
             this.set('route.path', '');
           }
@@ -491,20 +473,18 @@
 
       }, error => {
         console.error("ERR", error);
-        this._ItemReference.off('value', this.onItemSnapshot, this);
-        delete this._ItemReference;
+        this._Unsubscribe();
       });
 
-
       if (this.route) {
-        this.set('route.path', selectedItemKey);
+        this.set('route.path', itemKey);
       }
     }
 
     _routeChanged(route) {
       if (route.prefix == '/user/items') {
         /* Checks if it was editing an item, set the URL back to the item */
-        let key = this.selectedItemKey || this._CurrentItemKey;
+        let key = this.itemKey || this._CurrentItemKey;
         if (key && !route.path) {
           delete this._CurrentItemKey; /* Delete or it will keep bouncing back trying */
           this.set('route.path', key);
@@ -512,10 +492,8 @@
       }
     }
 
-    _routeDataChanged(routeData) {
-      if (routeData.selectedItemKey) {
-        this.set('selectedItemKey', routeData.selectedItemKey);
-      }
+    _routeDataItemKeyChanged(key) {
+      this.set('itemKey', key);
     }
 
     disconnectedCallback() {

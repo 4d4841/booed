@@ -593,7 +593,7 @@
             this.set('itemCover',item.cover);
             break;
           case 'name':
-            this.set('itemName', this._ItemName = item.name);
+            this.set('itemName', item.name);
             break;
           case 'role':
             console.assert('gallery' == item.role, "XXX");
@@ -631,7 +631,7 @@
           this.set('itemCover',value);
         } break;
         case 'name': {
-          this.set('itemName', this._ItemName = value);
+          this.set('itemName', value);
         } break;
         case 'images': {
           let imageKey = path[3];
