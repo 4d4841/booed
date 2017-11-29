@@ -20,12 +20,14 @@
 
 <dom-module id="mg-list">
   <template strip-whitespace>
-    <style>
+      <custom-style>
+    <style include="mg-common-styles iron-flex iron-flex-alignment">
       :host {
         @apply --layout-vertical;
         @apply --layout-center;
       }
     </style>
+      </custom-style>
 <!--
     <app-route
         route="{{route}}"

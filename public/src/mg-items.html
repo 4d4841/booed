@@ -17,6 +17,7 @@
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="mg-common-styles.html">
 <link rel="import" href="mg-icons.html">
 <link rel="import" href="mg-balloon.html">
 <link rel="import" href="mg-menu.html">
@@ -28,7 +29,7 @@
 <dom-module id="mg-items">
 <template strip-whitespace>
     <custom-style>
-  <style>
+  <style is="custom-style" include="mg-common-styles iron-flex iron-flex-alignment">
     :host {
       @apply --layout-horizontal;
     }
@@ -57,7 +58,7 @@
       @apply --layout-vertical;
       min-width: 250px;
       height: calc(100vh - 100px);
-      border-right:1px dashed tomato;
+      /*border-right:1px dashed tomato;*/
     }
 
     .items-container {
@@ -65,12 +66,12 @@
       padding: 20px;
       height: calc(100vh - 215px);
       margin-top: 10px;
-      overflow-y: scroll;
+      overflow-y: auto;
     }
 
     .item {
       width: 200px;
-      height: 200px;
+      height: 150px;
       margin-bottom: 5px;
     }
 
@@ -158,7 +159,6 @@
 
   <div class="editor-container">
     <mg-clipboard-view
-      class="flex"
     ></mg-clipboard-view>
 
     <mg-product-editor
