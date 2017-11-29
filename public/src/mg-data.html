@@ -62,7 +62,7 @@ let __MGDataRepresentations = {};
 
 let __MGDataInstances = [];
 
-let __MGDataNotifierStates = {};
+let __MGDataNotifierStates = new Map();
 
 class MGData extends Polymer.Element {
 
@@ -83,7 +83,6 @@ class MGData extends Polymer.Element {
       value: __MGDataRepresentations,
       notify: true,
     },
-
   }}
 
   /* should try to use linkPaths */
@@ -104,18 +103,18 @@ class MGData extends Polymer.Element {
 
   /* Didn't test, it should work :-P */
   _dataChanged(change) {
-    let notifyState = __MGDataNotifierStates[change.path];
+    let notifyState = __MGDataNotifierStates.get(change.path);
     if (!notifyState
       /* No state exists. Takes the lead. */
-      || (notifyState.target != this && change.value != notifyState.value)) {
+      || (notifyState.target != this && change.value !== notifyState.value)) {
       /* Or got a reentrance with an update to an actively notified path. */
-      __MGDataNotifierStates[change.path] = {value: change.value, target: this};
+      __MGDataNotifierStates.set(change.path, {value: change.value, target: this});
       __MGDataInstances.forEach(data => {
         if (data != this) {
           data.notifyPath(change.path);
         }
       });
-      delete __MGDataNotifierStates[change.path];
+      __MGDataNotifierStates.delete(change.path);
     }
   }
 
