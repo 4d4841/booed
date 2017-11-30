@@ -55,6 +55,7 @@
     }
 
     .side-bar {
+      position:relative;
       @apply --layout-vertical;
       min-width: 250px;
       height: calc(100vh - 100px);
@@ -94,6 +95,16 @@
 
     a {
       text-decoration: none;
+    }
+
+    #top-smooth-edge {
+      width: calc(100% - 15px);
+      height: 10px;
+      position:absolute;
+      top: 48px;
+      z-index: 2;
+      background: linear-gradient(to bottom, white 2px, transparent 10px);
+      pointer-events: none;
     }
 
     @media (max-width: 767px) {
@@ -136,6 +147,7 @@
       <iron-icon icon="add"></iron-icon> สร้าง
     </paper-button>
 
+    <div id="top-smooth-edge"></div>
     <iron-selector class="items-container" attr-for-selected="key" selected="[[itemKey]]">
     <template is="dom-repeat" items="[[itemList]]" mutable-data>
       <mg-thumbnail
