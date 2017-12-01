@@ -27,15 +27,14 @@
     <custom-style>
   <style is="custom-style" include="mg-item-editor mg-common-styles iron-flex iron-flex-alignment">
 
-    :host([empty]) {
-      background-image: url(/images/logo-pumpkin-light.svg);
+    :host([empty]) #image-selector {
+      border: 2px dashed var(--disabled-text-color);
+      margin: 0 20px 50px 0;
     }
 
-    :host([dropenter]){
-      background-size: 60%,60%;
-      background-position: center,center;
-      background-image: url(/images/logo-pumpkin-ff6600.svg),url(/images/logo-pumpkin-light.svg);
-      background-repeat: no-repeat,repeat;
+    :host([dropenter]) #image-selector {
+      border: 2px dashed tomato;
+      margin: 0 20px 50px 0;
     }
 
     #image-selector {
@@ -70,7 +69,6 @@
       }
 
     }
-
   </style>
     </custom-style>
 
@@ -588,7 +586,7 @@
 
       super._itemKeyChanged(itemKey);
 
-      let item = MHA.get('items.'+itemKey);
+      let item = MHA.get(['items',itemKey]);
       for(let prop in item) {
         switch(prop) {
           case '_uid':
@@ -772,7 +770,7 @@
           item: this.itemKey,
           role: this.itemRole,
           name: this.itemName,
-          thumbnail: MHA.items[this.itemKey].images[this.itemCover].thumbnail,
+          thumbnail: MHA.get(['items',this.itemKey,'images',this.itemCover,'thumbnail']),
         }
 
         this.push('clipboardList',copy);
