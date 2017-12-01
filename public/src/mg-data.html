@@ -20,132 +20,14 @@
 <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-storage.js"></script>
 <script>
 
-/* MGDeepSet is used to set a deep property of a Polymer Object.
- * It only supports object in a path and scalar array.
- * It can not be used to set a particular array item.
- * To delete a deep property, set null as the counter-value
- * in the structure of the object argument.
- */
-function MGDeepSet(polymerElement, path, object) {
-  if (typeof object === 'object') {
-    if (object === null) {
-      polymerElement.set(path, null);
-      return;
-    }
-    if (Array.isArray(object)) {
-      let old = polymerElement.get(path);
-      if (!Array.isArray(old)
-        || old.length != object.length
-        || !old.every((v,i) => v === object[i])) {
-          /* Only set if not equal */
-          polymerElement.set(path, object);
-      }
-      return;
-    }
-    if (typeof polymerElement.get(path) !== 'object') {
-      polymerElement.set(path, {});
-    }
-    Object.keys(object).forEach(key => {
-      MGDeepSet(polymerElement, path+'.'+key, object[key]);
-    });
-  } else {
-    polymerElement.set(path, object);
-  }
-}
-
 /* MHA stands for Moon HyunA */
-var MHA;
+var MHA = {
+  items: {},
 
-(function() {
-let __MGDataItems = {};
-let __MGDataRepresentations = new Map();
+  representations: new Map(),
 
-let __MGDataInstances = [];
-
-let __MGDataNotifierStates = new Map();
-
-class MGData extends Polymer.Element {
-
-  static get is() { return 'mg-data'; }
-
-  static get properties() { return {
-    /* Items here is for caching known snapshot of items to distribute
-    change notifications but the listening will only be in mg-items and to
-    specific items currently on display */
-    items: {
-      type: Object,
-      value: __MGDataItems,
-      notify: true,
-    },
-
-    /*
-    representations: {
-      type: Object,
-      value: __MGDataRepresentations,
-      notify: true,
-    },
-    */
-  }}
-
-  /* should try to use linkPaths */
-  static get observers() { return [
-    '_dataChanged(items.*)',
-  ]}
-
-  connectedCallback() {
-    super.connectedCallback();
-    __MGDataInstances.push(this);
-  }
-
-  disconnectedCallback() {
-    __MGDataInstances.splice(__MGDataInstances.indexOf(this),1);
-    super.disconnectedCallback();
-  }
-
-  /* Didn't test, it should work :-P */
-  _dataChanged(change) {
-    let notifyState = __MGDataNotifierStates.get(change.path);
-    if (!notifyState
-      /* No state exists. Takes the lead. */
-      || (notifyState.target != this && change.value !== notifyState.value)) {
-      /* Or got a reentrance with an update to an actively notified path. */
-      __MGDataNotifierStates.set(change.path, {value: change.value, target: this});
-      __MGDataInstances.forEach(data => {
-        if (data != this) {
-          data.notifyPath(change.path);
-        }
-      });
-      __MGDataNotifierStates.delete(change.path);
-    }
-  }
-
-  constructor() {
-    super();
-    var config = {
-      apiKey: "AIzaSyDyJuzvmpg4jRPs9VE_Mpne8vdysEZGxbo",
-      authDomain: "be-booed.firebaseapp.com",
-      databaseURL: "https://be-booed.firebaseio.com",
-      projectId: "be-booed",
-      storageBucket: "be-booed.appspot.com",
-      messagingSenderId: "1079409265314"
-    };
-
-    if (!MHA) {
-      MHA = this;
-      let MGFIRE = firebase.initializeApp(config);
-      MHA.DB = MGFIRE.database();
-      MHA.ST = MGFIRE.storage();
-      MHA.AU = MGFIRE.auth();
-      console.log('Application got initialized with lo❤e for', {"Moon HyunA's":{cats:['Moya','Hoya','Spikey'],husband:'Steve',songs:['Cricket Song','Remedy','Doong Doong']}});
-    }
-  }
-
-  assignItem(itemKey, itemData) {
-    MGDeepSet(this,'items.'+itemKey, itemData);
-  }
-
-  /*XXX UID of other user */
-  registerRepresentation( keyOrBlob, srcCallback, contentType ) {
+  registerRepresentation: function( keyOrBlob, srcCallback, contentType ) {
+     /*XXX UID of other user */
     console.assert(keyOrBlob,"XXX");
 
     let key, blob = keyOrBlob instanceof Blob ? keyOrBlob : null;
@@ -156,10 +38,10 @@ class MGData extends Polymer.Element {
       key = keyOrBlob;
     }
 
-    let rep = __MGDataRepresentations.get(key);
+    let rep = this.representations.get(key);
     if (!rep) {
       rep = {contentType:contentType};
-      __MGDataRepresentations.set(key, rep)
+      this.representations.set(key, rep)
     }
 
     /* TODO
@@ -281,7 +163,6 @@ class MGData extends Polymer.Element {
 
         });
       } else /* src has been resolved */ {
-        console.log('cached src');
         if (srcCallback.src) srcCallback.src(key, rep.src);
       }
     }
@@ -298,6 +179,104 @@ class MGData extends Polymer.Element {
       }
     };
 
+  },
+
+  assignItem: function(itemKey, itemData) {
+    this.utils.deepSet(MHA.data,'items.'+itemKey, itemData);
+  },
+
+  get: (path) => MHA.data.get(path),
+
+  utils: {
+    /* deepSet is used to set a deep property of a Polymer Object.
+     * It only supports object in a path and scalar array.
+     * It can not be used to set a particular array item.
+     * To delete a deep property, set null as the counter-value
+     * in the structure of the object argument.
+     */
+    deepSet: function _(polymerElement, path, object) {
+      if (typeof object === 'object') {
+        if (object === null) {
+          polymerElement.set(path, null);
+          return;
+        }
+        if (Array.isArray(object)) {
+          let old = polymerElement.get(path);
+          if (!Array.isArray(old)
+          || old.length != object.length
+          || !old.every((v,i) => v === object[i])) {
+            /* Only set if not equal */
+            polymerElement.set(path, object);
+          }
+          return;
+        }
+        if (typeof polymerElement.get(path) !== 'object') {
+          polymerElement.set(path, {});
+        }
+        Object.keys(object).forEach(key => _(polymerElement, path+'.'+key, object[key]));
+      } else {
+        polymerElement.set(path, object);
+      }
+    },
+  },
+};
+
+(function() {
+let __MGDataInstances = [];
+let __MGDataNotifierStates = new Map();
+
+class MGData extends Polymer.Element {
+
+
+  static get is() { return 'mg-data'; }
+
+  static get properties() { return {
+    /* Items here is for caching known snapshot of items to distribute
+    change notifications but the listening will only be in mg-items and to
+    specific items currently on display */
+    items: {
+      type: Object,
+      value: MHA.items,
+      notify: true,
+    },
+
+  }}
+
+  /* should try to use linkPaths */
+  static get observers() { return [
+    '_dataChanged(items.*)',
+  ]}
+
+  constructor() {
+    super();
+    MHA.data = this;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    __MGDataInstances.push(this);
+  }
+
+  disconnectedCallback() {
+    __MGDataInstances.splice(__MGDataInstances.indexOf(this),1);
+    super.disconnectedCallback();
+  }
+
+  /* Didn't test, it should work :-P */
+  _dataChanged(change) {
+    let notifyState = __MGDataNotifierStates.get(change.path);
+    if (!notifyState
+      /* No state exists. Takes the lead. */
+      || (notifyState.target != this && change.value !== notifyState.value)) {
+      /* Or got a reentrance with an update to an actively notified path. */
+      __MGDataNotifierStates.set(change.path, {value: change.value, target: this});
+      __MGDataInstances.forEach(data => {
+        if (data != this) {
+          data.notifyPath(change.path);
+        }
+      });
+      __MGDataNotifierStates.delete(change.path);
+    }
   }
 
 }

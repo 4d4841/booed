@@ -35,7 +35,6 @@
 <link rel="import" href="mg-balloon.html">
 <link rel="import" href="mg-list.html">
 <link rel="import" href="mg-menu.html">
-<link rel="import" href="mg-data.html">
 <link rel="import" href="mg-user.html">
 <link rel="import" href="mg-about.html">
 <link rel="import" href="mg-404-warning.html">
@@ -48,993 +47,982 @@
 -->
 
 <dom-module id="mg-app">
-  <template>
-      <custom-style>
-    <style include="mg-common-styles iron-flex iron-flex-alignment">
-      :host {
-        display: block;
-        position: relative;
-        transition: padding-top 0.5s;
-        /*min-height: calc(100vh - 145px);*/
-        /* 5px wider than height to prevent layout resetting due to scrollbar on/off */
-        --app-primary-color: #213; /*sienna;*/
-        --app-secondary-color: #757575;
-        --app-accent-color: #172C50;
-        --app-shadow-color: rgba(57,27,56,0.3);
-        --disabled-text-color: var(--app-shadow-color);
+<template>
+    <custom-style>
+  <style include="mg-common-styles iron-flex iron-flex-alignment">
+    :host {
+      display: block;
+      position: relative;
+      transition: padding-top 0.5s;
+      /*min-height: calc(100vh - 145px);*/
+      /* 5px wider than height to prevent layout resetting due to scrollbar on/off */
+      --app-primary-color: #213; /*sienna;*/
+      --app-secondary-color: #757575;
+      --app-accent-color: #172C50;
+      --app-shadow-color: rgba(57,27,56,0.3);
+      --disabled-text-color: var(--app-shadow-color);
 
-        --booed-header-background: white;/*rgba(255,250,250,0.95);var(--app-accent-color);*/ /*#f4eed7;*/
-        --booed-contents-background: var(--booed-header-background);
-        --booed-menu-color: salmon;
-        --booed-outer-color: #f9f6f6;
+      --booed-header-background: white;/*rgba(255,250,250,0.95);var(--app-accent-color);*/ /*#f4eed7;*/
+      --booed-contents-background: var(--booed-header-background);
+      --booed-menu-color: salmon;
+      --booed-outer-color: #f9f6f6;
 /*        --booed-menu-focus-color: tomato;*/
-        --booed-menu-focus-color: var(--app-primary-color);
-        --booed-title-height: 35px;
-        --booed-menu-height: 30px;
-        --booed-header-height: 65px;
-        --booed-logo-margin: 4px;
-        --booed-logo-height: calc(var(--booed-title-height) - var(--booed-logo-margin) * 2);
+      --booed-menu-focus-color: var(--app-primary-color);
+      --booed-title-height: 35px;
+      --booed-menu-height: 30px;
+      --booed-header-height: 65px;
+      --booed-logo-margin: 4px;
+      --booed-logo-height: calc(var(--booed-title-height) - var(--booed-logo-margin) * 2);
 
-        --booed-menu-font: {
-          font-family: 'Mitr', sans-serif;
-          font-size: 16px;
-        };
-        --primary-text-color: black;
-        --paper-button-ink-color: var(--app-accent-color);
-        --paper-spinner-color: var(--app-accent-color);
-        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+      --booed-menu-font: {
+        font-family: 'Mitr', sans-serif;
+        font-size: 16px;
+      };
+      --primary-text-color: black;
+      --paper-button-ink-color: var(--app-accent-color);
+      --paper-spinner-color: var(--app-accent-color);
+      -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 /*        padding-top: calc(var(--booed-header-height) + var(--booed-title-height) + var(--booed-menu-height) + 50px);*/
-        color: var(--app-primary-color);
-        background-color: var(--booed-contents-background);
-        padding-top: 100px;
+      color: var(--app-primary-color);
+      background-color: var(--booed-contents-background);
+      padding-top: 100px;
+    }
+
+    app-header {
+      z-index: 2;
+      @apply --layout-fixed-top;
+      @apply --layout-horizontal;
+      background-color: var(--booed-header-background);
+      /*
+      background: linear-gradient(
+        var(--booed-header-background) var(--booed-header-height),
+        transparent var(--booed-header-height),
+        transparent calc(var(--booed-header-height) + var(--booed-title-height))),
+        url(/images/season.jpg);
+      */
+
+      height: var(--booed-header-height);
+    }
+
+    .tool-bar {
+      @apply --layout-vertical;
+    }
+
+    .title-bar {
+      @apply --layout-horizontal;
+      position: relative;
+      height: var(--booed-title-height);
+      /*overflow: hidden;*/
+      width: 100%;
+      padding:0;
+      z-index: 1;
+
+      background-color: var(--booed-outer-color);
+      box-shadow: inset -1px -1px 6px -3px var(--app-shadow-color);
+      border-radius: 0 0px 10px 0;
+
+    }
+
+    .menu-bar {
+      @apply --layout-horizontal;
+      position: relative;
+      height: var(--booed-menu-height);
+      /*overflow: hidden;*/
+      width: 100%;
+      padding:0;
+      /* border-top: 1px dashed var(--booed-menu-color) */
+    }
+
+    div.header-filler {
+      @apply --layout-flex;
+      min-width: 320px;
+      height: var(--booed-title-height);
+    }
+
+    .head-logo {
+      border-radius: 10px 10px 0 0;
+      @apply --layout-flex;
+      @apply --layout-horizontal;
+      min-width: 100px;
+      max-width: 180px;
+      /*min-width:  calc(var(--booed-logo-height) * 3.7);*/
+      height: var(--booed-title-height);
+      --paper-button-ink-color: white;
+
+      background-image: url(/images/logo-sat/logo-B-sat.svg), url(/images/logo-sat/logo-o-sat.svg), url(/images/logo-sat/logo-oo-sat.svg), url(/images/logo-sat/logo-e-sat.svg), url(/images/logo-sat/logo-d-sat.svg);
+      background-size:
+       auto var(--booed-logo-height),
+       auto var(--booed-logo-height),
+       auto var(--booed-logo-height),
+       auto var(--booed-logo-height),
+       auto var(--booed-logo-height);
+      background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+      background-position: 10px var(--booed-logo-margin), calc(20% + 18px) var(--booed-logo-margin), calc(40% + 18px) var(--booed-logo-margin), calc(60% + 18px) var(--booed-logo-margin), calc(80% + 18px) var(--booed-logo-margin);
+    }
+
+    .left-bar-item {
+      width: 40px;
+    }
+
+    .announcer {
+      position: fixed;
+      height: 0;
+      overflow: hidden;
+    }
+
+    :host(:not([page=detail])) .back-btn {
+      display: none;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    paper-tabs,
+    paper-tab {
+      @apply --layout-horizontal;
+      padding:0;
+      cursor: ew-resize;
+    }
+
+    paper-tabs {
+      --paper-tabs-selection-bar-color: #a7b7c1;
+      /*--paper-tabs-selection-bar-color: var(--booed-menu-color);*/
+      height: var(--booed-menu-height);
+      width:100%;
+      --paper-tabs-selection-bar: {
+        /*height:27px;*/
+        /*background-image: linear-gradient(to right, rgba(255,85,85,0), rgba(255,85,85,0.5), rgba(255,85,85,0.5), rgba(255,85,85,0));*/
+        /*background-image: linear-gradient(rgba(255,85,85,0.5) 4px,transparent 4px,  transparent 30px);*/
+      };
+      --paper-tabs: {
       }
+    }
 
-      app-header {
-        z-index: 2;
-        @apply --layout-fixed-top;
-        @apply --layout-horizontal;
-        background-color: var(--booed-header-background);
-        /*
-        background: linear-gradient(
-          var(--booed-header-background) var(--booed-header-height),
-          transparent var(--booed-header-height),
-          transparent calc(var(--booed-header-height) + var(--booed-title-height))),
-          url(/images/season.jpg);
-        */
+    paper-tab {
+      font-family: 'Mitr', sans-serif;
+      font-size: 16px;
+      color: var(--booed-menu-focus-color);
+      padding:0 8px;
+      height: var(--booed-menu-height);
+      /*border-radius: 20px 20px 0 0;*/
+      /*overflow: hidden;*/
+      --paper-tab-ink: var(--booed-menu-focus-color);
+      --paper-tab-content: {
+        transition: opacity 0.5s;
+        --iron-icon-fill-color: var(--booed-menu-focus-color);
+      };
+      --paper-tab-content-unselected: {
+        color: var(--booed-menu-color);
+        --iron-icon-fill-color: var(--booed-menu-color);
+      };
+    }
 
-        height: var(--booed-header-height);
+    paper-tab iron-icon.expand-more-icon {
+      --iron-icon-fill-color: gray;
+    }
+
+    paper-tab:hover iron-icon.expand-more-icon {
+      --iron-icon-fill-color: tomato;
+    }
+
+    .tab-icon {
+      margin-right:8px;
+      /*--iron-icon-fill-color: var(--app-accent-color);*/
+      --iron-icon-fill-color: tomato;
+    }
+
+    #drawer {
+      z-index:3;
+      --app-drawer-content-container: {
+        background: white;
       }
+    }
 
-      .tool-bar {
-        @apply --layout-vertical;
-      }
+    #drawer-contents {
+      @apply --layout-vertical;
+      overflow: hidden;
+    }
 
-      .title-bar {
-        @apply --layout-horizontal;
-        position: relative;
-        height: var(--booed-title-height);
-        /*overflow: hidden;*/
-        width: 100%;
-        padding:0;
-        z-index: 1;
+    #drawer-contents #profile-container {
+      @apply --layout-vertical;
+      background: tomato;
+      color: white;
+    }
 
-        background-color: var(--booed-outer-color);
-        box-shadow: inset -1px -1px 6px -3px var(--app-shadow-color);
-        border-radius: 0 0px 10px 0;
-
-      }
-
-      .menu-bar {
-        @apply --layout-horizontal;
-        position: relative;
-        height: var(--booed-menu-height);
-        /*overflow: hidden;*/
-        width: 100%;
-        padding:0;
-        /* border-top: 1px dashed var(--booed-menu-color) */
-      }
-
-      div.header-filler {
-        @apply --layout-flex;
-        min-width: 320px;
-        height: var(--booed-title-height);
-      }
-
-      .head-logo {
-        border-radius: 10px 10px 0 0;
-        @apply --layout-flex;
-        @apply --layout-horizontal;
-        min-width: 100px;
-        max-width: 180px;
-        /*min-width:  calc(var(--booed-logo-height) * 3.7);*/
-        height: var(--booed-title-height);
-        --paper-button-ink-color: white;
-
-        background-image: url(/images/logo-sat/logo-B-sat.svg), url(/images/logo-sat/logo-o-sat.svg), url(/images/logo-sat/logo-oo-sat.svg), url(/images/logo-sat/logo-e-sat.svg), url(/images/logo-sat/logo-d-sat.svg);
-        background-size:
-         auto var(--booed-logo-height),
-         auto var(--booed-logo-height),
-         auto var(--booed-logo-height),
-         auto var(--booed-logo-height),
-         auto var(--booed-logo-height);
-        background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
-        background-position: 10px var(--booed-logo-margin), calc(20% + 18px) var(--booed-logo-margin), calc(40% + 18px) var(--booed-logo-margin), calc(60% + 18px) var(--booed-logo-margin), calc(80% + 18px) var(--booed-logo-margin);
-      }
-
-      .left-bar-item {
-        width: 40px;
-      }
-
-      .announcer {
-        position: fixed;
-        height: 0;
+    #drawer-contents #app-menu {
+      --mg-menu-collapse: {
+        border-radius: 5px 0 0 5px;
+        background-image:
+          /*linear-gradient( to left, rgba(255,255,255,1) 0px, rgba(255,255,255,0) 10px ) ,*/
+          linear-gradient( to right, rgba(0,0,0,0.05) 100px, rgba(0,0,0,0.02) 300px );
+      };
+      /*
+      --mg-menu-button: {
         overflow: hidden;
+        border-radius: 8px 0 0 8px;
       }
+      */
+    }
 
-      :host(:not([page=detail])) .back-btn {
-        display: none;
-      }
+    #drawer-contents #profile-menu {
+      border-bottom: 1px dashed tomato;
+      --mg-menu-collapse: {
+        border-radius: 5px 0 0 5px;
+        background-image:
+          /*linear-gradient( to left, rgba(255,255,255,1) 0px, rgba(255,255,255,0) 10px ) ,*/
+          linear-gradient( to right, rgba(0,0,0,0.05) 100px, rgba(0,0,0,0.02) 300px );
+        margin-bottom: 10px;
+      };
+    }
 
-      [hidden] {
-        display: none !important;
-      }
+    #drawer-contents .photo-button[icon=ghost] {
+      border: none;
+    }
 
-      paper-tabs,
-      paper-tab {
-        @apply --layout-horizontal;
-        padding:0;
-        cursor: ew-resize;
-      }
-
-      paper-tabs {
-        --paper-tabs-selection-bar-color: #a7b7c1;
-        /*--paper-tabs-selection-bar-color: var(--booed-menu-color);*/
-        height: var(--booed-menu-height);
-        width:100%;
-        --paper-tabs-selection-bar: {
-          /*height:27px;*/
-          /*background-image: linear-gradient(to right, rgba(255,85,85,0), rgba(255,85,85,0.5), rgba(255,85,85,0.5), rgba(255,85,85,0));*/
-          /*background-image: linear-gradient(rgba(255,85,85,0.5) 4px,transparent 4px,  transparent 30px);*/
-        };
-        --paper-tabs: {
-        }
-      }
-
-      paper-tab {
-        font-family: 'Mitr', sans-serif;
-        font-size: 16px;
-        color: var(--booed-menu-focus-color);
-        padding:0 8px;
-        height: var(--booed-menu-height);
-        /*border-radius: 20px 20px 0 0;*/
-        /*overflow: hidden;*/
-        --paper-tab-ink: var(--booed-menu-focus-color);
-        --paper-tab-content: {
-          transition: opacity 0.5s;
-          --iron-icon-fill-color: var(--booed-menu-focus-color);
-        };
-        --paper-tab-content-unselected: {
-          color: var(--booed-menu-color);
-          --iron-icon-fill-color: var(--booed-menu-color);
-        };
-      }
-
-      paper-tab iron-icon.expand-more-icon {
-        --iron-icon-fill-color: gray;
-      }
-
-      paper-tab:hover iron-icon.expand-more-icon {
-        --iron-icon-fill-color: tomato;
-      }
-
-      .tab-icon {
-        margin-right:8px;
-        /*--iron-icon-fill-color: var(--app-accent-color);*/
-        --iron-icon-fill-color: tomato;
-      }
-
-      #drawer {
-        z-index:3;
-        --app-drawer-content-container: {
-          background: white;
-        }
-      }
-
-      #drawer-contents {
-        @apply --layout-vertical;
+    #drawer-contents .photo-button {
+      margin: 20px 0 10px 0;
+      @apply --layout-self-center;
+      height: 120px;
+      width: 120px;
+      box-sizing: border-box;
+      --paper-icon-button-ink-color: tomato;
+      --paper-icon-button : {
         overflow: hidden;
-      }
-
-      #drawer-contents #profile-container {
-        @apply --layout-vertical;
-        background: tomato;
-        color: white;
-      }
-
-      #drawer-contents #app-menu {
-        --mg-menu-collapse: {
-          border-radius: 5px 0 0 5px;
-          background-image:
-            /*linear-gradient( to left, rgba(255,255,255,1) 0px, rgba(255,255,255,0) 10px ) ,*/
-            linear-gradient( to right, rgba(0,0,0,0.05) 100px, rgba(0,0,0,0.02) 300px );
-        };
-        /*
-        --mg-menu-button: {
-          overflow: hidden;
-          border-radius: 8px 0 0 8px;
-        }
-        */
-      }
-
-      #drawer-contents #profile-menu {
-        border-bottom: 1px dashed tomato;
-        --mg-menu-collapse: {
-          border-radius: 5px 0 0 5px;
-          background-image:
-            /*linear-gradient( to left, rgba(255,255,255,1) 0px, rgba(255,255,255,0) 10px ) ,*/
-            linear-gradient( to right, rgba(0,0,0,0.05) 100px, rgba(0,0,0,0.02) 300px );
-          margin-bottom: 10px;
-        };
-      }
-
-      #drawer-contents .photo-button[icon=ghost] {
-        border: none;
-      }
-
-      #drawer-contents .photo-button {
-        margin: 20px 0 10px 0;
-        @apply --layout-self-center;
-        height: 120px;
-        width: 120px;
-        box-sizing: border-box;
-        --paper-icon-button-ink-color: tomato;
-        --paper-icon-button : {
-          overflow: hidden;
-          border-radius: 50%;
-          margin: 0;
-          padding: 0px;
-        };
-      }
-
-      #drawer-contents h3  {
+        border-radius: 50%;
         margin: 0;
-        padding: 5px 0;
-        font-family: 'Mitr', sans-serif;
-        font-size: 16px;
-        @apply --layout-horizontal;
-        @apply --layout-center;
-      }
+        padding: 0px;
+      };
+    }
 
-      #drawer-contents h3 iron-icon {
-        margin-right: 10px;
+    #drawer-contents h3  {
+      margin: 0;
+      padding: 5px 0;
+      font-family: 'Mitr', sans-serif;
+      font-size: 16px;
+      @apply --layout-horizontal;
+      @apply --layout-center;
+    }
+
+    #drawer-contents h3 iron-icon {
+      margin-right: 10px;
+    }
+
+    #pages {
+      margin: 0 auto;
+      min-height: calc(100vh - 100px); /* 5px wider than height to prevent layout resetting due to scrollbar on/off */
+    }
+
+    footer {
+      color: var(--booed-menu-color);
+      @apply --layout-fixed-bottom;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 34px;
+      position: fixed;
+      --iron-icon-fill-color: var(--app-primary-color);
+      @apply --layout-vertical;
+      user-select: none;
+    }
+
+    .page-end {
+      background: linear-gradient( transparent 0, var(--booed-header-background) 10px);
+      width:100%;
+      height:10px;
+    }
+
+    .footer {
+      height: 24px;
+      box-shadow: inset 0px 5px 6px -3px var(--app-shadow-color);
+      background-color: var(--booed-outer-color);
+    }
+
+    .footer a {
+      color: var(--app-primary-color);
+      padding: 0 5px;
+      text-decoration: none;
+      border-radius: 0 0 5px 5px;
+      transition: background-color 0.25s, box-shadow 0.3s ease-in-out;
+      box-shadow: 0 1px 2px rgba(0,0,0,0);
+    }
+
+    .footer a:hover {
+      background-color: var(--booed-contents-background);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    #menu-button {
+      padding-left: 16px;
+    }
+
+    #balloon {
+      display: none;
+      z-index: 10;
+      margin: 0;
+    }
+
+    #balloon mg-menu {
+/*        --mg-menu-item : { border-bottom: 1px dotted tomato };
+      --mg-menu-last-item : { border-bottom: none };*/
+      --mg-menu-collapse: {
+        border-radius: 5px 0 0 5px;
+        background-image:
+          /*linear-gradient( to left, rgba(255,255,255,1) 0px, rgba(255,255,255,0) 10px ) ,*/
+          linear-gradient( to right, rgba(0,0,0,0.05) 100px, rgba(0,0,0,0.02) 300px );
+      };
+    }
+
+    /* small screen */
+    @media (max-width: 767px) {
+      :host {
+        /*padding-top: calc(var(--booed-header-height) + var(--booed-title-height) + var(--booed-menu-height));*/
+        padding-top:70px;
       }
 
       #pages {
-        margin: 0 auto;
-        min-height: calc(100vh - 100px); /* 5px wider than height to prevent layout resetting due to scrollbar on/off */
+        min-height: calc(100vh - 70px);
+      }
+
+      #profile-button {
+        display: none;
+      }
+
+      app-header {
+        height: var(--booed-header-height);
+        min-width: 300px;
+      }
+
+      .head-logo {
+        background-image:  url(/images/logo-sat/logo-packed-sat.svg);
+        background-size: auto var(--booed-logo-height);
+        background-repeat: no-repeat;
+        background-position: center var(--booed-logo-margin);
+        transition: background-position 0.25s;
       }
 
       footer {
-        color: var(--booed-menu-color);
-        @apply --layout-fixed-bottom;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 34px;
-        position: fixed;
-        --iron-icon-fill-color: var(--app-primary-color);
-        @apply --layout-vertical;
-        user-select: none;
-      }
-
-      .page-end {
-        background: linear-gradient( transparent 0, var(--booed-header-background) 10px);
-        width:100%;
-        height:10px;
-      }
-
-      .footer {
-        height: 24px;
-        box-shadow: inset 0px 5px 6px -3px var(--app-shadow-color);
-        background-color: var(--booed-outer-color);
-      }
-
-      .footer a {
-        color: var(--app-primary-color);
-        padding: 0 5px;
-        text-decoration: none;
-        border-radius: 0 0 5px 5px;
-        transition: background-color 0.25s, box-shadow 0.3s ease-in-out;
-        box-shadow: 0 1px 2px rgba(0,0,0,0);
-      }
-
-      .footer a:hover {
-        background-color: var(--booed-contents-background);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-      }
-
-      #menu-button {
-        padding-left: 16px;
-      }
-
-      #balloon {
         display: none;
-        z-index: 10;
-        margin: 0;
+      }
+    }
+
+    @media (max-width: 430px) {
+      :host {
+        --booed-logo-height: 20px;
       }
 
-      #balloon mg-menu {
-/*        --mg-menu-item : { border-bottom: 1px dotted tomato };
-        --mg-menu-last-item : { border-bottom: none };*/
-        --mg-menu-collapse: {
-          border-radius: 5px 0 0 5px;
-          background-image:
-            /*linear-gradient( to left, rgba(255,255,255,1) 0px, rgba(255,255,255,0) 10px ) ,*/
-            linear-gradient( to right, rgba(0,0,0,0.05) 100px, rgba(0,0,0,0.02) 300px );
-        };
+      .head-logo {
+        background-position: margin var(--booed-logo-margin);
+        margin-left: -70px;
+        margin-top: 6px;
+        border-radius: 0;
       }
+    }
 
-      /* small screen */
-      @media (max-width: 767px) {
-        :host {
-          /*padding-top: calc(var(--booed-header-height) + var(--booed-title-height) + var(--booed-menu-height));*/
-          padding-top:70px;
-        }
+  </style>
+    </custom-style>
 
-        #pages {
-          min-height: calc(100vh - 70px);
-        }
+  <app-location route="{{route}}"></app-location>
+  <app-route
+      route="{{route}}"
+      pattern="/:page"
+      data="{{routeData}}"
+      tail="{{subroute}}"></app-route>
 
-        #profile-button {
-          display: none;
-        }
+  <iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
 
-        app-header {
-          height: var(--booed-header-height);
-          min-width: 300px;
-        }
+  <app-header role="navigation" id="header" effects="waterfall" reveals>
 
-        .head-logo {
-          background-image:  url(/images/logo-sat/logo-packed-sat.svg);
-          background-size: auto var(--booed-logo-height);
-          background-repeat: no-repeat;
-          background-position: center var(--booed-logo-margin);
-          transition: background-position 0.25s;
-        }
+      <!-- XXX Begin: Cannot keep logo and top buttons here for some reasons -->
+      <!-- FIXME Merge with title toolbars -->
+      <!-- XXX End: Cannot keep logo and top buttons here for some reasons -->
 
-        footer {
-          display: none;
-        }
-      }
+      <!--
+        <audio autoplay loop>
+          <source src="images/piano.mp3" type="audio/mpeg">
+        </audio>
+        <video id="video" autoplay muted loop playsinline poster="videos/head.jpg" class="center">
+          <source src="videos/head.webm" type="video/webm">
+          <source src="videos/head.ogv" type="video/ogv">
+          <source src="videos/head.mp4" type="video/mp4">
+          Your browser does not support this video tag.
+        </video>
+        -->
+    <div class="tool-bar">
+      <div class="title-bar horizontal layout center-justified">
+        <div class="layout horizontal" style="position:absolute;left:0">
+            <template is="dom-if" if="[[_shouldRenderDrawer]]">
+          <mg-badge-button
+            id="menu-button"
+            on-tap="_toggleDrawer"
+            icon="menu"
+            path-style="fill:tomato"
+            value="">
+          </mg-badge-button>
+            </template>
+        </div>
 
-      @media (max-width: 430px) {
-        :host {
-          --booed-logo-height: 20px;
-        }
+          <div class="header-filler"></div>
+        <paper-button class="head-logo" on-tap='_openHome'></paper-button>
+          <div class="header-filler"></div>
 
-        .head-logo {
-          background-position: margin var(--booed-logo-margin);
-          margin-left: -70px;
-          margin-top: 6px;
-          border-radius: 0;
-        }
-      }
+        <div class="layout horizontal" style="position:fixed;right:10px">
+        <mg-badge-button id="fmPicker" icon="wc" path-style="fill:lightpink" ></mg-badge-button>
+        <mg-badge-button id="languae-button" icon="language" path-style="fill:blue" ></mg-badge-button>
+        <mg-cart-button id="cart-button" cart="{{cart}}" ></mg-cart-button>
+        <mg-profile-button id="profile-button" route="{{route}}" me="[[me]]" menu="[[profileMenu]]"></mg-profile-button>
+        </div>
 
-    </style>
-      </custom-style>
+      </div>
+      <div class="menu-bar" hidden$="[[!_shouldShowTabs]]">
+            <dom-if if="[[_shouldRenderTabs]]">
+          <template>
+        <paper-tabs
+          attr-for-selected="name"
+          selected="{{menu.selected}}"
+          hide-scroll-buttons
+          scrollable
+          fit-container
+          noink
+          align-bottom
+          >
 
-    <mg-data items="{{items}}"></mg-data>
+            <dom-repeat items="[[menu.entries]]">
+          <template strip-whitespace>
+            <paper-tab
+              name$="[[item.name]]"
+              on-tap="_onMenuTap">
+              <iron-icon class="tab-icon" icon="[[item.icon]]"></iron-icon>
 
-    <app-location route="{{route}}"></app-location>
-    <app-route
-        route="{{route}}"
-        pattern="/:page"
-        data="{{routeData}}"
-        tail="{{subroute}}"></app-route>
+              [[item.title]]
 
-    <iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
-
-    <app-header role="navigation" id="header" effects="waterfall" reveals>
-
-        <!-- XXX Begin: Cannot keep logo and top buttons here for some reasons -->
-        <!-- FIXME Merge with title toolbars -->
-        <!-- XXX End: Cannot keep logo and top buttons here for some reasons -->
-
-        <!--
-          <audio autoplay loop>
-            <source src="images/piano.mp3" type="audio/mpeg">
-          </audio>
-          <video id="video" autoplay muted loop playsinline poster="videos/head.jpg" class="center">
-            <source src="videos/head.webm" type="video/webm">
-            <source src="videos/head.ogv" type="video/ogv">
-            <source src="videos/head.mp4" type="video/mp4">
-            Your browser does not support this video tag.
-          </video>
-          -->
-      <div class="tool-bar">
-        <div class="title-bar horizontal layout center-justified">
-          <div class="layout horizontal" style="position:absolute;left:0">
-              <template is="dom-if" if="[[_shouldRenderDrawer]]">
-            <mg-badge-button
-              id="menu-button"
-              on-tap="_toggleDrawer"
-              icon="menu"
-              path-style="fill:tomato"
-              value="">
-            </mg-badge-button>
+                <dom-if if="[[item.submenu]]">
+              <template>
+              <div on-tap="_onMenuTapExpand">
+              <iron-icon class="expand-more-icon" icon="expand-more"></iron-icon>
+              </div>
               </template>
-          </div>
+                </dom-if>
 
-            <div class="header-filler"></div>
-          <paper-button class="head-logo" on-tap='_openHome'></paper-button>
-            <div class="header-filler"></div>
+            </paper-tab>
+          </template>
+            </dom-repeat>
 
-          <div class="layout horizontal" style="position:fixed;right:10px">
-          <mg-badge-button id="fmPicker" icon="wc" path-style="fill:lightpink" ></mg-badge-button>
-          <mg-badge-button id="languae-button" icon="language" path-style="fill:blue" ></mg-badge-button>
-          <mg-cart-button id="cart-button" cart="{{cart}}" ></mg-cart-button>
-          <mg-profile-button id="profile-button" route="{{route}}" me="[[me]]" menu="[[profileMenu]]"></mg-profile-button>
-          </div>
-
-        </div>
-        <div class="menu-bar" hidden$="[[!_shouldShowTabs]]">
-              <dom-if if="[[_shouldRenderTabs]]">
-            <template>
-          <paper-tabs
-            attr-for-selected="name"
-            selected="{{menu.selected}}"
-            hide-scroll-buttons
-            scrollable
-            fit-container
-            noink
-            align-bottom
-            >
-
-              <dom-repeat items="[[menu.entries]]">
-            <template strip-whitespace>
-              <paper-tab
-                name$="[[item.name]]"
-                on-tap="_onMenuTap">
-                <iron-icon class="tab-icon" icon="[[item.icon]]"></iron-icon>
-
-                [[item.title]]
-
-                  <dom-if if="[[item.submenu]]">
-                <template>
-                <div on-tap="_onMenuTapExpand">
-                <iron-icon class="expand-more-icon" icon="expand-more"></iron-icon>
-                </div>
-                </template>
-                  </dom-if>
-
-              </paper-tab>
-            </template>
-              </dom-repeat>
-
-          </paper-tabs>
-            </template>
-              </dom-if>
-        </div>
+        </paper-tabs>
+          </template>
+            </dom-if>
       </div>
-    </app-header>
+    </div>
+  </app-header>
 
-          <mg-balloon id="balloon" no-overlap vertical-align="top" dynamic-align horizontal-align="auto" hidden$="[[smallScreen]]">
-            <mg-menu path="{{route.path}}" style="min-width:200px; padding:0" menu="[[submenu]]"></mg-menu>
-          </mg-balloon>
+        <mg-balloon id="balloon" no-overlap vertical-align="top" dynamic-align horizontal-align="auto" hidden$="[[smallScreen]]">
+          <mg-menu path="{{route.path}}" style="min-width:200px; padding:0" menu="[[submenu]]"></mg-menu>
+        </mg-balloon>
 
 
-      <dom-if if="[[_shouldRenderDrawer]]">
-    <template>
-    <app-drawer id="drawer" opened="{{drawerOpened}}" swipe-open tabindex="0">
-      <div id="drawer-contents">
-        <!--<div id="profile-container" style$="[[_computeProfileContainerStyleWithPhoto(me.user.photoURL)]]">-->
-        <div id="profile-container">
-          <paper-icon-button class="photo-button" on-tap="_openProfile" icon$="[[_computeMeIcon(me.user.photoURL)]]" src="[[me.user.photoURL]]"></paper-icon-button>
-          <h3 class="self-center">[[me.user.displayName]]</h3>
-        </div>
-        <mg-menu path="{{route.path}}" id="profile-menu" menu="[[profileMenu]]"></mg-menu>
-        <mg-menu path="{{route.path}}" id="app-menu" menu="[[menu]]"></mg-menu>
+    <dom-if if="[[_shouldRenderDrawer]]">
+  <template>
+  <app-drawer id="drawer" opened="{{drawerOpened}}" swipe-open tabindex="0">
+    <div id="drawer-contents">
+      <!--<div id="profile-container" style$="[[_computeProfileContainerStyleWithPhoto(me.user.photoURL)]]">-->
+      <div id="profile-container">
+        <paper-icon-button class="photo-button" on-tap="_openProfile" icon$="[[_computeMeIcon(me.user.photoURL)]]" src="[[me.user.photoURL]]"></paper-icon-button>
+        <h3 class="self-center">[[me.user.displayName]]</h3>
       </div>
-    </app-drawer>
-    </template>
-      </dom-if>
-
-    <iron-pages
-      id="pages"
-      role="main"
-      selected="[[page]]"
-      attr-for-selected="name"
-      selected-attribute="visible"
-      fallback-selection="404">
-      <mg-list menu="{{menu}}" name="home"></mg-list>
-      <mg-user
-        id="user"
-        menu="{{menu}}"
-        profile-menu="{{profileMenu}}"
-        name="user"
-        me="{{me}}"
-        items="{{items}}"
-        route="{{subroute}}"
-        ></mg-user>
-      <mg-about name="about"></mg-about>
-      <mg-404-warning name="404"></mg-404-warning>
-
-    </iron-pages>
-
-
-
-    <footer>
-      <div class="page-end"></div>
-      <div class="footer horizontal layout around-justified center">
-        <a class="horizontal layout center" href="about">
-          <iron-icon style="--iron-icon-width:15px;" icon="copyright"></iron-icon> 2017 <img style="padding: 0; margin: -2px 0 0 5px; vertical-align: middle; height:14px" src="/images/logo-sat/logo-packed-sat.svg">
-        </a>
-        <div class="horizontal layout center">
-          <a class="horizontal layout center" href="https://www.polymer-project.org/">With <iron-icon style="--iron-icon-width:15px;padding-left: 3px;" icon="polymer-color"></iron-icon></a>
-          <iron-icon style="--iron-icon-width:15px;" icon="add"></iron-icon>
-          <a class="horizontal layout center" href="https://www.youtube.com/watch?v=uAALIM_5u1Q">
-            <iron-icon style="--iron-icon-width:15px;padding-right: 3px;--iron-icon-fill-color: tomato" icon="favorite"></iron-icon>
-            <font style="font-family: 'Henny Penny', cursive;color:purple">Moon HyunA</font>
-          </a>
-        </div>
-      </div>
-    </footer>
-
-    <!-- a11y announcer -->
-    <!--
-    <div class="announcer" aria-live="assertive">[[_a11yLabel]]</div>
-  -->
+      <mg-menu path="{{route.path}}" id="profile-menu" menu="[[profileMenu]]"></mg-menu>
+      <mg-menu path="{{route.path}}" id="app-menu" menu="[[menu]]"></mg-menu>
+    </div>
+  </app-drawer>
   </template>
+    </dom-if>
 
-  <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-database.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-storage.js"></script>
-  <script>
+  <iron-pages
+    id="pages"
+    role="main"
+    selected="[[page]]"
+    attr-for-selected="name"
+    selected-attribute="visible"
+    fallback-selection="404">
+    <mg-list menu="{{menu}}" name="home"></mg-list>
+    <mg-user
+      id="user"
+      menu="{{menu}}"
+      profile-menu="{{profileMenu}}"
+      name="user"
+      me="{{me}}"
+      route="{{subroute}}"
+      ></mg-user>
+    <mg-about name="about"></mg-about>
+    <mg-404-warning name="404"></mg-404-warning>
 
-  function MGIconForRole(role) {
-    switch(role) {
-      case "product": return "local-mall";
-      case "article": return "local-library";
-      case "collection": return "group-work";
-      case "gallery": return "photo-library";
-      case "photo": return "photo";
-      case "sales": return "sales-baht";
-      default: return role;
-    }
+  </iron-pages>
+
+
+
+  <footer>
+    <div class="page-end"></div>
+    <div class="footer horizontal layout around-justified center">
+      <a class="horizontal layout center" href="about">
+        <iron-icon style="--iron-icon-width:15px;" icon="copyright"></iron-icon> 2017 <img style="padding: 0; margin: -2px 0 0 5px; vertical-align: middle; height:14px" src="/images/logo-sat/logo-packed-sat.svg">
+      </a>
+      <div class="horizontal layout center">
+        <a class="horizontal layout center" href="https://www.polymer-project.org/">With <iron-icon style="--iron-icon-width:15px;padding-left: 3px;" icon="polymer-color"></iron-icon></a>
+        <iron-icon style="--iron-icon-width:15px;" icon="add"></iron-icon>
+        <a class="horizontal layout center" href="https://www.youtube.com/watch?v=uAALIM_5u1Q">
+          <iron-icon style="--iron-icon-width:15px;padding-right: 3px;--iron-icon-fill-color: tomato" icon="favorite"></iron-icon>
+          <font style="font-family: 'Henny Penny', cursive;color:purple">Moon HyunA</font>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- a11y announcer -->
+  <!--
+  <div class="announcer" aria-live="assertive">[[_a11yLabel]]</div>
+-->
+</template>
+
+<script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-storage.js"></script>
+<script>
+
+function MGIconForRole(role) {
+  switch(role) {
+    case "product": return "local-mall";
+    case "article": return "local-library";
+    case "collection": return "group-work";
+    case "gallery": return "photo-library";
+    case "photo": return "photo";
+    case "sales": return "sales-baht";
+    default: return role;
+  }
+}
+
+function MGCopyObject(o) {
+  var out, v, key;
+  out = Array.isArray(o) ? [] : {};
+  for (key in o) {
+    v = o[key];
+    out[key] = (typeof v === "object") ? MGCopyObject(v) : v;
+  }
+  return out;
+}
+
+var MGAbsoluteUrl = (function() {
+  var a;
+
+  return function(url) {
+    if(!a) a = document.createElement('a');
+    a.href = url;
+
+    return a.href;
+  };
+})();
+
+window.performance && performance.mark && performance.mark('mg-app - before register');
+
+/* MG stands for MoonGom as in moongom119 AKA. Moon HyunA */
+
+class MGApp extends Polymer.Element {
+
+  static get is() { return 'mg-app'; }
+
+  static get properties() { return {
+    me: {
+      type: Object,
+    },
+
+    route: {
+      type: Object,
+    },
+
+    subroute: {
+      type: Object,
+    },
+
+    routeData: Object,
+
+    page: {
+      type: String,
+      reflectToAttribute: true,
+      observer: '_pageChanged'
+    },
+
+    menu: {
+      type: Object,
+    },
+
+    submenu: {
+      type: Object,
+    },
+
+    drawerOpened: Boolean,
+
+    _shouldShowTabs: {
+      computed: '_computeShouldShowTabs(page, smallScreen)'
+    },
+
+    _shouldRenderTabs: {
+      computed: '_computeShouldRenderTabs(_shouldShowTabs, loadComplete)'
+    },
+
+    _shouldRenderDrawer: {
+      computed: '_computeShouldRenderDrawer(smallScreen, loadComplete)'
+    },
+
+  }}
+
+  static get observers() { return [
+    '_routePageChanged(routeData.page)',
+  ]}
+
+  _itemsChanged(splices) {
+    //console.log(">",splices);
   }
 
-  function MGCopyObject(o) {
-    var out, v, key;
-    out = Array.isArray(o) ? [] : {};
-    for (key in o) {
-      v = o[key];
-      out[key] = (typeof v === "object") ? MGCopyObject(v) : v;
-    }
-    return out;
-  }
-
-  function getRandomInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min)) + min;
-  }
-
-  let seed = 10;
-  function mg_random() {
-    var x = Math.sin(seed++) * 10000;
-    return x - Math.floor(x);
-  }
-
-  function getSeededRandomInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(mg_random() * (max - min)) + min;
-  }
-
-  var MGAbsoluteUrl = (function() {
-    var a;
-
-    return function(url) {
-      if(!a) a = document.createElement('a');
-      a.href = url;
-
-      return a.href;
+  constructor() {
+    let config = {
+      apiKey: "AIzaSyDyJuzvmpg4jRPs9VE_Mpne8vdysEZGxbo",
+      authDomain: "be-booed.firebaseapp.com",
+      databaseURL: "https://be-booed.firebaseio.com",
+      projectId: "be-booed",
+      storageBucket: "be-booed.appspot.com",
+      messagingSenderId: "1079409265314"
     };
-  })();
 
-  window.performance && performance.mark && performance.mark('mg-app - before register');
+    let app = firebase.initializeApp(config);
+    MHA.DB = app.database();
+    MHA.ST = app.storage();
+    MHA.AU = app.auth();
+    console.log('Application got initialized with lo❤e for', {"Moon HyunA's":{cats:['Moya','Hoya','Spikey'],husband:'Steve',songs:['Cricket Song','Remedy','Doong Doong']}});
 
-  /* MG stands for MoonGom as in moongom119 AKA. Moon HyunA */
+    super();
+    window.performance && performance.mark && performance.mark('mg-app.created');
+  }
 
-  class MGApp extends Polymer.Element {
+  connectedCallback() {
+    super.connectedCallback();
+    this.removeAttribute('unresolved');
 
-    static get is() { return 'mg-app'; }
+    let loadingscreen = document.querySelector('#loadingscreen');
+    loadingscreen.style.opacity = 0;
+    Polymer.Async.timeOut.run(() => {
+      loadingscreen.remove();
+    }, 2000);
 
-    static get properties() { return {
-      me: {
-        type: Object,
-      },
+    window.addEventListener('scroll', this._onScroll.bind(this));
+    window.addEventListener('resize', this._onResize.bind(this));
 
-      route: {
-        type: Object,
-      },
+    this.addEventListener('add-cart-item', (e)=>this._onAddCartItem(e));
+    this.addEventListener('announce', (e)=>this._onAnnounce(e));
+    this.addEventListener('change-section', (e)=>this._onChangeSection(e));
+    this.addEventListener('clear-cart', (e)=>this._onClearCart(e));
+    this.addEventListener('dom-change', (e)=>this._domChange(e));
+    this.addEventListener('set-cart-item', (e)=>this._onSetCartItem(e));
+    this.addEventListener('show-invalid-url-warning', (e)=>this._onFallbackSelectionTriggered(e));
 
-      subroute: {
-        type: Object,
-      },
+    this.addEventListener('close-contextual-menu', (e)=>this._onCloseContextualMenu(e));
 
-      routeData: Object,
+    Polymer.RenderStatus.afterNextRender(this, () => {
+      window.addEventListener('online', (e)=>this._notifyNetworkStatus(e));
+      window.addEventListener('offline', (e)=>this._notifyNetworkStatus(e));
+    });
 
-      page: {
-        type: String,
-        reflectToAttribute: true,
-        observer: '_pageChanged'
-      },
+    this._notifyNetworkStatus();
+  }
 
-      menu: {
-        type: Object,
-      },
+  _openHome(e) {
+    this.set('route.path','');
+    this.set('menu.selected', null);
+  }
 
-      submenu: {
-        type: Object,
-      },
+  _computeProfileContainerStyleWithPhoto(photo) {
+    if (photo) return "background-image:url("+photo+");background-size:cover";
+    return "";
+  }
 
-      drawerOpened: Boolean,
+  _computeMeIcon(photo) {
+    if (photo) return null;
+    return "pumpkin";
+  }
 
-      appItems: {
-        type: Object,
-        value: {},
-      },
+  _openProfile(e) {
+    this.showPanel = false;
+    this.set('route.path','user');
+  }
 
-      _shouldShowTabs: {
-        computed: '_computeShouldShowTabs(page, smallScreen)'
-      },
+  _arraySortedByKeys(obj) {
+    if (obj) {
+      return Object.values(obj).sort(function(a,b){ return a.$key - b.$key});
+    }
+    return [];
+  }
 
-      _shouldRenderTabs: {
-        computed: '_computeShouldRenderTabs(_shouldShowTabs, loadComplete)'
-      },
+  _routePageChanged(page) {
 
-      _shouldRenderDrawer: {
-        computed: '_computeShouldRenderDrawer(smallScreen, loadComplete)'
-      },
-
-    }}
-
-    static get observers() { return [
-      '_routePageChanged(routeData.page)',
-    ]}
-
-    _itemsChanged(splices) {
-      //console.log(">",splices);
+    if (this.page === 'list') {
+      this._listScrollTop = window.pageYOffset;
     }
 
-    constructor() {
-      super();
-      window.performance && performance.mark && performance.mark('mg-app.created');
+    this.page = page || 'home';
+
+    // Close the drawer - in case the *route* change came from a link in the drawer.
+    this.drawerOpened = false;
+  }
+
+  _pageChanged(page, oldPage) {
+    this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+      bubbles: true, composed: true, detail:{sender:null}}));
+
+    if (page != null) {
+      // home route is eagerly loaded
+      if (page == 'home') {
+        this._pageLoaded(Boolean(oldPage));
+      // other routes are lazy loaded
+      } else {
+
+        // When a load failed, it triggered a 404 which means we need to
+        // eagerly load the 404 page definition
+        let cb = this._pageLoaded.bind(this, Boolean(oldPage));
+        Polymer.importHref(
+          this.resolveUrl('mg-' + page + '.html'),
+          cb, cb, true);
+      }
     }
+  }
 
-    connectedCallback() {
-      super.connectedCallback();
-      this.removeAttribute('unresolved');
-
-      let loadingscreen = document.querySelector('#loadingscreen');
-      loadingscreen.style.opacity = 0;
+  _pageLoaded(shouldResetLayout) {
+    this._ensureLazyLoaded();
+    if (shouldResetLayout) {
+      // The size of the header depends on the page (e.g. on some pages the tabs
+      // do not appear), so reset the header's layout only when switching pages.
       Polymer.Async.timeOut.run(() => {
-        loadingscreen.remove();
-      }, 2000);
+        this.$.header.resetLayout();
+      }, 1);
+    }
+  }
 
-      window.addEventListener('scroll', this._onScroll.bind(this));
-      window.addEventListener('resize', this._onResize.bind(this));
-
-      this.addEventListener('add-cart-item', (e)=>this._onAddCartItem(e));
-      this.addEventListener('announce', (e)=>this._onAnnounce(e));
-      this.addEventListener('change-section', (e)=>this._onChangeSection(e));
-      this.addEventListener('clear-cart', (e)=>this._onClearCart(e));
-      this.addEventListener('dom-change', (e)=>this._domChange(e));
-      this.addEventListener('set-cart-item', (e)=>this._onSetCartItem(e));
-      this.addEventListener('show-invalid-url-warning', (e)=>this._onFallbackSelectionTriggered(e));
-
-      this.addEventListener('close-contextual-menu', (e)=>this._onCloseContextualMenu(e));
-
+  _ensureLazyLoaded() {
+    // load lazy resources after render and set `loadComplete` when done.
+    if (!this.loadComplete) {
       Polymer.RenderStatus.afterNextRender(this, () => {
-        window.addEventListener('online', (e)=>this._notifyNetworkStatus(e));
-        window.addEventListener('offline', (e)=>this._notifyNetworkStatus(e));
-      });
-
-      this._notifyNetworkStatus();
-    }
-
-    _openHome(e) {
-      this.set('route.path','');
-      this.set('menu.selected', null);
-    }
-
-    _computeProfileContainerStyleWithPhoto(photo) {
-      if (photo) return "background-image:url("+photo+");background-size:cover";
-      return "";
-    }
-
-    _computeMeIcon(photo) {
-      if (photo) return null;
-      return "pumpkin";
-    }
-
-    _openProfile(e) {
-      this.showPanel = false;
-      this.set('route.path','user');
-    }
-
-    _arraySortedByKeys(obj) {
-      if (obj) {
-        return Object.values(obj).sort(function(a,b){ return a.$key - b.$key});
-      }
-      return [];
-    }
-
-    _routePageChanged(page) {
-
-      if (this.page === 'list') {
-        this._listScrollTop = window.pageYOffset;
-      }
-
-      this.page = page || 'home';
-
-      // Close the drawer - in case the *route* change came from a link in the drawer.
-      this.drawerOpened = false;
-    }
-
-    _pageChanged(page, oldPage) {
-      this.dispatchEvent(new CustomEvent('close-contextual-menu', {
-        bubbles: true, composed: true, detail:{sender:null}}));
-
-      if (page != null) {
-        // home route is eagerly loaded
-        if (page == 'home') {
-          this._pageLoaded(Boolean(oldPage));
-        // other routes are lazy loaded
-        } else {
-
-          // When a load failed, it triggered a 404 which means we need to
-          // eagerly load the 404 page definition
-          let cb = this._pageLoaded.bind(this, Boolean(oldPage));
-          Polymer.importHref(
-            this.resolveUrl('mg-' + page + '.html'),
-            cb, cb, true);
-        }
-      }
-    }
-
-    _pageLoaded(shouldResetLayout) {
-      this._ensureLazyLoaded();
-      if (shouldResetLayout) {
-        // The size of the header depends on the page (e.g. on some pages the tabs
-        // do not appear), so reset the header's layout only when switching pages.
-        Polymer.Async.timeOut.run(() => {
-          this.$.header.resetLayout();
-        }, 1);
-      }
-    }
-
-    _ensureLazyLoaded() {
-      // load lazy resources after render and set `loadComplete` when done.
-      if (!this.loadComplete) {
-        Polymer.RenderStatus.afterNextRender(this, () => {
-          Polymer.importHref(this.resolveUrl('lazy-resources.html'), () => {
-            // Register service worker if supported.
-            if ('serviceWorker' in navigator) {
+        Polymer.importHref(this.resolveUrl('lazy-resources.html'), () => {
+          // Register service worker if supported.
+          if ('serviceWorker' in navigator) {
 //                navigator.serviceWorker.register('service-worker.js', {scope: '/'});
-            }
-            this._notifyNetworkStatus();
-            this.loadComplete = true;
-          });
+          }
+          this._notifyNetworkStatus();
+          this.loadComplete = true;
         });
+      });
+    }
+  }
+
+  _notifyNetworkStatus() {
+    let oldOffline = this.offline;
+    this.offline =  !navigator.onLine;
+    // Show the snackbar if the user is offline when starting a new session
+    // or if the network status changed.
+    if (this.offline || (!this.offline && oldOffline === true)) {
+      if (!this._networkSnackbar) {
+        this._networkSnackbar = document.createElement('mg-snackbar');
+        this.root.appendChild(this._networkSnackbar);
+      }
+      this._networkSnackbar.innerHTML = this.offline ?
+          'You are offline' : 'You are online';
+      this._networkSnackbar.open();
+    }
+  }
+
+  _toggleDrawer() {
+    this.drawerOpened = !this.drawerOpened;
+    this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+      bubbles: true, composed: true, detail:{sender:null}}));
+  }
+
+  // Elements in the app can notify section changes.
+  // Response by a11y announcing the section and syncronizing the category.
+  _onChangeSection(event) {
+    let detail = event.detail;
+
+    // Scroll to the top of the page when navigating to a non-list page. For list view,
+    // scroll to the last saved position only if the category has not changed.
+    let scrollTop = 0;
+    if (this.page === 'home') {
+      if (this.categoryName === detail.category) {
+        scrollTop = this._listScrollTop;
+      } else {
+        // Reset the list view scrollTop if the category changed.
+        this._listScrollTop = 0;
       }
     }
-
-    _notifyNetworkStatus() {
-      let oldOffline = this.offline;
-      this.offline =  !navigator.onLine;
-      // Show the snackbar if the user is offline when starting a new session
-      // or if the network status changed.
-      if (this.offline || (!this.offline && oldOffline === true)) {
-        if (!this._networkSnackbar) {
-          this._networkSnackbar = document.createElement('mg-snackbar');
-          this.root.appendChild(this._networkSnackbar);
-        }
-        this._networkSnackbar.innerHTML = this.offline ?
-            'You are offline' : 'You are online';
-        this._networkSnackbar.open();
-      }
-    }
-
-    _toggleDrawer() {
-      this.drawerOpened = !this.drawerOpened;
-      this.dispatchEvent(new CustomEvent('close-contextual-menu', {
-        bubbles: true, composed: true, detail:{sender:null}}));
-    }
-
-    // Elements in the app can notify section changes.
-    // Response by a11y announcing the section and syncronizing the category.
-    _onChangeSection(event) {
-      let detail = event.detail;
-
-      // Scroll to the top of the page when navigating to a non-list page. For list view,
-      // scroll to the last saved position only if the category has not changed.
-      let scrollTop = 0;
-      if (this.page === 'home') {
-        if (this.categoryName === detail.category) {
-          scrollTop = this._listScrollTop;
-        } else {
-          // Reset the list view scrollTop if the category changed.
-          this._listScrollTop = 0;
-        }
-      }
-      // Use `Polymer.AppLayout.scroll` with `behavior: 'silent'` to disable header scroll
-      // effects during the scroll.
-      Polymer.AppLayout.scroll({ top: scrollTop, behavior: 'silent' });
+    // Use `Polymer.AppLayout.scroll` with `behavior: 'silent'` to disable header scroll
+    // effects during the scroll.
+    Polymer.AppLayout.scroll({ top: scrollTop, behavior: 'silent' });
 
 //        this.categoryName = detail.category || '';
 
-      // Announce the page's title
-      if (detail.title) {
-        document.title = detail.title + " - Booed";
-        this._announce(detail.title + ', loaded');
-      }
-
-      /*
-      if (detail.menu) {
-        this._closeSubmenu();
-        this.set('menu', detail.menu);
-      }
-      */
+    // Announce the page's title
+    if (detail.title) {
+      document.title = detail.title + " - Booed";
+      this._announce(detail.title + ', loaded');
     }
 
-    _openModelSubmenu(model,expand) {
-      for(let i = 0, sub; sub = this.menu.entries[i]; ++i) {
-        if (sub.name == model.item.name && sub.submenu) {
-          if (this.submenu === sub.submenu) {
-            this._closeSubmenu();
-
-          } else if (expand || this.menu.selected == model.item.name) {
-            /* Only show its submenu if it's already selected. */
-            this.$.balloon.positionTarget = model.children[0];
-            this.submenu = sub.submenu;
-            this.$.balloon.open();
-          }
-          return;
-        }
-      }
+    /*
+    if (detail.menu) {
       this._closeSubmenu();
+      this.set('menu', detail.menu);
     }
+    */
+  }
 
-    _onMenuTap(e) {
-      this.dispatchEvent(new CustomEvent('close-contextual-menu', {
-        bubbles: true, composed: true, detail:{sender:this}}));
+  _openModelSubmenu(model,expand) {
+    for(let i = 0, sub; sub = this.menu.entries[i]; ++i) {
+      if (sub.name == model.item.name && sub.submenu) {
+        if (this.submenu === sub.submenu) {
+          this._closeSubmenu();
 
-      this._openModelSubmenu(e.model);
-    }
-
-    _onMenuTapExpand(e) {
-      this.dispatchEvent(new CustomEvent('close-contextual-menu', {
-        bubbles: true, composed: true, detail:{sender:this}}));
-
-      e.stopImmediatePropagation();
-      this._openModelSubmenu(e.model,true);
-    }
-
-    _onScroll(e) {
-      this.dispatchEvent(new CustomEvent('close-contextual-menu', {
-        bubbles: true, composed: true, detail:{sender:null}}));
-    }
-
-    _onResize(e) {
-      this.dispatchEvent(new CustomEvent('close-contextual-menu', {
-        bubbles: true, composed: true, detail:{sender:null}}));
-    }
-
-    _closeSubmenu() {
-      this.$.balloon.close();
-      Polymer.Async.timeOut.run(() => {
-        this.submenu = {};
-      }, 250);
-    }
-
-    _onCloseContextualMenu(e) {
-      if (e.detail && e.detail.sender != this) {
-        this._closeSubmenu();
-      }
-    }
-
-    _onAddCartItem(event) {
-      if (!this._cartModal) {
-        this._cartModal = document.createElement('mg-cart-modal');
-        this.root.appendChild(this._cartModal);
-      }
-      this.$.cart.addItem(event.detail);
-      this._cartModal.open();
-      this._announce('Item added to the cart');
-    }
-
-    _onSetCartItem(event) {
-      let detail = event.detail;
-      this.$.cart.setItem(detail);
-      if (detail.quantity === 0) {
-        this._announce('Item deleted');
-      } else {
-        this._announce('Quantity changed to ' + detail.quantity);
-      }
-    }
-
-    _onClearCart() {
-      this.$.cart.clearCart();
-      this._announce('Cart cleared');
-    }
-
-    _onUserLogin(e) {
-      /*
-      this.$.me.setEmail(e.detail.accountEmail);
-      this.$.me.setHash(e.detail.accountHash);
-      */
-    }
-
-    // Elements in the app can notify a change to be a11y announced.
-    _onAnnounce(e) {
-      this._announce(e.detail);
-    }
-
-    // A11y announce the given message.
-    _announce(message) {
-      this._a11yLabel = '';
-      this._announceDebouncer = Polymer.Debouncer.debounce(this._announceDebouncer,
-        Polymer.Async.timeOut.after(100), () => {
-          this._a11yLabel = message;
-        });
-    }
-
-    // This is for performance logging only.
-    _domChange(e) {
-      if (window.performance && performance.mark && !this.__loggedDomChange) {
-        let target = e.composedPath()[0];
-        let host = target.getRootNode().host;
-        if (host && host.localName.match(this.page)) {
-          this.__loggedDomChange = true;
-          performance.mark(host.localName + '.domChange');
+        } else if (expand || this.menu.selected == model.item.name) {
+          /* Only show its submenu if it's already selected. */
+          this.$.balloon.positionTarget = model.children[0];
+          this.submenu = sub.submenu;
+          this.$.balloon.open();
         }
+        return;
       }
     }
+    this._closeSubmenu();
+  }
 
-    _onFallbackSelectionTriggered() {
-      this.page = '404';
-    }
+  _onMenuTap(e) {
+    this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+      bubbles: true, composed: true, detail:{sender:this}}));
 
-    _computeShouldShowTabs(page, smallScreen) {
-      return (page === 'home' || page === 'user') && !smallScreen;
-    }
+    this._openModelSubmenu(e.model);
+  }
 
-    _computeShouldRenderTabs(_shouldShowTabs, loadComplete) {
-      return _shouldShowTabs && loadComplete;
-    }
+  _onMenuTapExpand(e) {
+    this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+      bubbles: true, composed: true, detail:{sender:this}}));
 
-    _computeShouldRenderDrawer(smallScreen, loadComplete) {
-      return smallScreen && loadComplete;
-    }
+    e.stopImmediatePropagation();
+    this._openModelSubmenu(e.model,true);
+  }
 
-    _computePluralizedQuantity(quantity) {
-      return quantity + ' ' + (quantity === 1 ? 'item' : 'items');
-    }
+  _onScroll(e) {
+    this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+      bubbles: true, composed: true, detail:{sender:null}}));
+  }
 
-    _computeLogo(smallScreen) {
-      return smallScreen ? "/images/logo-small.svg": "/images/logo.svg" ;
-    }
+  _onResize(e) {
+    this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+      bubbles: true, composed: true, detail:{sender:null}}));
+  }
 
-    _computeKeyIcon()
-    {
-      return "key";
+  _closeSubmenu() {
+    this.$.balloon.close();
+    Polymer.Async.timeOut.run(() => {
+      this.submenu = {};
+    }, 250);
+  }
+
+  _onCloseContextualMenu(e) {
+    if (e.detail && e.detail.sender != this) {
+      this._closeSubmenu();
     }
   }
 
-  customElements.define(MGApp.is, MGApp);
+  _onAddCartItem(event) {
+    if (!this._cartModal) {
+      this._cartModal = document.createElement('mg-cart-modal');
+      this.root.appendChild(this._cartModal);
+    }
+    this.$.cart.addItem(event.detail);
+    this._cartModal.open();
+    this._announce('Item added to the cart');
+  }
 
-  </script>
+  _onSetCartItem(event) {
+    let detail = event.detail;
+    this.$.cart.setItem(detail);
+    if (detail.quantity === 0) {
+      this._announce('Item deleted');
+    } else {
+      this._announce('Quantity changed to ' + detail.quantity);
+    }
+  }
+
+  _onClearCart() {
+    this.$.cart.clearCart();
+    this._announce('Cart cleared');
+  }
+
+  _onUserLogin(e) {
+    /*
+    this.$.me.setEmail(e.detail.accountEmail);
+    this.$.me.setHash(e.detail.accountHash);
+    */
+  }
+
+  // Elements in the app can notify a change to be a11y announced.
+  _onAnnounce(e) {
+    this._announce(e.detail);
+  }
+
+  // A11y announce the given message.
+  _announce(message) {
+    this._a11yLabel = '';
+    this._announceDebouncer = Polymer.Debouncer.debounce(this._announceDebouncer,
+      Polymer.Async.timeOut.after(100), () => {
+        this._a11yLabel = message;
+      });
+  }
+
+  // This is for performance logging only.
+  _domChange(e) {
+    if (window.performance && performance.mark && !this.__loggedDomChange) {
+      let target = e.composedPath()[0];
+      let host = target.getRootNode().host;
+      if (host && host.localName.match(this.page)) {
+        this.__loggedDomChange = true;
+        performance.mark(host.localName + '.domChange');
+      }
+    }
+  }
+
+  _onFallbackSelectionTriggered() {
+    this.page = '404';
+  }
+
+  _computeShouldShowTabs(page, smallScreen) {
+    return (page === 'home' || page === 'user') && !smallScreen;
+  }
+
+  _computeShouldRenderTabs(_shouldShowTabs, loadComplete) {
+    return _shouldShowTabs && loadComplete;
+  }
+
+  _computeShouldRenderDrawer(smallScreen, loadComplete) {
+    return smallScreen && loadComplete;
+  }
+
+  _computePluralizedQuantity(quantity) {
+    return quantity + ' ' + (quantity === 1 ? 'item' : 'items');
+  }
+
+  _computeLogo(smallScreen) {
+    return smallScreen ? "/images/logo-small.svg": "/images/logo.svg" ;
+  }
+
+  _computeKeyIcon()
+  {
+    return "key";
+  }
+}
+
+customElements.define(MGApp.is, MGApp);
+
+</script>
 </dom-module>
