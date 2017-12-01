@@ -17,6 +17,7 @@
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="mg-data.html">
 <link rel="import" href="mg-common-styles.html">
 <link rel="import" href="mg-icons.html">
 <link rel="import" href="mg-balloon.html">
@@ -26,6 +27,7 @@
 <link rel="import" href="mg-thumbnail.html">
 <link rel="import" href="mg-clipboard-view.html">
 
+
 <dom-module id="mg-items">
 <template strip-whitespace>
     <custom-style>
@@ -34,7 +36,7 @@
       @apply --layout-horizontal;
     }
 
-    #new-item {
+    #new-item-button {
       margin-left: 25px;
       width: 100px;
       padding:0;
@@ -71,9 +73,11 @@
     }
 
     .item {
-      width: 200px;
-      height: 150px;
-      margin-bottom: 5px;
+      margin-bottom: 10px;
+      --mg-image: {
+        width: 180px;
+        height: 150px;
+      }
     }
 
     .editor-container {
@@ -97,6 +101,7 @@
       text-decoration: none;
     }
 
+    /*
     #top-smooth-edge {
       width: calc(100% - 15px);
       height: 10px;
@@ -106,15 +111,16 @@
       background: linear-gradient(to bottom, white 2px, transparent 10px);
       pointer-events: none;
     }
+    */
 
     @media (max-width: 767px) {
-      mg-thumbnail > div {
-        display: none;
-      }
-
       .item {
         width: 100px;
         height: 100px;
+        --mg-image: {
+          width: 100px;
+          height: 100px;
+        }
       }
 
       .side-bar {
@@ -142,12 +148,13 @@
   </style>
     </custom-style>
 
+  <mg-data items="{{items}}"></mg-data>
   <div class="side-bar">
-    <paper-button id="new-item" on-tap="_openNewItemMenu">
+    <paper-button id="new-item-button" on-tap="_openNewItemMenu">
       <iron-icon icon="add"></iron-icon> สร้าง
     </paper-button>
 
-    <div id="top-smooth-edge"></div>
+    <!--<div id="top-smooth-edge"></div>-->
     <iron-selector class="items-container" attr-for-selected="key" selected="[[itemKey]]">
     <template is="dom-repeat" items="[[itemList]]" mutable-data>
       <mg-thumbnail
@@ -530,7 +537,7 @@
         return;
       }
 
-      this.$['new-item-balloon'].positionTarget = this.$['new-item'];
+      this.$['new-item-balloon'].positionTarget = this.$['new-item-button'];
       this.$['new-item-balloon'].open();
     }
   }

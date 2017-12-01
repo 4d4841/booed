@@ -45,6 +45,8 @@
       @apply --layout-start-aligned;
       padding: 0 0 24px 0;
       overflow-y: auto;
+      border: 2px solid transparent;
+      border-radius: 5px;
     }
 
     #gallery-editor {
@@ -52,8 +54,10 @@
 
     .image-icon {
       margin: 0 5px 5px 0;
-      width: 120px;
-      height: 120px;
+      --mg-image: {
+        width: 120px;
+        height: 120px;
+      }
     }
 
     @media (max-width: 767px) {

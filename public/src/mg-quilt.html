@@ -23,424 +23,441 @@
 <link rel="import" href="mg-thumbnail.html">
 
 <dom-module id="mg-quilt">
-  <template>
-      <custom-style>
-    <style include="mg-common-styles iron-flex iron-flex-alignment">
-      :host {
-        display: block;
-        position: relative;
-        @apply --layout-vertical;
-        padding: 0;
-        margin: 0;
-      }
-
-      .quilt-image {
-        display: block;
-        position: absolute;
-      }
-
-      .spinner {
-        position: fixed;
-        z-index: 1000;
-        bottom: -15px;
-        left: calc(50% - 22px);
-        height: 45px;
-        opacity: 0;
-        transition: opacity 0.5s;
-        pointer-events: none;
-        user-select: none;
-      }
-
-      .spinner[active] {
-        opacity: 1;
-      }
-
-    </style>
-      </custom-style>
-
-      <!-- XXX Do something like iron-list -->
-    <template is="dom-repeat"
-      strip-whitespace
-      items="[[quiltItems]]"
-      mutable-data
-    > <template is="dom-if" if="[[_itemInOffsetRange(item)]]">
-        <mg-thumbnail
-         class="quilt-image"
-         src="[[item.photo]]"
-         style$="[[_computeItemStyle(item,unitWidth,index,2)]]"
-         icons="[[_formatIconsForTags(item.tags)]]"
-         label="[[_formatLabel(item.tags)]]"
-        ></mg-thumbnail>
-      </template>
-    </template>
-
-    <!--
-    <paper-spinner class="spinner" active="[[loading]]"></paper-spinner>
-    -->
-
-    <img draggable="false" class="spinner" height="50px" src="images/logo-bounce.svg" active$="[[loading]]">
-
-    <iron-scroll-threshold
-      style="display:none"
-      id="scrollThreshold"
-      scroll-target="document"
-      lower-threshold="500"
-      lower-triggered="{{lowerTriggered}}"
-      on-lower-threshold="_load">
-    </iron-scroll-threshold>
-
-  </template>
-  <script>
-
-    class MGQuilt extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element) {
-      static get is() { return 'mg-quilt'; }
-
-      static get properties() { return {
-        unitWidth: {
-          type: Number,
-        },
-
-        loadLength: {
-          type: Number,
-          value: 0,
-        },
-        allItems: {
-          type: Array,
-          value: [],
-        },
-
-        quiltItems: {
-          type: Array,
-          value: [],
-        },
-
-        /* This is for marking the last tested row (for each type of item)
-           to avoid testing from the top rows. */
-        sizeMap: {
-          type: Object,
-          value: {}
-        },
-
-        /* 2D-Array of boolens,once first rows are all-true
-        then they will be shifted out then ++offset */
-        collisionMap: {
-          type: Array,
-          value: []
-        },
-
-        /* marking top rows that are continuously filled */
-        collisionOffset: {
-          type: Number,
-          observer: '_collisionOffsetChanged',
-          value: 0,
-        },
-
-        numberOfColumns: {
-          type: Number,
-          value: 6,
-          observer: '_numberOfColumnsChanged'
-        },
-
-        selected: {
-          type: String,
-          value: null,
-          observer: '_selectedChanged'
-        },
-
-        visible: {
-          type:Boolean,
-          observer: '_visibleChanged',
-        },
-      }}
-
-      static get observers() { return [
-      ]}
-
-      _formatLabel(tags) {
-        if (tags) {
-          return Object.keys(tags).join(',');
-        }
-        return "";
-      }
-
-      _formatIconsForTags(tags) {
-        let ret = {};
-        for(let key in tags) {
-          ret[MGIconForRole(key)] = tags[key];
-        }
-        return ret;
-      }
-
-      connectedCallback() {
-        super.connectedCallback();
-        this.addEventListener('iron-resize', this._onResizeEvent);
-
-        this.__photoIndex = getRandomInt(0,1000);
-      }
-
-      disconnectedCallback() {
-        this.removeEventListener('iron-resize', this._onResizeEvent);
-        super.disconnectedCallback();
-      }
-
-      _visibleChanged(visible) {
-        visible && this._load();
-      }
-
-      _load() {
-        /* XXX Could use a pagination */
-        if (this.collisionMap.length+this.collisionOffset > 1000) return;
-
-        this.set('loading',true);
-        if (this._loading) this._loading.cancel();
-        this._loading = Polymer.Debouncer.debounce(this._loading,
-                  Polymer.Async.timeOut.after(1000),
-                  this._loadSome.bind(this,10));
-      }
-
-      _getPhotoIndex() {
-        this.__photoIndex+=getRandomInt(1,3);
-        return 1+this.__photoIndex%100;
-      }
-
-      _loadSome(rows) {
-        this.set('loading',false);
-        if (this.visible === false) {return;}
-        let originalOffset = this.collisionOffset;
-        let u = this.unitWidth*0.75;
-        let alts = [
-            "new-releases",
-            "best-sellers",
-            "dresses",
-            "lingeries",
-            "night-dresses",
-            "swimwears",
-            "sales",
-        ];
-
-
-        while (this.collisionOffset < originalOffset + rows && this.allItems.length < 2000) {
-          for (let j = 0; j < 5; j++) {
-
-            if (this.loadLength < this.allItems.length) {
-              this._appendItemToQuilt(this.allItems[this.loadLength++]);
-              continue;
-            }
-
-            let w = getRandomInt(1,3);
-            let h = getRandomInt(1,3);
-            let newItem = {
-              x: 0,
-              y: 0,
-              w: w,
-              h: h,
-              photo: "/moon-images/moon-"+this._getPhotoIndex()+".jpg",
-              tags: {[alts[getRandomInt(0,alts.length)]]:true},
-              //photo: "https://unsplash.it/"+(w*u)+"/"+(h*u)+"/?random="+this.__photoIndex++,
-
-            };
-
-            this.push('allItems',newItem);
-            this._appendItemToQuilt(newItem);
-            this.loadLength = this.allItems.length;
-          }
-
-          if (this.loadLength < this.allItems.length) {
-            this._appendItemToQuilt(this.allItems[this.loadLength++]);
-            continue;
-          }
-
-          let w = getRandomInt(2,7);
-          let h = getRandomInt(2,7);
-          let newItem = {
-            x: 0,
-            y: 0,
-            w: w,
-            h: h,
-            photo: "/moon-images/moon-"+this._getPhotoIndex()+".jpg",
-            tags: {[alts[getRandomInt(0,alts.length)]]:true,[alts[getRandomInt(0,alts.length)]]:true},
-              //photo: "https://unsplash.it/"+(w*u)+"/"+(h*u)+"/?random="+this.__photoIndex++,
-          };
-          this.push('allItems',newItem);
-          this._appendItemToQuilt(newItem);
-          this.loadLength = this.allItems.length;
-
-        }
-        this.$.scrollThreshold.clearTriggers();
-      }
-
-      _collisionOffsetChanged(collisionOffset) {
-        this.unitWidth = this.offsetWidth/this.numberOfColumns;
-        this.style.height = (collisionOffset*this.unitWidth)+"px";
-      }
-
-      _numberOfColumnsChanged(newNumColumns) {
-        if (newNumColumns == this.numberOfColumns) return;
-        this.sizeMap = {};
-        this.collisionMap = [];
-        this.set('collisionOffset',0);
-        this.set('quiltItems',[]);
-        this.visible && this._load();
-      }
-
-      _selectedChanged(selected) {
-        this.sizeMap = {};
-        this.collisionMap = [];
-        this.set('collisionOffset',0);
-        this.set('quiltItems',[]);
-        this.loadLength = 0;
-        this.visible && this._load();
-      }
-
-      _testCollision(row,col) {
-        if (row < this.collisionOffset) {
-          return true;
-        }
-        return this.collisionMap[row-this.collisionOffset][col];
-      }
-
-      _itemInOffsetRange(item) {
-        if (item.y < this.collisionOffset) return true;
-        return false;
-      }
-
-      _appendItemToQuilt(anItem, rtl) {
-        if (this.selected) {
-          if (!anItem.tags[this.selected]) {
-            return;
-          }
-        }
-
-        rtl = rtl || false;
-
-        let ew = anItem.width ? Math.ceil(anItem.width * this.numberOfColumns) : anItem.w;
-        let eh = anItem.height ? Math.ceil(anItem.height * this.numberOfColumns) : anItem.h;
-
-        anItem.w = ew;
-        anItem.h = eh;
-
-        if (ew > this.numberOfColumns) {
-          console.log(anItem, "is too wide").
-          return;
-        }
-
-        this.sizeMap[eh] = this.sizeMap[eh] || {[ew]:0};
-        this.sizeMap[eh][ew] = this.sizeMap[eh][ew] || 0;
-
-        let pN = this.sizeMap[eh][ew];
-        let pS = pN + eh - 1;
-        let pE = (rtl ? this.numberOfColumns : ew) - 1;
-        let pW = rtl ? pE - ew + 1 : 0;
-
-        seeking:
-        while (true) {
-          while (pE < this.numberOfColumns && pW >= 0) {
-
-            while ((this.collisionMap.length+this.collisionOffset) <= pS) {
-              let r = [];
-              while (r.length < this.numberOfColumns) r.push(false);
-              this.collisionMap.push(r);
-            }
-
-            let hasCollision = false;
-            test_collision:
-
-            for (let ri = pN; ri <= pS; ++ri) {
-            for (let ci = pW; ci <= pE; ++ci) {
-              if (this._testCollision(ri,ci)) {
-                hasCollision = true;
-                break test_collision;
-              }
-            }
-            }
-
-            if (!hasCollision) {
-              this.sizeMap[eh][ew] = pN;
-              anItem.x = pW;
-              anItem.y = pN;
-
-              /* Fill collision map */
-              for (let ri = pN; ri <= pS; ++ri) {
-              for (let ci = pW; ci <= pE; ++ci) {
-                this.collisionMap[ri-this.collisionOffset][ci] = true;
-              }
-              }
-
-              let firstRowFilled;
-              do {
-                firstRowFilled = true;
-                for (let ci = this.numberOfColumns-1; ci >= 0; --ci) {
-                  if (!this.collisionMap[0][ci]) {
-                    firstRowFilled = false;
-                    break;
-                  }
-                }
-                if (firstRowFilled) {
-                  this.set('collisionOffset',this.collisionOffset+1);
-                  this.collisionMap.shift();
-                }
-              } while (firstRowFilled && this.collisionMap.length);
-
-              break seeking;
-            }
-
-            pW += rtl ? -1 : 1;
-            pE += rtl ? -1 : 1;
-          }
-
-          pE = (rtl ? this.numberOfColumns : ew) - 1;
-          pW = rtl ? pE - ew + 1 : 0;
-          ++pN;
-          ++pS;
-        }
-
-        this.push('quiltItems',anItem);
-
-        //this.style.height = ((this.collisionMap.length+this.collisionOffset)*this.unitWidth)+"px";
-        //this.$.quilt.push('items', anItem);
-        //this.$.quiltItems.push(anItem);
-      }
-
-
-      _onResizeEvent(e) {
-          this.unitWidth = this.offsetWidth/this.numberOfColumns;
-          this.style.height = (this.collisionOffset*this.unitWidth)+"px";
-
-        //XXX If not done properly scroll may disappear
-          /*
-          let maxH = 1,
-              maxW = 1;
-          for (let i = 0, it; it = this.quiltItems[i]; ++i) {
-            let mh = it.y + it.h;
-            if (mh > maxH) maxH = mh;
-            let mw = it.x + it.w;
-            if (mw > maxW) maxW = mw;
-          }
-          this.style.height = (maxH * this.unitWidth)+"px";
-          this.style.width = (maxW * this.unitWidth)+"px";
-          */
-      }
-
-      _computePaperCardItemStyle(item, blockSize, index, inset) {
-        return this._computeItemStyle(item, blockSize, index, inset);
-      }
-
-      _computeItemStyle(item, blockSize, index, inset) {
-        if (!inset) inset = 0;
-        if (!blockSize) blockSize = this.offsetWidth/this.numberOfColumns;
-        let unit = "px";
-        let x = item.x;
-        let y = item.y;
-        let ret = "";
-        ret += ";width: "+ Math.floor(blockSize * item.w - inset * 2) + unit;
-        ret += ";height: "+ Math.floor(blockSize * item.h - inset * 2) + unit;
-        ret += ";left: "+ Math.floor(blockSize * x + inset) + unit;
-        ret += ";top: "+ Math.floor(blockSize * y + inset) + unit;
-        return ret;
-      }
-
+<template>
+    <custom-style>
+  <style include="mg-common-styles iron-flex iron-flex-alignment">
+    :host {
+      display: block;
+      position: relative;
+      @apply --layout-vertical;
+      padding: 0;
+      margin: 0;
     }
 
-    customElements.define(MGQuilt.is, MGQuilt);
-  </script>
+    .quilt-image {
+      display: block;
+      position: absolute;
+    }
+
+    .spinner {
+      position: fixed;
+      z-index: 1000;
+      bottom: -15px;
+      left: calc(50% - 22px);
+      height: 45px;
+      opacity: 0;
+      transition: opacity 0.5s;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .spinner[active] {
+      opacity: 1;
+    }
+
+  </style>
+    </custom-style>
+
+    <!-- XXX Do something like iron-list -->
+  <template is="dom-repeat"
+    strip-whitespace
+    items="[[quiltItems]]"
+    mutable-data
+  > <template is="dom-if" if="[[_itemInOffsetRange(item)]]">
+      <mg-thumbnail
+       class="quilt-image"
+       src="[[item.photo]]"
+       width="[[_computePixel(item.w,unitWidth,2)]]"
+       height="[[_computePixel(item.h,unitWidth,2)]]"
+       style$="[[_computeLocation(item.x,item.y,unitWidth,index,2)]]"
+       icons="[[_formatIconsForTags(item.tags)]]"
+       label="[[_formatLabel(item.tags)]]"
+      ></mg-thumbnail>
+    </template>
+  </template>
+
+  <!--
+  <paper-spinner class="spinner" active="[[loading]]"></paper-spinner>
+  -->
+
+  <img draggable="false" class="spinner" height="50px" src="images/logo-bounce.svg" active$="[[loading]]">
+
+  <iron-scroll-threshold
+    style="display:none"
+    id="scrollThreshold"
+    scroll-target="document"
+    lower-threshold="500"
+    lower-triggered="{{lowerTriggered}}"
+    on-lower-threshold="_load">
+  </iron-scroll-threshold>
+
+</template>
+<script>
+
+/* XXX Temp */
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+
+let seed = 10;
+function mg_random() {
+  var x = Math.sin(seed++) * 10000;
+  return x - Math.floor(x);
+}
+
+function getSeededRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(mg_random() * (max - min)) + min;
+}
+
+class MGQuilt extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element) {
+  static get is() { return 'mg-quilt'; }
+
+  static get properties() { return {
+    unitWidth: {
+      type: Number,
+    },
+
+    loadLength: {
+      type: Number,
+      value: 0,
+    },
+    allItems: {
+      type: Array,
+      value: [],
+    },
+
+    quiltItems: {
+      type: Array,
+      value: [],
+    },
+
+    /* This is for marking the last tested row (for each type of item)
+       to avoid testing from the top rows. */
+    sizeMap: {
+      type: Object,
+      value: {}
+    },
+
+    /* 2D-Array of boolens,once first rows are all-true
+    then they will be shifted out then ++offset */
+    collisionMap: {
+      type: Array,
+      value: []
+    },
+
+    /* marking top rows that are continuously filled */
+    collisionOffset: {
+      type: Number,
+      observer: '_collisionOffsetChanged',
+      value: 0,
+    },
+
+    numberOfColumns: {
+      type: Number,
+      value: 6,
+      observer: '_numberOfColumnsChanged'
+    },
+
+    selected: {
+      type: String,
+      value: null,
+      observer: '_selectedChanged'
+    },
+
+    visible: {
+      type:Boolean,
+      observer: '_visibleChanged',
+    },
+  }}
+
+  static get observers() { return [
+  ]}
+
+  _formatLabel(tags) {
+    if (tags) {
+      return Object.keys(tags).join(',');
+    }
+    return "";
+  }
+
+  _formatIconsForTags(tags) {
+    let ret = {};
+    for(let key in tags) {
+      ret[MGIconForRole(key)] = tags[key];
+    }
+    return ret;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener('iron-resize', this._onResizeEvent);
+
+    this.__photoIndex = getRandomInt(0,1000);
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener('iron-resize', this._onResizeEvent);
+    super.disconnectedCallback();
+  }
+
+  _visibleChanged(visible) {
+    visible && this._load();
+  }
+
+  _load() {
+    /* XXX Could use a pagination */
+    if (this.collisionMap.length+this.collisionOffset > 1000) return;
+
+    this.set('loading',true);
+    if (this._loading) this._loading.cancel();
+    this._loading = Polymer.Debouncer.debounce(this._loading,
+              Polymer.Async.timeOut.after(1000),
+              this._loadSome.bind(this,10));
+  }
+
+  _getPhotoIndex() {
+    this.__photoIndex+=getRandomInt(1,3);
+    return 1+this.__photoIndex%100;
+  }
+
+  _loadSome(rows) {
+    this.set('loading',false);
+    if (this.visible === false) {return;}
+    let originalOffset = this.collisionOffset;
+    let u = this.unitWidth*0.75;
+    let alts = [
+        "new-releases",
+        "best-sellers",
+        "dresses",
+        "lingeries",
+        "night-dresses",
+        "swimwears",
+        "sales",
+    ];
+
+
+    while (this.collisionOffset < originalOffset + rows && this.allItems.length < 2000) {
+      for (let j = 0; j < 5; j++) {
+
+        if (this.loadLength < this.allItems.length) {
+          this._appendItemToQuilt(this.allItems[this.loadLength++]);
+          continue;
+        }
+
+        let w = getRandomInt(1,3);
+        let h = getRandomInt(1,3);
+        let newItem = {
+          x: 0,
+          y: 0,
+          w: w,
+          h: h,
+          photo: "/moon-images/moon-"+this._getPhotoIndex()+".jpg",
+          tags: {[alts[getRandomInt(0,alts.length)]]:true},
+          //photo: "https://unsplash.it/"+(w*u)+"/"+(h*u)+"/?random="+this.__photoIndex++,
+
+        };
+
+        this.push('allItems',newItem);
+        this._appendItemToQuilt(newItem);
+        this.loadLength = this.allItems.length;
+      }
+
+      if (this.loadLength < this.allItems.length) {
+        this._appendItemToQuilt(this.allItems[this.loadLength++]);
+        continue;
+      }
+
+      let w = getRandomInt(2,7);
+      let h = getRandomInt(2,7);
+      let newItem = {
+        x: 0,
+        y: 0,
+        w: w,
+        h: h,
+        photo: "/moon-images/moon-"+this._getPhotoIndex()+".jpg",
+        tags: {[alts[getRandomInt(0,alts.length)]]:true,[alts[getRandomInt(0,alts.length)]]:true},
+          //photo: "https://unsplash.it/"+(w*u)+"/"+(h*u)+"/?random="+this.__photoIndex++,
+      };
+      this.push('allItems',newItem);
+      this._appendItemToQuilt(newItem);
+      this.loadLength = this.allItems.length;
+
+    }
+    this.$.scrollThreshold.clearTriggers();
+  }
+
+  _collisionOffsetChanged(collisionOffset) {
+    this.unitWidth = this.offsetWidth/this.numberOfColumns;
+    this.style.height = (collisionOffset*this.unitWidth)+"px";
+  }
+
+  _numberOfColumnsChanged(newNumColumns) {
+    if (newNumColumns == this.numberOfColumns) return;
+    this.sizeMap = {};
+    this.collisionMap = [];
+    this.set('collisionOffset',0);
+    this.set('quiltItems',[]);
+    this.visible && this._load();
+  }
+
+  _selectedChanged(selected) {
+    this.sizeMap = {};
+    this.collisionMap = [];
+    this.set('collisionOffset',0);
+    this.set('quiltItems',[]);
+    this.loadLength = 0;
+    this.visible && this._load();
+  }
+
+  _testCollision(row,col) {
+    if (row < this.collisionOffset) {
+      return true;
+    }
+    return this.collisionMap[row-this.collisionOffset][col];
+  }
+
+  _itemInOffsetRange(item) {
+    if (item.y < this.collisionOffset) return true;
+    return false;
+  }
+
+  _appendItemToQuilt(anItem, rtl) {
+    if (this.selected) {
+      if (!anItem.tags[this.selected]) {
+        return;
+      }
+    }
+
+    rtl = rtl || false;
+
+    let ew = anItem.width ? Math.ceil(anItem.width * this.numberOfColumns) : anItem.w;
+    let eh = anItem.height ? Math.ceil(anItem.height * this.numberOfColumns) : anItem.h;
+
+    anItem.w = ew;
+    anItem.h = eh;
+
+    if (ew > this.numberOfColumns) {
+      console.log(anItem, "is too wide").
+      return;
+    }
+
+    this.sizeMap[eh] = this.sizeMap[eh] || {[ew]:0};
+    this.sizeMap[eh][ew] = this.sizeMap[eh][ew] || 0;
+
+    let pN = this.sizeMap[eh][ew];
+    let pS = pN + eh - 1;
+    let pE = (rtl ? this.numberOfColumns : ew) - 1;
+    let pW = rtl ? pE - ew + 1 : 0;
+
+    seeking:
+    while (true) {
+      while (pE < this.numberOfColumns && pW >= 0) {
+
+        while ((this.collisionMap.length+this.collisionOffset) <= pS) {
+          let r = [];
+          while (r.length < this.numberOfColumns) r.push(false);
+          this.collisionMap.push(r);
+        }
+
+        let hasCollision = false;
+        test_collision:
+
+        for (let ri = pN; ri <= pS; ++ri) {
+        for (let ci = pW; ci <= pE; ++ci) {
+          if (this._testCollision(ri,ci)) {
+            hasCollision = true;
+            break test_collision;
+          }
+        }
+        }
+
+        if (!hasCollision) {
+          this.sizeMap[eh][ew] = pN;
+          anItem.x = pW;
+          anItem.y = pN;
+
+          /* Fill collision map */
+          for (let ri = pN; ri <= pS; ++ri) {
+          for (let ci = pW; ci <= pE; ++ci) {
+            this.collisionMap[ri-this.collisionOffset][ci] = true;
+          }
+          }
+
+          let firstRowFilled;
+          do {
+            firstRowFilled = true;
+            for (let ci = this.numberOfColumns-1; ci >= 0; --ci) {
+              if (!this.collisionMap[0][ci]) {
+                firstRowFilled = false;
+                break;
+              }
+            }
+            if (firstRowFilled) {
+              this.set('collisionOffset',this.collisionOffset+1);
+              this.collisionMap.shift();
+            }
+          } while (firstRowFilled && this.collisionMap.length);
+
+          break seeking;
+        }
+
+        pW += rtl ? -1 : 1;
+        pE += rtl ? -1 : 1;
+      }
+
+      pE = (rtl ? this.numberOfColumns : ew) - 1;
+      pW = rtl ? pE - ew + 1 : 0;
+      ++pN;
+      ++pS;
+    }
+
+    this.push('quiltItems',anItem);
+
+    //this.style.height = ((this.collisionMap.length+this.collisionOffset)*this.unitWidth)+"px";
+    //this.$.quilt.push('items', anItem);
+    //this.$.quiltItems.push(anItem);
+  }
+
+
+  _onResizeEvent(e) {
+      this.unitWidth = this.offsetWidth/this.numberOfColumns;
+      this.style.height = (this.collisionOffset*this.unitWidth)+"px";
+
+    //XXX If not done properly scroll may disappear
+      /*
+      let maxH = 1,
+          maxW = 1;
+      for (let i = 0, it; it = this.quiltItems[i]; ++i) {
+        let mh = it.y + it.h;
+        if (mh > maxH) maxH = mh;
+        let mw = it.x + it.w;
+        if (mw > maxW) maxW = mw;
+      }
+      this.style.height = (maxH * this.unitWidth)+"px";
+      this.style.width = (maxW * this.unitWidth)+"px";
+      */
+  }
+
+  _computePixel(value,blockSize,inset) {
+    if (!inset) inset = 0;
+    if (!blockSize) blockSize = this.offsetWidth/this.numberOfColumns;
+    return Math.floor(blockSize * value) - 4*inset;
+  }
+
+  _computeLocation(x,y, blockSize, index, inset) {
+    if (!inset) inset = 0;
+    if (!blockSize) blockSize = this.offsetWidth/this.numberOfColumns;
+    let unit = "px";
+    return ";left: "+ Math.floor(blockSize * x + 4) + unit
+      + ";top: "+ Math.floor(blockSize * y + 4) + unit;
+  }
+
+}
+
+customElements.define(MGQuilt.is, MGQuilt);
+</script>
 </dom-module>
