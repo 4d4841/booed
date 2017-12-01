@@ -185,7 +185,9 @@ var MHA = {
     this.utils.deepSet(MHA.data,'items.'+itemKey, itemData);
   },
 
-  get: (path) => MHA.data.get(path),
+  get: function(path) {
+    return this.data ? this.data.get(path) : null;
+  },
 
   utils: {
     /* deepSet is used to set a deep property of a Polymer Object.
@@ -221,6 +223,24 @@ var MHA = {
   },
 };
 
+
+if (!MHA.APP) {
+
+  let config = {
+    apiKey: "AIzaSyDyJuzvmpg4jRPs9VE_Mpne8vdysEZGxbo",
+    authDomain: "be-booed.firebaseapp.com",
+    databaseURL: "https://be-booed.firebaseio.com",
+    projectId: "be-booed",
+    storageBucket: "be-booed.appspot.com",
+    messagingSenderId: "1079409265314"
+  };
+
+  MHA.APP = firebase.initializeApp(config);
+  MHA.DB = MHA.APP.database();
+  MHA.ST = MHA.APP.storage();
+  MHA.AU = MHA.APP.auth();
+}
+
 (function() {
 let __MGDataInstances = [];
 let __MGDataNotifierStates = new Map();
@@ -249,12 +269,12 @@ class MGData extends Polymer.Element {
 
   constructor() {
     super();
-    MHA.data = this;
   }
 
   connectedCallback() {
     super.connectedCallback();
     __MGDataInstances.push(this);
+    if (!MHA.data) MHA.data = this;
   }
 
   disconnectedCallback() {

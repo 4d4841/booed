@@ -586,6 +586,8 @@
 
       super._itemKeyChanged(itemKey);
 
+      if (!itemKey) return;
+      
       let item = MHA.get(['items',itemKey]);
       for(let prop in item) {
         switch(prop) {

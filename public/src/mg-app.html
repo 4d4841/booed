@@ -30,6 +30,7 @@
 <link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-styles/typography.html">
+<link rel="import" href="mg-data.html">
 <link rel="import" href="mg-cart-button.html">
 <link rel="import" href="mg-profile-button.html">
 <link rel="import" href="mg-balloon.html">
@@ -588,6 +589,8 @@
 <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-storage.js"></script>
 <script>
 
+var MHA_INITIALIZED;
+
 function MGIconForRole(role) {
   switch(role) {
     case "product": return "local-mall";
@@ -683,6 +686,14 @@ class MGApp extends Polymer.Element {
   }
 
   constructor() {
+    super();
+    if (MHA_INITIALIZED) {
+      console.trace();
+      console.warn('Initialized');
+      return;
+    }
+    MHA_INITIALIZED = true;
+
     let config = {
       apiKey: "AIzaSyDyJuzvmpg4jRPs9VE_Mpne8vdysEZGxbo",
       authDomain: "be-booed.firebaseapp.com",
@@ -692,14 +703,23 @@ class MGApp extends Polymer.Element {
       messagingSenderId: "1079409265314"
     };
 
-    let app = firebase.initializeApp(config);
-    MHA.DB = app.database();
-    MHA.ST = app.storage();
-    MHA.AU = app.auth();
+    if (typeof MHA !== 'undefined') {
+      if (!MHA.APP) {
+        MHA.APP = firebase.initializeApp(config);
+        MHA.DB = MHA.APP.database();
+        MHA.ST = MHA.APP.storage();
+        MHA.AU = MHA.APP.auth();
+      }
+    }
     console.log('Application got initialized with lo❤e for', {"Moon HyunA's":{cats:['Moya','Hoya','Spikey'],husband:'Steve',songs:['Cricket Song','Remedy','Doong Doong']}});
 
-    super();
     window.performance && performance.mark && performance.mark('mg-app.created');
+
+  }
+
+  disconnectedCallback() {
+    console.log('disconnect?');
+    super.disconnectedCallback();
   }
 
   connectedCallback() {
