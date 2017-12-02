@@ -276,7 +276,10 @@
         this._setPhotoKeyProperty(itemKey, '_src', 'images/logo-pumpkin-face-grayout.svg');
         return;
       }
-      let thumbnail = MHA.get(['items',itemKey,'images',imageKey,'thumbnail']);
+
+      //let thumbnail = MHA.get(['items',itemKey,'images',imageKey,'thumbnail']);
+      /* Oh dear */
+      let thumbnail = MHA.getItemProperties({[itemKey]:{images:{[imageKey]:{thumbnail:null}}}},true);
       if (thumbnail) {
         let uid = MHA.AU.currentUser.uid;
         MHA.registerRepresentation(thumbnail, { src: (key,src) => {
@@ -311,7 +314,9 @@
         let imageKey = path[3];
         this.itemList.every((item,index) => {
           if (itemKey == item.key &&
-            imageKey == MHA.get(['items',itemKey,'cover'])) {
+            //imageKey == MHA.get(['items',itemKey,'cover'])) {
+            imageKey == MHA.getItemProperties({[itemKey]:{cover:null}},true)) {
+
             this._setCover(itemKey,imageKey);
             return false;
           }

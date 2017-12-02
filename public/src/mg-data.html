@@ -185,11 +185,39 @@ var MHA = {
     this.utils.deepSet(MHA.data,'items.'+itemKey, itemData);
   },
 
+  getItemProperties: function(target,getProp) {
+    if (getProp) {
+      return this.utils.deepGet(target, this.items, getProp);
+    }
+
+    this.utils.deepGet(target, this.items);
+    return target;
+  },
+
   get: function(path) {
     return this.data ? this.data.get(path) : null;
   },
 
   utils: {
+    deepGet: function _(target, source, getProp) {
+      for (let p in target) {
+        if (source[p] && target[p] === null) {
+          if (getProp) {
+            return source[p];
+          }
+          target[p] = source[p];
+        } else if (typeof source[p] !== 'undefined') {
+          if (getProp) {
+            let ret = _(target[p], source[p], true);
+            if (ret !== null) return ret;
+          } else {
+            _(target[p], source[p]);
+          }
+        }
+      }
+
+      return null;
+    },
     /* deepSet is used to set a deep property of a Polymer Object.
      * It only supports object in a path and scalar array.
      * It can not be used to set a particular array item.
@@ -197,28 +225,34 @@ var MHA = {
      * in the structure of the object argument.
      */
     deepSet: function _(polymerElement, path, object) {
-      if (typeof object === 'object') {
-        if (object === null) {
-          polymerElement.set(path, null);
-          return;
+      if (typeof object !== 'object') {
+        polymerElement.set(path, object);
+      } else if (object === null) {
+        /* XXX May be it will also perform a delete afterward */
+        polymerElement.set(path, null);
+      } else if (Array.isArray(object)) {
+        /* Handle scalar array */
+        let old = polymerElement.get(path);
+        if (!Array.isArray(old)
+        || old.length != object.length
+        || !old.every((v,i) => v === object[i])) {
+          /* Only set if not equal */
+          polymerElement.set(path, object);
         }
-        if (Array.isArray(object)) {
-          let old = polymerElement.get(path);
-          if (!Array.isArray(old)
-          || old.length != object.length
-          || !old.every((v,i) => v === object[i])) {
-            /* Only set if not equal */
-            polymerElement.set(path, object);
-          }
-          return;
-        }
+      } else {
         if (typeof polymerElement.get(path) !== 'object') {
+          /* Overwrite non-object and to create a readable placeholder */
           polymerElement.set(path, {});
         }
         Object.keys(object).forEach(key => _(polymerElement, path+'.'+key, object[key]));
-      } else {
-        polymerElement.set(path, object);
       }
+
+      /*
+      MHA._logDebouncer = Polymer.Debouncer.debounce(MHA._logDebouncer,
+        Polymer.Async.timeOut.after(500), () => {
+          console.log(MHA.items)
+        });
+        */
     },
   },
 };
