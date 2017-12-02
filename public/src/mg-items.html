@@ -279,7 +279,7 @@
 
       //let thumbnail = MHA.get(['items',itemKey,'images',imageKey,'thumbnail']);
       /* Oh dear */
-      let thumbnail = MHA.getItemProperties({[itemKey]:{images:{[imageKey]:{thumbnail:null}}}},true);
+      let thumbnail = MHA.getItem({[itemKey]:{images:{[imageKey]:{thumbnail:null}}}});
       if (thumbnail) {
         let uid = MHA.AU.currentUser.uid;
         MHA.registerRepresentation(thumbnail, { src: (key,src) => {
@@ -315,7 +315,7 @@
         this.itemList.every((item,index) => {
           if (itemKey == item.key &&
             //imageKey == MHA.get(['items',itemKey,'cover'])) {
-            imageKey == MHA.getItemProperties({[itemKey]:{cover:null}},true)) {
+            imageKey == MHA.getItem({[itemKey]:{cover:null}})) {
 
             this._setCover(itemKey,imageKey);
             return false;

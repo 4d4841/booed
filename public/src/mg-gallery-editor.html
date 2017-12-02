@@ -417,7 +417,7 @@
         let imageKey =  MHA.DB.ref('home').child(uid).child(itemKey).child('images').push().key;
         let imageName = imgFile.name.split('.')[0];
         //let coverImageKey = MHA.get(['items',itemKey,'cover']) || imageKey;
-        let coverImageKey = MHA.getItemProperties({[itemKey]:{cover:null}},true) || imageKey;
+        let coverImageKey = MHA.getItem({[itemKey]:{cover:null}}) || imageKey;
         MHA.assignItem(itemKey,{ cover: coverImageKey });
 
         let registerInfo = {};
@@ -589,7 +589,7 @@
       if (!itemKey) return;
 
       //let item = MHA.get(['items',itemKey]);
-      let item = MHA.getItemProperties({[itemKey]:null},true);
+      let item = MHA.getItem({[itemKey]:null});
       for(let prop in item) {
         switch(prop) {
           case '_uid':
@@ -708,7 +708,7 @@
 
       this.selectedImages.forEach(selectedKey => {
         //let del = MHA.get(['items',this.itemKey,'images',selectedKey,'deleted']) ? null:true;
-        let del = MHA.getItemProperties({[itemKey]:{images:{[selectedKey]:{deleted:null}}}},true) ? null:true;
+        let del = MHA.getItem({[itemKey]:{images:{[selectedKey]:{deleted:null}}}}) ? null:true;
         MHA.assignItem(this.itemKey, {images:{[selectedKey]:{deleted:del}}});
         registerData['home/'+MHA.AU.currentUser.uid+'/items/'+this.itemKey+'/images/'+selectedKey+'/deleted'] = del;
       });
@@ -775,7 +775,7 @@
           role: this.itemRole,
           name: this.itemName,
           //thumbnail: MHA.get(['items',this.itemKey,'images',this.itemCover,'thumbnail']),
-          thumbnail: MHA.getItemProperties({[itemKey]:{images:{[itemCover]:{thumbnail:null}}}},true),
+          thumbnail: MHA.getItem({[itemKey]:{images:{[itemCover]:{thumbnail:null}}}}),
         }
 
         this.push('clipboardList',copy);
@@ -823,7 +823,7 @@
 
       path+='/images/';
       //let coverKey = MHA.get(['items',itemKey,'cover']);
-      let coverKey = MHA.getItemProperties({[itemKey]:{cover:null}},true);
+      let coverKey = MHA.getItem({[itemKey]:{cover:null}});
       let area = (250*250); /* Pixel area for creating thumbnail */
       let waitThumbnails = 0; /* waiting counter for all completions */
 
