@@ -724,12 +724,9 @@ class MGApp extends Polymer.Element {
 
   connectedCallback() {
     super.connectedCallback();
-    this.removeAttribute('unresolved');
 
-    let loadingscreen = document.querySelector('#loadingscreen');
-    loadingscreen.style.opacity = 0;
     Polymer.Async.timeOut.run(() => {
-      loadingscreen.remove();
+      this.removeAttribute('unresolved');
     }, 2000);
 
     window.addEventListener('scroll', this._onScroll.bind(this));

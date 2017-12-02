@@ -27,16 +27,6 @@
     <custom-style>
   <style is="custom-style" include="mg-item-editor mg-common-styles iron-flex iron-flex-alignment">
 
-    :host([empty]) #image-selector {
-      border: 2px dashed var(--disabled-text-color);
-      margin: 0 20px 50px 0;
-    }
-
-    :host([dropenter]) #image-selector {
-      border: 2px dashed tomato;
-      margin: 0 20px 50px 0;
-    }
-
     #image-selector {
       @apply --layout-horizontal;
       @apply --layout-wrap;
@@ -44,8 +34,17 @@
       @apply --layout-start-aligned;
       padding: 0 0 24px 0;
       overflow-y: auto;
-      border: 2px solid transparent;
+      border: 1px solid transparent;
       border-radius: 5px;
+      margin: 0 20px 50px 0;
+    }
+
+    :host([empty]) #image-selector {
+      border: 1px dashed var(--disabled-text-color);
+    }
+
+    :host([dropenter]) #image-selector {
+      border: 1px dashed tomato;
     }
 
     #gallery-editor {
