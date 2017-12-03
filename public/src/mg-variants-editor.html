@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<!--
+ .................................................................................................
+:::BSDB'::BSDB'::BSDB':::::BSDB':::BSDBS'::BSDBS'::BSDB'::::BSD'::BSDBS'::BSDBS'::BSDB'::::::BSD'::
+::BSDBSD BSDBSD :.BSDBS':BSDBS .:BSD ..BSD  ...BSD 'BSDBS':BSD .BSD ..BSD  ...BSD :BSDBS'::BSDB .::
+::COPYRIGHT2017 ::.BS BSDB .BS :BSD .::.BSD :::.BSD :BS .BSDB .BSD .:::BSD ::::BSD :BS BSDB BS .:::
+:::BSDSTYLEBSD .:::BS  BS .:BS :BSD ::::BSD ::::BSD :BS ::BSD :BSD :::::...::::BSD :BS :BS  BS ::::
+::::.LICENSE .::::BSD .:..::BS 'BSD ::::BSD ::::BSD :BS :::BS :BSD ::BSDBS'::::BSD :BS ::..:BS ':::
+:::::::BSD .::::BSDB .::::::BSD 'BSD'::BSD .:::BSD .BSD :::BSD':BSD'::.BSD :::BSD .BSD :::::BSDB'::
+::::::::B .::::::BS .:::::::.BSD ::BSDBS .:BSDBS  :BSD .::::BSD :.BSDBS BS BSDB .:BSD .:::::.BS .::
+`::::::::.::::::::..::::::::::...:::.....:::.....:::...::::::...:::.............:::...::::::::..::'
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="mg-common-styles.html">
+<link rel="import" href="mg-variant.html">
+
+<dom-module id="mg-variants-editor">
+<template strip-whitespace>
+    <custom-style>
+  <style is="custom-style" include="paper-material-styles mg-common-styles iron-flex iron-flex-alignment">
+  :host {
+    /*border: 2px solid tomato;*/
+    width: auto;
+    @apply --layout-horizontal;
+  }
+
+  #variant-selector {
+    display: inline-block;
+    background-color: var(--booed-outer-color);
+    /*border: 2px solid green;*/
+  }
+
+  </style>
+    </custom-style>
+
+  <div class="paper-material vertical layout center" elevation="1">
+
+    <paper-dropdown-menu label="ตัวเลือก" selected-item="{{selectedType}}">
+      <paper-listbox slot="dropdown-content" class="dropdown-content">
+        <template is="dom-repeat" items="[[menu.entries]]">
+          <paper-icon-item label="[[item.title]]" name="[[item.name]]">
+            <iron-icon icon="[[item.icon]]" slot="item-icon"></iron-icon>
+            [[item.title]]
+          </paper-icon-item>
+        </template>
+      </paper-listbox>
+    </paper-dropdown-menu>
+    <template is="dom-if" if="[[testEqual(selectedType.name,'custom')]]">
+      <paper-input
+        id="value"
+        value="{{customType}}"
+      > <iron-icon icon="mode-edit" slot="prefix"></iron-icon>
+      </paper-input>
+    </template>
+
+    <iron-selector
+      id="variant-selector"
+      selected-attribute="selected"
+      selected-item="{{selectedVariant}}"
+      >
+      <template is="dom-repeat" items="{{variants}}">
+        <mg-variant
+          variant-type="[[_formatVariant(menu,selectedType.name,customType)]]"
+          variant-key="[[item.key]]"
+          variant-changed="{{variantChanged}}"
+          >
+        </mg-variant>
+      </template>
+    </iron-selector>
+
+    <paper-icon-button
+      icon="add"
+      on-click="_onAddVariant"
+    ></paper-icon-button>
+  </div>
+
+  <!--
+  <template is="dom-if" if="[[_shouldShowNextEditor(selectedVariant)]]"
+    <mg-variants-editor
+      item-key="[[itemKey]]"
+      menu="[[variantsMenu]]"
+    >
+    </mg-variants-editor>
+  </template>
+  -->
+
+</template>
+<script>
+class MGVariantsEditor extends Polymer.Element {
+  _shouldShowNextMenu(selectedVariant) {
+    console.log(selectedVariant);
+    return false;
+  }
+
+  static get is() { return 'mg-variants-editor'; }
+
+  static get properties() { return {
+    variantChanged: {
+      type: Object,
+      observer: '_variantChanged',
+    },
+    selectedType: {
+      type: Object,
+    },
+    selectedVariant: {
+      type: Object,
+      observer: '_selectedVariantChanged'
+    },
+    variants: {
+      type: Array,
+      value: [],
+    },
+    menu: {
+      type: Object,
+      observer: '_menuChanged'
+    },
+    customType: {
+      type: String,
+      value: '',
+    },
+    itemKey: {
+      type: String,
+    },
+  }}
+
+  static get observers() { return [
+  ]}
+
+  _variantChanged(variant) {
+    console.log(variant);
+  }
+
+  testEqual(a,b) {
+    if (a == b) return true;
+    return false;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+  }
+
+  _formatVariant(menu,type,customType) {
+    let title = type;
+    menu.entries.every(item => {
+      if (item.name == type) {
+        title = item.title + (type == 'custom' ? (customType?':':'')+customType : '');
+        return false;
+      }
+      return true;
+    });
+    return title;
+  }
+
+  _menuChanged(newMenu,oldMenu) {
+  }
+
+  _selectedVariantChanged(newElement,oldElement){
+    if (newElement)
+    console.log('should show next menu for',newElement.variantKey);
+  }
+
+  _onAddVariant(e){
+    this.push('variants',{key: MHA.DB.ref('items').child(this.itemKey).push().key});
+  }
+}
+
+customElements.define(MGVariantsEditor.is, MGVariantsEditor);
+</script>
+</dom-module>

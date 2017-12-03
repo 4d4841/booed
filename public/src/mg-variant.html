@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<!--
+ .................................................................................................
+:::BSDB'::BSDB'::BSDB':::::BSDB':::BSDBS'::BSDBS'::BSDB'::::BSD'::BSDBS'::BSDBS'::BSDB'::::::BSD'::
+::BSDBSD BSDBSD :.BSDBS':BSDBS .:BSD ..BSD  ...BSD 'BSDBS':BSD .BSD ..BSD  ...BSD :BSDBS'::BSDB .::
+::COPYRIGHT2017 ::.BS BSDB .BS :BSD .::.BSD :::.BSD :BS .BSDB .BSD .:::BSD ::::BSD :BS BSDB BS .:::
+:::BSDSTYLEBSD .:::BS  BS .:BS :BSD ::::BSD ::::BSD :BS ::BSD :BSD :::::...::::BSD :BS :BS  BS ::::
+::::.LICENSE .::::BSD .:..::BS 'BSD ::::BSD ::::BSD :BS :::BS :BSD ::BSDBS'::::BSD :BS ::..:BS ':::
+:::::::BSD .::::BSDB .::::::BSD 'BSD'::BSD .:::BSD .BSD :::BSD':BSD'::.BSD :::BSD .BSD :::::BSDB'::
+::::::::B .::::::BS .:::::::.BSD ::BSDBS .:BSDBS  :BSD .::::BSD :.BSDBS BS BSDB .:BSD .:::::.BS .::
+`::::::::.::::::::..::::::::::...:::.....:::.....:::...::::::...:::.............:::...::::::::..::'
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="mg-common-styles.html">
+
+<dom-module id="mg-variant">
+<template strip-whitespace>
+    <custom-style>
+  <style is="custom-style" include="mg-common-styles iron-flex iron-flex-alignment">
+
+  :host {
+    display: inline-block;
+    @apply --layout-horizontal;
+    @apply --layout-center;
+    border: 2px solid transparent;
+  }
+
+  :host(.iron-selected) {
+    border: 2px solid tomato;
+  }
+
+  </style>
+    </custom-style>
+
+  <paper-icon-button
+    icon="close"
+    tabindex="-1"
+  >
+  </paper-icon-button>
+
+  <paper-input
+    id="input"
+    value="{{inputValue}}"
+    label="[[variantType]]"
+    focused="{{focusedName}}"
+    always-float-label="[[focusedName]]"
+  >
+  </paper-input>
+
+  <paper-icon-button
+    tabindex="-1"
+    icon="content-copy"
+  >
+  </paper-icon-button>
+
+</template>
+<script>
+(function(){
+
+function measureText(text){
+  if (!measureText.context) {
+    measureText.context = document.createElement("canvas").getContext("2d");
+    measureText.context['font'] = "16px Roboto, Noto, sans-serif";
+  }
+
+  let width = measureText.context.measureText(text).width + 10;
+  return (width < 200 ? 200 : width)+'px';
+};
+
+
+class MGVariant extends Polymer.Element {
+  static get is() { return 'mg-variant'; }
+
+  static get properties() { return {
+    variantKey: {
+      type: String
+    },
+    variantChanged: {
+      type: String,
+      notify: true,
+    },
+    variantType: {
+      type: String,
+    },
+    inputValue: {
+      type: String,
+      observer: '_inputValueChanged',
+    },
+    selected: {
+      type: Boolean,
+    },
+  }}
+
+  static get observers() { return [
+  ]}
+
+  _inputValueChanged(newValue, oldValue) {
+    this.$['input'].style['width'] = measureText(newValue);
+    this.set('variantChanged',{key:this.variantKey, data:newValue});
+  }
+
+}
+
+customElements.define(MGVariant.is, MGVariant);
+})();
+</script>
+</dom-module>
