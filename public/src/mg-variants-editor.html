@@ -81,21 +81,19 @@
     ></paper-icon-button>
   </div>
 
-  <!--
-  <template is="dom-if" if="[[_shouldShowNextEditor(selectedVariant)]]"
+  <template is="dom-if" if="[[_shouldShowNextEditor(selectedVariant)]]">
     <mg-variants-editor
       item-key="[[itemKey]]"
-      menu="[[variantsMenu]]"
+      menu="[[menu]]"
     >
     </mg-variants-editor>
   </template>
-  -->
 
 </template>
 <script>
 class MGVariantsEditor extends Polymer.Element {
-  _shouldShowNextMenu(selectedVariant) {
-    console.log(selectedVariant);
+  _shouldShowNextEditor(selectedVariant) {
+    if(selectedVariant) return true;
     return false;
   }
 
@@ -115,7 +113,7 @@ class MGVariantsEditor extends Polymer.Element {
     },
     variants: {
       type: Array,
-      value: [],
+      value: function(){ return [];},
     },
     menu: {
       type: Object,

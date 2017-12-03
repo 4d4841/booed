@@ -51,13 +51,33 @@
     focused="{{focusedName}}"
     always-float-label="[[focusedName]]"
     value="{{itemName}}"
-  >
-    <iron-icon icon="[[iconForRole(itemRole)]]" slot="prefix"></iron-icon>
+  > <iron-icon icon="[[iconForRole(itemRole)]]" slot="prefix"></iron-icon>
   </paper-input>
 
 </template>
 <script>
-class MGItemEditor extends Polymer.Element {
+
+var MGItemEditor
+(function() {
+
+function measureText(text){
+  if (!measureText.context) {
+    measureText.context = document.createElement("canvas").getContext("2d");
+    measureText.context['font'] = "16px Roboto, Noto, sans-serif";
+    /*
+    measureText.context['font-family'] = "Roboto, Noto, sans-serif";
+    measureText.context['font-size'] = '16px';
+    measureText.context['font-weight'] = 400;
+    measureText.context['line-height'] = '24px';
+    */
+  }
+
+  let width = measureText.context.measureText(text).width + 30;
+  return (width < 200 ? 200 : width)+'px';
+};
+
+MGItemEditor = class __MGItemEditor extends Polymer.Element {
+
   static get is() { return 'mg-item-editor'; }
 
   static get properties() { return {
@@ -134,12 +154,14 @@ class MGItemEditor extends Polymer.Element {
   }
 
   _itemNameChanged(user, itemRole, itemName) {
+
+    this.$['name-editor'].style['width'] = measureText(itemName);
+
     if (!user || !itemRole || (!this.focusedName)) {
       return;
     }
 
     if (itemName || itemName === "") {
-
       var registerData = {
         ['items/'+this.itemKey+'/uid']: user.uid,
         ['items/'+this.itemKey+'/name']: itemName,
@@ -173,5 +195,7 @@ class MGItemEditor extends Polymer.Element {
 }
 
 customElements.define(MGItemEditor.is, MGItemEditor);
+})();
+
 </script>
 </dom-module>

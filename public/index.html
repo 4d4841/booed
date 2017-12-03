@@ -57,11 +57,11 @@
       background-color: #f6f0f4;
       top: 0;
       left: 0;
-      transition: opacity 0.5s;
+      transition: opacity 1s;
       opacity: 1;
     }
 
-    mg-app:not([unresolved]) + #loadingscreen  {
+    mg-app:not([loading]):not([unresolved]) + #loadingscreen  {
       opacity: 0;
     }
 
@@ -94,7 +94,7 @@
 </head>
 <body>
 
-  <mg-app unresolved></mg-app>
+  <mg-app unresolved loading></mg-app>
   <div id="loadingscreen"><img src="images/logo-bounce.svg"></div>
 
   <script src="bower_components/webcomponentsjs/webcomponents-loader.js"></script>

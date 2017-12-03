@@ -38,7 +38,7 @@
 
     #new-item-button {
       margin-left: 25px;
-      width: 100px;
+      width: 180px;
       padding:0;
       height:40px;
       box-shadow: 1px 1px 2px var(--app-shadow-color);
@@ -113,7 +113,20 @@
     }
     */
 
+    #new-item-button::before {
+      content: "สร้างไอเท็ม";
+    }
+
     @media (max-width: 767px) {
+      #new-item-button {
+        margin-left: 25px;
+        width: 100px;
+      }
+
+      #new-item-button::before {
+        content: "สร้าง";
+      }
+
       .item {
         width: 100px;
         height: 100px;
@@ -151,7 +164,7 @@
   <mg-data items="{{items}}"></mg-data>
   <div class="side-bar">
     <paper-button id="new-item-button" on-tap="_openNewItemMenu">
-      <iron-icon icon="add"></iron-icon> สร้าง
+      <iron-icon icon="add"></iron-icon>
     </paper-button>
 
     <!--<div id="top-smooth-edge"></div>-->
@@ -171,9 +184,13 @@
 
   </div>
 
-
-  <mg-balloon id="new-item-balloon" no-overlap vertical-align="top" dynamic-align horizontal-align="auto">
-    <mg-menu menu="[[newItemMenu]]"></mg-menu>
+  <mg-balloon
+    id="new-item-balloon"
+    no-overlap
+    vertical-align="top"
+    dynamic-align
+    horizontal-align="auto"
+  > <mg-menu menu="[[newItemMenu]]"></mg-menu>
   </mg-balloon>
 
   <div class="editor-container">
@@ -211,7 +228,7 @@
 
       itemList: {
         type: Array,
-        value: [],
+        value: function(){return [];},
       },
 
       itemKey: {

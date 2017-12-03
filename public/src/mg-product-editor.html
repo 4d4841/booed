@@ -15,18 +15,19 @@
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="mg-clipboard.html">
 <link rel="import" href="mg-item-editor.html">
+<link rel="import" href="mg-clipboard.html">
 <link rel="import" href="mg-common-styles.html">
-<link rel="import" href="mg-input.html">
-<link rel="import" href="mg-item-image.html">
 <link rel="import" href="mg-gallery-editor.html">
+<link rel="import" href="mg-variants-editor.html">
 
 
 <dom-module id="mg-product-editor">
 <template strip-whitespace>
     <custom-style>
   <style is="custom-style" include="mg-item-editor mg-common-styles iron-flex iron-flex-alignment">
+    :host {
+    }
 
     #product-editor {
     }
@@ -52,9 +53,22 @@
 
     </div>
 
+    <mg-variants-editor
+      item-key="[[itemKey]]"
+      menu="[[variantsMenu]]"
+    >
+    </mg-variants-editor>
+
+    <!--
+  <iron-selector
+    id="field-selector"
+    selected="{{selectedImages}}"
+    multi>
+  </iron-selector
+-->
+
 
   </div>
-  [[galleryItemKey]]
   <mg-gallery-editor
     id="gallery-editor"
     class="flex"
@@ -83,6 +97,23 @@
     }
 
     static get properties() { return {
+      variantsMenu: {
+        type: Object,
+        value: {
+          entries: [
+            {name:"price", icon:"attach-money", title:"ราคา" },
+            {name:"color", icon:"color-lens", title:"สี" },
+            {name:"size", icon:"equalizer", title:"ขนาด" },
+            {name:"custom", icon:"mode-edit", title:"กำหนด" },
+          ],
+        }
+      },
+
+      variant: {
+        type: Array,
+        value: function(){return [];},
+      },
+
       itemRole: {
         type: String,
         value: "product",
@@ -98,6 +129,19 @@
 
     static get observers() { return [
     ]}
+
+    updateChanges(path,value) {
+      let itemKey = path[1];
+      let itemProperty = path[2];
+      switch(itemProperty) {
+        case 'cover': {
+          this.set('itemCover',value);
+        } break;
+        case 'name': {
+          this.set('itemName', value);
+        } break;
+      }
+    }
 
     _onAddGalleryTap(e) {
       this.$['gallery-editor'].newItem('แกลเลอรี่ของ'+this.itemName);

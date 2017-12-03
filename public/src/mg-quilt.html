@@ -127,26 +127,26 @@ class MGQuilt extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Po
     },
     allItems: {
       type: Array,
-      value: [],
+      value: function(){return [];},
     },
 
     quiltItems: {
       type: Array,
-      value: [],
+      value: function(){return [];},
     },
 
     /* This is for marking the last tested row (for each type of item)
        to avoid testing from the top rows. */
     sizeMap: {
       type: Object,
-      value: {}
+      value: function(){return {};},
     },
 
     /* 2D-Array of boolens,once first rows are all-true
     then they will be shifted out then ++offset */
     collisionMap: {
       type: Array,
-      value: []
+      value: function(){return [];},
     },
 
     /* marking top rows that are continuously filled */
