@@ -41,30 +41,52 @@ header > mg-button[responsive] {
   margin-top: 20px;
 }
 
-::-webkit-scrollbar-track {
+::-webkit-scrollbar-track:vertical {
   /*box-shadow: inset 1px -1px 0px var(--app-shadow-color);*/
   background: linear-gradient(to bottom, white 0, transparent 20px),linear-gradient(to top, white 0, transparent 20px),linear-gradient(to right, var(--app-shadow-color) 0,var(--booed-outer-color) 2px, white 100%);
   background-color: transparent;
   border-radius: 0 5px 5px 0;
 }
 
+::-webkit-scrollbar-track:horizontal {
+  /*box-shadow: inset 1px -1px 0px var(--app-shadow-color);*/
+  background: linear-gradient(to right, white 0, transparent 20px),linear-gradient(to left, white 0, transparent 20px),linear-gradient(to bottom, var(--app-shadow-color) 0,var(--booed-outer-color) 2px, white 100%);
+  background-color: transparent;
+  border-radius: 0 5px 5px 0;
+}
+
 ::-webkit-scrollbar {
   width: 15px;
+  height: 15px;
   border-radius: 0 5px 5px 0;
 }
 
 ::-webkit-scrollbar-thumb {
-  width: 7px;
   background-color: white;
-  border-radius: 0 5px 5px 0;
   border: 1px solid var(--app-shadow-color);
-  border-left: none;
   box-shadow: 1px 1px 1px var(--app-shadow-color);
 }
 
+::-webkit-scrollbar-thumb:vertical {
+  border-radius: 0 5px 5px 0;
+  border-left: none;
+}
+
+::-webkit-scrollbar-thumb:horizontal {
+  border-radius: 0 0 5px 5px;
+  border-top: none;
+}
+
 ::-webkit-scrollbar-thumb:active {
-  background: linear-gradient(white 0, var(--booed-outer-color) 20%, var(--booed-outer-color) 80%, white 100%);
   box-shadow: inset 0 0 5px white;
+}
+
+::-webkit-scrollbar-thumb:active:vertical {
+  background: linear-gradient(to right, white 0, var(--booed-outer-color) 20%, var(--booed-outer-color) 80%, white 100%);
+}
+
+::-webkit-scrollbar-thumb:active:horizontal {
+  background: linear-gradient(to bottom, white 0, var(--booed-outer-color) 20%, var(--booed-outer-color) 80%, white 100%);
 }
 
 @media (max-width: 767px) {
