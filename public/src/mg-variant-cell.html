@@ -13,9 +13,9 @@
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="mg-common-styles.html">
+<link rel="import" href="mg-input.html">
 
 <dom-module id="mg-variant-cell">
 <template strip-whitespace>
@@ -49,19 +49,12 @@
     tabindex="-1"
   ></paper-icon-button>
 
-  <paper-input
+
+  <mg-input
     id="input"
-    style="width:100px"
     value="{{inputValue}}"
     label="[[variantType]]"
-    focused="{{inputFocused}}"
-    always-float-label="[[inputFocused]]"
-  ></paper-input>
-
-  <paper-icon-button
-    tabindex="-1"
-    icon="content-copy"
-  ></paper-icon-button>
+  ></mg-input>
 
   <template is="dom-if" if="[[hasChildren]]">
     <iron-icon style="padding-bottom:8px;color:tomato" icon="chevron-right"></iron-icon>

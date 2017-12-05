@@ -15,6 +15,7 @@
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="mg-input.html">
 
 <dom-module id="mg-item-editor">
 <template strip-whitespace>
@@ -45,6 +46,7 @@
 
   </style>
     </custom-style>
+    <!--
   <paper-input
     id="name-editor"
     label="[[_formatLabelDescription(itemRole)]]"
@@ -53,6 +55,16 @@
     value="{{itemName}}"
   > <iron-icon icon="[[iconForRole(itemRole)]]" slot="prefix"></iron-icon>
   </paper-input>
+-->
+
+  <mg-input
+    id="name-editor"
+    label="[[_formatLabelDescription(itemRole)]]"
+    focused="{{focusedName}}"
+    value="{{itemName}}"
+    min-width="300"
+  > <iron-icon icon="[[iconForRole(itemRole)]]" slot="prefix"></iron-icon>
+  </mg-input>
 
 </template>
 <script>
