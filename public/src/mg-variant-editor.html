@@ -52,7 +52,7 @@
 
     <div class="horizontal layout">
       <paper-dropdown-menu style="width:100px;padding:0 10px 0 0" label="ทางเลือก" selected-item="{{selectedType}}">
-        <paper-listbox slot="dropdown-content" class="dropdown-content">
+        <paper-listbox slot="dropdown-content" class="dropdown-content layout start" selected="1">
           <template is="dom-repeat" items="[[menu.entries]]">
             <paper-icon-item label="[[item.title]]" name="[[item.name]]">
               <iron-icon icon="[[item.icon]]" slot="item-icon"></iron-icon>
@@ -80,13 +80,20 @@
             slot="dropdown-content"
             class="dropdown-content"
           > <paper-icon-item label="บาท" currency="thb">
+              <iron-icon icon="attach-money-thb" slot="item-icon"></iron-icon>
               บาท
             </paper-icon-item>
             <paper-icon-item label="เยน" currency="jpy">
+              <iron-icon icon="attach-money-jpy" slot="item-icon"></iron-icon>
               yen
             </paper-icon-item>
             <paper-icon-item label="วอน" currency="krw">
+              <iron-icon icon="attach-money-krw" slot="item-icon"></iron-icon>
               won
+            </paper-icon-item>
+            <paper-icon-item label="ดอล" currency="usd">
+              <iron-icon icon="attach-money" slot="item-icon"></iron-icon>
+              usd
             </paper-icon-item>
           </paper-listbox>
         </paper-dropdown-menu>
