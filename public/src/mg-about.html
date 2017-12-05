@@ -12,29 +12,26 @@
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-iconset-svg/iron-iconset-svg.html">
 <link rel="import" href="mg-button.html">
 <link rel="import" href="mg-icons.html">
 
 <dom-module id="mg-about">
   <template>
       <custom-style>
-    <style include="mg-button">
+    <style include="mg-button iron-flex iron-flex-alignment">
 
       :host {
-        display: block;
         color: var(--app-secondary-color);
         @apply --layout-vertical;
         @apply --layout-center;
-      }
-
-      iron-icon {
-        display: block;
-        width: 80px;
-        height: 80px;
+        @apply --layout-center-justified;
       }
 
       h1 {
@@ -70,6 +67,14 @@
         }
       }
 
+      .display-icon {
+        width: 100px;
+        --iron-icon-width: 24px;
+        --iron-icon-height: 24px;
+        padding: 10px;
+        @apply --layout-vertical;
+        @apply --layout-center;
+      }
 
       a:link {
             text-decoration: none;
@@ -78,20 +83,47 @@
     </style>
       </custom-style>
 
-  <paper-card>
+    <iron-pages
+      class="vertical layout center"
+      selected="[[page]]"
+      attr-for-selected="name"
+      selected-attribute="visible"
+      fallback-selection="card"
+    > <paper-card class="layout self-center" name="card">
         <a href="/">
-      <paper-icon-button src="/images/logo-bounce-in.svg" class="logo-button layout vertical center-justified" noink>
+          <paper-icon-button src="/images/logo-bounce-in.svg" class="logo-button layout vertical center-justified" noink>
         </a>
         <a href="https://github.com/4d4841/booed">
-      <paper-icon-button src="https://assets-cdn.github.com/images/modules/logos_page/Octocat.png" class="button layout vertical center-justified" noink>
-      </paper-icon-button>
+          <paper-icon-button src="https://assets-cdn.github.com/images/modules/logos_page/Octocat.png" class="button layout vertical center-justified" noink>
+          </paper-icon-button>
         </a>
-  </paper-card>
+      </paper-card>
+
+      <div name="icons" style="width:100%" class="horizontal layout wrap">
+        <template is="dom-repeat" items="[[iconNames]]">
+          <div class="display-icon vertical layout center">
+            <iron-icon icon="[[item]]"></iron-icon>
+            [[_formatIconName(item)]]
+          </div>
+        </template>
+      </div>
+
+    </iron-pages>
+
+  <app-route
+      route="{{route}}"
+      pattern="/:page"
+      data="{{routeData}}"
+      tail="{{subroute}}">
+  </app-route>
 
   </template>
   <script>
 
     class MGAbout extends Polymer.Element {
+      _formatIconName(name) {
+        return name.split(':')[1];
+      }
       static get is() { return 'mg-about'; }
 
       static get properties() { return {
@@ -108,7 +140,30 @@
           type: Boolean,
           observer: '_visibleChanged'
         },
+
+        route: {
+          type: Object,
+          notify: true,
+          observer: '_routeChanged'
+        },
+
+        _meta: {
+          value: Polymer.Base.create('iron-meta', {type: 'iconset'})
+        },
+
       }}
+
+      connectedCallback() {
+        super.connectedCallback();
+        this.set('iconNames', this._meta.byKey('icons').getIconNames());
+      }
+
+      _routeChanged( route) {
+        if (route.prefix == '/about') {
+          this.set('page', this.routeData.page);
+        }
+      }
+
 
       _visibleChanged(visible) {
         if (visible) {
