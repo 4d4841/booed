@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<!--
+ .................................................................................................
+:::BSDB'::BSDB'::BSDB':::::BSDB':::BSDBS'::BSDBS'::BSDB'::::BSD'::BSDBS'::BSDBS'::BSDB'::::::BSD'::
+::BSDBSD BSDBSD :.BSDBS':BSDBS .:BSD ..BSD  ...BSD 'BSDBS':BSD .BSD ..BSD  ...BSD :BSDBS'::BSDB .::
+::COPYRIGHT2017 ::.BS BSDB .BS :BSD .::.BSD :::.BSD :BS .BSDB .BSD .:::BSD ::::BSD :BS BSDB BS .:::
+:::BSDSTYLEBSD .:::BS  BS .:BS :BSD ::::BSD ::::BSD :BS ::BSD :BSD :::::...::::BSD :BS :BS  BS ::::
+::::.LICENSE .::::BSD .:..::BS 'BSD ::::BSD ::::BSD :BS :::BS :BSD ::BSDBS'::::BSD :BS ::..:BS ':::
+:::::::BSD .::::BSDB .::::::BSD 'BSD'::BSD .:::BSD .BSD :::BSD':BSD'::.BSD :::BSD .BSD :::::BSDB'::
+::::::::B .::::::BS .:::::::.BSD ::BSDBS .:BSDBS  :BSD .::::BSD :.BSDBS BS BSDB .:BSD .:::::.BS .::
+`::::::::.::::::::..::::::::::...:::.....:::.....:::...::::::...:::.............:::...::::::::..::'
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="mg-common-styles.html">
+<link rel="import" href="mg-variant-cell.html">
+
+<dom-module id="mg-variant-editor">
+<template strip-whitespace>
+    <custom-style>
+  <style is="custom-style" include="paper-material-styles mg-common-styles iron-flex iron-flex-alignment">
+  :host {
+    /*border: 2px solid tomato;*/
+    width: auto;
+    height: auto;
+    @apply --layout-horizontal;
+    @apply --layout-start-justified;
+    box-sizing: content-box;
+  }
+
+  #variant-selector {
+    max-height: 20vh;
+    overflow-y: auto;
+  }
+
+  #variants-container {
+    padding: 5px;
+    margin: 5px;
+  }
+
+  </style>
+    </custom-style>
+
+    <div class="vertical layout">
+  <div id="variants-container" class="paper-material vertical layout start-justified" elevation="1">
+
+    <div class="horizontal layout">
+      <paper-dropdown-menu style="width:100px;padding:0 10px 0 0" label="ทางเลือก" selected-item="{{selectedType}}">
+        <paper-listbox slot="dropdown-content" class="dropdown-content">
+          <template is="dom-repeat" items="[[menu.entries]]">
+            <paper-icon-item label="[[item.title]]" name="[[item.name]]">
+              <iron-icon icon="[[item.icon]]" slot="item-icon"></iron-icon>
+              [[item.title]]
+            </paper-icon-item>
+          </template>
+        </paper-listbox>
+      </paper-dropdown-menu>
+
+      <template is="dom-if" if="[[testEqual(selectedType.name,'custom')]]">
+        <paper-input
+          style="width:100px"
+          id="value"
+          value="{{customType}}"
+        > <iron-icon icon="mode-edit" slot="prefix"></iron-icon>
+        </paper-input>
+      </template>
+      <template is="dom-if" if="[[testEqual(selectedType.name,'price')]]">
+        <paper-dropdown-menu
+          style="width:100px"
+          label="สกุลเงิน"
+          selected-item-label="{{selectedCurrencyItem}}"
+          selected="0"
+        > <paper-listbox
+            slot="dropdown-content"
+            class="dropdown-content"
+          > <paper-icon-item label="บาท" currency="thb">
+              บาท
+            </paper-icon-item>
+            <paper-icon-item label="เยน" currency="jpy">
+              yen
+            </paper-icon-item>
+            <paper-icon-item label="วอน" currency="krw">
+              won
+            </paper-icon-item>
+          </paper-listbox>
+        </paper-dropdown-menu>
+      </template>
+    </div>
+
+    <iron-selector
+      id="variant-selector"
+      selected-attribute="selected"
+      selected-item="{{selectedVariantCell}}"
+      >
+      <template is="dom-repeat" items="{{variantCells}}">
+        <mg-variant-cell
+          variant-type="[[_formatVariant(menu,selectedType.name,customType)]]"
+          variant="[[item]]"
+          >
+        </mg-variant-cell>
+      </template>
+    </iron-selector>
+
+    <div class="horizontal layout center-justified">
+      <paper-icon-button
+        icon="add"
+        on-click="_onAddVariant"
+      ></paper-icon-button>
+
+      <paper-icon-button
+        icon="backspace"
+        on-click="_onDeleteEditor"
+        disabled="[[!selectedVariantCell]]"
+      ></paper-icon-button>
+    </div>
+  </div>
+    </div>
+
+  <template is="dom-if" if="[[selectedSubvariant]]">
+      <mg-variant-editor
+        menu="[[menu]]"
+        variant="{{selectedSubvariant}}"
+      ></mg-variant-editor>
+    </div>
+  </template>
+
+</template>
+<script>
+class MGVariantsEditor extends Polymer.Element {
+  static get is() { return 'mg-variant-editor'; }
+
+  static get properties() { return {
+    variantCells: {
+      type: Array,
+      value: function(){return [];},
+    },
+
+    variant: {
+      type: Object,
+      notify: true,
+      observer: '_variantChanged',
+    },
+
+    selectedType: {
+      type: Object,
+    },
+    selectedCurrency: {
+      type: String,
+      computed: '_computeSelectedCurrency(selectedCurrencyItem)'
+    },
+    menu: {
+      type: Object,
+      observer: '_menuChanged'
+    },
+    customType: {
+      type: String,
+      value: '',
+    },
+
+    selectedSubvariant: {
+      type: Object,
+      observer: '_selectedSubvariantChanged',
+    },
+    selectedVariantCell: {
+      type: Object,
+      observer: '_selectedVariantCellChanged',
+      value: null,
+    },
+  }}
+
+  static get observers() { return [
+    '_subvariantsChanged(selectedSubvariant.variants)',
+  ]}
+
+  _subvariantsChanged(variants) {
+    if (variants) {
+      this.selectedVariantCell.set('hasChildren', true);
+    }
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+  }
+
+  testEqual(a,b) {
+    if (a == b) return true;
+    return false;
+  }
+
+  _computeSelectedCurrency(item) {
+    console.log(item,item.currency);
+    return item ? item.currency : "";
+  }
+
+  _formatVariant(menu,type,customType) {
+    let title = type;
+    menu.entries.every(item => {
+      if (item.name == type) {
+        title = item.title + (type == 'custom' ? (customType?':':'')+customType : '');
+        return false;
+      }
+      return true;
+    });
+    return title;
+  }
+
+  _menuChanged(newMenu,oldMenu) {
+  }
+
+  _variantChanged(newVariant) {
+    this.$['variant-selector'].select(null);
+    this.set('variantCells',[]);
+
+    for(let vkey in newVariant.variants){
+      this.push('variantCells', newVariant.variants[vkey]);
+    }
+  }
+
+  _selectedSubvariantChanged(subvariant) {
+  }
+
+  _selectedVariantCellChanged(newElement,oldElement){
+    this.set('selectedSubvariant',null);
+    if (newElement) {
+      this.set('selectedSubvariant',this.variant.variants[newElement.variant.key] || null);
+    }
+  }
+
+  _onAddVariant(e){
+    /* XXX */
+    let vkey = MHA.DB.ref('items').child(this.variant.key).push().key;
+    let variants = this.variant.variants;
+    if (!variants) {
+      variants = {[vkey]:{key:vkey}};
+    } else variants[vkey] = {key:vkey};
+
+    this.set('variant.variants',variants);
+    this.push('variantCells', variants[vkey]);
+  }
+}
+
+customElements.define(MGVariantsEditor.is, MGVariantsEditor);
+</script>
+</dom-module>

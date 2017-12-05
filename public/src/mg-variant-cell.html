@@ -17,7 +17,7 @@
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="mg-common-styles.html">
 
-<dom-module id="mg-variant">
+<dom-module id="mg-variant-cell">
 <template strip-whitespace>
     <custom-style>
   <style is="custom-style" include="mg-common-styles iron-flex iron-flex-alignment">
@@ -25,12 +25,20 @@
   :host {
     display: inline-block;
     @apply --layout-horizontal;
-    @apply --layout-center;
-    border: 2px solid transparent;
+    @apply --layout-end;
+    border-radius: 5px;
   }
 
   :host(.iron-selected) {
-    border: 2px solid tomato;
+    background-color: rgba(255,99,71, 0.2);
+  }
+
+  paper-icon-button {
+    width: 37px;
+  }
+
+  :host(:not(.iron-selected)) #input {
+    pointer-events: none;
   }
 
   </style>
@@ -39,23 +47,25 @@
   <paper-icon-button
     icon="close"
     tabindex="-1"
-  >
-  </paper-icon-button>
+  ></paper-icon-button>
 
   <paper-input
     id="input"
+    style="width:100px"
     value="{{inputValue}}"
     label="[[variantType]]"
-    focused="{{focusedName}}"
-    always-float-label="[[focusedName]]"
-  >
-  </paper-input>
+    focused="{{inputFocused}}"
+    always-float-label="[[inputFocused]]"
+  ></paper-input>
 
   <paper-icon-button
     tabindex="-1"
     icon="content-copy"
-  >
-  </paper-icon-button>
+  ></paper-icon-button>
+
+  <template is="dom-if" if="[[hasChildren]]">
+    <iron-icon style="padding-bottom:8px;color:tomato" icon="chevron-right"></iron-icon>
+  </template>
 
 </template>
 <script>
@@ -68,21 +78,24 @@ function measureText(text){
   }
 
   let width = measureText.context.measureText(text).width + 10;
-  return (width < 200 ? 200 : width)+'px';
+  return (width < 100 ? 100 : width)+'px';
 };
 
 
-class MGVariant extends Polymer.Element {
-  static get is() { return 'mg-variant'; }
+class MGVariantCell extends Polymer.Element {
+  static get is() { return 'mg-variant-cell'; }
 
   static get properties() { return {
-    variantKey: {
-      type: String
+    variant: {
+      type: Object,
+      observer: '_variantChanged',
     },
+    /*
     variantChanged: {
       type: String,
       notify: true,
     },
+    */
     variantType: {
       type: String,
     },
@@ -92,20 +105,45 @@ class MGVariant extends Polymer.Element {
     },
     selected: {
       type: Boolean,
+      value: false,
+      observer: '_selectedChanged'
+    },
+    hasChildren: {
+      type: Boolean,
+      value: false,
     },
   }}
 
   static get observers() { return [
   ]}
 
+  _selectedChanged(selected) {
+    if (selected) {
+      this.$.input.focus();
+    }
+  }
+
+  _variantChanged(variant) {
+    this.set('hasChildren',variant.variants ? true : false);
+
+    if (variant.data) {
+      this.set('inputValue', variant.data.value);
+    } else {
+      this.set('inputValue', '');
+    }
+  }
+
   _inputValueChanged(newValue, oldValue) {
     this.$['input'].style['width'] = measureText(newValue);
+    this.set('variant.data',{value:newValue});
+    /*
     this.set('variantChanged',{key:this.variantKey, data:newValue});
+    */
   }
 
 }
 
-customElements.define(MGVariant.is, MGVariant);
+customElements.define(MGVariantCell.is, MGVariantCell);
 })();
 </script>
 </dom-module>

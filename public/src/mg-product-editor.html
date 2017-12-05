@@ -19,17 +19,22 @@
 <link rel="import" href="mg-clipboard.html">
 <link rel="import" href="mg-common-styles.html">
 <link rel="import" href="mg-gallery-editor.html">
-<link rel="import" href="mg-variants-editor.html">
+<link rel="import" href="mg-variant-editor.html">
 
 
 <dom-module id="mg-product-editor">
 <template strip-whitespace>
     <custom-style>
   <style is="custom-style" include="mg-item-editor mg-common-styles iron-flex iron-flex-alignment">
-    :host {
-    }
 
     #product-editor {
+    }
+
+    #variant-editor {
+      padding: 20px 0 30px 10px;
+      overflow: auto;
+      width: calc(100vw - 300px);
+      margin: 0;
     }
 
   </style>
@@ -53,11 +58,12 @@
 
     </div>
 
-    <mg-variants-editor
-      item-key="[[itemKey]]"
-      menu="[[variantsMenu]]"
-    >
-    </mg-variants-editor>
+    <div id="variant-editor" class="horizontal layout">
+      <mg-variant-editor
+        menu="[[variantMenu]]"
+        variant="{{variant}}"
+      ></mg-variant-editor>
+    </div>
 
     <!--
   <iron-selector
@@ -97,7 +103,7 @@
     }
 
     static get properties() { return {
-      variantsMenu: {
+      variantMenu: {
         type: Object,
         value: {
           entries: [
@@ -110,8 +116,7 @@
       },
 
       variant: {
-        type: Array,
-        value: function(){return [];},
+        type: Object,
       },
 
       itemRole: {
@@ -129,6 +134,13 @@
 
     static get observers() { return [
     ]}
+
+    _itemKeyChanged(itemKey) {
+      super._itemKeyChanged(itemKey);
+      this.set('variant', MHA.getItem({[itemKey]:{variants:null}}) || {
+        key: itemKey,
+      });
+    }
 
     updateChanges(path,value) {
       let itemKey = path[1];
