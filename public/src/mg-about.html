@@ -99,14 +99,22 @@
         </a>
       </paper-card>
 
-      <div name="icons" style="width:100%" class="horizontal layout wrap">
+      <div name="icons" style="width:100%;height:100%;font-size:16px" class="horizontal layout wrap">
+        <template is="dom-if" if="[[clickedIcon]]">
+        <div style="color:black;width:100%;margin:10px;background-color:lavender;padding:20px">
+          <paper-icon-button icon="close" on-click="_closePath"></paper-icon-button>
+          [[clickedIcon]]</div>
+        </template>
         <template is="dom-repeat" items="[[iconNames]]">
-          <div class="display-icon vertical layout center">
+          <div on-click="_addIcon" class="display-icon vertical layout center">
             <iron-icon icon="[[item]]"></iron-icon>
             [[_formatIconName(item)]]
           </div>
         </template>
+        <div style="width:100%;height:100px"></div>
+
       </div>
+
 
     </iron-pages>
 
@@ -170,6 +178,16 @@
           this.dispatchEvent(new CustomEvent('change-section', {
             bubbles: true, composed: true, detail: {title: 'About', target:this}}));
         }
+      }
+
+      _addIcon(e) {
+        let el = this._meta.byKey('icons').querySelector('g[id='+e.model.item.split(':')[1]+']');
+        this.set('clickedIcon',new XMLSerializer().serializeToString(el).replace('xmlns="http://www.w3.org/2000/svg"',''));
+
+      }
+
+      _closePath(e) {
+        this.set('clickedIcon',null);
       }
 
     }
