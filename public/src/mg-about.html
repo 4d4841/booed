@@ -116,7 +116,6 @@
             label="Space-separated keywords or regexes"
             icon="search"
             value="{{search}}"
-            min-width="300"
           ></mg-input>
           <!--
           <paper-input
@@ -188,11 +187,15 @@
 
       _contains(value,not) {
         let regs = [];
-        value.split(' ').forEach(v => {regs.push(new RegExp(v))});
-        if (not) {
-          return name => regs.every(regex => !regex.test(name.split(':')[1]));
-        }
-        return name => regs.some(regex => regex.test(name.split(':')[1]));
+        value.split(' ').forEach(v => {
+          if (v !== '') regs.push(new RegExp(v))
+        });
+
+        return regs.length
+          ? not ? name => regs.every(regex => !regex.test(name.split(':')[1]))
+                : name => regs.some(regex => regex.test(name.split(':')[1]))
+          : not ? () => false
+                : () => true;
       }
 
       _formatIconName(name) {

@@ -375,27 +375,29 @@
       }
 
       _styleLock(lw,tracking,lock) {
-        lw*=1.3;
-        return lock ?
-          tracking ?
-            'fill:none;stroke:none' :
-            'fill:gold;stroke-width:'+lw/2+';stroke:black' :
-          'fill:none;stroke:none';
+        lw *= 1.3;
+        return lock
+          ? tracking
+            ? 'fill:none; stroke:none'
+            : `fill:gold; stroke-width:${lw/2}; stroke:black`
+          : 'fill:none;stroke:none';
       }
 
       _styleBorder(lw,tracking,lock,over) {
-        lw*=1.3;
-        return over ?
-          tracking ?
-            'fill:none;stroke:none' :
-            'fill:none;stroke-width:'+lw+';stroke:'+(lock?'gold':'white')+';stroke-dasharray:'+lw*3+','+lw*3 :
-          tracking ?
-            'fill:rgba(0,0,0,0.9);stroke:none' :
-            'fill:none;stroke-width:'+lw+';stroke:black';
+        lw *= 1.3;
+        return over
+          ? tracking
+            ? 'fill:none; stroke:none'
+            : `fill:none; stroke-width:${lw};stroke:${lock ? 'gold' : 'white'}; stroke-dasharray:${lw*3},${lw*3}`
+          : tracking
+            ? 'fill:rgba(0,0,0,0.9); stroke:none'
+            : `fill:none; stroke-width:${lw}; stroke:black`;
       }
 
       _styleArrow(tracking) {
-        return tracking ? 'fill:rgba(255,255,255,0.3);stroke:none' : 'fill:white;stroke-width:1;stroke:black';
+        return tracking
+          ? 'fill:rgba(255,255,255,0.3); stroke:none'
+          : 'fill:white; stroke-width:1; stroke:black';
       }
 
       _translateArrows(s,t,w,h,x,y,r,ss) {

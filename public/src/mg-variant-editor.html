@@ -52,10 +52,12 @@
     <div class="vertical layout">
   <div id="variants-container" class="paper-material vertical layout start-justified" elevation="1">
 
+    <!-- Type Selector -->
+      <template is="dom-if" if="{{variantCells.length}}">
     <div class="horizontal layout">
       <paper-dropdown-menu
         style="width:100px;padding:0 10px 0 0"
-        label="ทางเลือก"
+        label="ตัวเลือก"
         selected-item="{{selectedType}}"
       >
         <paper-listbox slot="dropdown-content" class="dropdown-content layout start" selected="1">
@@ -103,7 +105,9 @@
         </paper-dropdown-menu>
       </template>
     </div>
+      </template>
 
+    <!-- Children List -->
     <iron-selector
       id="variant-selector"
       selected-attribute="selected"
@@ -118,6 +122,7 @@
       </template>
     </iron-selector>
 
+    <!-- Foot Buttons -->
     <div class="horizontal layout center-justified">
       <paper-icon-button
         icon="add"
@@ -130,6 +135,7 @@
         disabled="[[!selectedVariantCell]]"
       ></paper-icon-button>
     </div>
+
   </div>
     </div>
 
@@ -219,7 +225,10 @@ class MGVariantsEditor extends Polymer.Element {
     let title = type;
     menu.entries.every(item => {
       if (item.name == type) {
-        title = item.title + (type == 'custom' ? (customType?':':'')+customType : '');
+        title = item.title + ( type == 'custom'
+            ? ( customType ? ':' : '') + customType
+            : ''
+        );
         return false;
       }
       return true;

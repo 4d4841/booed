@@ -79,7 +79,7 @@ class MGInput extends Polymer.Element {
     },
     minWidth: {
       type: Number,
-      value: 100,
+      value: 50,
       observer: 'minWidthChanged'
     },
   }}
@@ -115,14 +115,18 @@ class MGInput extends Polymer.Element {
   connectedCallback() {
     super.connectedCallback();
     this.$.input.addEventListener('iron-input-ready',e => {
-      this.$.input.inputElement.inputElement.style.width = this.minWidth+'px';
+      this._valueChanged(this.value);
     });
   }
 
   _valueChanged(newValue, oldValue) {
-    let width = MeasureContext.measureText(newValue).width + 10; /* Add an impression space */
     let elm = this.$.input.inputElement.inputElement;
     if (elm) {
+      let width = MeasureContext.measureText(newValue).width + 10; /* Add an impression space */
+      let labelWidth = MeasureContext.measureText(this.label).width;
+      if (newValue == "") {
+        width = labelWidth;
+      }
       elm.style.width = (width < this.minWidth ? this.minWidth: width) + 'px';
     }
   }
