@@ -26,7 +26,7 @@
 <dom-module id="mg-about">
   <template>
       <custom-style>
-    <style include="mg-button iron-flex iron-flex-alignment">
+    <style include="iron-flex iron-flex-alignment">
 
       :host {
         color: var(--app-secondary-color);
@@ -111,7 +111,20 @@
         </div>
           </template>
 
-        <div class="horizontal layout center-justified"><mg-input icon="search" value="{{search}}"></mg-input></div>
+        <div class="horizontal layout center-justified">
+          <mg-input
+            label="Space-separated keywords or regexes"
+            icon="search"
+            value="{{search}}"
+            min-width="300"
+          ></mg-input>
+          <!--
+          <paper-input
+            label="Search"
+            value="{{search}}"
+          ></paper-input>
+        -->
+        </div>
 
         <div style="width:100%;margin:10px;" class="horizontal layout wrap">
           <template is="dom-repeat" items="[[iconNames]]" filter="[[_contains(search)]]">

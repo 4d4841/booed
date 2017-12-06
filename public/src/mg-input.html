@@ -16,11 +16,10 @@
 
 <dom-module id="mg-input">
 <template strip-whitespace>
+    <customstyle>
   <style>
-  :host {
-    display: block;
-  }
   </style>
+    </customstyle>
 
   <paper-input
     id="input"
@@ -29,7 +28,7 @@
     focused="{{focused}}"
     readonly="{{readonly}}"
     disabled="{{disabled}}"
-    always-float-label="[[focused]]"
+    always-float-label="[[computedFloatLabel]]"
   > <template is="dom-if" if="[[icon]]">
       <iron-icon icon="[[icon]]" slot="prefix"></iron-icon>
     </template>
@@ -57,19 +56,27 @@ class MGInput extends Polymer.Element {
 
   static get properties() { return {
     icon: String,
+    label: String,
     value: {
       type: String,
       value: '',
       notify: true,
       observer: '_valueChanged',
     },
-    /*
+    computedFloatLabel: {
+      type: Boolean,
+      computed: '_computeFloatLabel(focused,alwaysFloatLabel)'
+    },
+    alwaysFloatLabel: {
+      type: Boolean,
+      notify: true,
+    },
     focused: {
       type: Boolean,
       notify: true,
-      observer: '_focusedChanged',
+      value: false,
+      /*observer: '_focusedChanged',*/
     },
-    */
     minWidth: {
       type: Number,
       value: 100,
@@ -79,6 +86,13 @@ class MGInput extends Polymer.Element {
 
   static get observers() { return [
   ]}
+
+  _computeFloatLabel(focused,always) {
+    if (typeof always === 'undefined') {
+      return focused;
+    }
+    return always;
+  }
 
   constructor() {
     super();
