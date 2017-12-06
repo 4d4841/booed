@@ -54,6 +54,7 @@
     id="input"
     value="{{inputValue}}"
     label="[[variantType]]"
+    min-width="150"
   ></mg-input>
 
   <template is="dom-if" if="[[hasChildren]]">
@@ -62,19 +63,6 @@
 
 </template>
 <script>
-(function(){
-
-function measureText(text){
-  if (!measureText.context) {
-    measureText.context = document.createElement("canvas").getContext("2d");
-    measureText.context['font'] = "16px Roboto, Noto, sans-serif";
-  }
-
-  let width = measureText.context.measureText(text).width + 10;
-  return (width < 100 ? 100 : width)+'px';
-};
-
-
 class MGVariantCell extends Polymer.Element {
   static get is() { return 'mg-variant-cell'; }
 
@@ -127,7 +115,6 @@ class MGVariantCell extends Polymer.Element {
   }
 
   _inputValueChanged(newValue, oldValue) {
-    this.$['input'].style['width'] = measureText(newValue);
     this.set('variant.data',{value:newValue});
     /*
     this.set('variantChanged',{key:this.variantKey, data:newValue});
@@ -137,6 +124,6 @@ class MGVariantCell extends Polymer.Element {
 }
 
 customElements.define(MGVariantCell.is, MGVariantCell);
-})();
+
 </script>
 </dom-module>

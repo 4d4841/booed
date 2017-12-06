@@ -73,6 +73,7 @@ class MGInput extends Polymer.Element {
     minWidth: {
       type: Number,
       value: 100,
+      observer: 'minWidthChanged'
     },
   }}
 
@@ -105,11 +106,15 @@ class MGInput extends Polymer.Element {
   }
 
   _valueChanged(newValue, oldValue) {
-    let width = MeasureContext.measureText(newValue).width;
+    let width = MeasureContext.measureText(newValue).width + 10; /* Add an impression space */
     let elm = this.$.input.inputElement.inputElement;
     if (elm) {
-      elm.style.width = (10 + (width < this.minWidth ? this.minWidth: width)) + 'px';
+      elm.style.width = (width < this.minWidth ? this.minWidth: width) + 'px';
     }
+  }
+
+  minWidthChanged(w) {
+    this._valueChanged(this.value);
   }
 
 }
