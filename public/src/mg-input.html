@@ -30,7 +30,10 @@
     readonly="{{readonly}}"
     disabled="{{disabled}}"
     always-float-label="[[focused]]"
-  > <slot name="prefix" slot="prefix"></slot>
+  > <template is="dom-if" if="[[icon]]">
+      <iron-icon icon="[[icon]]" slot="prefix"></iron-icon>
+    </template>
+    <slot name="prefix" slot="prefix"></slot>
     <slot name="suffix" slot="suffix"></slot>
   </paper-input>
 <!--
@@ -60,15 +63,21 @@ class MGInput extends Polymer.Element {
       notify: true,
       observer: '_valueChanged',
     },
+    /*
     focused: {
       type: Boolean,
       notify: true,
+      observer: '_focusedChanged',
     },
+    */
     minWidth: {
       type: Number,
       value: 100,
     },
   }}
+
+  static get observers() { return [
+  ]}
 
   constructor() {
     super();
@@ -79,8 +88,20 @@ class MGInput extends Polymer.Element {
     }
   }
 
+  /*
+  _focusedChanged(focus) {
+  }
+  */
+
   focus() {
     this.$.input.focus();
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.$.input.addEventListener('iron-input-ready',e => {
+      this.$.input.inputElement.inputElement.style.width = this.minWidth+'px';
+    });
   }
 
   _valueChanged(newValue, oldValue) {
@@ -89,7 +110,6 @@ class MGInput extends Polymer.Element {
     if (elm) {
       elm.style.width = (10 + (width < this.minWidth ? this.minWidth: width)) + 'px';
     }
-    //this.$.input.style.width = (10 + (width < this.minWidth ? this.minWidth: width)) + 'px';
   }
 
 }

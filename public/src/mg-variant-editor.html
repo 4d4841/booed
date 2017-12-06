@@ -53,7 +53,11 @@
   <div id="variants-container" class="paper-material vertical layout start-justified" elevation="1">
 
     <div class="horizontal layout">
-      <paper-dropdown-menu style="width:100px;padding:0 10px 0 0" label="ทางเลือก" selected-item="{{selectedType}}">
+      <paper-dropdown-menu
+        style="width:100px;padding:0 10px 0 0"
+        label="ทางเลือก"
+        selected-item="{{selectedType}}"
+      >
         <paper-listbox slot="dropdown-content" class="dropdown-content layout start" selected="1">
           <template is="dom-repeat" items="[[menu.entries]]">
             <paper-icon-item label="[[item.title]]" name="[[item.name]]">
