@@ -21,6 +21,7 @@
 <link rel="import" href="../bower_components/iron-iconset-svg/iron-iconset-svg.html">
 <link rel="import" href="mg-button.html">
 <link rel="import" href="mg-icons.html">
+<link rel="import" href="mg-input.html">
 
 <dom-module id="mg-about">
   <template>
@@ -69,8 +70,10 @@
 
       .display-icon {
         width: 100px;
-        --iron-icon-width: 24px;
-        --iron-icon-height: 24px;
+        /*
+        --iron-icon-width: 32px;
+        --iron-icon-height: 32px;
+        */
         padding: 10px;
         @apply --layout-vertical;
         @apply --layout-center;
@@ -99,19 +102,31 @@
         </a>
       </paper-card>
 
-      <div name="icons" style="width:100%;height:100%;font-size:16px" class="horizontal layout wrap">
-        <template is="dom-if" if="[[clickedIcon]]">
+
+      <div name="icons" style="width:100%;height:100%;font-size:16px" class="vertical layout">
+          <template is="dom-if" if="[[clickedIcon]]">
         <div style="color:black;width:100%;margin:10px;background-color:lavender;padding:20px">
           <paper-icon-button icon="close" on-click="_closePath"></paper-icon-button>
-          [[clickedIcon]]</div>
-        </template>
-        <template is="dom-repeat" items="[[iconNames]]">
-          <div on-click="_addIcon" class="display-icon vertical layout center">
-            <iron-icon icon="[[item]]"></iron-icon>
-            [[_formatIconName(item)]]
-          </div>
-        </template>
-        <div style="width:100%;height:100px"></div>
+          [[clickedIcon]]
+        </div>
+          </template>
+
+        <div class="horizontal layout center-justified"><mg-input icon="search" value="{{search}}"></mg-input></div>
+
+        <div style="width:100%;margin:10px;" class="horizontal layout wrap">
+          <template is="dom-repeat" items="[[iconNames]]" filter="[[_contains(search)]]">
+            <div on-click="_addIcon" class="display-icon vertical layout center">
+              <iron-icon icon="[[item]]"></iron-icon>
+              [[_formatIconName(item)]]
+            </div>
+          </template>
+          <template is="dom-repeat" items="[[iconNames]]" filter="[[_contains(search,1)]]">
+            <div style="color:whitesmoke" on-click="_addIcon" class="display-icon vertical layout center">
+              <iron-icon icon="[[item]]"></iron-icon>
+              [[_formatIconName(item)]]
+            </div>
+          </template>
+        </div>
 
       </div>
 
@@ -129,9 +144,6 @@
   <script>
 
     class MGAbout extends Polymer.Element {
-      _formatIconName(name) {
-        return name.split(':')[1];
-      }
       static get is() { return 'mg-about'; }
 
       static get properties() { return {
@@ -161,6 +173,17 @@
 
       }}
 
+      _contains(value,not) {
+        if (not) {
+          return name => value.split(' ').every(value => !name.split(':')[1].includes(value));
+        }
+        return name => value.split(' ').some(value => name.split(':')[1].includes(value));
+      }
+
+      _formatIconName(name) {
+        return name.split(':')[1];
+      }
+
       connectedCallback() {
         super.connectedCallback();
         this.set('iconNames', this._meta.byKey('icons').getIconNames());
@@ -172,11 +195,11 @@
         }
       }
 
-
       _visibleChanged(visible) {
         if (visible) {
+          let page = this.page;
           this.dispatchEvent(new CustomEvent('change-section', {
-            bubbles: true, composed: true, detail: {title: 'About', target:this}}));
+            bubbles: true, composed: true, detail: {title: (page ? (page.charAt(0).toUpperCase() + page.slice(1) + " - "):'') + 'About', target:this}}));
         }
       }
 
