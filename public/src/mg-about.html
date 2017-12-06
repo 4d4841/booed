@@ -115,13 +115,13 @@
 
         <div style="width:100%;margin:10px;" class="horizontal layout wrap">
           <template is="dom-repeat" items="[[iconNames]]" filter="[[_contains(search)]]">
-            <div on-click="_addIcon" class="display-icon vertical layout center">
+            <div on-click="_addIcon" style="height:80px" class="display-icon vertical layout center">
               <iron-icon icon="[[item]]"></iron-icon>
               [[_formatIconName(item)]]
             </div>
           </template>
           <template is="dom-repeat" items="[[iconNames]]" filter="[[_contains(search,1)]]">
-            <div style="color:whitesmoke" on-click="_addIcon" class="display-icon vertical layout center">
+            <div style="color:gainsboro;height:80px" on-click="_addIcon" class="display-icon vertical layout center">
               <iron-icon icon="[[item]]"></iron-icon>
               [[_formatIconName(item)]]
             </div>
@@ -174,10 +174,12 @@
       }}
 
       _contains(value,not) {
+        let regs = [];
+        value.split(' ').forEach(v => {regs.push(new RegExp(v))});
         if (not) {
-          return name => value.split(' ').every(value => !name.split(':')[1].includes(value));
+          return name => regs.every(regex => !regex.test(name.split(':')[1]));
         }
-        return name => value.split(' ').some(value => name.split(':')[1].includes(value));
+        return name => regs.some(regex => regex.test(name.split(':')[1]));
       }
 
       _formatIconName(name) {
