@@ -47,7 +47,7 @@
     <div id="control-panel" class="horizontal layout wrap end" >
 
         <div style="display:inline-block">
-      <paper-icon-button icon="add-gallery" on-tap="_onAddGalleryTap"></paper-icon-button>
+      <paper-icon-button icon="booed:add-gallery" on-tap="_onAddGalleryTap"></paper-icon-button>
       <paper-tooltip>เพิ่มแกลเลอรี่</paper-tooltip>
         </div>
 
@@ -107,10 +107,10 @@
         type: Object,
         value: {
           entries: [
-            {name:"custom", icon:"mode-edit", title:"กำหนด" },
-            {name:"price", icon:"attach-money", title:"ราคา" },
-            {name:"color", icon:"color-lens", title:"สี" },
-            {name:"size", icon:"equalizer", title:"ขนาด" },
+            {name:"custom", icon:"editor:mode-edit", title:"กำหนด" },
+            {name:"price", icon:"editor:attach-money", title:"ราคา" },
+            {name:"color", icon:"image:color-lens", title:"สี" },
+            {name:"size", icon:"av:equalizer", title:"ขนาด" },
           ],
         }
       },
@@ -133,12 +133,17 @@
     }}
 
     static get observers() { return [
+      '_variantChanges(variant.*)',
     ]}
+
+    _variantChanges(changes) {
+      console.log('root',changes);
+    }
 
     _itemKeyChanged(itemKey) {
       super._itemKeyChanged(itemKey);
       this.set('variant', MHA.getItem({[itemKey]:{variants:null}}) || {
-        key: itemKey,
+        _root: true,
       });
     }
 
@@ -156,7 +161,7 @@
     }
 
     _onAddGalleryTap(e) {
-      this.$['gallery-editor'].newItem('แกลเลอรี่ของ'+this.itemName);
+      this.$['gallery-editor'].newItem('แกลเลอรี่'+this.itemName);
     }
 
     _onPasteButtonTap(e) {

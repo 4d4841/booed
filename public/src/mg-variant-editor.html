@@ -56,7 +56,7 @@
       <template is="dom-if" if="{{variantCells.length}}">
     <div class="horizontal layout">
       <paper-dropdown-menu
-        style="width:100px;padding:0 10px 0 0"
+        style="width:95px;margin-right:10px"
         label="ตัวเลือก"
         selected-item="{{selectedType}}"
       >
@@ -81,7 +81,7 @@
       </template>
       <template is="dom-if" if="[[testEqual(selectedType.name,'price')]]">
         <paper-dropdown-menu
-          style="width:100px"
+          style="width:95px"
           label="สกุลเงิน"
           selected-item-label="{{selectedCurrencyItem}}"
         > <paper-listbox
@@ -90,16 +90,16 @@
             attr-for-selected="currency"
             selected="{{selectedCurrency}}"
           > <paper-icon-item label="บาท" currency="thb">
-              <iron-icon icon="attach-money-thb" slot="item-icon"></iron-icon> บาท
+              <iron-icon icon="booed:attach-money-thb" slot="item-icon"></iron-icon> บาท
             </paper-icon-item>
             <paper-icon-item label="เยน" currency="jpy">
-              <iron-icon icon="attach-money-jpy" slot="item-icon"></iron-icon> เยน
+              <iron-icon icon="booed:attach-money-jpy" slot="item-icon"></iron-icon> เยน
             </paper-icon-item>
             <paper-icon-item label="วอน" currency="krw">
-              <iron-icon icon="attach-money-krw" slot="item-icon"></iron-icon> วอน
+              <iron-icon icon="booed:attach-money-krw" slot="item-icon"></iron-icon> วอน
             </paper-icon-item>
             <paper-icon-item label="ยูเอสดอลล่าร์" currency="usd">
-              <iron-icon icon="attach-money" slot="item-icon"></iron-icon> ยูเอสดอลล่าร์
+              <iron-icon icon="editor:attach-money" slot="item-icon"></iron-icon> ยูเอสดอลล่าร์
             </paper-icon-item>
           </paper-listbox>
         </paper-dropdown-menu>
@@ -130,9 +130,14 @@
       ></paper-icon-button>
 
       <paper-icon-button
-        icon="backspace"
-        on-click="_onDeleteEditor"
+        icon="booed:duplicate-selection"
+        on-click="_onDuplicateSelection"
         disabled="[[!selectedVariantCell]]"
+      ></paper-icon-button>
+
+      <paper-icon-button
+        icon="backspace"
+        on-click="_onBackspace"
       ></paper-icon-button>
     </div>
 
@@ -140,11 +145,10 @@
     </div>
 
   <template is="dom-if" if="[[selectedSubvariant]]">
-      <mg-variant-editor
-        menu="[[menu]]"
-        variant="{{selectedSubvariant}}"
-      ></mg-variant-editor>
-    </div>
+    <mg-variant-editor
+      menu="[[menu]]"
+      variant="{{selectedSubvariant}}"
+    ></mg-variant-editor>
   </template>
 
 </template>
@@ -251,7 +255,7 @@ class MGVariantsEditor extends Polymer.Element {
 
   _onAddVariant(e){
     /* XXX */
-    let vkey = MHA.DB.ref('items').child(this.variant.key).push().key;
+    let vkey = MHA.DB.ref().push().key;
     let variants = this.variant.variants;
     if (!variants) {
       variants = {[vkey]:{key:vkey}};
@@ -259,6 +263,11 @@ class MGVariantsEditor extends Polymer.Element {
 
     this.set('variant.variants',variants);
     this.push('variantCells', variants[vkey]);
+    return vkey;
+  }
+
+  _onDuplicateSelection(e) {
+    let vkey = _onAddVariant(e);
   }
 }
 

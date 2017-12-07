@@ -17,8 +17,21 @@
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-slider/paper-slider.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/iron-iconset-svg/iron-iconset-svg.html">
+<link rel="import" href="../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../bower_components/iron-icons/communication-icons.html">
+<link rel="import" href="../bower_components/iron-icons/device-icons.html">
+<link rel="import" href="../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../bower_components/iron-icons/hardware-icons.html">
+<link rel="import" href="../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-icons/maps-icons.html">
+<link rel="import" href="../bower_components/iron-icons/notification-icons.html">
+<link rel="import" href="../bower_components/iron-icons/places-icons.html">
+<link rel="import" href="../bower_components/iron-icons/social-icons.html">
+
 <link rel="import" href="mg-button.html">
 <link rel="import" href="mg-icons.html">
 <link rel="import" href="mg-input.html">
@@ -39,7 +52,7 @@
         font-weight: 300;
       }
 
-      paper-card {
+      .github {
         margin-top: 50px;
         width: 240px;
         height: 240px;
@@ -51,6 +64,11 @@
         --paper-card-content: {
           box-shadow: inset 0px 5px 6px -3px rgba(255, 0, 0, 1.0);
         }
+      }
+
+      paper-slider {
+        height: 20px;
+        width: 300px;
       }
 
       .button {
@@ -68,19 +86,35 @@
         }
       }
 
+      a:link {
+        text-decoration: none;
+      }
+
       .display-icon {
-        width: 100px;
+        display: block;
+        @apply --layout-center;
+        @apply --layout-center-justified;
+        width: calc(var(--display-icon-size,21px) + 10px);
+        height: calc(var(--display-icon-size,21px) + 10px);
+        --iron-icon-width: var(--display-icon-size,21px);
+        --iron-icon-height: var(--display-icon-size,21px);
         /*
         --iron-icon-width: 32px;
         --iron-icon-height: 32px;
         */
-        padding: 10px;
         @apply --layout-vertical;
         @apply --layout-center;
       }
 
-      a:link {
-            text-decoration: none;
+      .display-icon-card {
+        font-size: 10px;
+        min-width: 80px;
+        @apply --layout-vertical;
+        @apply --layout-center;
+        @apply --layout-start-justified;
+        width: calc(var(--display-icon-size,21px) + 20px);
+        padding: 5px;
+        word-wrap: break-word;
       }
 
     </style>
@@ -92,7 +126,7 @@
       attr-for-selected="name"
       selected-attribute="visible"
       fallback-selection="card"
-    > <paper-card class="layout self-center" name="card">
+    > <paper-card class="github layout self-center" name="card">
         <a href="/">
           <paper-icon-button src="/images/logo-bounce-in.svg" class="logo-button layout vertical center-justified" noink>
         </a>
@@ -105,18 +139,19 @@
 
       <div name="icons" style="width:100%;height:100%;font-size:16px" class="vertical layout">
           <template is="dom-if" if="[[clickedIcon]]">
-        <div style="color:black;width:100%;margin:10px;background-color:lavender;padding:20px">
+        <paper-card style="border-radius:5px;color:black;width:calc(100% - 30px);margin:10px;background-color:lavender;padding:20px">
           <paper-icon-button icon="close" on-click="_closePath"></paper-icon-button>
           [[clickedIcon]]
-        </div>
+        </paper-card>
           </template>
 
-        <div class="horizontal layout center-justified">
+        <div style="margin-left:20px" class="vertical layout center">
           <mg-input
             label="Space-separated keywords or regexes"
             icon="search"
-            value="{{search}}"
+            value="{{willSearch}}"
           ></mg-input>
+          <paper-slider style="margin-top:10px" value="{{iconSize}}" min="10" max="200" editable></paper-slider>
           <!--
           <paper-input
             label="Search"
@@ -125,19 +160,31 @@
         -->
         </div>
 
-        <div style="width:100%;margin:10px;" class="horizontal layout wrap">
+        <div style="width:100%;margin:10px;" class="icons-container horizontal layout wrap">
           <template is="dom-repeat" items="[[iconNames]]" filter="[[_contains(search)]]">
-            <div on-click="_addIcon" style="height:80px" class="display-icon vertical layout center">
-              <iron-icon icon="[[item]]"></iron-icon>
-              [[_formatIconName(item)]]
+            <div class="display-icon-card" on-click="_addIcon">
+              <div class="display-icon vertical layout center">
+                <iron-icon icon="[[item.set]]:[[item.id]]"></iron-icon>
+              </div>
+              <div>
+                [[item.set]] : [[item.id]]
+              </div>
             </div>
           </template>
           <template is="dom-repeat" items="[[iconNames]]" filter="[[_contains(search,1)]]">
-            <div style="color:gainsboro;height:80px" on-click="_addIcon" class="display-icon vertical layout center">
-              <iron-icon icon="[[item]]"></iron-icon>
-              [[_formatIconName(item)]]
+            <div class="display-icon-card" on-click="_addIcon">
+              <div style="color:gainsboro;" class="display-icon vertical layout center">
+                <iron-icon icon="[[item.set]]:[[item.id]]"></iron-icon>
+              </div>
+              <div>
+                [[item.set]]: [[item.id]]
+              </div>
             </div>
           </template>
+        </div>
+
+        <!--footer-->
+        <div style="height:50px">
         </div>
 
       </div>
@@ -158,7 +205,15 @@
     class MGAbout extends Polymer.Element {
       static get is() { return 'mg-about'; }
 
+      _metaChanged(meta) {
+        console.log('meta',meta);
+      }
+
       static get properties() { return {
+
+        testMeta: {
+          observer: '_metaChanged'
+        },
 
         menu: {
           type: Object,
@@ -183,7 +238,22 @@
           value: Polymer.Base.create('iron-meta', {type: 'iconset'})
         },
 
+        iconSize: {
+          value: 40,
+          observer: '_iconSizeChanged'
+        },
+
+        willSearch: {
+          observer: '_willSearchChanged'
+        },
+
       }}
+
+      _iconSizeChanged(size) {
+        this.updateStyles({
+          '--display-icon-size':`${size}px`
+        });
+      }
 
       _contains(value,not) {
         let regs = [];
@@ -192,19 +262,22 @@
         });
 
         return regs.length
-          ? not ? name => regs.every(regex => !regex.test(name.split(':')[1]))
-                : name => regs.some(regex => regex.test(name.split(':')[1]))
+          ? not ? icon => regs.every(regex => !regex.test(icon.id))
+                : icon => regs.some(regex => regex.test(icon.id))
           : not ? () => false
                 : () => true;
       }
 
-      _formatIconName(name) {
-        return name.split(':')[1];
-      }
-
       connectedCallback() {
         super.connectedCallback();
-        this.set('iconNames', this._meta.byKey('icons').getIconNames());
+        this.set('iconNames', []);
+        let sets = Polymer.IronMeta.types['iconset'];
+        for (let setname in sets) {
+          sets[setname].getIconNames().forEach(name => {
+            let n = name.split(':');
+            this.push('iconNames',{set:n[0],id:n[1]});
+          });
+        }
       }
 
       _routeChanged( route) {
@@ -222,13 +295,19 @@
       }
 
       _addIcon(e) {
-        let el = this._meta.byKey('icons').querySelector('g[id='+e.model.item.split(':')[1]+']');
+        let el = this._meta.byKey(e.model.item.set).querySelector('g[id='+e.model.item.id+']');
         this.set('clickedIcon',new XMLSerializer().serializeToString(el).replace('xmlns="http://www.w3.org/2000/svg"',''));
-
       }
 
       _closePath(e) {
         this.set('clickedIcon',null);
+      }
+
+      _willSearchChanged(willSearch) {
+        this._willSearchDebouncer = Polymer.Debouncer.debounce(this._willSearchDebouncer,
+          Polymer.Async.timeOut.after(300), () => {
+            this.set('search', willSearch);
+          });
       }
 
     }

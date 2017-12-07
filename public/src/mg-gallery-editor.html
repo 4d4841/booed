@@ -77,7 +77,7 @@
 
     <div id="control-panel" class="horizontal layout wrap end" >
       <div style="display:inline-block">
-    <paper-icon-button icon="add-photo" on-tap="_onAddButtonTap"></paper-icon-button>
+    <paper-icon-button icon="booed:add-photo" on-tap="_onAddButtonTap"></paper-icon-button>
     <paper-tooltip>เพิ่มรูป</paper-tooltip>
       </div>
 
@@ -92,7 +92,7 @@
       </div>
 
       <div style="display:inline-block">
-    <paper-icon-button disabled="[[!clipboardList.length]]" icon="content-clear" on-click="_onClearButtonTap"></paper-icon-button>
+    <paper-icon-button disabled="[[!clipboardList.length]]" icon="booed:content-clear" on-click="_onClearButtonTap"></paper-icon-button>
     <paper-tooltip>ล้าง</paper-tooltip>
       </div>
 
@@ -107,7 +107,7 @@
       </div>
 
       <div style="display:inline-block">
-    <paper-icon-button disabled="[[!selectedImages.length]]" icon="mode-edit" on-click="_onEditButtonTap"></paper-icon-button>
+    <paper-icon-button disabled="[[!selectedImages.length]]" icon="editor:mode-edit" on-click="_onEditButtonTap"></paper-icon-button>
     <paper-tooltip>แก้ไข</paper-tooltip>
       </div>
 
@@ -292,7 +292,7 @@
     }
 
     _computeCopyIcon(selectedLen) {
-      return selectedLen ? "content-copy-selection" : "content-copy";
+      return selectedLen ? "booed:content-copy-selection" : "content-copy";
     }
 
     _computeCopyMethod(selectedLen) {

@@ -569,12 +569,12 @@
         <iron-icon style="--iron-icon-width:15px;" icon="copyright"></iron-icon> 2017 <img style="padding: 0; margin: -2px 0 0 5px; vertical-align: middle; height:14px" src="/images/logo-sat/logo-packed-sat.svg">
       </a>
       <div class="horizontal layout center">
-        <a class="horizontal layout center" href="https://www.polymer-project.org/">With <iron-icon style="--iron-icon-width:15px;padding-left: 3px;" icon="polymer-color"></iron-icon></a>
+        <a class="horizontal layout center" href="https://www.polymer-project.org/">With <iron-icon style="--iron-icon-width:15px;padding-left: 3px;" icon="booed:polymer-color"></iron-icon></a>
         <iron-icon style="--iron-icon-width:15px;" icon="add"></iron-icon>
         <a class="horizontal layout center" href="https://www.youtube.com/watch?v=uAALIM_5u1Q">
           <iron-icon style="--iron-icon-width:15px;padding-right: 3px;--iron-icon-fill-color: tomato" icon="favorite"></iron-icon>
           <font style="font-family: 'Henny Penny', cursive;color:purple">Moon HyunA</font>
-          <iron-icon style="--iron-icon-width:15px;padding-left: 3px;--iron-icon-fill-color: orange" icon="moon"></iron-icon>
+          <iron-icon style="--iron-icon-width:15px;padding-left: 3px;--iron-icon-fill-color: orange" icon="booed:moon"></iron-icon>
           <iron-icon style="--iron-icon-width:20px;padding-right: 3px;--iron-icon-fill-color: olivedrab" icon="cricket"></iron-icon>
         </a>
       </div>
@@ -597,12 +597,12 @@ var MHA_INITIALIZED;
 
 function MGIconForRole(role) {
   switch(role) {
-    case "product": return "local-mall";
-    case "article": return "local-library";
+    case "product": return "maps:local-mall";
+    case "article": return "maps:local-library";
     case "collection": return "group-work";
-    case "gallery": return "photo-library";
-    case "photo": return "photo";
-    case "sales": return "sales-baht";
+    case "gallery": return "image:photo-library";
+    case "photo": return "image:photo";
+    case "sales": return "booed:sales-baht";
     default: return role;
   }
 }

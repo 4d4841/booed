@@ -87,7 +87,7 @@
         color: lightgray;
       }
 
-      .edit-buttons paper-icon-button[icon=photo-size-select-large] {
+      .edit-buttons paper-icon-button[icon=image:photo-size-select-large] {
         color: lightgray;
       }
 
@@ -147,15 +147,15 @@
     <div class="control-panel horizontal layout justified">
       <div style="width:120px"></div>
       <div class="navigator-buttons" hidden$="{{_hidesNavigator(before,data)}}">
-        <paper-icon-button id="skip-previous" icon="skip-previous" on-tap="_setPreviousData" hidden$="[[!before]]">
+        <paper-icon-button id="skip-previous" icon="av:skip-previous" on-tap="_setPreviousData" hidden$="[[!before]]">
         </paper-icon-button>
 
-        <paper-icon-button id="skip-next" icon="skip-next" on-tap="_setNextData" hidden$="[[!after]]">
+        <paper-icon-button id="skip-next" icon="av:skip-next" on-tap="_setNextData" hidden$="[[!after]]">
         </paper-icon-button>
       </div>
       <div class="edit-buttons">
 
-        <paper-icon-button style="overflow:visible" id="update-thumbnail-button" icon="photo-size-select-large" on-tap="_openThumbnailDialog">
+        <paper-icon-button style="overflow:visible" id="update-thumbnail-button" icon="image:photo-size-select-large" on-tap="_openThumbnailDialog">
         </paper-icon-button>
 
         <paper-icon-button id="save-button" icon="done" on-tap="_deactivateSave" edited$="{{edited}}">
