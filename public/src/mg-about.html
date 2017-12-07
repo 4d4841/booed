@@ -16,6 +16,7 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/paper-slider/paper-slider.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
@@ -35,6 +36,7 @@
 <link rel="import" href="mg-button.html">
 <link rel="import" href="mg-icons.html">
 <link rel="import" href="mg-input.html">
+<link rel="import" href="mg-sections.html">
 
 <dom-module id="mg-about">
   <template>
@@ -115,6 +117,23 @@
         width: calc(var(--display-icon-size,21px) + 20px);
         padding: 5px;
         word-wrap: break-word;
+        margin: 5px;
+      }
+
+      .display-icon-card[matched] .display-icon {
+        color: var(--google-blue-700);
+      }
+
+      .display-icon-card[matched] {
+        border-radius: 10px;
+        background-color: white;
+        box-sizing: content-box;
+      }
+
+      mg-sections {
+        background-color: snow;
+        width: calc(100vw - 20px);
+        border-bottom:1px dashed var(--app-shadow-color)
       }
 
     </style>
@@ -136,52 +155,71 @@
         </a>
       </paper-card>
 
-
       <div name="icons" style="width:100%;height:100%;font-size:16px" class="vertical layout">
+
           <template is="dom-if" if="[[clickedIcon]]">
-        <paper-card style="border-radius:5px;color:black;width:calc(100% - 30px);margin:10px;background-color:lavender;padding:20px">
+        <paper-card style="border-radius:5px;color:black;max-width:calc(100vw - 30px);height:auto;margin:10px;background-color:lavender;padding:20px;word-wrap:break-all">
           <paper-icon-button icon="close" on-click="_closePath"></paper-icon-button>
           [[clickedIcon]]
         </paper-card>
           </template>
 
-        <div style="margin-left:20px" class="vertical layout center">
-          <mg-input
-            label="Space-separated keywords or regexes"
-            icon="search"
-            value="{{willSearch}}"
-          ></mg-input>
-          <paper-slider style="margin-top:10px" value="{{iconSize}}" min="10" max="200" editable></paper-slider>
-          <!--
-          <paper-input
-            label="Search"
-            value="{{search}}"
-          ></paper-input>
-        -->
-        </div>
+            <div class="horizontal layout start-justified wrap" style="box-sizing:border-box ;border-bottom: 1px dashed var(--app-shadow-color)">
+          <template id="repeater" is="dom-repeat" items="{{iconSets}}">
+        <paper-checkbox checked="{{item.show}}" style="height:30px;margin-left: 10px; font-size:14px">
+          [[item.name]]
+        </paper-checkbox>
+          </template>
+            </div>
 
+
+          <app-toolbar style="border-bottom:1px dashed var(--app-shadow-color)">
+        <div style="margin-top:20px" >Size:</div>
+        <paper-slider style="margin-top:20px" value="{{iconSize}}" min="10" max="200" editable></paper-slider>
+        <div class="flex"></div>
+
+        <mg-input
+          label="Space-separated keywords or regexes"
+          icon="search"
+          value="{{willSearch}}"
+          autofocus
+        ></mg-input>
+          </app-toolbar>
+
+        <mg-sections sections="{{iconSections}}" class="icons-container horizontal layout wrap">
+
+            <template id="repeater" is="dom-repeat" items="[[iconList]]">
+          <div slot="[[item.section]]" class="display-icon-card" on-click="_addIcon" matched$="[[_matchesSection(item.section)]]">
+            <div class="display-icon vertical layout center">
+              <iron-icon icon="[[item.set]]:[[item.id]]"></iron-icon>
+            </div>
+            <span style="word-wrap:break-word;width:calc(100% - 10px)"> [[item.set]]:[[item.id]] </span>
+          </div>
+            </template>
+
+        </mg-sections>
+
+
+<!--
         <div style="width:100%;margin:10px;" class="icons-container horizontal layout wrap">
-          <template is="dom-repeat" items="[[iconNames]]" filter="[[_contains(search)]]">
+          <template is="dom-repeat" items="[[iconList]]" filter="[[_contains(search)]]">
             <div class="display-icon-card" on-click="_addIcon">
               <div class="display-icon vertical layout center">
                 <iron-icon icon="[[item.set]]:[[item.id]]"></iron-icon>
               </div>
-              <div>
-                [[item.set]] : [[item.id]]
-              </div>
+              <span style="word-wrap:break-word;width:calc(100% - 10px)"> [[item.set]]:[[item.id]] </span>
             </div>
           </template>
-          <template is="dom-repeat" items="[[iconNames]]" filter="[[_contains(search,1)]]">
+          <template is="dom-repeat" items="[[iconList]]" filter="[[_contains(search,1)]]">
             <div class="display-icon-card" on-click="_addIcon">
               <div style="color:gainsboro;" class="display-icon vertical layout center">
                 <iron-icon icon="[[item.set]]:[[item.id]]"></iron-icon>
               </div>
-              <div>
-                [[item.set]]: [[item.id]]
-              </div>
+              <span style="word-wrap:break-word;width:calc(100% - 10px)"> [[item.set]]:[[item.id]] </span>
             </div>
           </template>
         </div>
+      -->
 
         <!--footer-->
         <div style="height:50px">
@@ -239,7 +277,7 @@
         },
 
         iconSize: {
-          value: 40,
+          value: 30,
           observer: '_iconSizeChanged'
         },
 
@@ -247,7 +285,20 @@
           observer: '_willSearchChanged'
         },
 
+        iconSets: {
+          type: Array,
+          value: () => [],
+        },
+
+        iconSections: {
+          type: Array,
+          computed: '_computeIconSections(iconSets.*)',
+        },
+
       }}
+
+      static get observers() { return [
+      ]}
 
       _iconSizeChanged(size) {
         this.updateStyles({
@@ -255,27 +306,34 @@
         });
       }
 
-      _contains(value,not) {
-        let regs = [];
-        value.split(' ').forEach(v => {
-          if (v !== '') regs.push(new RegExp(v))
+      _computeIconSections(changes) {
+        let iconSets = this.iconSets;
+        let sections = [];
+        iconSets.forEach(set => {
+          if (set.show) {
+            sections.push(set.name+"#matched");
+          }
+        });
+        iconSets.forEach(set => {
+          if (set.show) {
+            sections.push(set.name);
+          }
         });
 
-        return regs.length
-          ? not ? icon => regs.every(regex => !regex.test(icon.id))
-                : icon => regs.some(regex => regex.test(icon.id))
-          : not ? () => false
-                : () => true;
+        return sections;
       }
 
       connectedCallback() {
         super.connectedCallback();
-        this.set('iconNames', []);
+
+        this.set('iconList', []);
+
         let sets = Polymer.IronMeta.types['iconset'];
         for (let setname in sets) {
+          this.push('iconSets',{name:setname, show: true});
           sets[setname].getIconNames().forEach(name => {
             let n = name.split(':');
-            this.push('iconNames',{set:n[0],id:n[1]});
+            this.push('iconList',{set:n[0],id:n[1],section:n[0]});
           });
         }
       }
@@ -294,8 +352,12 @@
         }
       }
 
+      _matchesSection(sectionName) {
+        return sectionName.split('#').pop() == 'matched'
+      }
+
       _addIcon(e) {
-        let el = this._meta.byKey(e.model.item.set).querySelector('g[id='+e.model.item.id+']');
+        let el = this._meta.byKey(e.model.item.set).querySelector('g[id="'+e.model.item.id+'"]');
         this.set('clickedIcon',new XMLSerializer().serializeToString(el).replace('xmlns="http://www.w3.org/2000/svg"',''));
       }
 
@@ -305,11 +367,22 @@
 
       _willSearchChanged(willSearch) {
         this._willSearchDebouncer = Polymer.Debouncer.debounce(this._willSearchDebouncer,
-          Polymer.Async.timeOut.after(300), () => {
-            this.set('search', willSearch);
+          Polymer.Async.timeOut.after(500), () => {
+            //this.set('search', willSearch);
+            let regs = [];
+            willSearch.split(' ').forEach(v => {
+              if (v !== '') regs.push(new RegExp(v))
+            });
+
+            this.iconList.forEach((icon,index) => {
+              if (regs.some( regex => regex.test(icon.id) )) {
+                this.set(['iconList',index,'section'],this.iconList[index].set+'#matched');
+              } else {
+                this.set(['iconList',index,'section'],this.iconList[index].set);
+              }
+            });
           });
       }
-
     }
 
     customElements.define(MGAbout.is, MGAbout);
