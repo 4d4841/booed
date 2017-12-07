@@ -172,7 +172,7 @@
     <template is="dom-repeat" items="[[itemList]]" mutable-data>
       <mg-thumbnail
         key="[[item.key]]"
-        label="[[_formatLabel(item.images,item.name)]]"
+        label="[[_formatLabel(item.images,item.name,item.role)]]"
         icon="[[_formatRoleIcon(item.role)]]"
         src="[[item._src]]"
         class="item"
@@ -305,9 +305,11 @@
       }
     }
 
-    _formatLabel(images,str) {
+    _formatLabel(images,str,role) {
       str = str || "(ไม่มีชื่อ)";
-      return "×" + (images ? Object.entries(images).length : 0) +" "+ str;
+      return role == 'gallery'
+        ? (images ? "×" + Object.entries(images).length : '') +" "+ str
+        : str;
     }
 
     _itemsChanged(change) {
