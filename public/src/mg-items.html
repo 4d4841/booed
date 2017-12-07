@@ -25,7 +25,6 @@
 <link rel="import" href="mg-product-editor.html">
 <link rel="import" href="mg-gallery-editor.html">
 <link rel="import" href="mg-thumbnail.html">
-<link rel="import" href="mg-clipboard-view.html">
 
 
 <dom-module id="mg-items">
@@ -85,10 +84,6 @@
       width: 100%;
       @apply --layout-vertical;
       height: calc(100vh - 100px);
-    }
-
-    mg-clipboard-view {
-      margin-right: 20px;
     }
 
     #editor {
@@ -194,9 +189,6 @@
   </mg-balloon>
 
   <div class="editor-container">
-    <mg-clipboard-view
-    ></mg-clipboard-view>
-
     <mg-product-editor
       id="product-editor"
       class="flex"

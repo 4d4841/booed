@@ -73,9 +73,10 @@
       <template is="dom-if" if="[[testEqual(selectedType.name,'custom')]]">
 
         <mg-input
+          label="ชื่อ"
           value="{{customType}}"
-          min-width="80"
-        > <iron-icon icon="mode-edit" slot="prefix"></iron-icon>
+          min-width="70"
+        > <iron-icon icon="editor:mode-edit" slot="prefix"></iron-icon>
         </mg-input>
 
       </template>
