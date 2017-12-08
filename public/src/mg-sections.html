@@ -21,19 +21,34 @@
   <style include="iron-flex iron-flex-alignment">
   :host {
     display: block;
-    @apply --layout-vertical;
+  }
+
+  .section {
+    border-top: 1px dashed var(--app-shadow-color);
+    @apply --layout-horizontal;
+    @apply --layout-wrap;
+    width:100%;
+    min-height: 20px;
   }
 
   </style>
     </custom-style>
 
   <template is="dom-repeat" items="[[sections]]">
-    <slot name="[[item]]"></slot>
+    <div class="section">
+      <div style="padding-left:5px;color:tomato;z-index:0;pointer-events:none;font-size:11px;position:absolute">
+        section: [[item]]
+      </div>
+      <slot name="[[item]]"></slot>
+    </div>
   </template>
 
 </template>
 <script>
 class MGSections extends Polymer.Element {
+  _endsWithMatched(item) {
+    return item.endsWith("#matched");
+  }
   static get is() { return 'mg-sections'; }
 
   static get properties() { return {
@@ -45,6 +60,7 @@ class MGSections extends Polymer.Element {
 
   static get observers() { return [
   ]}
+
 }
 
 customElements.define(MGSections.is, MGSections);

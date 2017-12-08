@@ -124,12 +124,6 @@
         color: var(--google-blue-700);
       }
 
-      .display-icon-card[matched] {
-        border-radius: 10px;
-        background-color: white;
-        box-sizing: content-box;
-      }
-
       mg-sections {
         background-color: snow;
         width: calc(100vw - 20px);
@@ -165,7 +159,13 @@
           </template>
 
             <div class="horizontal layout start-justified wrap" style="box-sizing:border-box ;border-bottom: 1px dashed var(--app-shadow-color)">
-          <template id="repeater" is="dom-repeat" items="{{iconSets}}">
+          <template
+            id="repeater"
+            is="dom-repeat"
+            items="{{iconSets}}"
+            observe="show"
+            filter="_showObserver"
+          >
         <paper-checkbox checked="{{item.show}}" style="height:30px;margin-left: 10px; font-size:14px">
           [[item.name]]
         </paper-checkbox>
@@ -173,7 +173,7 @@
             </div>
 
 
-          <app-toolbar style="border-bottom:1px dashed var(--app-shadow-color)">
+          <app-toolbar>
         <div style="margin-top:20px" >Size:</div>
         <paper-slider style="margin-top:20px" value="{{iconSize}}" min="10" max="200" editable></paper-slider>
         <div class="flex"></div>
@@ -193,33 +193,11 @@
             <div class="display-icon vertical layout center">
               <iron-icon icon="[[item.set]]:[[item.id]]"></iron-icon>
             </div>
-            <span style="word-wrap:break-word;width:calc(100% - 10px)"> [[item.set]]:[[item.id]] </span>
+            <span style="word-wrap:break-word;width:calc(100% - 10px)">[[item.id]]</span>
           </div>
             </template>
 
         </mg-sections>
-
-
-<!--
-        <div style="width:100%;margin:10px;" class="icons-container horizontal layout wrap">
-          <template is="dom-repeat" items="[[iconList]]" filter="[[_contains(search)]]">
-            <div class="display-icon-card" on-click="_addIcon">
-              <div class="display-icon vertical layout center">
-                <iron-icon icon="[[item.set]]:[[item.id]]"></iron-icon>
-              </div>
-              <span style="word-wrap:break-word;width:calc(100% - 10px)"> [[item.set]]:[[item.id]] </span>
-            </div>
-          </template>
-          <template is="dom-repeat" items="[[iconList]]" filter="[[_contains(search,1)]]">
-            <div class="display-icon-card" on-click="_addIcon">
-              <div style="color:gainsboro;" class="display-icon vertical layout center">
-                <iron-icon icon="[[item.set]]:[[item.id]]"></iron-icon>
-              </div>
-              <span style="word-wrap:break-word;width:calc(100% - 10px)"> [[item.set]]:[[item.id]] </span>
-            </div>
-          </template>
-        </div>
-      -->
 
         <!--footer-->
         <div style="height:50px">
@@ -243,15 +221,7 @@
     class MGAbout extends Polymer.Element {
       static get is() { return 'mg-about'; }
 
-      _metaChanged(meta) {
-        console.log('meta',meta);
-      }
-
       static get properties() { return {
-
-        testMeta: {
-          observer: '_metaChanged'
-        },
 
         menu: {
           type: Object,
@@ -287,12 +257,12 @@
 
         iconSets: {
           type: Array,
-          value: () => [],
+          value: function(){return []},
         },
 
         iconSections: {
           type: Array,
-          computed: '_computeIconSections(iconSets.*)',
+          value: function(){return []},
         },
 
       }}
@@ -306,23 +276,6 @@
         });
       }
 
-      _computeIconSections(changes) {
-        let iconSets = this.iconSets;
-        let sections = [];
-        iconSets.forEach(set => {
-          if (set.show) {
-            sections.push(set.name+"#matched");
-          }
-        });
-        iconSets.forEach(set => {
-          if (set.show) {
-            sections.push(set.name);
-          }
-        });
-
-        return sections;
-      }
-
       connectedCallback() {
         super.connectedCallback();
 
@@ -330,7 +283,12 @@
 
         let sets = Polymer.IronMeta.types['iconset'];
         for (let setname in sets) {
-          this.push('iconSets',{name:setname, show: true});
+          let i = 0;
+          for (let s;s = this.iconSets[i];++i) {
+            if (s.name > setname) { break; }
+          }
+          this.splice('iconSets',i,0,{name:setname, show: true});
+
           sets[setname].getIconNames().forEach(name => {
             let n = name.split(':');
             this.push('iconList',{set:n[0],id:n[1],section:n[0]});
@@ -353,7 +311,7 @@
       }
 
       _matchesSection(sectionName) {
-        return sectionName.split('#').pop() == 'matched'
+        return sectionName.split('✓').length == 2;
       }
 
       _addIcon(e) {
@@ -365,24 +323,86 @@
         this.set('clickedIcon',null);
       }
 
+      _search(search) {
+        let regs = [];
+        search.split(' ').forEach(v => {
+          if (v !== '') regs.push(new RegExp(v))
+        });
+
+        let map = new Map();
+        this.iconSets.forEach(set => {
+          map.set(set.name,{count:0,show:set.show||false});
+          map.set(set.name+'✓',{count:0,show:set.show||false});
+        });
+
+        this.iconList.forEach((icon,index) => {
+          let section = this.iconList[index].set;
+          if (regs.some( regex => regex.test(icon.id) )) {
+            this.set(['iconList',index,'section'],section+'✓');
+            let s =  map.get(section+'✓');
+            s.count++;
+            map.set(section+'✓',s);
+          } else {
+            this.set(['iconList',index,'section'],section);
+            let s = map.get(section);
+            s.count++;
+            map.set(section,s);
+          }
+        });
+
+        for (let [key,value] of map.entries()) {
+          if (value.count == 0 || !value.show){
+            this._removeSection(key);
+          } else if (value.show){
+            this._addSection(key);
+          }
+        }
+      }
+
       _willSearchChanged(willSearch) {
         this._willSearchDebouncer = Polymer.Debouncer.debounce(this._willSearchDebouncer,
-          Polymer.Async.timeOut.after(500), () => {
-            //this.set('search', willSearch);
-            let regs = [];
-            willSearch.split(' ').forEach(v => {
-              if (v !== '') regs.push(new RegExp(v))
-            });
-
-            this.iconList.forEach((icon,index) => {
-              if (regs.some( regex => regex.test(icon.id) )) {
-                this.set(['iconList',index,'section'],this.iconList[index].set+'#matched');
-              } else {
-                this.set(['iconList',index,'section'],this.iconList[index].set);
-              }
-            });
-          });
+          Polymer.Async.timeOut.after(100), () => { this._search(willSearch) });
       }
+
+      _addSection(sectionName) {
+        let idx = this.iconSections.indexOf(sectionName);
+        if (idx != -1) return;
+
+        if (sectionName.endsWith('✓')) {
+          let i = 0;
+          for (let s;s = this.iconSections[i];++i) {
+            if (!s.endsWith('✓') || s > sectionName) { break; }
+          }
+          this.splice('iconSections',i,0,sectionName);
+        } else {
+          let i = this.iconSections.length;
+          for (let s;s = this.iconSections[i-1];--i) {
+            if (s.endsWith('✓') || s < sectionName) { break; }
+          }
+          this.splice('iconSections',i,0,sectionName);
+        }
+      }
+
+      _removeSection(sectionName) {
+        let idx = this.iconSections.indexOf(sectionName);
+        if (idx == -1) return;
+        this.splice('iconSections',idx,1);
+      }
+
+      _showObserver(set) {
+        /*
+        if (set.show) {
+          this._addSection(set.name);
+          this._addSection(set.name+'✓');
+        } else if (!set.show) {
+          this._removeSection(set.name);
+          this._removeSection(set.name+'✓');
+        }
+        */
+        this._willSearchChanged(this.willSearch);
+        return true;
+      }
+
     }
 
     customElements.define(MGAbout.is, MGAbout);
