@@ -92,6 +92,32 @@
         text-decoration: none;
       }
 
+      iron-icon[icon="gorenger:akarenger"] {
+        color: black;
+        background: radial-gradient(circle at center, crimson 0, crimson 55%, transparent 55%);
+      }
+
+      iron-icon[icon="gorenger:aorenger"] {
+        color: black;
+        background: radial-gradient(circle at center, royalblue 0, royalblue 55%, transparent 55%);
+      }
+
+      iron-icon[icon="gorenger:kirenger"] {
+        border: 10% solid cyan;
+        color: black;
+        background: radial-gradient(circle at center, gold 0, gold 55%, transparent 55%);
+      }
+
+      iron-icon[icon="gorenger:momorenger"] {
+        color: black;
+        background: radial-gradient(circle at center, pink 0, pink 55%, transparent 55%);
+      }
+
+      iron-icon[icon="gorenger:midorenger"] {
+        color: black;
+        background: radial-gradient(circle at center, green 0, green 55%, transparent 55%);
+      }
+
       .display-icon {
         display: block;
         @apply --layout-center;
@@ -191,7 +217,7 @@
             <template id="repeater" is="dom-repeat" items="[[iconList]]">
           <div slot="[[item.section]]" class="display-icon-card" on-click="_addIcon" matched$="[[_matchesSection(item.section)]]">
             <div class="display-icon vertical layout center">
-              <iron-icon icon="[[item.set]]:[[item.id]]"></iron-icon>
+              <iron-icon icon$="[[item.set]]:[[item.id]]"></iron-icon>
             </div>
             <span style="word-wrap:break-word;width:calc(100% - 10px)">[[item.id]]</span>
           </div>
