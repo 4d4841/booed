@@ -413,11 +413,11 @@
 
     _uploadReps(uid,itemKey,files) {
       Array.from(files).forEach(imgFile => {
-        let imageKey =  MHA.DB.ref('home').child(uid).child('items').child(itemKey).child('images').push().key;
+        let imageKey =  MHA.DB.ref('home').child(uid).child(itemKey).child('images').push().key;
         let imageName = imgFile.name.split('.')[0];
         //let coverImageKey = MHA.get(['items',itemKey,'cover']) || imageKey;
         let coverImageKey = MHA.getItem({[itemKey]:{cover:null}}) || imageKey;
-        MHA.assignItem(itemKey,{ cover: coverImageKey });
+        MHA.setItem(itemKey,{ cover: coverImageKey });
 
         let registerInfo = {};
         function registerImageReps() {
@@ -445,7 +445,7 @@
               this._setPhotoKeyProperty(imageKey, '_progress', (progress.bytesTransferred / progress.totalBytes * 100).toFixed(2));
           },
           complete: (repKey,complete) => {
-            MHA.assignItem(itemKey,{
+            MHA.setItem(itemKey,{
               images: {
                 [imageKey]: {
                   rep: repKey,
@@ -495,7 +495,7 @@
 
                   },
                   src: (key,src) => {
-                    MHA.assignItem(itemKey,{
+                    MHA.setItem(itemKey,{
                       images: {
                         [imageKey]: {
                           name: imageName,
@@ -539,7 +539,7 @@
 
       console.assert(role, "Role is missing");
 
-      MHA.assignItem(itemKey,{
+      MHA.setItem(itemKey,{
           _uid: uid,
           name: name,
           role: role,
@@ -708,7 +708,7 @@
       this.selectedImages.forEach(selectedKey => {
         //let del = MHA.get(['items',this.itemKey,'images',selectedKey,'deleted']) ? null:true;
         let del = MHA.getItem({[itemKey]:{images:{[selectedKey]:{deleted:null}}}}) ? null:true;
-        MHA.assignItem(this.itemKey, {images:{[selectedKey]:{deleted:del}}});
+        MHA.setItem(this.itemKey, {images:{[selectedKey]:{deleted:del}}});
         registerData['home/'+MHA.AU.currentUser.uid+'/items/'+this.itemKey+'/images/'+selectedKey+'/deleted'] = del;
       });
       this.splice('selectedImages',0,this.selectedImages.length);
@@ -869,7 +869,7 @@
                      * Since it will use a returned locally stored dataURI generated
                      * from Blob it doesn't need the uploading process to complete.
                      */
-                    MHA.assignItem(itemKey, {
+                    MHA.setItem(itemKey, {
                       images: {[imageKey]: {thumbnail: thumbnailKey, roiThumbnail: null}},
                     });
                   },

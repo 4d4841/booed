@@ -386,7 +386,7 @@
           }
 
           val._uid = uid;
-          MHA.assignItem(snapshot.key,val);
+          MHA.setItem(snapshot.key,val);
 
           let itemRef = MHA.DB.ref('home')
                               .child(uid)
@@ -400,7 +400,7 @@
 
           /* Listen to images changes */
           itemRef.child('cover').on('value', coverSnapshot => {
-              MHA.assignItem(snapshot.key,{cover:coverSnapshot.val()});
+              MHA.setItem(snapshot.key,{cover:coverSnapshot.val()});
               this._setCover(snapshot.key, coverSnapshot.val());
           });
 
@@ -496,7 +496,7 @@
 
           });
 
-          MHA.assignItem(itemSS.key,item);
+          MHA.setItem(itemSS.key,item);
 
         } else if (!this.itemRole) {
           /* editorRole isn't defined. This is not creating a new item. */

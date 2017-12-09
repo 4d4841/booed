@@ -862,7 +862,7 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
             complete: (thumbnailKey,complete) => {
               /* XXX verify current thumbnailKey */
 
-              MHA.assignItem( itemKey, {
+              MHA.setItem( itemKey, {
                 /* Reset roiThumbnail since it has been baked */
                 images: { [imageKey]: { thumbnail: thumbnailKey, roiThumbnail: null } },
               });
