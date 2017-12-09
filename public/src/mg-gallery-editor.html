@@ -413,7 +413,7 @@
 
     _uploadReps(uid,itemKey,files) {
       Array.from(files).forEach(imgFile => {
-        let imageKey =  MHA.DB.ref('home').child(uid).child(itemKey).child('images').push().key;
+        let imageKey =  MHA.DB.ref('home').child(uid).child('items').child(itemKey).child('images').push().key;
         let imageName = imgFile.name.split('.')[0];
         //let coverImageKey = MHA.get(['items',itemKey,'cover']) || imageKey;
         let coverImageKey = MHA.getItem({[itemKey]:{cover:null}}) || imageKey;

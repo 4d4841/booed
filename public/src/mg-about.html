@@ -16,6 +16,7 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/paper-slider/paper-slider.html">
@@ -39,399 +40,426 @@
 <link rel="import" href="mg-sections.html">
 
 <dom-module id="mg-about">
-  <template>
-      <custom-style>
-    <style include="iron-flex iron-flex-alignment">
-
-      :host {
-        color: var(--app-secondary-color);
-        @apply --layout-vertical;
-        @apply --layout-center;
-        @apply --layout-center-justified;
-      }
-
-      h1 {
-        font-weight: 300;
-      }
-
-      .github {
-        margin-top: 50px;
-        width: 240px;
-        height: 240px;
-        border-radius: 40px;
-        padding: 10px;
-        overflow: hidden;
-        @apply --layout-vertical;
-        @apply --layout-center;
-        --paper-card-content: {
-          box-shadow: inset 0px 5px 6px -3px rgba(255, 0, 0, 1.0);
-        }
-      }
-
-      paper-slider {
-        height: 20px;
-        width: 300px;
-      }
-
-      .button {
-        width: 80px;
-        height: 80px;
-      }
-
-      .logo-button {
-        width: 400px;
-        height: 100px;
-        margin-left: 15px;
-          border-radius: 0;
-        --paper-button: {
-          border-radius: 0;
-        }
-      }
-
-      a:link {
-        text-decoration: none;
-      }
-
-      iron-icon[icon="gorenger:akarenger"] {
-        color: black;
-        background: radial-gradient(circle at center, crimson 0, crimson 55%, transparent 55%);
-      }
-
-      iron-icon[icon="gorenger:aorenger"] {
-        color: black;
-        background: radial-gradient(circle at center, royalblue 0, royalblue 55%, transparent 55%);
-      }
-
-      iron-icon[icon="gorenger:kirenger"] {
-        border: 10% solid cyan;
-        color: black;
-        background: radial-gradient(circle at center, gold 0, gold 55%, transparent 55%);
-      }
-
-      iron-icon[icon="gorenger:momorenger"] {
-        color: black;
-        background: radial-gradient(circle at center, pink 0, pink 55%, transparent 55%);
-      }
-
-      iron-icon[icon="gorenger:midorenger"] {
-        color: black;
-        background: radial-gradient(circle at center, green 0, green 55%, transparent 55%);
-      }
-
-      .display-icon {
-        display: block;
-        @apply --layout-center;
-        @apply --layout-center-justified;
-        width: calc(var(--display-icon-size,21px) + 10px);
-        height: calc(var(--display-icon-size,21px) + 10px);
-        --iron-icon-width: var(--display-icon-size,21px);
-        --iron-icon-height: var(--display-icon-size,21px);
-        /*
-        --iron-icon-width: 32px;
-        --iron-icon-height: 32px;
-        */
-        @apply --layout-vertical;
-        @apply --layout-center;
-      }
-
-      .display-icon-card {
-        font-size: 10px;
-        min-width: 80px;
-        @apply --layout-vertical;
-        @apply --layout-center;
-        @apply --layout-start-justified;
-        width: calc(var(--display-icon-size,21px) + 20px);
-        padding: 5px;
-        word-wrap: break-word;
-        margin: 5px;
-      }
-
-      .display-icon-card[matched] .display-icon {
-        color: var(--google-blue-700);
-      }
-
-      mg-sections {
-        background-color: snow;
-        width: calc(100vw - 20px);
-        border-bottom:1px dashed var(--app-shadow-color)
-      }
-
-    </style>
-      </custom-style>
-
-    <iron-pages
-      class="vertical layout center"
-      selected="[[page]]"
-      attr-for-selected="name"
-      selected-attribute="visible"
-      fallback-selection="card"
-    > <paper-card class="github layout self-center" name="card">
-        <a href="/">
-          <paper-icon-button src="/images/logo-bounce-in.svg" class="logo-button layout vertical center-justified" noink>
-        </a>
-        <a href="https://github.com/4d4841/booed">
-          <paper-icon-button src="https://assets-cdn.github.com/images/modules/logos_page/Octocat.png" class="button layout vertical center-justified" noink>
-          </paper-icon-button>
-        </a>
-      </paper-card>
-
-      <div name="icons" style="width:100%;height:100%;font-size:16px" class="vertical layout">
-
-          <template is="dom-if" if="[[clickedIcon]]">
-        <paper-card style="border-radius:5px;color:black;max-width:calc(100vw - 30px);height:auto;margin:10px;background-color:lavender;padding:20px;word-wrap:break-all">
-          <paper-icon-button icon="close" on-click="_closePath"></paper-icon-button>
-          [[clickedIcon]]
-        </paper-card>
-          </template>
-
-            <div class="horizontal layout start-justified wrap" style="box-sizing:border-box ;border-bottom: 1px dashed var(--app-shadow-color)">
-          <template
-            id="repeater"
-            is="dom-repeat"
-            items="{{iconSets}}"
-            observe="show"
-            filter="_showObserver"
-          >
-        <paper-checkbox checked="{{item.show}}" style="height:30px;margin-left: 10px; font-size:14px">
-          [[item.name]]
-        </paper-checkbox>
-          </template>
-            </div>
-
-
-          <app-toolbar>
-        <div style="margin-top:20px" >Size:</div>
-        <paper-slider style="margin-top:20px" value="{{iconSize}}" min="10" max="200" editable></paper-slider>
-        <div class="flex"></div>
-
-        <mg-input
-          label="Space-separated keywords or regexes"
-          icon="search"
-          value="{{willSearch}}"
-          autofocus
-        ></mg-input>
-          </app-toolbar>
-
-        <mg-sections sections="{{iconSections}}" class="icons-container horizontal layout wrap">
-
-            <template id="repeater" is="dom-repeat" items="[[iconList]]">
-          <div slot="[[item.section]]" class="display-icon-card" on-click="_addIcon" matched$="[[_matchesSection(item.section)]]">
-            <div class="display-icon vertical layout center">
-              <iron-icon icon$="[[item.set]]:[[item.id]]"></iron-icon>
-            </div>
-            <span style="word-wrap:break-word;width:calc(100% - 10px)">[[item.id]]</span>
-          </div>
-            </template>
-
-        </mg-sections>
-
-        <!--footer-->
-        <div style="height:50px">
-        </div>
-
-      </div>
-
-
-    </iron-pages>
-
-  <app-route
-      route="{{route}}"
-      pattern="/:page"
-      data="{{routeData}}"
-      tail="{{subroute}}">
-  </app-route>
-
-  </template>
-  <script>
-
-    class MGAbout extends Polymer.Element {
-      static get is() { return 'mg-about'; }
-
-      static get properties() { return {
-
-        menu: {
-          type: Object,
-          value: { entries: [
-            { name:"tos", path:"/about/tos", icon:"info", title:"เงื่อนไขการให้บริการ", },
-            { name:"policy", path:"/about/privacy-policy", icon:"info", title:"นโยบายความเป็นส่วนตัว"},
-          ]}
-        },
-
-        visible: {
-          type: Boolean,
-          observer: '_visibleChanged'
-        },
-
-        route: {
-          type: Object,
-          notify: true,
-          observer: '_routeChanged'
-        },
-
-        _meta: {
-          value: Polymer.Base.create('iron-meta', {type: 'iconset'})
-        },
-
-        iconSize: {
-          value: 30,
-          observer: '_iconSizeChanged'
-        },
-
-        willSearch: {
-          observer: '_willSearchChanged'
-        },
-
-        iconSets: {
-          type: Array,
-          value: function(){return []},
-        },
-
-        iconSections: {
-          type: Array,
-          value: function(){return []},
-        },
-
-      }}
-
-      static get observers() { return [
-      ]}
-
-      _iconSizeChanged(size) {
-        this.updateStyles({
-          '--display-icon-size':`${size}px`
-        });
-      }
-
-      connectedCallback() {
-        super.connectedCallback();
-
-        this.set('iconList', []);
-
-        let sets = Polymer.IronMeta.types['iconset'];
-        for (let setname in sets) {
-          let i = 0;
-          for (let s;s = this.iconSets[i];++i) {
-            if (s.name > setname) { break; }
-          }
-          this.splice('iconSets',i,0,{name:setname, show: true});
-
-          sets[setname].getIconNames().forEach(name => {
-            let n = name.split(':');
-            this.push('iconList',{set:n[0],id:n[1],section:n[0]});
-          });
-        }
-      }
-
-      _routeChanged( route) {
-        if (route.prefix == '/about') {
-          this.set('page', this.routeData.page);
-        }
-      }
-
-      _visibleChanged(visible) {
-        if (visible) {
-          let page = this.page;
-          this.dispatchEvent(new CustomEvent('change-section', {
-            bubbles: true, composed: true, detail: {title: (page ? (page.charAt(0).toUpperCase() + page.slice(1) + " - "):'') + 'About', target:this}}));
-        }
-      }
-
-      _matchesSection(sectionName) {
-        return sectionName.split('✓').length == 2;
-      }
-
-      _addIcon(e) {
-        let el = this._meta.byKey(e.model.item.set).querySelector('g[id="'+e.model.item.id+'"]');
-        this.set('clickedIcon',new XMLSerializer().serializeToString(el).replace('xmlns="http://www.w3.org/2000/svg"',''));
-      }
-
-      _closePath(e) {
-        this.set('clickedIcon',null);
-      }
-
-      _search(search) {
-        let regs = [];
-        search.split(' ').forEach(v => {
-          if (v !== '') regs.push(new RegExp(v))
-        });
-
-        let map = new Map();
-        this.iconSets.forEach(set => {
-          map.set(set.name,{count:0,show:set.show||false});
-          map.set(set.name+'✓',{count:0,show:set.show||false});
-        });
-
-        this.iconList.forEach((icon,index) => {
-          let section = this.iconList[index].set;
-          if (regs.some( regex => regex.test(icon.id) )) {
-            this.set(['iconList',index,'section'],section+'✓');
-            let s =  map.get(section+'✓');
-            s.count++;
-            map.set(section+'✓',s);
-          } else {
-            this.set(['iconList',index,'section'],section);
-            let s = map.get(section);
-            s.count++;
-            map.set(section,s);
-          }
-        });
-
-        for (let [key,value] of map.entries()) {
-          if (value.count == 0 || !value.show){
-            this._removeSection(key);
-          } else if (value.show){
-            this._addSection(key);
-          }
-        }
-      }
-
-      _willSearchChanged(willSearch) {
-        this._willSearchDebouncer = Polymer.Debouncer.debounce(this._willSearchDebouncer,
-          Polymer.Async.timeOut.after(100), () => { this._search(willSearch) });
-      }
-
-      _addSection(sectionName) {
-        let idx = this.iconSections.indexOf(sectionName);
-        if (idx != -1) return;
-
-        if (sectionName.endsWith('✓')) {
-          let i = 0;
-          for (let s;s = this.iconSections[i];++i) {
-            if (!s.endsWith('✓') || s > sectionName) { break; }
-          }
-          this.splice('iconSections',i,0,sectionName);
-        } else {
-          let i = this.iconSections.length;
-          for (let s;s = this.iconSections[i-1];--i) {
-            if (s.endsWith('✓') || s < sectionName) { break; }
-          }
-          this.splice('iconSections',i,0,sectionName);
-        }
-      }
-
-      _removeSection(sectionName) {
-        let idx = this.iconSections.indexOf(sectionName);
-        if (idx == -1) return;
-        this.splice('iconSections',idx,1);
-      }
-
-      _showObserver(set) {
-        /*
-        if (set.show) {
-          this._addSection(set.name);
-          this._addSection(set.name+'✓');
-        } else if (!set.show) {
-          this._removeSection(set.name);
-          this._removeSection(set.name+'✓');
-        }
-        */
-        this._willSearchChanged(this.willSearch);
-        return true;
-      }
-
+<template>
+    <custom-style>
+  <style include="iron-flex iron-flex-alignment">
+
+    :host {
+      color: var(--app-secondary-color);
+      @apply --layout-vertical;
+      @apply --layout-center;
+      @apply --layout-center-justified;
     }
 
-    customElements.define(MGAbout.is, MGAbout);
+    h1 {
+      font-weight: 300;
+    }
 
-  </script>
+    .github {
+      margin-top: 50px;
+      width: 240px;
+      height: 240px;
+      border-radius: 40px;
+      padding: 10px;
+      overflow: hidden;
+      @apply --layout-vertical;
+      @apply --layout-center;
+      --paper-card-content: {
+        box-shadow: inset 0px 5px 6px -3px rgba(255, 0, 0, 1.0);
+      }
+    }
+
+    paper-slider {
+      height: 20px;
+      width: 300px;
+    }
+
+    .button {
+      width: 80px;
+      height: 80px;
+    }
+
+    .logo-button {
+      width: 400px;
+      height: 100px;
+      margin-left: 15px;
+        border-radius: 0;
+      --paper-button: {
+        border-radius: 0;
+      }
+    }
+
+    a:link {
+      text-decoration: none;
+    }
+
+    iron-icon[icon="gorenger:akarenger"] {
+      color: black;
+      background: radial-gradient(circle at center, tomato 0, crimson 55%, transparent 55%);
+    }
+
+    iron-icon[icon="gorenger:aorenger"] {
+      color: black;
+      background: radial-gradient(circle at center, skyblue 0, royalblue 55%, transparent 55%);
+    }
+
+    iron-icon[icon="gorenger:kirenger"] {
+      color: black;
+      background: radial-gradient(circle at center, yellow 0, gold 55%, transparent 55%);
+    }
+
+    iron-icon[icon="gorenger:momorenger"] {
+      color: crimson;
+      background: radial-gradient(circle at center, white 0, pink 55%, transparent 55%);
+    }
+
+    iron-icon[icon="gorenger:midorenger"] {
+      color: black;
+      background: radial-gradient(circle at center, olivedrab 0, darkolivegreen 55%, transparent 55%);
+    }
+
+    .display-icon {
+      display: block;
+      @apply --layout-center;
+      @apply --layout-center-justified;
+      width: calc(var(--display-icon-size,21px) + 10px);
+      height: calc(var(--display-icon-size,21px) + 10px);
+      --iron-icon-width: var(--display-icon-size,21px);
+      --iron-icon-height: var(--display-icon-size,21px);
+      /*
+      --iron-icon-width: 32px;
+      --iron-icon-height: 32px;
+      */
+      @apply --layout-vertical;
+      @apply --layout-center;
+    }
+
+    .display-icon-card {
+      font-size: 10px;
+      min-width: 80px;
+      @apply --layout-vertical;
+      @apply --layout-center;
+      @apply --layout-start-justified;
+      width: calc(var(--display-icon-size,21px) + 20px);
+      padding: 5px;
+      word-wrap: break-word;
+      margin: 5px;
+    }
+
+    .display-icon-card[matched] .display-icon {
+      color: var(--google-blue-700);
+    }
+
+    mg-sections {
+      background-color: snow;
+      width: calc(100vw - 20px);
+      border-bottom:1px dashed var(--app-shadow-color)
+    }
+
+  </style>
+    </custom-style>
+
+  <iron-pages
+    class="vertical layout center"
+    selected="[[page]]"
+    attr-for-selected="name"
+    selected-attribute="visible"
+    fallback-selection="card"
+  > <paper-card class="github layout self-center" name="card">
+      <a href="/">
+        <paper-icon-button src="/images/logo-bounce-in.svg" class="logo-button layout vertical center-justified" noink>
+      </a>
+      <a href="https://github.com/4d4841/booed">
+        <paper-icon-button src="https://assets-cdn.github.com/images/modules/logos_page/Octocat.png" class="button layout vertical center-justified" noink>
+        </paper-icon-button>
+      </a>
+    </paper-card>
+
+    <div name="icons" style="width:100%;height:100%;font-size:16px" class="vertical layout">
+
+        <template is="dom-if" if="[[clickedIcon]]">
+      <paper-dialog class="horizontal layout start" style="border-radius:5px" class="horizontal layout center center-justified" id="dialog" opened="{{clickedIcon}}">
+
+        <iron-icon icon="[[clickedIcon]]"></iron-icon>
+
+        <div id="icon-xml-source" class="flex" style="font-family:monospace;font-size:12px;word-break: break-all">
+          [[_formatXMLIcon(clickedIcon)]]
+        </div>
+
+      </paper-dialog>
+        </template>
+
+          <!--
+        <template is="dom-if" if="[[clickedIcon]]">
+      <paper-card class="horizontal layout" style="font-family:monospace;font-size:12px;border-radius:5px;color:black;max-width:calc(100vw - 30px);height:auto;margin:10px;background-color:lavender;padding:20px;">
+        <div class="vertical layout" style="width:50px">
+          <paper-icon-button icon="close" on-click="_closePath"></paper-icon-button>
+        </div>
+        <div class="flex" style="word-break: break-all">
+          [[clickedIcon]]
+        </div>
+      </paper-card>
+        </template>
+          -->
+
+          <div class="horizontal layout start-justified wrap" style="box-sizing:border-box ;border-bottom: 1px dashed var(--app-shadow-color)">
+        <template
+          id="repeater"
+          is="dom-repeat"
+          items="{{iconSets}}"
+          observe="show"
+          filter="_showObserver"
+        >
+      <paper-checkbox checked="{{item.show}}" style="height:30px;margin-left: 10px; font-size:14px">
+        [[item.name]]
+      </paper-checkbox>
+        </template>
+          </div>
+
+
+        <app-toolbar>
+      <div style="margin-top:20px" >Size:</div>
+      <paper-slider style="margin-top:20px" value="{{iconSize}}" min="10" max="200" editable></paper-slider>
+      <div class="flex"></div>
+
+      <mg-input
+        label="Space-separated keywords or regexes"
+        icon="search"
+        value="{{willSearch}}"
+        autofocus
+      ></mg-input>
+        </app-toolbar>
+
+      <mg-sections sections="{{iconSections}}" class="icons-container horizontal layout wrap">
+
+          <template id="repeater" is="dom-repeat" items="[[iconList]]">
+        <div slot="[[item.section]]" class="display-icon-card" on-click="_onClickIcon" matched$="[[_matchesSection(item.section)]]">
+          <div class="display-icon vertical layout center">
+            <iron-icon icon$="[[item.set]]:[[item.id]]"></iron-icon>
+          </div>
+          <span style="word-wrap:break-word;width:calc(100% - 10px)">[[item.id]]</span>
+        </div>
+          </template>
+
+      </mg-sections>
+
+      <!--footer-->
+      <div style="height:50px">
+      </div>
+
+    </div>
+
+
+  </iron-pages>
+
+<app-route
+    route="{{route}}"
+    pattern="/:page"
+    data="{{routeData}}"
+    tail="{{subroute}}">
+</app-route>
+
+</template>
+<script>
+
+class MGAbout extends Polymer.Element {
+
+  static get is() { return 'mg-about'; }
+
+  static get properties() { return {
+
+    menu: {
+      type: Object,
+      value: { entries: [
+        { name:"tos", path:"/about/tos", icon:"info", title:"เงื่อนไขการให้บริการ", },
+        { name:"policy", path:"/about/privacy-policy", icon:"info", title:"นโยบายความเป็นส่วนตัว"},
+      ]}
+    },
+
+    visible: {
+      type: Boolean,
+      observer: '_visibleChanged'
+    },
+
+    route: {
+      type: Object,
+      notify: true,
+      observer: '_routeChanged'
+    },
+
+    _meta: {
+      value: Polymer.Base.create('iron-meta', {type: 'iconset'})
+    },
+
+    iconSize: {
+      value: 30,
+      observer: '_iconSizeChanged'
+    },
+
+    willSearch: {
+      observer: '_willSearchChanged'
+    },
+
+    iconSets: {
+      type: Array,
+      value: function(){return []},
+    },
+
+    iconSections: {
+      type: Array,
+      value: function(){return []},
+    },
+
+  }}
+
+  static get observers() { return [
+  ]}
+
+  _iconSizeChanged(size) {
+    this.updateStyles({
+      '--display-icon-size':`${size}px`
+    });
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    this.set('iconList', []);
+
+    let sets = Polymer.IronMeta.types['iconset'];
+    for (let setname in sets) {
+      let i = 0;
+      for (let s;s = this.iconSets[i];++i) {
+        if (s.name > setname) { break; }
+      }
+      this.splice('iconSets',i,0,{name:setname, show: true});
+
+      sets[setname].getIconNames().forEach(name => {
+        let n = name.split(':');
+        this.push('iconList',{set:n[0],id:n[1],section:n[0]});
+      });
+    }
+  }
+
+  _routeChanged( route) {
+    if (route.prefix == '/about') {
+      this.set('page', this.routeData.page);
+    }
+  }
+
+  _visibleChanged(visible) {
+    if (visible) {
+      let page = this.page;
+      this.dispatchEvent(new CustomEvent('change-section', {
+        bubbles: true, composed: true, detail: {title: (page ? (page.charAt(0).toUpperCase() + page.slice(1) + " - "):'') + 'About', target:this}}));
+    }
+  }
+
+  _matchesSection(sectionName) {
+    return sectionName.split('✓').length == 2;
+  }
+
+  _formatXMLIcon(icon) {
+    if (!icon) return '';
+
+    let [set,name] = icon.split(':');
+    let el = this._meta.byKey(set).querySelector('g[id="'+name+'"]');
+
+    return (new XMLSerializer().serializeToString(el).replace('xmlns="http://www.w3.org/2000/svg"',''));
+  }
+
+  _onClickIcon(e) {
+    this.set('clickedIcon',e.model.item.set+':'+e.model.item.id);
+
+  }
+
+  _closePath(e) {
+    this.set('clickedIcon',null);
+  }
+
+  _search(search) {
+    let regs = [];
+    search.split(' ').forEach(v => {
+      if (v !== '') regs.push(new RegExp(v))
+    });
+
+    let map = new Map();
+    this.iconSets.forEach(set => {
+      map.set(set.name,{count:0,show:set.show||false});
+      map.set(set.name+'✓',{count:0,show:set.show||false});
+    });
+
+    this.iconList.forEach((icon,index) => {
+      let section = this.iconList[index].set;
+      if (regs.some( regex => regex.test(icon.id) )) {
+        this.set(['iconList',index,'section'],section+'✓');
+        let s =  map.get(section+'✓');
+        s.count++;
+        map.set(section+'✓',s);
+      } else {
+        this.set(['iconList',index,'section'],section);
+        let s = map.get(section);
+        s.count++;
+        map.set(section,s);
+      }
+    });
+
+    for (let [key,value] of map.entries()) {
+      if (value.count == 0 || !value.show){
+        this._removeSection(key);
+      } else if (value.show){
+        this._addSection(key);
+      }
+    }
+  }
+
+  _willSearchChanged(willSearch) {
+    this._willSearchDebouncer = Polymer.Debouncer.debounce(this._willSearchDebouncer,
+      Polymer.Async.timeOut.after(100), () => { this._search(willSearch) });
+  }
+
+  _addSection(sectionName) {
+    let idx = this.iconSections.indexOf(sectionName);
+    if (idx != -1) return;
+
+    if (sectionName.endsWith('✓')) {
+      let i = 0;
+      for (let s;s = this.iconSections[i];++i) {
+        if (!s.endsWith('✓') || s > sectionName) { break; }
+      }
+      this.splice('iconSections',i,0,sectionName);
+    } else {
+      let i = this.iconSections.length;
+      for (let s;s = this.iconSections[i-1];--i) {
+        if (s.endsWith('✓') || s < sectionName) { break; }
+      }
+      this.splice('iconSections',i,0,sectionName);
+    }
+  }
+
+  _removeSection(sectionName) {
+    let idx = this.iconSections.indexOf(sectionName);
+    if (idx == -1) return;
+    this.splice('iconSections',idx,1);
+  }
+
+  _showObserver(set) {
+    /*
+    if (set.show) {
+      this._addSection(set.name);
+      this._addSection(set.name+'✓');
+    } else if (!set.show) {
+      this._removeSection(set.name);
+      this._removeSection(set.name+'✓');
+    }
+    */
+    this._willSearchChanged(this.willSearch);
+    return true;
+  }
+
+}
+
+customElements.define(MGAbout.is, MGAbout);
+
+</script>
 </dom-module>
