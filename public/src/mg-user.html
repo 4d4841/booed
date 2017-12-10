@@ -94,7 +94,7 @@
   <script>
   (function(){
     var _MGUserAppMenu = { entries: [
-            { name:"profile", path:"/user/profile", icon:"face-female", title:"โพรไฟล์"},
+            { name:"profile", path:"/user/profile", icon:"booed:face-female", title:"โพรไฟล์"},
             { name:"order", path:"/user/order", icon:"credit-card", title:"รายการสั่งซื้อ"},
             { name:"items", path:"/user/items", icon:"widgets", title:"ไอเท็ม",
               submenu: { entries:[
@@ -132,9 +132,9 @@
             { name: "user-menu",
               icon: "account-box",
               submenu: { entries:[
-                { name: "profile", path:"/user/profile", icon:"face-female", title:"โพรไฟล์"},
+                { name: "profile", path:"/user/profile", icon:"booed:face-female", title:"โพรไฟล์"},
                 { name: "signout",
-                  icon: "local-cafe",
+                  icon: "maps:local-cafe",
                   color: "tomato",
                   title: "ออกจากระบบ"},
               ]}
@@ -248,7 +248,7 @@
         } else {
           this.set('userMenu', _MGSignInMenu);
           this.set('profileMenu', { entries: [
-            { action:this._signGoogle.bind(this), name: "profile", icon: "google", title: "เข้าสู่ระบบด้วยบัญชีกูเกิ้ล"},
+            { action:this._signGoogle.bind(this), name: "profile", icon: "booed:google", title: "เข้าสู่ระบบด้วยบัญชีกูเกิ้ล"},
           ]});
         }
       }

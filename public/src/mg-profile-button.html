@@ -204,7 +204,7 @@
       static get properties() { return {
         icon: {
           type: String,
-          value: "pumpkin"
+          value: "booed:pumpkin"
         },
         pathStyle: {
           type: String,
@@ -257,7 +257,7 @@
           this.$.arrow.setAttributeNS('http://www.w3.org/1999/xlink','href', photoURL);
         }
         else {
-          this.icon = "pumpkin";
+          this.icon = "booed:pumpkin";
           this.image = '';
           this.$.button.style.color = "var(--app-primary-color)";
           this.$.arrow.setAttributeNS('http://www.w3.org/1999/xlink','href', '');
