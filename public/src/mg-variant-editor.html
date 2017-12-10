@@ -53,15 +53,17 @@
   <div id="variants-container" class="paper-material vertical layout start-justified" elevation="1">
 
     <!-- Type Selector -->
-      <template is="dom-if" if="{{variantCells.length}}">
+      <template is="dom-if" if="{{variantsDataList.length}}">
     <div class="horizontal layout">
       <paper-dropdown-menu
         style="width:95px;margin-right:10px"
         label="ตัวเลือก"
-        selected-item="{{selectedType}}"
-      >
-        <paper-listbox slot="dropdown-content" class="dropdown-content layout start" selected="1">
-          <template is="dom-repeat" items="[[menu.entries]]">
+      > <paper-listbox
+          attr-for-selected="name"
+          slot="dropdown-content"
+          class="dropdown-content layout start"
+          selected="{{selectedType.name}}"
+        > <template is="dom-repeat" items="[[menu.entries]]">
             <paper-icon-item label="[[item.title]]" name="[[item.name]]">
               <iron-icon icon="[[item.icon]]" slot="item-icon"></iron-icon>
               [[item.title]]
@@ -74,7 +76,7 @@
 
         <mg-input
           label="ชื่อ"
-          value="{{customType}}"
+          value="{{selectedType.custom}}"
           min-width="70"
         > <iron-icon icon="editor:mode-edit" slot="prefix"></iron-icon>
         </mg-input>
@@ -84,12 +86,11 @@
         <paper-dropdown-menu
           style="width:95px"
           label="สกุลเงิน"
-          selected-item-label="{{selectedCurrencyItem}}"
         > <paper-listbox
             slot="dropdown-content"
             class="dropdown-content"
             attr-for-selected="currency"
-            selected="{{selectedCurrency}}"
+            selected="{{selectedType.custom}}"
           > <paper-icon-item label="บาท" currency="thb">
               <iron-icon icon="booed:attach-money-thb" slot="item-icon"></iron-icon> บาท
             </paper-icon-item>
@@ -113,11 +114,12 @@
       id="variant-selector"
       selected-attribute="selected"
       selected-item="{{selectedVariantCell}}"
+      selected="{{selectedVariantCellIndex}}"
       >
-      <template is="dom-repeat" items="{{variantCells}}">
+      <template is="dom-repeat" items="{{variantsDataList}}">
         <mg-variant-cell
-          variant-type="[[_formatVariant(menu,selectedType.name,customType)]]"
-          variant="[[item]]"
+          variant-type="[[selectedType]]"
+          variant="{{item}}"
           >
         </mg-variant-cell>
       </template>
@@ -131,7 +133,7 @@
       ></paper-icon-button>
 
       <paper-icon-button
-        icon="booed:duplicate-selection"
+        icon="booed:duplicate-cell"
         on-click="_onDuplicateSelection"
         disabled="[[!selectedVariantCell]]"
       ></paper-icon-button>
@@ -158,7 +160,7 @@ class MGVariantsEditor extends Polymer.Element {
   static get is() { return 'mg-variant-editor'; }
 
   static get properties() { return {
-    variantCells: {
+    variantsDataList: {
       type: Array,
       value: function(){return [];},
     },
@@ -172,50 +174,116 @@ class MGVariantsEditor extends Polymer.Element {
     selectedType: {
       type: Object,
     },
-    selectedCurrency: {
-      type: String,
-      value: "thb",
-    },
     menu: {
       type: Object,
       observer: '_menuChanged'
     },
-    customType: {
-      type: String,
-      value: '',
-    },
 
     selectedSubvariant: {
       type: Object,
-      observer: '_selectedSubvariantChanged',
     },
     selectedVariantCell: {
       type: Object,
-      observer: '_selectedVariantCellChanged',
       value: null,
+      observer: '_selectedVariantCellChanged',
+    },
+    selectedVariantCellIndex: {
+      type: Object,
+      value: null,
+      observer: '_selectedVariantCellIndexChanged',
     },
   }}
 
   static get observers() { return [
     '_subvariantsChanged(selectedSubvariant.variants)',
+    '_selectedTypeChanged(selectedType.name,selectedType.custom)',
+    '_variantDataListChanged(variantsDataList.splices)'
   ]}
+
+  _selectedTypeChanged(name,custom) {
+    if (name == 'custom') {
+      this.set('variant.type',name+':'+(custom||''));
+    } else if (name == 'price') {
+      this.set('variant.type',name+':'+(custom||''));
+    } else {
+      this.set('variant.type',name);
+    }
+  }
 
   _subvariantsChanged(variants) {
     if (variants) {
       this.selectedVariantCell.set('hasChildren', true);
-      this.notifyPath('variant');
     }
   }
+
+  _onAddVariant(e){
+    if (!this.variant) {
+      this.set('variant',{});
+    }
+    /* XXX */
+    let vkey = MHA.DB.ref().push().key;
+    let variants = this.variant.variants;
+    if (!variants) {
+      this.set('variant.variants',{});
+    }
+
+    this.set(['variant.variants',vkey],{$key:vkey});
+    this.addVariantData(this.variant.variants[vkey]);
+    return vkey;
+  }
+
+  _variantDataListChanged(splices) {
+    if (splices) {
+      splices.indexSplices.forEach(s => {
+        s.removed.forEach(v => {
+          this.unlinkPaths('variant.variants.'+v.$key);
+        });
+        /* re-link all from the changed index */
+        for(let i = s.index,so; so = s.object[i]; ++i) {
+          this.linkPaths('variant.variants.'+so.$key,'variantsDataList.'+i);
+          if (so == this.selectedSubvariant) {
+            this.linkPaths('variantsDataList.'+i,'selectedSubvariant');
+          }
+        }
+      });
+    }
+  }
+
+  _selectedVariantCellIndexChanged(newIndex,oldIndex) {
+    if (!isNaN(oldIndex)) {
+      this.unlinkPaths('variantsDataList.'+oldIndex);
+    }
+    if (!isNaN(newIndex)) {
+      this.linkPaths('variantsDataList.'+newIndex,'selectedSubvariant');
+    }
+  }
+
+  _selectedVariantCellChanged(newElement) {
+    this.set('selectedSubvariant',null);
+    if (newElement) {
+      this.set('selectedSubvariant',this.variant.variants[newElement.variant.$key] || null);
+    }
+  }
+
 
   _variantChanged(newVariant) {
-    this.$['variant-selector'].select(null);
-    this.set('variantCells',[]);
 
-    for(let vkey in newVariant.variants){
-      this.push('variantCells', newVariant.variants[vkey]);
+    this.$['variant-selector'].select(null);
+    this.set('variantsDataList',[]);
+
+    if (newVariant) {
+      let nc = (newVariant.type||"price:thb").split(':');
+      this.set('selectedType',{name:[nc[0]], custom:nc[1]});
+      for(let vkey in newVariant.variants){
+        this.addVariantData(newVariant.variants[vkey]);
+      }
     }
   }
 
+  addVariantData(variant) {
+    let index = -1 +
+    this.push('variantsDataList', variant);
+  }
 
   connectedCallback() {
     super.connectedCallback();
@@ -226,49 +294,11 @@ class MGVariantsEditor extends Polymer.Element {
     return false;
   }
 
-  _formatVariant(menu,type,customType) {
-    let title = type;
-    menu.entries.every(item => {
-      if (item.name == type) {
-        title = item.title + ( type == 'custom'
-            ? ( customType ? ':' : '') + customType
-            : ''
-        );
-        return false;
-      }
-      return true;
-    });
-    return title;
-  }
-
   _menuChanged(newMenu,oldMenu) {
   }
 
-  _selectedSubvariantChanged(subvariant) {
-  }
-
-  _selectedVariantCellChanged(newElement,oldElement){
-    this.set('selectedSubvariant',null);
-    if (newElement) {
-      this.set('selectedSubvariant',this.variant.variants[newElement.variant.key] || null);
-    }
-  }
-
-  _onAddVariant(e){
-    /* XXX */
-    let vkey = MHA.DB.ref().push().key;
-    let variants = this.variant.variants;
-    if (!variants) {
-      variants = {[vkey]:{key:vkey}};
-    } else variants[vkey] = {key:vkey};
-
-    this.set('variant.variants',variants);
-    this.push('variantCells', variants[vkey]);
-    return vkey;
-  }
-
   _onDuplicateSelection(e) {
-    let vkey = _onAddVariant(e);
+    let vkey = this._onAddVariant(e);
   }
 }
 

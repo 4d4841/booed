@@ -26,6 +26,7 @@
     display: inline-block;
     @apply --layout-horizontal;
     @apply --layout-end;
+    @apply --layout-end-justified;
     border-radius: 5px;
   }
 
@@ -46,14 +47,18 @@
 
   <mg-input
     id="input"
-    value="{{inputValue}}"
-    label="[[variantType]]"
-    min-width="200"
-  ></mg-input>
+    value="{{variant.data}}"
+    label="[[_formatLabel(variantType.name,variantType.custom)]]"
+    min-width="176"
+    icon="[[_formatIconType(variantType.name,variantType.custom)]]"
+  > <template is="dom-if" if="[[hasChildren]]">
+      <iron-icon slot="suffix" style="color:tomato" icon="chevron-right"></iron-icon>
+    </template>
+    <template is="dom-if" if="[[!hasChildren]]">
+      <iron-icon slot="suffix" style="color:tomato"></iron-icon>
+    </template>
+  </mg-input>
 
-  <template is="dom-if" if="[[hasChildren]]">
-    <iron-icon style="padding-bottom:8px;color:tomato" icon="chevron-right"></iron-icon>
-  </template>
 
 </template>
 <script>
@@ -63,20 +68,10 @@ class MGVariantCell extends Polymer.Element {
   static get properties() { return {
     variant: {
       type: Object,
-      observer: '_variantChanged',
-    },
-    /*
-    variantChanged: {
-      type: String,
       notify: true,
     },
-    */
     variantType: {
       type: String,
-    },
-    inputValue: {
-      type: String,
-      observer: '_inputValueChanged',
     },
     selected: {
       type: Boolean,
@@ -90,6 +85,7 @@ class MGVariantCell extends Polymer.Element {
   }}
 
   static get observers() { return [
+    '_variantsChanged(variant.variants)',
   ]}
 
   _selectedChanged(selected) {
@@ -98,21 +94,27 @@ class MGVariantCell extends Polymer.Element {
     }
   }
 
-  _variantChanged(variant) {
-    this.set('hasChildren',variant.variants ? true : false);
-
-    if (variant.data) {
-      this.set('inputValue', variant.data.value);
-    } else {
-      this.set('inputValue', '');
-    }
+  _variantsChanged(variants) {
+    this.set('hasChildren',variants ? true : false);
   }
 
-  _inputValueChanged(newValue, oldValue) {
-    this.set('variant.data',{value:newValue});
-    /*
-    this.set('variantChanged',{key:this.variantKey, data:newValue});
-    */
+  _formatIconType(name,custom) {
+    if (name == 'price') {
+      switch (custom) {
+        case 'usd':
+          return 'editor:attach-money';
+        default:
+          return 'booed:attach-money-'+custom;
+      }
+    }
+    return null;
+  }
+
+  _formatLabel(name,custom) {
+    if (name == 'price' || name == 'custom') {
+      return name+":"+custom;
+    }
+    return name;
   }
 
 }
