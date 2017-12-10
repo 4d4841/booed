@@ -137,14 +137,20 @@
     ]}
 
     _variantChanges(changes) {
-      console.log('root',changes);
+      console.log(changes);
+      /*
+      MHA.setItem(this.itemKey, {variant: this.variant}, true);
+      */
+      MHA.setItem(this.itemKey, {variant: this.variant});
     }
 
     _itemKeyChanged(itemKey) {
       super._itemKeyChanged(itemKey);
-      this.set('variant', MHA.getItem({[itemKey]:{variants:null}}) || {
-        _root: true,
+      /*
+      this.set('variant', MHA.getItem({[itemKey]:{variant:null}}) || {
+        $key: itemKey,
       });
+      */
     }
 
     updateChanges(path,value) {

@@ -183,7 +183,7 @@ var MHA = {
 
   setItem: function(itemKey, itemData, sync) {
     let registerData = this.utils.deepSet(MHA.data, 'items.'+itemKey, itemData, true);
-    if (sync && registerData) {
+    if (sync && this.AU.currentUser && registerData) {
       this.DB.ref('home').child(this.AU.currentUser.uid).update(registerData, error => {
         console.log('Synced.',registerData);
       });
@@ -229,15 +229,18 @@ var MHA = {
      * It can not be used to set a particular array item.
      * To delete a deep property, set null as the counter-value
      * in the structure of the object argument.
+     *
+     * sync : sync database on paths not including $  as keys including $
+     * are only used for UI)
      */
     deepSet(polymerElement, path, object, sync) {
       let ret;
       if (typeof object !== 'object') {
-        if (sync) {ret = {[path]:object};}
+        if (sync && typeof object !== 'undefined') {ret = {[path.split('.').join('/')]:object};}
         polymerElement.set(path, object);
       } else if (object === null) {
         /* XXX May be it will also perform a delete afterward */
-        if (sync) {ret = {[path]:null};}
+        if (sync) {ret = {[path.split('.').join('/')]:null};}
         polymerElement.set(path, null);
       } else if (Array.isArray(object)) {
         /* Handle scalar array */
@@ -247,8 +250,8 @@ var MHA = {
         || !old.every((v,i) => v === object[i])) {
           /* Only set if not equal */
           if (sync) {
-            if (ret) { ret[path] = object; }
-            else { ret = {[path]: object}; }
+            if (ret) { ret[path.split('.').join('/')] = object; }
+            else { ret = {[path.split('.').join('/')]: object}; }
           }
           polymerElement.set(path, object);
         }
@@ -258,7 +261,7 @@ var MHA = {
           polymerElement.set(path, {});
         }
         Object.keys(object).forEach(key => {
-          let childRet = this.deepSet(polymerElement, path+'.'+key, object[key], sync);
+          let childRet = this.deepSet(polymerElement, path+'.'+key, object[key], key.includes('$') ? false : sync);
           if (sync && childRet) {
             Object.assign(ret = ret || {},childRet);
           }
