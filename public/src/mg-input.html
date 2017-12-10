@@ -18,6 +18,11 @@
 <template strip-whitespace>
     <customstyle>
   <style>
+  iron-icon {
+    --iron-icon-width:20px;
+    --iron-icon-height:20px;
+    padding-right:5px;
+  }
   </style>
     </customstyle>
 
@@ -51,6 +56,7 @@
 <script>
 (function(){
 let MeasureContext = null;
+let MeasureContext2 = null;
 
 class MGInput extends Polymer.Element {
   static get is() { return 'mg-input'; }
@@ -101,6 +107,8 @@ class MGInput extends Polymer.Element {
     if (!MeasureContext) {
        MeasureContext = document.createElement("canvas").getContext("2d");
        MeasureContext['font'] = "16px Roboto, Noto, sans-serif";
+       MeasureContext2 = document.createElement("canvas").getContext("2d");
+       MeasureContext2['font'] = "12px Roboto, Noto, sans-serif";
     }
   }
 
@@ -123,10 +131,14 @@ class MGInput extends Polymer.Element {
   _valueChanged(newValue, oldValue) {
     let elm = this.$.input.inputElement.inputElement;
     if (elm) {
-      let width = MeasureContext.measureText(newValue).width + 10; /* Add an impression space */
+      let width = MeasureContext.measureText(newValue).width; /* + 10 Add an impression space */
       let labelWidth = MeasureContext.measureText(this.label).width;
+      let floatLabelWidth = MeasureContext2.measureText(this.label).width;
       if (newValue == "") {
         width = labelWidth;
+      }
+      if (width < floatLabelWidth) {
+        width = floatLabelWidth;
       }
       elm.style.width = (width < this.minWidth ? this.minWidth: width) + 'px';
     }

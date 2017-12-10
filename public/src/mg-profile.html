@@ -25,15 +25,10 @@
 <dom-module id="mg-profile">
   <template strip-whitespace>
       <custom-style>
-    <style is="custom-style" include="mg-common-styles mg-input iron-flex iron-flex-alignment">
+    <style is="custom-style" include="mg-common-styles iron-flex iron-flex-alignment">
       :host {
         @apply --layout-vertical;
         @apply --layout-center;
-      }
-
-      mg-input {
-        width: 180px;
-        margin:10px;
       }
 
       a:link {
@@ -105,16 +100,23 @@
         margin-right: 10px;
       }
 
+      .card-actions {
+        width:100%;
+        margin-top:30px;
+        min-width:240px;
+        padding:0;
+      }
+
       #loginBB {
         font-family: 'Athiti', sans-serif;
         font-size: 16px;
         font-weight: bold;
         border-top: 1px dashed tomato;
         height: 40px;
-        width: 200px;
         margin: 0;
         padding: 0;
         border-radius: 0;
+        @apply --layout-flex;
       }
 
       #loginGG {
@@ -133,7 +135,7 @@
       }
 
       #id-card {
-        width: 240px;
+        min-width: 240px;
         z-index: 1;
         border-radius: 10px;
         overflow: hidden;
@@ -145,7 +147,7 @@
       }
 
       .main-frame {
-        width:240px;
+        min-width:240px;
         @apply --layout-vertical;
         transition: opacity 0.5s;
         background-color: white;
@@ -210,7 +212,7 @@
 
       .photo {
         height: 240px;
-        width: 240px;
+        min-width: 240px;
         background-size: cover;
         margin: 0px;
       }
@@ -226,7 +228,7 @@
         max-height: 40px;
         line-height: 20px;
         height: 40px;
-        width: 240px;
+        min-width: 240px;
         z-index:1;
         display: block;
         position: absolute;
@@ -269,46 +271,32 @@
           <template>
             <!-- Begin: login panel -->
 
-            <iron-icon style="color:tomato;margin-top:20px;--iron-icon-height: 50px; --iron-icon-width: 50px;" icon="pumpkin"></iron-icon>
+            <iron-icon style="color:tomato;margin-top:20px;--iron-icon-height: 50px; --iron-icon-width: 50px;" icon="booed:pumpkin"></iron-icon>
             <h3>เข้าสู่ระบบสมาชิก</h3>
 
-              <mg-input>
-            <input value="{{accountEmail::input}}" type="email" id="accountEmail" name="accountEmail" pattern=".{2,50}"
-                placeholder="email"
-                aria-labelledby="accountEmailLabel accountInfoHeading">
-            <mg-md-decorator error-message="กรุณากรอกอีเมล" aria-hidden="true">
-              <label id="accountEmailLabel"><iron-icon icon="mail"></iron-icon> อีเมล</label>
-              <mg-underline></mg-underline>
-            </mg-md-decorator>
-              </mg-input>
+            <mg-input
+              value="{{accountEmail}}"
+              type="email" id="accountEmail" name="accountEmail" pattern=".{2,50}"
+              label="อีเมล"
+              min-width="180"
+              icon="communication:email"
+            ></mg-input>
 
-              <mg-input>
-            <input
-              id="accountPassword"
-              value="{{accountPassword::input}}"
-              type="password"
-              name="accountPassword"
-              pattern=".{2,50}"
-              placeholder="พาสเวิร์ด"
-              aria-labelledby="accountPasswordLabel accountInfoHeading">
-            <mg-md-decorator error-message="กรอกพาสเวิร์ด" aria-hidden="true">
-              <label id="accountPasswordLabel">
-                <iron-icon icon="key"></iron-icon>
-                พาสเวิร์ด
-              </label>
-              <mg-underline></ball-underline>
-            </mg-md-decorator>
-              </mg-input>
+            <mg-input
+              value="{{accountPassword}}"
+              type="email" id="accountEmail" name="accountEmail" pattern=".{2,50}"
+              label="พาสเวิร์ด"
+              icon="communication:vpn-key"
+              min-width="180"
+            ></mg-input>
 
             <div class="card-actions
               layout
               horizontal
               justified"
-              style="margin-top:30px;width:240px;padding:0"
               ><paper-button
                 id="loginBB"
                 on-click="_signIn"
-                class="layout horizontal center-justified"
               > เข้าระบบ
               </paper-button>
 
@@ -316,7 +304,7 @@
                 id="loginGG"
                 on-click="_googleSignIn"
                 class="layout horizontal center-justified"
-              > <iron-icon icon="google" style="color:white"></iron-icon>
+              > <iron-icon icon="booed:google" style="color:white"></iron-icon>
               </paper-button>
             </div>
             <!-- End: login panel -->
@@ -339,7 +327,7 @@
                 class="button"
                 on-click="_signOut"
                 class="layout horizontal center-justified"
-              > <iron-icon icon="local-cafe" style="color:tomato"></iron-icon>
+              > <iron-icon icon="maps:local-cafe" style="color:tomato"></iron-icon>
                 ออกจากระบบ
               </paper-button>
             <!-- End: user panel -->
@@ -364,7 +352,7 @@
               <iron-image class="photo" src="[[me.user.photoURL]]" sizing="cover"></iron-image>
 
               <paper-button class="button" on-click="_signOut" class="layout horizontal center-justified">
-              <iron-icon icon="coffee" style="color:tomato"></iron-icon> ออกจากระบบ
+              <iron-icon icon="maps:local-cafe" style="color:tomato"></iron-icon> ออกจากระบบ
               </paper-button>
             <!-- End: user panel -->
           </template>
@@ -392,7 +380,7 @@
 
             <p style="font-size:13px; padding: 0 10px 0 10px;text-align:justify;text-align-last:center">
               หากคุณยังไม่ลงทะเบียนเป็นสมาชิก คุณสามารถเข้าสู่ระบบสมาชิกด้วย <span style="font-weight:bold">บัญชีกูเกิล</span> ของคุณได้ทันที เพียงกด<br>
-              <iron-icon style="margin:5px;padding:0 5px;background-color:tomato;border-radius:5px;color:white;--iron-icon-width:20px;" icon="google"></iron-icon> <br>(หรือ<a href="https://accounts.google.com/SignUp">สร้างบัญชีใหม่</a>ถ้ายังไม่มี)
+              <iron-icon style="margin:5px;padding:0 5px;background-color:tomato;border-radius:5px;color:white;--iron-icon-width:20px;" icon="booed:google"></iron-icon> <br>(หรือ<a href="https://accounts.google.com/SignUp">สร้างบัญชีใหม่</a>ถ้ายังไม่มี)
               <br><br>
               การเป็นสมาชิกจะช่วยให้คุณติดตามสถานะรายการ หรือรับบริการอื่นๆ ได้สะดวกรวดเร็วยิ่งขึ้น
               นอกจากนี้คุณยังสามารถปรับปรุงข้อมูลส่วนตัว รับการแจ้งเตือนเฉพาะสิ่งที่น่าสนใจ
