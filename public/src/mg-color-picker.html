@@ -22,21 +22,31 @@
   <style is="custom-style" include="mg-common-styles iron-flex iron-flex-alignment">
 
   :host {
-    display: inline-block;
+    display: block;
+    position: relative;
     @apply --layout-vertical;
     @apply --layout-center;
     @apply --layout-center-justified;
     overflow: hidden;
+    background-color: hsl(180,50%,50%);
   }
 
   iron-icon {
+    color: rgba(0,0,0,0.3);
+    transition: color 0.25s;
     pointer-events: none;
+    position:absolute;
+    --iron-icon-width: 22px;
+    --iron-icon-height: 22px;
   }
 
   </style>
     </custom-style>
 
-  <iron-icon style$="[[_formatIconStyleForC(c,mouseIn,tracking)]]" icon="[[_formatIconForMode(mode)]]"></iron-icon>
+  <iron-icon style$="[[_formatIconStyleForC(c,mouseIn,tracking,iconMode,0)]]" icon="[[_formatIconForMode(0)]]"></iron-icon>
+  <iron-icon style$="[[_formatIconStyleForC(c,mouseIn,tracking,iconMode,1)]]" icon="[[_formatIconForMode(1)]]"></iron-icon>
+  <iron-icon style$="[[_formatIconStyleForC(c,mouseIn,tracking,iconMode,2)]]" icon="[[_formatIconForMode(2)]]"></iron-icon>
+  <iron-icon style$="[[_formatIconStyleForC(c,mouseIn,tracking,iconMode,3)]]" icon="[[_formatIconForMode(4)]]"></iron-icon>
 
 </template>
 <script>
@@ -47,7 +57,7 @@ class MGColorPicker extends Polymer.GestureEventListeners(
   static get is() { return 'mg-color-picker'; }
 
   _formatIconForMode(mode) {
-    return ["image:looks","invert-colors","image:brightness-6"][mode%3];
+    return ["image:looks","invert-colors","image:brightness-6"][mode];
   }
 
   static get properties() { return {
@@ -59,10 +69,10 @@ class MGColorPicker extends Polymer.GestureEventListeners(
     mode: {
       type: Number,
       value: 0,
+      observer: '_modeChanged'
     },
     c: {
       type: Array,
-      value: function(){return [0,0.5,0.5]},
       observer: '_colorChanged',
     },
     componentType: {
@@ -86,11 +96,19 @@ class MGColorPicker extends Polymer.GestureEventListeners(
   static get observers() { return [
   ]}
 
-  _formatIconStyleForC(c,mouseIn,tracking) {
-    if (!c) return "";
+  _modeChanged(mode) {
+    this._delayChangeDebouncer = Polymer.Debouncer.debounce(this._delayChangeDebouncer,
+      Polymer.Async.timeOut.after(50), () => {
+        this.set('iconMode',mode);
+      });
+  }
+
+  _formatIconStyleForC(c,mouseIn,tracking,mode,match) {
+    if (mode !== match) return 'color:transparent';
+    c = c || [0.5,0.5,0.5,0];
     switch(this.componentType) {
       case 'hsl': {
-        let col = c[2] > 0.3 ? 0 : 255;
+        let col = c[2] > 0.3 ? 20 : 220;
         let alpha = 0.3;
         if (mouseIn || tracking) {
           alpha = 1.0;
@@ -102,11 +120,10 @@ class MGColorPicker extends Polymer.GestureEventListeners(
   }
 
   _colorChanged(c) {
-    if (!c) return;
     let cc = [];
     switch(this.componentType) {
       case 'hsl':
-        cc[0] = Math.round(c[0]*90 % 360);
+        cc[0] = (Math.round(c[0]*360)%360 + 360)%360;
         c[1] = c[1] < 0 ? 0 : c[1] > 1 ? 1 : c[1];
         cc[1] = c[1] * 100;
         c[2] = c[2] < 0 ? 0 : c[2] > 1 ? 1 : c[2];
@@ -117,6 +134,9 @@ class MGColorPicker extends Polymer.GestureEventListeners(
   }
 
   _valueChanged(v) {
+    if (!v) {
+      v = 'rgba(0.5,0.5,0.5,1)';
+    }
     this.style.backgroundColor = v;
   }
 
@@ -127,43 +147,63 @@ class MGColorPicker extends Polymer.GestureEventListeners(
     this.addEventListener('mouseenter', e => {
       if (!e.buttons) {
         this.set('mouseIn',true);
+        if (this._delayFadeDebouncer) {
+          this._delayFadeDebouncer.cancel();
+          delete this._delayFadeDebouncer;
+        }
       }
     },true);
 
     this.addEventListener('mouseout', e => {
-      this.set('mouseIn',false);
+      this._delayFadeDebouncer = Polymer.Debouncer.debounce(this._delayFadeDebouncer,
+        Polymer.Async.timeOut.after(1000), () => {
+          if (!this.tracking)
+            this.set('mouseIn',false);
+        });
+
     },true);
   }
 
   _onTrack(e) {
     e.preventDefault();
     let viewBB = this.getBoundingClientRect();
-    let ax = (e.detail.x - viewBB.left) / this.clientWidth;
-    let ay = (e.detail.y - viewBB.top) / this.clientHeight;
-    let ddx = e.detail.ddx / this.clientWidth;
-    let ddy = e.detail.ddy / this.clientHeight;
+    let cw = this.clientWidth * 2;
+    let ch = this.clientHeight * 2;
+    let ax = (e.detail.x - viewBB.left) / cw;
+    let ay = (e.detail.y - viewBB.top) / ch;
+    let ddx = e.detail.ddx / cw;
+    let ddy = e.detail.ddy / ch;
 
     switch (e.detail.state) {
       case 'start':
+        if(!this.c) {
+          this.set('c',[0.5,0.5,0.5,1]);
+        }
         /* Hack to prevent tracking locked into some kind of drag mode with a double-clicking */
 
         this.set('tracking', {
           ax: ax,
           ay: ay,
-          c:[this.c[0],this.c[1],this.c[2]],
+          c:[this.c[0],this.c[1],this.c[2],this.c[3]],
           mode: this.mode,
         });
 
         break;
       case 'end': {
         this.set('tracking',null);
+        this._delayFadeDebouncer = Polymer.Debouncer.debounce(this._delayFadeDebouncer,
+          Polymer.Async.timeOut.after(1000), () => {
+            this.set('mouseIn',false);
+          });
       } break;
       case 'track': {
         let dy = ay - this.tracking.ay;
-        if (Math.abs(ddx) > Math.abs(ddy)) {
+        let dx = ax - this.tracking.ax;
+        if (dx > 0.2) {
           dy = 0;
           this.tracking.ay = ay;
-        } else {
+          this.tracking.ax = ax;
+        } else if (Math.abs(ddy) > Math.abs(ddx)) {
           ddx = 0;
         }
 
@@ -175,7 +215,7 @@ class MGColorPicker extends Polymer.GestureEventListeners(
           this.tracking.ay = ay;
         }
 
-        let cc = [this.c[0],this.c[1],this.c[2]];
+        let cc = [this.c[0],this.c[1],this.c[2],0];
         cc[this.mode] += ddx/2;
         this.set('c',cc);
 
