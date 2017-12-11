@@ -36,9 +36,7 @@
   </style>
     </custom-style>
 
-    <template is="dom-if" if="[[showIcon]]">
-  <iron-icon style$="[[_formatIconStyleForC(c)]]" icon="[[_formatIconForMode(mode)]]"></iron-icon>
-    </template>
+  <iron-icon style$="[[_formatIconStyleForC(c,mouseIn,tracking)]]" icon="[[_formatIconForMode(mode)]]"></iron-icon>
 
 </template>
 <script>
@@ -52,15 +50,7 @@ class MGColorPicker extends Polymer.GestureEventListeners(
     return ["image:looks","invert-colors","image:brightness-6"][mode%3];
   }
 
-  _computeShowIcon(mouseIn,tracking) {
-    if (tracking || mouseIn) return true;
-    return false;
-  }
   static get properties() { return {
-    showIcon: {
-      type: Boolean,
-      computed: '_computeShowIcon(mouseIn,tracking)',
-    },
     value: {
       type: String,
       notify: true,
@@ -96,12 +86,16 @@ class MGColorPicker extends Polymer.GestureEventListeners(
   static get observers() { return [
   ]}
 
-  _formatIconStyleForC(c) {
+  _formatIconStyleForC(c,mouseIn,tracking) {
     if (!c) return "";
     switch(this.componentType) {
       case 'hsl': {
-        let bright = c[2] > 0.3 ? 0 : 80;
-        return `color:hsl(0,0%,${bright}%)`;
+        let col = c[2] > 0.3 ? 0 : 80;
+        let alpha = 0.3;
+        if (mouseIn || tracking) {
+          alpha = 1.0;
+        }
+        return `color:rgba(${col},${col},${col},${alpha})`;
       }
     }
     return "";
