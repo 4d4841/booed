@@ -90,7 +90,7 @@ class MGColorPicker extends Polymer.GestureEventListeners(
     if (!c) return "";
     switch(this.componentType) {
       case 'hsl': {
-        let col = c[2] > 0.3 ? 0 : 80;
+        let col = c[2] > 0.3 ? 0 : 255;
         let alpha = 0.3;
         if (mouseIn || tracking) {
           alpha = 1.0;
@@ -112,7 +112,6 @@ class MGColorPicker extends Polymer.GestureEventListeners(
         c[2] = c[2] < 0 ? 0 : c[2] > 1 ? 1 : c[2];
         cc[2] = c[2] * 100;
         this.set('value',`hsl(${Math.round(cc[0])},${Math.round(cc[1])}%,${Math.round(cc[2])}%)`);
-        console.log('value',this.value);
         break;
     }
   }
