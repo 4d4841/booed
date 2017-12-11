@@ -36,7 +36,9 @@
   </style>
     </custom-style>
 
+    <template is="dom-if" if="[[showIcon]]">
   <iron-icon style$="[[_formatIconStyleForC(c)]]" icon="[[_formatIconForMode(mode)]]"></iron-icon>
+    </template>
 
 </template>
 <script>
@@ -50,7 +52,15 @@ class MGColorPicker extends Polymer.GestureEventListeners(
     return ["image:looks","invert-colors","image:brightness-6"][mode%3];
   }
 
+  _computeShowIcon(mouseIn,tracking) {
+    if (tracking || mouseIn) return true;
+    return false;
+  }
   static get properties() { return {
+    showIcon: {
+      type: Boolean,
+      computed: '_computeShowIcon(mouseIn,tracking)',
+    },
     value: {
       type: String,
       notify: true,
@@ -102,7 +112,7 @@ class MGColorPicker extends Polymer.GestureEventListeners(
     let cc = [];
     switch(this.componentType) {
       case 'hsl':
-        cc[0] = Math.round(c[0]*45 % 360);
+        cc[0] = Math.round(c[0]*90 % 360);
         c[1] = c[1] < 0 ? 0 : c[1] > 1 ? 1 : c[1];
         cc[1] = c[1] * 100;
         c[2] = c[2] < 0 ? 0 : c[2] > 1 ? 1 : c[2];
@@ -119,12 +129,19 @@ class MGColorPicker extends Polymer.GestureEventListeners(
 
   connectedCallback(){
     super.connectedCallback();
-    this.addEventListener('iron-resize', e => {
-      this._setImageWH( this.imageWidth, this.imageHeight );
-    },true);
     Polymer.Gestures.addListener(this, 'track', e => this._onTrack(e));
 
+    this.addEventListener('mouseenter', e => {
+      if (!e.buttons) {
+        this.set('mouseIn',true);
+      }
+    },true);
+
+    this.addEventListener('mouseout', e => {
+      this.set('mouseIn',false);
+    },true);
   }
+
   _onTrack(e) {
     e.preventDefault();
     let viewBB = this.getBoundingClientRect();
@@ -137,21 +154,33 @@ class MGColorPicker extends Polymer.GestureEventListeners(
       case 'start':
         /* Hack to prevent tracking locked into some kind of drag mode with a double-clicking */
 
-        this.tracking = {
+        this.set('tracking', {
           ax: ax,
           ay: ay,
           c:[this.c[0],this.c[1],this.c[2]],
           mode: this.mode,
-        };
+        });
 
         break;
       case 'end': {
-        delete this.tracking;
+        this.set('tracking',null);
       } break;
       case 'track': {
         let dy = ay - this.tracking.ay;
+        if (Math.abs(ddx) > Math.abs(ddy)) {
+          dy = 0;
+          this.tracking.ay = ay;
+        } else {
+          ddx = 0;
+        }
 
-        this.set('mode',Math.round(Math.abs(this.tracking.mode+dy))%3);
+        let m = (Math.round(this.tracking.mode+dy)%3 + 3)%3;
+
+        if (m != this.tracking.mode) {
+          this.set('mode',m);
+          this.tracking.mode = m;
+          this.tracking.ay = ay;
+        }
 
         let cc = [this.c[0],this.c[1],this.c[2]];
         cc[this.mode] += ddx/2;
