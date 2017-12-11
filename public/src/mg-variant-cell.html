@@ -14,8 +14,10 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-swatch-picker/paper-swatch-picker.html">
 <link rel="import" href="mg-common-styles.html">
 <link rel="import" href="mg-input.html">
+<link rel="import" href="mg-color-picker.html">
 
 <dom-module id="mg-variant-cell">
 <template strip-whitespace>
@@ -23,10 +25,10 @@
   <style is="custom-style" include="mg-common-styles iron-flex iron-flex-alignment">
 
   :host {
-    display: inline-block;
+    display: block;
     @apply --layout-horizontal;
-    @apply --layout-end;
-    @apply --layout-end-justified;
+    @apply --layout-center;
+    @apply --layout-justified;
     border-radius: 5px;
   }
 
@@ -42,14 +44,27 @@
     pointer-events: none;
   }
 
+  mg-color-picker {
+    width: 50px;
+    height: 50px;
+    margin: 3px;
+    border-radius: 50%;
+    box-shadow: inset 1px 1px 5px var(--app-shadow-color);
+  }
+
   </style>
     </custom-style>
+
+  <mg-color-picker id="color-picker" value="{{variant.data}}" hidden$="[[!isColor]]">
+  </mg-color-picker>
+  
+  <div class="flex"></div>
 
   <mg-input
     id="input"
     value="{{variant.data}}"
     label="[[_formatLabel(variantType.name,variantType.custom)]]"
-    min-width="176"
+    min-width="[[_computeInputWidth(variantType.name)]]"
     icon="[[_formatIconType(variantType.name,variantType.custom)]]"
   > <template is="dom-if" if="[[hasChildren]]">
       <iron-icon slot="suffix" style="color:tomato" icon="chevron-right"></iron-icon>
@@ -58,7 +73,6 @@
       <iron-icon slot="suffix" style="color:tomato"></iron-icon>
     </template>
   </mg-input>
-
 
 </template>
 <script>
@@ -80,13 +94,23 @@ class MGVariantCell extends Polymer.Element {
     },
     hasChildren: {
       type: Boolean,
-      value: false,
+      computed: '_computeHasChildren(variant.variants)',
+    },
+    isColor: {
+      type: Boolean,
+      computed: '_computeIsColor(variantType.name)',
     },
   }}
 
   static get observers() { return [
-    '_variantsChanged(variant.variants)',
+    '_dataChanged(variant.data)'
   ]}
+
+  _dataChanged(data) {
+    if (this.variantType.name == 'color') {
+      this.$['color-picker'].style.backgroundColor = data;
+    }
+  }
 
   _selectedChanged(selected) {
     if (selected) {
@@ -94,8 +118,22 @@ class MGVariantCell extends Polymer.Element {
     }
   }
 
-  _variantsChanged(variants) {
-    this.set('hasChildren',variants ? true : false);
+  _computeHasChildren(variants) {
+    return variants ? true : false;
+  }
+
+  _computeIsColor(name) {
+    return name == 'color' ? true : false;
+  }
+
+  _computeInputWidth(name) {
+    if (name == 'color') {
+      return 120;
+    }
+    else if (name == 'price') {
+      return 150;
+    }
+    return 176;
   }
 
   _formatIconType(name,custom) {
