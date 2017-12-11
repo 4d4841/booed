@@ -71,25 +71,13 @@ class MGColorPicker extends Polymer.GestureEventListeners(
       value: 0,
       observer: '_modeChanged'
     },
-    c: {
-      type: Array,
-      observer: '_colorChanged',
-    },
     componentType: {
       type: String,
       value: 'hsl',
     },
-    valueH: {
-      type: Number,
-      value: 0,
-    },
-    valueS: {
-      type: Number,
-      value: 0,
-    },
-    valueL: {
-      type: Number,
-      value: 0,
+    c: {
+      type: Array,
+      observer: '_colorChanged',
     },
   }}
 
