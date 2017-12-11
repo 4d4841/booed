@@ -114,7 +114,6 @@
       id="variant-selector"
       selected-attribute="selected"
       selected-item="{{selectedVariantCell}}"
-      selected="{{selectedVariantCellIndex}}"
       >
       <template is="dom-repeat" items="{{variantsDataList}}">
         <mg-variant-cell
@@ -160,6 +159,13 @@ class MGVariantsEditor extends Polymer.Element {
   static get is() { return 'mg-variant-editor'; }
 
   static get properties() { return {
+    /* Map for caching index, uncomment this when __dataLinkedPaths can no longer be abused.
+    variantsDataMap: {
+      type: Object,
+      value: function(){return new WeakMap()},
+    },
+    */
+
     variantsDataList: {
       type: Array,
       value: function(){return [];},
@@ -187,11 +193,7 @@ class MGVariantsEditor extends Polymer.Element {
       value: null,
       observer: '_selectedVariantCellChanged',
     },
-    selectedVariantCellIndex: {
-      type: Object,
-      value: null,
-      observer: '_selectedVariantCellIndexChanged',
-    },
+
   }}
 
   static get observers() { return [
@@ -236,10 +238,12 @@ class MGVariantsEditor extends Polymer.Element {
     if (splices) {
       splices.indexSplices.forEach(s => {
         s.removed.forEach(v => {
+          //this.variantsDataMap.delete(so);
           this.unlinkPaths('variant.variants.'+v.$key);
         });
         /* re-link all from the changed index */
         for(let i = s.index,so; so = s.object[i]; ++i) {
+          //this.variantsDataMap.set(so,i);
           this.linkPaths('variant.variants.'+so.$key,'variantsDataList.'+i);
           if (so == this.selectedSubvariant) {
             this.linkPaths('variantsDataList.'+i,'selectedSubvariant');
@@ -249,22 +253,24 @@ class MGVariantsEditor extends Polymer.Element {
     }
   }
 
-  _selectedVariantCellIndexChanged(newIndex,oldIndex) {
-    if (!isNaN(oldIndex)) {
-      this.unlinkPaths('variantsDataList.'+oldIndex);
+  /* An EXPERIMENT to rely on linked paths defined within __dataLinkedPaths.
+   * This is going to use it instead of using indexOf() or observed selected index.
+   * If one day this will broken it may then switch back to the variantsDataMap version.
+   */
+  _selectedVariantCellChanged(newElement,oldElement) {
+    if (oldElement) {
+      //this.unlinkPaths('variantsDataList.'+this.variantsDataMap.get(oldElement.variant));
+      this.unlinkPaths(this.__dataLinkedPaths['variant.variants.'+oldElement.variant.$key]);
     }
-    if (!isNaN(newIndex)) {
-      this.linkPaths('variantsDataList.'+newIndex,'selectedSubvariant');
-    }
-  }
 
-  _selectedVariantCellChanged(newElement) {
     this.set('selectedSubvariant',null);
     if (newElement) {
-      this.set('selectedSubvariant',this.variant.variants[newElement.variant.$key] || null);
+      this.set('selectedSubvariant', newElement.variant);
+
+      //this.linkPaths('variantsDataList.'+this.variantsDataMap.get(newElement.variant), 'selectedSubvariant');
+      this.linkPaths(this.__dataLinkedPaths['variant.variants.'+newElement.variant.$key],'selectedSubvariant');
     }
   }
-
 
   _variantChanged(newVariant) {
 
