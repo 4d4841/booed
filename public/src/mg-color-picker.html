@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<!--
+ .................................................................................................
+:::BSDB'::BSDB'::BSDB':::::BSDB':::BSDBS'::BSDBS'::BSDB'::::BSD'::BSDBS'::BSDBS'::BSDB'::::::BSD'::
+::BSDBSD BSDBSD :.BSDBS':BSDBS .:BSD ..BSD  ...BSD 'BSDBS':BSD .BSD ..BSD  ...BSD :BSDBS'::BSDB .::
+::COPYRIGHT2017 ::.BS BSDB .BS :BSD .::.BSD :::.BSD :BS .BSDB .BSD .:::BSD ::::BSD :BS BSDB BS .:::
+:::BSDSTYLEBSD .:::BS  BS .:BS :BSD ::::BSD ::::BSD :BS ::BSD :BSD :::::...::::BSD :BS :BS  BS ::::
+::::.LICENSE .::::BSD .:..::BS 'BSD ::::BSD ::::BSD :BS :::BS :BSD ::BSDBS'::::BSD :BS ::..:BS ':::
+:::::::BSD .::::BSDB .::::::BSD 'BSD'::BSD .:::BSD .BSD :::BSD':BSD'::.BSD :::BSD .BSD :::::BSDB'::
+::::::::B .::::::BS .:::::::.BSD ::BSDBS .:BSDBS  :BSD .::::BSD :.BSDBS BS BSDB .:BSD .:::::.BS .::
+`::::::::.::::::::..::::::::::...:::.....:::.....:::...::::::...:::.............:::...::::::::..::'
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="mg-common-styles.html">
+
+<dom-module id="mg-color-picker">
+<template strip-whitespace>
+    <custom-style>
+  <style is="custom-style" include="mg-common-styles iron-flex iron-flex-alignment">
+
+  :host {
+    display: inline-block;
+    @apply --layout-vertical;
+    @apply --layout-center;
+    @apply --layout-center-justified;
+    overflow: hidden;
+  }
+
+  iron-icon {
+    pointer-events: none;
+  }
+
+  </style>
+    </custom-style>
+
+  <iron-icon style$="[[_formatIconStyleForC(c)]]" icon="[[_formatIconForMode(mode)]]"></iron-icon>
+
+</template>
+<script>
+class MGColorPicker extends Polymer.GestureEventListeners(
+  Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)
+) {
+
+  static get is() { return 'mg-color-picker'; }
+
+  _formatIconForMode(mode) {
+    return ["image:looks","invert-colors","image:brightness-6"][mode%3];
+  }
+
+  static get properties() { return {
+    value: {
+      type: String,
+      notify: true,
+      observer: '_valueChanged',
+    },
+    mode: {
+      type: Number,
+      value: 0,
+    },
+    c: {
+      type: Array,
+      value: function(){return [0,0.5,0.5]},
+      observer: '_colorChanged',
+    },
+    componentType: {
+      type: String,
+      value: 'hsl',
+    },
+    valueH: {
+      type: Number,
+      value: 0,
+    },
+    valueS: {
+      type: Number,
+      value: 0,
+    },
+    valueL: {
+      type: Number,
+      value: 0,
+    },
+  }}
+
+  static get observers() { return [
+  ]}
+
+  _formatIconStyleForC(c) {
+    if (!c) return "";
+    switch(this.componentType) {
+      case 'hsl': {
+        let bright = c[2] > 0.5 ? 0 : 100;
+        return `color:hsl(0,0%,${bright}%)`;
+      }
+    }
+    return "";
+  }
+
+  _colorChanged(c) {
+    if (!c) return;
+    let cc = [];
+    switch(this.componentType) {
+      case 'hsl':
+        cc[0] = Math.round(c[0]*45 % 360);
+        c[1] = c[1] < 0 ? 0 : c[1] > 1 ? 1 : c[1];
+        cc[1] = c[1] * 100;
+        c[2] = c[2] < 0 ? 0 : c[2] > 1 ? 1 : c[2];
+        cc[2] = c[2] * 100;
+        this.set('value',`hsl(${Math.round(cc[0])},${Math.round(cc[1])}%,${Math.round(cc[2])}%)`);
+        console.log('value',this.value);
+        break;
+    }
+  }
+
+  _valueChanged(v) {
+    this.style.backgroundColor = v;
+  }
+
+  connectedCallback(){
+    super.connectedCallback();
+    this.addEventListener('iron-resize', e => {
+      this._setImageWH( this.imageWidth, this.imageHeight );
+    },true);
+    Polymer.Gestures.addListener(this, 'track', e => this._onTrack(e));
+
+  }
+  _onTrack(e) {
+    e.preventDefault();
+    let viewBB = this.getBoundingClientRect();
+    let ax = (e.detail.x - viewBB.left) / this.clientWidth;
+    let ay = (e.detail.y - viewBB.top) / this.clientHeight;
+    let ddx = e.detail.ddx / this.clientWidth;
+    let ddy = e.detail.ddy / this.clientHeight;
+
+    switch (e.detail.state) {
+      case 'start':
+        /* Hack to prevent tracking locked into some kind of drag mode with a double-clicking */
+
+        this.tracking = {
+          ax: ax,
+          ay: ay,
+          c:[this.c[0],this.c[1],this.c[2]],
+          mode: this.mode,
+        };
+
+        break;
+      case 'end': {
+
+      } break;
+      case 'track': {
+        let dy = ay - this.tracking.ay;
+
+        this.set('mode',Math.round(Math.abs(this.tracking.mode+dy))%3);
+
+        let cc = [this.c[0],this.c[1],this.c[2]];
+        cc[this.mode] += ddx/2;
+        this.set('c',cc);
+
+      } break;
+    }
+  }
+}
+
+customElements.define(MGColorPicker.is, MGColorPicker);
+
+</script>
+</dom-module>
