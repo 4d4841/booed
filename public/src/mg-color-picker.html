@@ -33,9 +33,10 @@
 
   iron-icon {
     color: rgba(0,0,0,0.3);
-    transition: color 0.25s;
     pointer-events: none;
     position:absolute;
+    transition: opacity 0.25s, top 0.25s;
+    top: calc(50% - 11px);
     --iron-icon-width: 22px;
     --iron-icon-height: 22px;
   }
@@ -48,6 +49,7 @@
     </template>
 
 </template>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-color/1.0.3/d3-color.min.js"></script>
 <script>
 class MGColorPicker extends Polymer.GestureEventListeners(
   Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)
@@ -74,6 +76,7 @@ class MGColorPicker extends Polymer.GestureEventListeners(
       type: String,
       observer: '_componentTypeChanged',
       notify: true,
+      value: 'hsl',
     },
     c: {
       type: Array,
@@ -101,16 +104,15 @@ class MGColorPicker extends Polymer.GestureEventListeners(
   }
 
   _formatIconStyleForC(c,mouseIn,tracking,mode,match) {
-    if (mode !== match) return 'color:transparent';
+    if (mode !== match) return 'color:transparent;top:50%';
     c = c || [0.5,0.5,0.5];
     switch(this.componentType) {
       case 'hsl': {
-        let col = c[2] > 0.3 ? 20 : 220;
-        let alpha = 0.3;
-        if (mouseIn || tracking) {
-          alpha = 1.0;
-        }
-        return `color:rgba(${col},${col},${col},${alpha})`;
+        let col = d3.lab(d3.hsl(c[0]*360, c[1], c[2]));
+        let l = d3.lab(d3.hsl(c[0]*360, c[1], c[2])).l;
+        let k = 3;
+        col = l > 50 ? col.darker(k) : col.brighter(k);
+        return `color:${d3.rgb(col).toString()};opacity:${(mouseIn || tracking)?1:0.4}`;
       }
     }
     return "";
@@ -194,6 +196,7 @@ class MGColorPicker extends Polymer.GestureEventListeners(
           c:[this.c[0],this.c[1],this.c[2]],
           axis: '',
           mode: this.mode,
+          threshold: 0.1,
         });
 
         break;
@@ -215,12 +218,12 @@ class MGColorPicker extends Polymer.GestureEventListeners(
         let dy = ay - this.tracking.ay;
         let dx = ax - this.tracking.ax;
 
-        if (this.tracking.axis != 'y' && Math.abs(dy) > 10/ch) {
+        if (this.tracking.axis != 'y' && Math.abs(dy) > this.tracking.threshold) {
           this.tracking.axis = 'y';
           this.tracking.ax = ax;
         }
 
-        if (this.tracking.axis != 'x' && Math.abs(dx) > 10/cw) {
+        if (this.tracking.axis != 'x' && Math.abs(dx) > this.tracking.threshold) {
           this.tracking.axis = 'x';
           this.tracking.ay = ay;
         }
@@ -228,6 +231,7 @@ class MGColorPicker extends Polymer.GestureEventListeners(
         if (!this.tracking.axis) {
           break;
         }
+        this.tracking.threshold = 0.8;
 
         if (this.tracking.axis == 'y') {
           let l = this.c.length;
@@ -246,7 +250,8 @@ class MGColorPicker extends Polymer.GestureEventListeners(
 
         }
 
-        if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+        if (Math.abs(dx) > 2.0 * this.tracking.threshold
+        || Math.abs(dy) > 2.0 * this.tracking.threshold) {
           this.tracking.ax = ax;
           this.tracking.ay = ay;
         }
