@@ -66,9 +66,9 @@
   <mg-input
     id="input"
     value="{{variant.data}}"
-    label="[[_formatLabel(variantType.name,variantType.custom)]]"
-    min-width="[[_computeInputWidth(variantType.name)]]"
-    icon="[[_formatIconType(variantType.name,variantType.custom)]]"
+    label="[[variantType]]"
+    min-width="[[_computeInputWidth(variantType)]]"
+    icon="[[_formatIconType(variantType)]]"
   > <template is="dom-if" if="[[hasChildren]]">
       <iron-icon slot="suffix" style="color:tomato" icon="chevron-right"></iron-icon>
     </template>
@@ -101,7 +101,7 @@ class MGVariantCell extends Polymer.Element {
     },
     isColor: {
       type: Boolean,
-      computed: '_computeIsColor(variantType.name)',
+      computed: '_computeIsColor(variantType)',
     },
   }}
 
@@ -118,21 +118,22 @@ class MGVariantCell extends Polymer.Element {
     return variants ? true : false;
   }
 
-  _computeIsColor(name) {
-    return name == 'color' ? true : false;
+  _computeIsColor(type) {
+    return type.startsWith('color') ? true : false;
   }
 
   _computeInputWidth(name) {
-    if (name == 'color') {
+    if (name.startsWith('color')) {
       return 120;
     }
-    else if (name == 'price') {
+    else if (name.startsWith('price')) {
       return 150;
     }
     return 176;
   }
 
-  _formatIconType(name,custom) {
+  _formatIconType(type) {
+    let [name,custom] = type.split(':');
     if (name == 'price') {
       switch (custom) {
         case 'usd':
@@ -142,13 +143,6 @@ class MGVariantCell extends Polymer.Element {
       }
     }
     return null;
-  }
-
-  _formatLabel(name,custom) {
-    if (name == 'price' || name == 'custom') {
-      return name+":"+custom;
-    }
-    return name;
   }
 
 }

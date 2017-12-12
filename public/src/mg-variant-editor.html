@@ -62,7 +62,7 @@
           attr-for-selected="name"
           slot="dropdown-content"
           class="dropdown-content layout start"
-          selected="{{selectedType.name}}"
+          selected="{{selectedTypeDef.name}}"
         > <template is="dom-repeat" items="[[menu.entries]]">
             <paper-icon-item label="[[item.title]]" name="[[item.name]]">
               <iron-icon icon="[[item.icon]]" slot="item-icon"></iron-icon>
@@ -72,17 +72,17 @@
         </paper-listbox>
       </paper-dropdown-menu>
 
-      <template is="dom-if" if="[[testEqual(selectedType.name,'custom')]]">
+      <template is="dom-if" if="[[testEqual(selectedTypeDef.name,'custom')]]">
 
         <mg-input
           label="ชื่อ"
-          value="{{selectedType.custom}}"
+          value="{{selectedTypeDef.custom}}"
           min-width="70"
         > <iron-icon icon="editor:mode-edit" slot="prefix"></iron-icon>
         </mg-input>
 
       </template>
-      <template is="dom-if" if="[[testEqual(selectedType.name,'price')]]">
+      <template is="dom-if" if="[[testEqual(selectedTypeDef.name,'price')]]">
         <paper-dropdown-menu
           style="width:95px"
           label="สกุลเงิน"
@@ -90,7 +90,7 @@
             slot="dropdown-content"
             class="dropdown-content"
             attr-for-selected="currency"
-            selected="{{selectedType.custom}}"
+            selected="{{selectedTypeDef.custom}}"
           > <paper-icon-item label="บาท" currency="thb">
               <iron-icon icon="booed:attach-money-thb" slot="item-icon"></iron-icon> บาท
             </paper-icon-item>
@@ -117,7 +117,7 @@
       >
       <template is="dom-repeat" items="{{variantsDataList}}">
         <mg-variant-cell
-          variant-type="[[selectedType]]"
+          variant-type="[[_computeType(selectedTypeDef.name,selectedTypeDef.custom)]]"
           variant="{{item}}"
           >
         </mg-variant-cell>
@@ -177,7 +177,7 @@ class MGVariantsEditor extends Polymer.Element {
       observer: '_variantChanged',
     },
 
-    selectedType: {
+    selectedTypeDef: {
       type: Object,
     },
     menu: {
@@ -198,15 +198,22 @@ class MGVariantsEditor extends Polymer.Element {
 
   static get observers() { return [
     '_subvariantsChanged(selectedSubvariant.variants)',
-    '_selectedTypeChanged(selectedType.name,selectedType.custom)',
+    '_selectedTypeDefChanged(selectedTypeDef.name,selectedTypeDef.custom)',
     '_variantDataListChanged(variantsDataList.splices)'
   ]}
 
-  _selectedTypeChanged(name,custom) {
+  _computeType(name,custom) {
+    if (name == 'color' || name =='size') {
+      custom = '';
+    }
+    return name + (custom ? ':'+custom : '');
+  }
+
+  _selectedTypeDefChanged(name,custom) {
     if (name == 'custom') {
-      this.set('variant.type',name+':'+(custom||''));
+      this.set('variant.type','custom:'+(custom||''));
     } else if (name == 'price') {
-      this.set('variant.type',name+':'+(custom||''));
+      this.set('variant.type','price:'+(custom||''));
     } else {
       this.set('variant.type',name);
     }
@@ -279,7 +286,7 @@ class MGVariantsEditor extends Polymer.Element {
 
     if (newVariant) {
       let nc = (newVariant.type||"price:thb").split(':');
-      this.set('selectedType',{name:[nc[0]], custom:nc[1]});
+      this.set('selectedTypeDef',{name:nc[0], custom:nc[1]});
       for(let vkey in newVariant.variants){
         this.addVariantData(newVariant.variants[vkey]);
       }
