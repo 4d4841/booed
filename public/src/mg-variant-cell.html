@@ -56,8 +56,10 @@
   </style>
     </custom-style>
 
-  <mg-color-picker id="color-picker" value="{{variant.data}}" hidden$="[[!isColor]]">
+    <template is="dom-if" if="[[isColor]]">
+  <mg-color-picker id="color-picker" value="{{variant.data}}" component-type="hsl">
   </mg-color-picker>
+    </template>
 
   <div class="flex"></div>
 
@@ -104,14 +106,7 @@ class MGVariantCell extends Polymer.Element {
   }}
 
   static get observers() { return [
-    '_dataChanged(variant.data)'
   ]}
-
-  _dataChanged(data) {
-    if (this.variantType.name == 'color') {
-      this.$['color-picker'].style.backgroundColor = data;
-    }
-  }
 
   _selectedChanged(selected) {
     if (selected) {

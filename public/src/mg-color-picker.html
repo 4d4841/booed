@@ -43,10 +43,9 @@
   </style>
     </custom-style>
 
-  <iron-icon style$="[[_formatIconStyleForC(c,mouseIn,tracking,iconMode,0)]]" icon="[[_formatIconForMode(0)]]"></iron-icon>
-  <iron-icon style$="[[_formatIconStyleForC(c,mouseIn,tracking,iconMode,1)]]" icon="[[_formatIconForMode(1)]]"></iron-icon>
-  <iron-icon style$="[[_formatIconStyleForC(c,mouseIn,tracking,iconMode,2)]]" icon="[[_formatIconForMode(2)]]"></iron-icon>
-  <iron-icon style$="[[_formatIconStyleForC(c,mouseIn,tracking,iconMode,3)]]" icon="[[_formatIconForMode(4)]]"></iron-icon>
+    <template is="dom-repeat" items="[[c]]">
+      <iron-icon style$="[[_formatIconStyleForC(c,mouseIn,tracking,iconMode,index)]]" icon="[[_formatIconForMode(index)]]"></iron-icon>
+    </template>
 
 </template>
 <script>
@@ -73,16 +72,26 @@ class MGColorPicker extends Polymer.GestureEventListeners(
     },
     componentType: {
       type: String,
-      value: 'hsl',
+      observer: '_componentTypeChanged',
+      notify: true,
     },
     c: {
       type: Array,
       observer: '_colorChanged',
+      value: function(){return [null];},
     },
   }}
 
   static get observers() { return [
   ]}
+
+  _componentTypeChanged(type) {
+    switch(type) {
+      case 'hsl': {
+        this.set('c',[0.5,0.5,0.5]);
+      }
+    }
+  }
 
   _modeChanged(mode) {
     this._delayChangeDebouncer = Polymer.Debouncer.debounce(this._delayChangeDebouncer,
@@ -93,7 +102,7 @@ class MGColorPicker extends Polymer.GestureEventListeners(
 
   _formatIconStyleForC(c,mouseIn,tracking,mode,match) {
     if (mode !== match) return 'color:transparent';
-    c = c || [0.5,0.5,0.5,0];
+    c = c || [0.5,0.5,0.5];
     switch(this.componentType) {
       case 'hsl': {
         let col = c[2] > 0.3 ? 20 : 220;
@@ -108,6 +117,9 @@ class MGColorPicker extends Polymer.GestureEventListeners(
   }
 
   _colorChanged(c) {
+    if (c[0] === null) {
+      return;
+    }
     let cc = [];
     switch(this.componentType) {
       case 'hsl':
@@ -165,29 +177,36 @@ class MGColorPicker extends Polymer.GestureEventListeners(
     switch (e.detail.state) {
       case 'start':
         if(!this.c) {
-          this.set('c',[0.5,0.5,0.5,1]);
+          this.set('c',[0.5,0.5,0.5]);
         }
         /* Hack to prevent tracking locked into some kind of drag mode with a double-clicking */
 
         this.set('tracking', {
+          ox: ax,
+          oy: ay,
           ax: ax,
           ay: ay,
-          c:[this.c[0],this.c[1],this.c[2],this.c[3]],
+          c:[this.c[0],this.c[1],this.c[2]],
           mode: this.mode,
         });
 
         break;
       case 'end': {
+        if (Math.abs(ax - this.tracking.ox) < 5/cw && Math.abs(ay - this.tracking.oy) < 5/ch) {
+          let l = this.c.length;
+          this.set('mode', ((this.mode+1)%l + l)%l);
+        }
         this.set('tracking',null);
         this._delayFadeDebouncer = Polymer.Debouncer.debounce(this._delayFadeDebouncer,
           Polymer.Async.timeOut.after(1000), () => {
             this.set('mouseIn',false);
           });
+
       } break;
       case 'track': {
         let dy = ay - this.tracking.ay;
         let dx = ax - this.tracking.ax;
-        if (dx > 0.2) {
+        if (dx > 0.1) {
           dy = 0;
           this.tracking.ay = ay;
           this.tracking.ax = ax;
@@ -195,7 +214,8 @@ class MGColorPicker extends Polymer.GestureEventListeners(
           ddx = 0;
         }
 
-        let m = (Math.round(this.tracking.mode+dy)%3 + 3)%3;
+        let l = this.c.length;
+        let m = (Math.round(this.tracking.mode+dy)%l + l)%l;
 
         if (m != this.tracking.mode) {
           this.set('mode',m);
@@ -203,7 +223,7 @@ class MGColorPicker extends Polymer.GestureEventListeners(
           this.tracking.ay = ay;
         }
 
-        let cc = [this.c[0],this.c[1],this.c[2],0];
+        let cc = [].concat(this.c);
         cc[this.mode] += ddx/2;
         this.set('c',cc);
 
