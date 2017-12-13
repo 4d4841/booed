@@ -431,12 +431,10 @@
         '_waitingChanged(me.waiting)',
       ]}
 
-      _waitingChanged(waiting) {
-        if (waiting == true) {
-          this.state = 'waiting';
-        } else {
-          this.state = 'init';
-        }
+      connectedCallback() {
+        super.connectedCallback();
+        this.__validWaiting = true;
+        MHA.AU.onAuthStateChanged(this._onAuthStateChanged.bind(this));
       }
 
       _visibleChanged(visible) {
@@ -450,10 +448,12 @@
         }
       }
 
-      connectedCallback() {
-        super.connectedCallback();
-        this.__validWaiting = true;
-        MHA.AU.onAuthStateChanged(this._onAuthStateChanged.bind(this));
+      _waitingChanged(waiting) {
+        if (waiting == true) {
+          this.state = 'waiting';
+        } else {
+          this.state = 'init';
+        }
       }
 
       _onAuthStateChanged(user) {

@@ -45,8 +45,8 @@
       }}
 
       static get observers() { return [
-        '_photoURLChanged(user.photoURL)',
         '_displayNameChanged(user.displayName)',
+        '_photoURLChanged(user.photoURL)',
       ]}
 
       connectedCallback() {
@@ -54,19 +54,20 @@
         MHA.AU.onAuthStateChanged(this._onAuthStateChanged.bind(this));
       }
 
-      _onAuthStateChanged(user) {
-        this.set('me.user',user);
-        this.set('me.waiting', false);
-      }
-
       _displayNameChanged(name) {
         name = name || '👻';
         this.set('me.displayName', name);
       }
-
+      
       _photoURLChanged(photoURL) {
         this._setPhotoURL(photoURL);
 //        this.set('me.photoURL', photoURL);
+      }
+
+
+      _onAuthStateChanged(user) {
+        this.set('me.user',user);
+        this.set('me.waiting', false);
       }
 
       googleSignIn() {

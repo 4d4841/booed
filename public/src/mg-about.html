@@ -302,12 +302,6 @@ class MGAbout extends Polymer.Element {
   static get observers() { return [
   ]}
 
-  _iconSizeChanged(size) {
-    this.updateStyles({
-      '--display-icon-size':`${size}px`
-    });
-  }
-
   connectedCallback() {
     super.connectedCallback();
 
@@ -326,6 +320,12 @@ class MGAbout extends Polymer.Element {
         this.push('iconList',{set:n[0],id:n[1],section:n[0]});
       });
     }
+  }
+
+  _iconSizeChanged(size) {
+    this.updateStyles({
+      '--display-icon-size':`${size}px`
+    });
   }
 
   _routeChanged( route) {

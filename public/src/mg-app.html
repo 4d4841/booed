@@ -687,10 +687,6 @@ class MGApp extends Polymer.Element {
     '_routePageChanged(routeData.page)',
   ]}
 
-  _itemsChanged(splices) {
-    //console.log(">",splices);
-  }
-
   constructor() {
     super();
     if (MHA_INITIALIZED) {
@@ -721,11 +717,6 @@ class MGApp extends Polymer.Element {
 
     window.performance && performance.mark && performance.mark('mg-app.created');
 
-  }
-
-  disconnectedCallback() {
-    console.log('disconnect?');
-    super.disconnectedCallback();
   }
 
   connectedCallback() {
@@ -759,6 +750,11 @@ class MGApp extends Polymer.Element {
     });
 
     this._notifyNetworkStatus();
+  }
+
+  disconnectedCallback() {
+    console.log('disconnect?');
+    super.disconnectedCallback();
   }
 
   _openHome(e) {

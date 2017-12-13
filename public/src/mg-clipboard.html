@@ -39,6 +39,16 @@ var MGClipboard;
       '_clipboardChanged(clipboardList.splices)'
     ]}
 
+    connectedCallback() {
+      super.connectedCallback();
+      __MGClipboardInstances.push(this);
+    }
+
+    disconnectedCallback() {
+      __MGClipboardInstances.splice(__MGClipboardInstances.indexOf(this),1);
+      super.disconnectedCallback();
+    }
+
     _clipboardChanged(splices) {
       if (!__MGClipboardNotifying && splices) {
         __MGClipboardNotifying = true;
@@ -51,15 +61,6 @@ var MGClipboard;
       }
     }
 
-    connectedCallback() {
-      super.connectedCallback();
-      __MGClipboardInstances.push(this);
-    }
-
-    disconnectedCallback() {
-      __MGClipboardInstances.splice(__MGClipboardInstances.indexOf(this),1);
-      super.disconnectedCallback();
-    }
   }
 
   customElements.define(MGClipboard.is, MGClipboard);

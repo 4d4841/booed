@@ -315,29 +315,57 @@
       }}
 
       static get observers() { return [
-        '_editorRectChanged(dataLeft, dataTop, dataWidth, dataHeight, imageWidth, imageHeight)',
         '_dataRectChanged(data.roi)',
-        '_updateTitle(active, data.name, imageWidth, imageHeight)',
         '_dataThumbnailChanged(data.thumbnail)',
+        '_editorRectChanged(dataLeft, dataTop, dataWidth, dataHeight, imageWidth, imageHeight)',
+        '_updateTitle(active, data.name, imageWidth, imageHeight)',
       ]}
 
-      _hidesNavigator(before, data) {
-        if (before == data) return true;
-        return false;
-      }
+      connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener('iron-resize', e => {
+          this._setImageWH( this.imageWidth, this.imageHeight );
+        },true);
+        Polymer.Gestures.addListener(this, 'track', e => this._onTrack(e));
 
-      _updateTitle(a, n,w,h) {
-        if (a && !this._OldTitle) {
-          this._OldTitle = document.title;
-        }
-        if (!a && this._OldTitle) {
-          document.title = this._OldTitle;
-          delete this._OldTitle;
-        }
+        document.addEventListener('keydown', e => {
+          if (this.active) {
+            if (!e.ctrlKey) {
+              e.preventDefault();
+            }
 
-        if (w && h && this._OldTitle) {
-          document.title = `${n} (${w}×${h}) - Booed`;
-        }
+            switch(e.key) {
+              case 'ArrowLeft':
+                this.set('data',this.before);
+                break;
+              case 'ArrowRight':
+                this.set('data',this.after);
+                break;
+              case 'Control':
+                this.set('keepAspect', this.dataWidth/this.dataHeight);
+                break;
+            }
+          }
+        });
+
+        document.addEventListener('keyup', e => {
+          if (this.active) {
+            if (!e.ctrlKey) {
+              e.preventDefault();
+            }
+
+            switch(e.key) {
+              case 'Escape':
+                e.preventDefault();
+                this._deactivateClose(e);
+              break;
+              case 'Control':
+                this.set('keepAspect', null);
+                break;
+            }
+          }
+        });
+
       }
 
       _dataRectChanged(roi) {
@@ -358,6 +386,18 @@
         }
       }
 
+      _dataThumbnailChanged(thumbnail) {
+        thumbnail && MHA.registerRepresentation(thumbnail, {
+          src: (key,src) => { if (key == this.data.thumbnail) {
+            this.$.thumbnail.src = src;
+            /* XXX balloon should wrap refit() to have this automatic */
+            Polymer.Async.timeOut.run(() => {
+              this.$['thumbnail-balloon'].refit();
+            }, 0);
+          }}
+        });
+      }
+
       _editorRectChanged(l,t,w,h,iw,ih) {
         if (!this.data) {
           return;
@@ -372,6 +412,25 @@
           rPathInner: `M ${l*iw} ${t*ih} h ${w*iw} v ${h*ih} h -${w*iw} Z`,
         });
 
+      }
+
+      _updateTitle(a, n,w,h) {
+        if (a && !this._OldTitle) {
+          this._OldTitle = document.title;
+        }
+        if (!a && this._OldTitle) {
+          document.title = this._OldTitle;
+          delete this._OldTitle;
+        }
+
+        if (w && h && this._OldTitle) {
+          document.title = `${n} (${w}×${h}) - Booed`;
+        }
+      }
+
+      _hidesNavigator(before, data) {
+        if (before == data) return true;
+        return false;
       }
 
       _styleLock(lw,tracking,lock) {
@@ -434,53 +493,6 @@
         ret+= ` scale(${1.2*s*ss})`;
 
         return ret;
-      }
-
-      connectedCallback(){
-        super.connectedCallback();
-        this.addEventListener('iron-resize', e => {
-          this._setImageWH( this.imageWidth, this.imageHeight );
-        },true);
-        Polymer.Gestures.addListener(this, 'track', e => this._onTrack(e));
-
-        document.addEventListener('keydown', e => {
-          if (this.active) {
-            if (!e.ctrlKey) {
-              e.preventDefault();
-            }
-
-            switch(e.key) {
-              case 'ArrowLeft':
-                this.set('data',this.before);
-                break;
-              case 'ArrowRight':
-                this.set('data',this.after);
-                break;
-              case 'Control':
-                this.set('keepAspect', this.dataWidth/this.dataHeight);
-                break;
-            }
-          }
-        });
-
-        document.addEventListener('keyup', e => {
-          if (this.active) {
-            if (!e.ctrlKey) {
-              e.preventDefault();
-            }
-
-            switch(e.key) {
-              case 'Escape':
-                e.preventDefault();
-                this._deactivateClose(e);
-              break;
-              case 'Control':
-                this.set('keepAspect', null);
-                break;
-            }
-          }
-        });
-
       }
 
       _setImageWH(w,h) {
@@ -687,18 +699,6 @@
 
           } break;
         }
-      }
-
-      _dataThumbnailChanged(thumbnail) {
-        thumbnail && MHA.registerRepresentation(thumbnail, {
-          src: (key,src) => { if (key == this.data.thumbnail) {
-            this.$.thumbnail.src = src;
-            /* XXX balloon should wrap refit() to have this automatic */
-            Polymer.Async.timeOut.run(() => {
-              this.$['thumbnail-balloon'].refit();
-            }, 0);
-          }}
-        });
       }
 
       _thumbNailLoaded(loaded) {

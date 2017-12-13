@@ -177,6 +177,18 @@ class MGQuilt extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Po
   static get observers() { return [
   ]}
 
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener('iron-resize', this._onResizeEvent);
+
+    this.__photoIndex = getRandomInt(0,1000);
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener('iron-resize', this._onResizeEvent);
+    super.disconnectedCallback();
+  }
+
   _formatLabel(tags) {
     if (tags) {
       return Object.keys(tags).join(',');
@@ -190,18 +202,6 @@ class MGQuilt extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Po
       ret[MGIconForRole(key)] = tags[key];
     }
     return ret;
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-    this.addEventListener('iron-resize', this._onResizeEvent);
-
-    this.__photoIndex = getRandomInt(0,1000);
-  }
-
-  disconnectedCallback() {
-    this.removeEventListener('iron-resize', this._onResizeEvent);
-    super.disconnectedCallback();
   }
 
   _visibleChanged(visible) {

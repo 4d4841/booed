@@ -229,10 +229,6 @@
         '_waitingChanged(me.waiting)',
       ]}
 
-      _waitingChanged(waiting) {
-        this.set('spinnerActive',waiting);
-      }
-
       connectedCallback() {
         super.connectedCallback();
         window.addEventListener('close-contextual-menu', this._closeSubmenu.bind(this));
@@ -267,6 +263,10 @@
             this.showPanel = false;
           }, 250);
         }
+      }
+
+      _waitingChanged(waiting) {
+        this.set('spinnerActive',waiting);
       }
 
       _closeSubmenu(e) {

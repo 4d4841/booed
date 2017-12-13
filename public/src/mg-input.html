@@ -13,6 +13,7 @@
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-styles/typography.html">
 
 <dom-module id="mg-input">
 <template strip-whitespace>
@@ -23,6 +24,7 @@
     --iron-icon-height:20px;
     padding-right:5px;
   }
+
   </style>
     </customstyle>
 
@@ -35,6 +37,8 @@
     disabled="{{disabled}}"
     autofocus="{{autofocus}}"
     always-float-label="[[computedFloatLabel]]"
+    error-message="{{errorMessage}}"
+    invalid="{{invalid}}"
   > <template is="dom-if" if="[[icon]]">
       <iron-icon icon="[[icon]]" slot="prefix"></iron-icon>
     </template>
@@ -64,6 +68,8 @@ class MGInput extends Polymer.Element {
   static get properties() { return {
     icon: String,
     label: String,
+    invalid: Boolean,
+    errorMessage: String,
     value: {
       type: String,
       value: '',
@@ -101,10 +107,17 @@ class MGInput extends Polymer.Element {
     return always;
   }
 
-  constructor() {
-    super();
+  connectedCallback() {
+    super.connectedCallback();
+    this.$.input.addEventListener('iron-input-ready',e => {
+      this._valueChanged(this.value);
+    });
 
     if (!MeasureContext) {
+       let px16 = getComputedStyle(document.body).getPropertyValue('--paper-font-subhead_-_font-size');
+       let px12 = getComputedStyle(document.body).getPropertyValue('--paper-font-caption_-_font-size');
+       console.log(px16,px12);
+
        MeasureContext = document.createElement("canvas").getContext("2d");
        MeasureContext['font'] = "16px Roboto, Noto, sans-serif";
        MeasureContext2 = document.createElement("canvas").getContext("2d");
@@ -119,13 +132,6 @@ class MGInput extends Polymer.Element {
 
   focus() {
     this.$.input.focus();
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-    this.$.input.addEventListener('iron-input-ready',e => {
-      this._valueChanged(this.value);
-    });
   }
 
   _valueChanged(newValue, oldValue) {

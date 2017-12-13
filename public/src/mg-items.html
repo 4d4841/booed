@@ -274,34 +274,22 @@
 
     static get observers() { return [
       '_itemsChanged(items.*)',
+      '_routeDataItemKeyChanged(routeData.itemKey)',
       '_uidItemKeyChanged(me.user.uid, itemKey)',
       '_userChanged(me.user.uid)',
       '_visibleChanged(visible)',
-      '_routeDataItemKeyChanged(routeData.itemKey)',
     ]}
 
-    _setCover(itemKey,imageKey) {
-      if (!imageKey) {
-        this._setPhotoKeyProperty(itemKey, '_src', 'images/logo-pumpkin-face-grayout.svg');
-        return;
-      }
-
-      //let thumbnail = MHA.get(['items',itemKey,'images',imageKey,'thumbnail']);
-      /* Oh dear */
-      let thumbnail = MHA.getItem({[itemKey]:{images:{[imageKey]:{thumbnail:null}}}});
-      if (thumbnail) {
-        let uid = MHA.AU.currentUser.uid;
-        MHA.registerRepresentation(thumbnail, { src: (key,src) => {
-          this._setPhotoKeyProperty(itemKey, '_src', src);
-        }});
-      }
+    connectedCallback() {
+      super.connectedCallback();
+      window.addEventListener('close-contextual-menu', this._closeSubmenu.bind(this));
+      this.menu.action = e => this._onSelectedItemType(e);
+      this.newItemMenu.action = e => this._onNewItem(e);
     }
 
-    _formatLabel(images,str,role) {
-      str = str || "(ไม่มีชื่อ)";
-      return role == 'gallery'
-        ? (images ? "×" + Object.entries(images).length : '') +" "+ str
-        : str;
+    disconnectedCallback() {
+      delete this.newItemMenu.target;
+      super.disconnectedCallback();
     }
 
     _itemsChanged(change) {
@@ -337,116 +325,8 @@
 
     }
 
-    connectedCallback() {
-      super.connectedCallback();
-      window.addEventListener('close-contextual-menu', this._closeSubmenu.bind(this));
-      this.menu.action = e => this._onSelectedItemType(e);
-      this.newItemMenu.action = e => this._onNewItem(e);
-    }
-
-    _visibleChanged(visible) {
-      if (visible) {
-        this.set('itemKey', this.itemKey || this._CurrentItemKey);
-      } else {
-        this._CurrentItemKey = this.itemKey;
-        this.set('itemKey', null);
-      }
-    }
-
-    _formatRoleIcon(role) {
-      return MGIconForRole(role);
-    }
-
-    _userChanged(uid) {
-      this.set('itemList',[]);
-      if (this._UidChangedCallback) {
-        this._UidChangedCallback.ref.off('child_added', this._UidChangedCallback.cb, this);
-        delete this._UidChangedCallback;
-      }
-      if (uid) {
-        this._UidChangedCallback = {ref:MHA.DB.ref('home').child(uid).child('items')};
-        this._UidChangedCallback.cb
-         = this._UidChangedCallback.ref.on('child_added', function(snapshot) {
-          let val = snapshot.val();
-
-          if( this.itemList.every(function(item){
-            /* Check if item exists */
-            return item.key != snapshot.key;
-          })) {
-            /* New item found in snapshot, insert into item list.
-             * In expected case it may already add placeholders for keeping
-             * items that are being constructed.
-             */
-            this.unshift('itemList',{
-              key: snapshot.key,
-              role: val.role,
-              name: val.name,
-              images: val.images,
-            }) - 1;
-          }
-
-          val._uid = uid;
-          MHA.setItem(snapshot.key,val);
-
-          let itemRef = MHA.DB.ref('home')
-                              .child(uid)
-                              .child('items')
-                              .child(snapshot.key);
-
-          /* Listen to name changes */
-          itemRef.child('name').on('value', nameSnapshot => {
-            this._setPhotoKeyProperty(snapshot.key, 'name', nameSnapshot.val());
-          });
-
-          /* Listen to images changes */
-          itemRef.child('cover').on('value', coverSnapshot => {
-              MHA.setItem(snapshot.key,{cover:coverSnapshot.val()});
-              this._setCover(snapshot.key, coverSnapshot.val());
-          });
-
-        },function(error){},this);
-      }
-    }
-
-    _indexItem(itemKey) {
-      for (let i = 0, data; data = this.itemList[i]; ++i) {
-        if (data.key == itemKey) {
-          return i;
-        }
-      }
-      return -1;
-    }
-
-    _setPhotoKeyProperty(key,prop,val) {
-      let idx = this._indexItem(key);
-      if (idx > -1) {
-        this.itemList[idx][prop] = val;
-        this.notifyPath(['itemList',idx,prop]);
-      }
-    }
-
-    _onThumbnailClick(e) {
-      this.set('itemKey',e.model.item.key);
-    }
-
-    _onSelectedItemType(e) {
-      console.log("Not yet implemented. Should display only ->", e.model.item.name);
-    }
-
-    _computeSelectEditor(newRole) {
-      let newEditor = this.$[newRole+'-editor'];
-
-      if (this.editor && this.editor !== newEditor) {
-        this.editor.set('itemKey',null);
-      }
-
-      return newEditor;
-    }
-
-    _onNewItem(e) {
-      this._closeSubmenu(e);
-      this.set('itemRole',e.model.item.name);
-      this.set('itemKey',this.editor.newItem());
+    _routeDataItemKeyChanged(key) {
+      this.set('itemKey', key);
     }
 
     _uidItemKeyChanged(uid, itemKey) {
@@ -517,6 +397,135 @@
       }
     }
 
+    _userChanged(uid) {
+      this.set('itemList',[]);
+      if (this._UidChangedCallback) {
+        this._UidChangedCallback.ref.off('child_added', this._UidChangedCallback.cb, this);
+        delete this._UidChangedCallback;
+      }
+      if (uid) {
+        this._UidChangedCallback = {ref:MHA.DB.ref('home').child(uid).child('items')};
+        this._UidChangedCallback.cb
+         = this._UidChangedCallback.ref.on('child_added', function(snapshot) {
+          let val = snapshot.val();
+
+          if( this.itemList.every(function(item){
+            /* Check if item exists */
+            return item.key != snapshot.key;
+          })) {
+            /* New item found in snapshot, insert into item list.
+             * In expected case it may already add placeholders for keeping
+             * items that are being constructed.
+             */
+            this.unshift('itemList',{
+              key: snapshot.key,
+              role: val.role,
+              name: val.name,
+              images: val.images,
+            }) - 1;
+          }
+
+          val._uid = uid;
+          MHA.setItem(snapshot.key,val);
+
+          let itemRef = MHA.DB.ref('home')
+                              .child(uid)
+                              .child('items')
+                              .child(snapshot.key);
+
+          /* Listen to name changes */
+          itemRef.child('name').on('value', nameSnapshot => {
+            this._setPhotoKeyProperty(snapshot.key, 'name', nameSnapshot.val());
+          });
+
+          /* Listen to images changes */
+          itemRef.child('cover').on('value', coverSnapshot => {
+              MHA.setItem(snapshot.key,{cover:coverSnapshot.val()});
+              this._setCover(snapshot.key, coverSnapshot.val());
+          });
+
+        },function(error){},this);
+      }
+    }
+
+    _visibleChanged(visible) {
+      if (visible) {
+        this.set('itemKey', this.itemKey || this._CurrentItemKey);
+      } else {
+        this._CurrentItemKey = this.itemKey;
+        this.set('itemKey', null);
+      }
+    }
+
+    _setCover(itemKey,imageKey) {
+      if (!imageKey) {
+        this._setPhotoKeyProperty(itemKey, '_src', 'images/logo-pumpkin-face-grayout.svg');
+        return;
+      }
+
+      //let thumbnail = MHA.get(['items',itemKey,'images',imageKey,'thumbnail']);
+      /* Oh dear */
+      let thumbnail = MHA.getItem({[itemKey]:{images:{[imageKey]:{thumbnail:null}}}});
+      if (thumbnail) {
+        let uid = MHA.AU.currentUser.uid;
+        MHA.registerRepresentation(thumbnail, { src: (key,src) => {
+          this._setPhotoKeyProperty(itemKey, '_src', src);
+        }});
+      }
+    }
+
+    _formatLabel(images,str,role) {
+      str = str || "(ไม่มีชื่อ)";
+      return role == 'gallery'
+        ? (images ? "×" + Object.entries(images).length : '') +" "+ str
+        : str;
+    }
+
+    _formatRoleIcon(role) {
+      return MGIconForRole(role);
+    }
+
+    _indexItem(itemKey) {
+      for (let i = 0, data; data = this.itemList[i]; ++i) {
+        if (data.key == itemKey) {
+          return i;
+        }
+      }
+      return -1;
+    }
+
+    _setPhotoKeyProperty(key,prop,val) {
+      let idx = this._indexItem(key);
+      if (idx > -1) {
+        this.itemList[idx][prop] = val;
+        this.notifyPath(['itemList',idx,prop]);
+      }
+    }
+
+    _onThumbnailClick(e) {
+      this.set('itemKey',e.model.item.key);
+    }
+
+    _onSelectedItemType(e) {
+      console.log("Not yet implemented. Should display only ->", e.model.item.name);
+    }
+
+    _computeSelectEditor(newRole) {
+      let newEditor = this.$[newRole+'-editor'];
+
+      if (this.editor && this.editor !== newEditor) {
+        this.editor.set('itemKey',null);
+      }
+
+      return newEditor;
+    }
+
+    _onNewItem(e) {
+      this._closeSubmenu(e);
+      this.set('itemRole',e.model.item.name);
+      this.set('itemKey',this.editor.newItem());
+    }
+
     _routeChanged(route) {
       if (route.prefix == '/user/items') {
         /* Checks if it was editing an item, set the URL back to the item */
@@ -526,15 +535,6 @@
           this.set('route.path', key);
         }
       }
-    }
-
-    _routeDataItemKeyChanged(key) {
-      this.set('itemKey', key);
-    }
-
-    disconnectedCallback() {
-      delete this.newItemMenu.target;
-      super.disconnectedCallback();
     }
 
     _closeSubmenu(e) {
