@@ -57,18 +57,17 @@
       transition: padding-top 0.5s;
       /*min-height: calc(100vh - 145px);*/
       /* 5px wider than height to prevent layout resetting due to scrollbar on/off */
-      --app-primary-color: #213; /*sienna;*/
-      --app-secondary-color: #757575;
-      --app-accent-color: #172C50;
-      --app-shadow-color: rgba(57,27,56,0.3);
-      --disabled-text-color: var(--app-shadow-color);
+      --booed-primary-color: #213; /*sienna;*/
+      --booed-secondary-color: #757575;
+      --booed-accent-color: #172C50;
+      --booed-shadow-color: rgba(57,27,56,0.3);
 
-      --booed-header-background: white;/*rgba(255,250,250,0.95);var(--app-accent-color);*/ /*#f4eed7;*/
+      --booed-header-background: white;/*rgba(255,250,250,0.95);var(--booed-accent-color);*/ /*#f4eed7;*/
       --booed-contents-background: var(--booed-header-background);
       --booed-menu-color: salmon;
       --booed-outer-color: #f9f6f6;
 /*        --booed-menu-focus-color: tomato;*/
-      --booed-menu-focus-color: var(--app-primary-color);
+      --booed-menu-focus-color: var(--booed-primary-color);
       --booed-title-height: 35px;
       --booed-menu-height: 30px;
       --booed-header-height: 65px;
@@ -79,12 +78,15 @@
         font-family: 'Mitr', sans-serif;
         font-size: 16px;
       };
+
+      --disabled-text-color: var(--booed-shadow-color);
+
       --primary-text-color: black;
-      --paper-button-ink-color: var(--app-accent-color);
-      --paper-spinner-color: var(--app-accent-color);
+      --paper-button-ink-color: var(--booed-accent-color);
+      --paper-spinner-color: var(--booed-accent-color);
       -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 /*        padding-top: calc(var(--booed-header-height) + var(--booed-title-height) + var(--booed-menu-height) + 50px);*/
-      color: var(--app-primary-color);
+      color: var(--booed-primary-color);
       background-color: var(--booed-contents-background);
       padding-top: 100px;
     }
@@ -119,7 +121,7 @@
       z-index: 1;
 
       background-color: var(--booed-outer-color);
-      box-shadow: inset -1px -1px 6px -3px var(--app-shadow-color);
+      box-shadow: inset -1px -1px 6px -3px var(--booed-shadow-color);
       border-radius: 0 0px 10px 0;
 
     }
@@ -231,7 +233,7 @@
 
     .tab-icon {
       margin-right:8px;
-      /*--iron-icon-fill-color: var(--app-accent-color);*/
+      /*--iron-icon-fill-color: var(--booed-accent-color);*/
       --iron-icon-fill-color: tomato;
     }
 
@@ -324,7 +326,7 @@
       right: 0;
       height: 34px;
       position: fixed;
-      --iron-icon-fill-color: var(--app-primary-color);
+      --iron-icon-fill-color: var(--booed-primary-color);
       @apply --layout-vertical;
       user-select: none;
     }
@@ -337,12 +339,12 @@
 
     .footer {
       height: 24px;
-      box-shadow: inset 0px 5px 6px -3px var(--app-shadow-color);
+      box-shadow: inset 0px 5px 6px -3px var(--booed-shadow-color);
       background-color: var(--booed-outer-color);
     }
 
     .footer a {
-      color: var(--app-primary-color);
+      color: var(--booed-primary-color);
       padding: 0 5px;
       text-decoration: none;
       border-radius: 0 0 5px 5px;
@@ -777,13 +779,6 @@ class MGApp extends Polymer.Element {
   _openProfile(e) {
     this.showPanel = false;
     this.set('route.path','user');
-  }
-
-  _arraySortedByKeys(obj) {
-    if (obj) {
-      return Object.values(obj).sort(function(a,b){ return a.$key - b.$key});
-    }
-    return [];
   }
 
   _routePageChanged(page) {
