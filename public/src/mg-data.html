@@ -182,11 +182,39 @@ var MHA = {
   },
 
   setItem: function(itemKey, itemData, sync) {
-    let registerData = this.utils.deepSet(MHA.data, 'items.'+itemKey, itemData, true);
-    if (sync && this.AU.currentUser && registerData) {
-      this.DB.ref('home').child(this.AU.currentUser.uid).update(registerData, error => {
-        console.log('Synced.',registerData);
-      });
+    if (sync) {
+      console.log(itemData);
+      let registerData;
+      let syncFunc = (path,value) => {
+
+        if(path.slice(-1) == '$' || typeof value === 'undefined') {
+          return;
+        }
+
+        if (value === null || Array.isArray(value) || typeof value !== 'object') {
+
+          if (!registerData) {
+            registerData = {[path.split('.').join('/')]: value};
+          } else {
+            registerData[path.split('.').join('/')] = value;
+          }
+
+          return value;
+        }
+        return syncFunc;
+      };
+
+      this.utils.deepSet(MHA.data, 'items.'+itemKey, itemData, syncFunc('items.'+itemKey, itemData));
+
+      console.log(registerData);
+      if (this.AU.currentUser && registerData) {
+        this.DB.ref('home').child(this.AU.currentUser.uid).update(registerData, error => {
+          console.log('Synced.',registerData);
+        });
+      }
+
+    } else {
+      this.utils.deepSet(MHA.data, 'items.'+itemKey, itemData);
     }
   },
 
@@ -230,51 +258,40 @@ var MHA = {
      * To delete a deep property, set null as the counter-value
      * in the structure of the object argument.
      *
-     * sync : sync database on paths not including $  as keys including $
-     * are only used for UI)
+     * replacer : A callback that can be optionally specified to intercept
+     * the given values. Must be the value for leaf nodes/values.
      */
-    deepSet(polymerElement, path, object, sync) {
-      let ret;
-      if (typeof object !== 'object') {
-        if (sync && typeof object !== 'undefined') {ret = {[path.split('.').join('/')]:object};}
-        polymerElement.set(path, object);
-      } else if (object === null) {
-        /* XXX May be it will also perform a delete afterward */
-        if (sync) {ret = {[path.split('.').join('/')]:null};}
-        polymerElement.set(path, null);
-      } else if (Array.isArray(object)) {
+    deepSet(polymerElement, path, value, replacer) {
+      if (typeof value === 'undefined') {
+        return;
+      }
+
+      if (replacer && typeof replacer != 'function') {
+        value = replacer;
+      }
+
+      if (Array.isArray(value)) {
+
         /* Handle scalar array */
         let old = polymerElement.get(path);
         if (!Array.isArray(old)
-        || old.length != object.length
-        || !old.every((v,i) => v === object[i])) {
+        || old.length != value.length
+        || !old.every((v,i) => v === value[i])) {
           /* Only set if not equal */
-          if (sync) {
-            if (ret) { ret[path.split('.').join('/')] = object; }
-            else { ret = {[path.split('.').join('/')]: object}; }
-          }
-          polymerElement.set(path, object);
+          polymerElement.set(path, value);
         }
+      } else if (typeof value !== 'object' || value === null) {
+          polymerElement.set(path, value);
       } else {
         if (typeof polymerElement.get(path) !== 'object') {
           /* Overwrite non-object and to create a readable placeholder */
           polymerElement.set(path, {});
         }
-        Object.keys(object).forEach(key => {
-          let childRet = this.deepSet(polymerElement, path+'.'+key, object[key], key.includes('$') ? false : sync);
-          if (sync && childRet) {
-            Object.assign(ret = ret || {},childRet);
-          }
+        Object.keys(value).forEach(key => {
+          this.deepSet(polymerElement, path+'.'+key, value[key], replacer ? replacer(path+'.'+key,value[key]) : null);
         });
       }
 
-      /*
-      MHA._logDebouncer = Polymer.Debouncer.debounce(MHA._logDebouncer,
-        Polymer.Async.timeOut.after(500), () => {
-          console.log(MHA.items)
-        });
-      */
-      return ret;
     },
   },
 };
