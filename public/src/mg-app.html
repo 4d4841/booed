@@ -690,8 +690,10 @@ class MGApp extends Polymer.Element {
   constructor() {
     super();
     if (MHA_INITIALIZED) {
-      console.trace();
-      console.warn('Initialized');
+      console.warn('App was already initialized but here it got initialized again.');
+      console.warn('Some 404 imports may have triggered this part of code.');
+      console.warn('Find and kill it now!');
+      console.warn('Repeat. Find and kill it now!');
       return;
     }
     MHA_INITIALIZED = true;

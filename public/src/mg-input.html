@@ -114,14 +114,13 @@ class MGInput extends Polymer.Element {
     });
 
     if (!MeasureContext) {
-       let px16 = getComputedStyle(document.body).getPropertyValue('--paper-font-subhead_-_font-size');
-       let px12 = getComputedStyle(document.body).getPropertyValue('--paper-font-caption_-_font-size');
-       console.log(px16,px12);
+       let labelFontSize = getComputedStyle(document.body).getPropertyValue('--paper-font-subhead_-_font-size');
+       let floatFontSize = getComputedStyle(document.body).getPropertyValue('--paper-font-caption_-_font-size');
 
        MeasureContext = document.createElement("canvas").getContext("2d");
-       MeasureContext['font'] = "16px Roboto, Noto, sans-serif";
+       MeasureContext['font'] = `${labelFontSize} Roboto, Noto, sans-serif`;
        MeasureContext2 = document.createElement("canvas").getContext("2d");
-       MeasureContext2['font'] = "12px Roboto, Noto, sans-serif";
+       MeasureContext2['font'] = `${floatFontSize} Roboto, Noto, sans-serif`;
     }
   }
 
