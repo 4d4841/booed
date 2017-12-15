@@ -58,12 +58,11 @@
 
     </div>
 
-    <div id="variant-editor" class="horizontal layout">
-      <mg-variant-editor
-        menu="[[variantMenu]]"
-        variant="{{variant}}"
-      ></mg-variant-editor>
-    </div>
+    <mg-variant-editor
+      id="variant-editor"
+      menu="[[variantMenu]]"
+      variant="{{variant}}"
+    ></mg-variant-editor>
 
     <!--
   <iron-selector
@@ -137,18 +136,20 @@
     ]}
 
     _variantChanges(changes) {
-      console.log(changes);
       /*
       MHA.setItem(this.itemKey, {variant: this.variant}, true);
       */
-      MHA.setItem(this.itemKey, {variant: this.variant});
+      this.set('variant.data',this.itemName);
+      MHA.setItem(this.itemKey, {variant: this.variant}, true);
     }
 
     _itemKeyChanged(itemKey) {
       super._itemKeyChanged(itemKey);
+      if (!itemKey) return;
+
       /*
       this.set('variant', MHA.getItem({[itemKey]:{variant:null}}) || {
-        $key: itemKey,
+        key$: itemKey,
       });
       */
     }
@@ -163,6 +164,17 @@
         case 'name': {
           this.set('itemName', value);
         } break;
+        case 'variant': {
+          path = path.slice(2);
+          switch(path.length) {
+            case 1: {
+              this.set(path,value);
+            } break;
+            default: {
+              this.notifyPath(path,value);
+            } break;
+          }
+        }
       }
     }
 

@@ -46,12 +46,30 @@
     border-radius: 5px;
   }
 
+  #data-container {
+    @apply --paper-font-caption;
+    border-bottom: 1px dotted var(--booed-shadow-color);
+  }
+
+  #data-container iron-icon {
+    --iron-icon-height: 14px;
+  }
+
   </style>
     </custom-style>
 
     <div class="vertical layout">
   <div id="variants-container" class="paper-material vertical layout start-justified" elevation="1">
 
+    <template is="dom-if" if="{{variant.data}}">
+      <div id="data-container" class="horizontal layout center">
+        [[variant.data]]
+        <template is="dom-if" if="{{variant.variants}}">
+          <iron-icon icon="chevron-right"></iron-icon>
+          [[variant.type]]
+        </template>
+      </div>
+    </template>
     <!-- Type Selector -->
       <template is="dom-if" if="{{variantsDataList.length}}">
     <div class="horizontal layout">
@@ -132,7 +150,7 @@
       ></paper-icon-button>
 
       <paper-icon-button
-        icon="booed:duplicate-cell"
+        icon="booed:duplicate-selection"
         on-click="_onDuplicateSelection"
         disabled="[[!selectedVariantCell]]"
       ></paper-icon-button>
@@ -150,6 +168,7 @@
     <mg-variant-editor
       menu="[[menu]]"
       variant="{{selectedSubvariant}}"
+      depth="[[_deeper(depth)]]"
     ></mg-variant-editor>
   </template>
 
@@ -179,6 +198,7 @@ class MGVariantsEditor extends Polymer.Element {
 
     selectedTypeDef: {
       type: Object,
+      value: function(){return {};},
     },
     menu: {
       type: Object,
@@ -194,13 +214,46 @@ class MGVariantsEditor extends Polymer.Element {
       observer: '_selectedVariantCellChanged',
     },
 
+    /* debugging */
+    depth: {
+      value: 0,
+    },
   }}
+
+  _deeper(depth) {
+    return depth + 1;
+  }
 
   static get observers() { return [
     '_subvariantsChanged(selectedSubvariant.variants)',
     '_selectedTypeDefChanged(selectedTypeDef.name,selectedTypeDef.custom)',
-    '_variantDataListChanged(variantsDataList.splices)'
+    '_variantDataListChanged(variantsDataList.splices)',
+    '_variantTypeChanged(variant.type)',
+    '_variantsChanged(variant.variants)',
+    '_variantsItemsChanged(variant.variants.*)',
   ]}
+
+  _variantChanged(newVariant) {
+    this.$['variant-selector'].select(null);
+    this.splice('variantsDataList',0,this.variantsDataList.length);
+
+    if (newVariant) {
+      if (newVariant.variants) {
+        for(let vkey in newVariant.variants){
+          this.addVariantData(vkey, newVariant.variants[vkey]);
+        }
+      }
+      if (newVariant.type) {
+        let nc = newVariant.type.split(':');
+        this.set('selectedTypeDef', {name:nc[0], custom:nc[1]});
+      }
+    }
+
+    /*
+      let nc = (newVariant.type||"custom:").split(':');
+      this.set('selectedTypeDef',{name:nc[0], custom:nc[1]});
+    */
+  }
 
   _computeType(name,custom) {
     if (name == 'color' || name =='size') {
@@ -209,15 +262,36 @@ class MGVariantsEditor extends Polymer.Element {
     return name + (custom ? ':'+custom : '');
   }
 
+  _variantTypeChanged(newType,oldType) {
+    if (newType) {
+      let nc = newType.split(':');
+      this.set('selectedTypeDef', {name:nc[0], custom:nc[1]});
+    }
+  }
+
   _selectedTypeDefChanged(name,custom) {
     if (name == 'custom') {
       this.set('variant.type','custom:'+(custom||''));
     } else if (name == 'price') {
       this.set('variant.type','price:'+(custom||''));
-    } else {
+    } else if (name) {
       this.set('variant.type',name);
     }
   }
+
+  _variantsItemsChanged(changes) {
+    for (let key in this.variant.variants) {
+      this.addVariantData(key, this.variant.variants[key]);
+    }
+  }
+
+  _variantsChanged(variants) {
+    this.splice('variantsDataList',0,this.variantsDataList.length);
+    for (let key in variants) {
+      this.addVariantData(key, this.variant.variants[key]);
+    }
+  }
+
 
   _subvariantsChanged(variants) {
     if (variants) {
@@ -236,8 +310,8 @@ class MGVariantsEditor extends Polymer.Element {
       this.set('variant.variants',{});
     }
 
-    this.set(['variant.variants',vkey],{$key:vkey});
-    this.addVariantData(this.variant.variants[vkey]);
+    this.set(['variant.variants',vkey],{key$:vkey, type:'custom:'});
+    //this.addVariantData(this.variant.variants[vkey]);
     return vkey;
   }
 
@@ -246,12 +320,12 @@ class MGVariantsEditor extends Polymer.Element {
       splices.indexSplices.forEach(s => {
         s.removed.forEach(v => {
           //this.variantsDataMap.delete(so);
-          this.unlinkPaths('variant.variants.'+v.$key);
+          this.unlinkPaths('variant.variants.'+v.key$);
         });
         /* re-link all from the changed index */
         for(let i = s.index,so; so = s.object[i]; ++i) {
           //this.variantsDataMap.set(so,i);
-          this.linkPaths('variant.variants.'+so.$key,'variantsDataList.'+i);
+          this.linkPaths('variant.variants.'+so.key$,'variantsDataList.'+i);
           if (so == this.selectedSubvariant) {
             this.linkPaths('variantsDataList.'+i,'selectedSubvariant');
           }
@@ -267,7 +341,7 @@ class MGVariantsEditor extends Polymer.Element {
   _selectedVariantCellChanged(newElement,oldElement) {
     if (oldElement) {
       //this.unlinkPaths('variantsDataList.'+this.variantsDataMap.get(oldElement.variant));
-      this.unlinkPaths(this.__dataLinkedPaths['variant.variants.'+oldElement.variant.$key]);
+      this.unlinkPaths(this.__dataLinkedPaths['variant.variants.'+oldElement.variant.key$]);
     }
 
     this.set('selectedSubvariant',null);
@@ -275,31 +349,19 @@ class MGVariantsEditor extends Polymer.Element {
       this.set('selectedSubvariant', newElement.variant);
 
       //this.linkPaths('variantsDataList.'+this.variantsDataMap.get(newElement.variant), 'selectedSubvariant');
-      this.linkPaths(this.__dataLinkedPaths['variant.variants.'+newElement.variant.$key],'selectedSubvariant');
+      this.linkPaths(this.__dataLinkedPaths['variant.variants.'+newElement.variant.key$],'selectedSubvariant');
     }
   }
 
-  _variantChanged(newVariant) {
-
-    this.$['variant-selector'].select(null);
-    this.set('variantsDataList',[]);
-
-    if (newVariant) {
-      let nc = (newVariant.type||"price:thb").split(':');
-      this.set('selectedTypeDef',{name:nc[0], custom:nc[1]});
-      for(let vkey in newVariant.variants){
-        this.addVariantData(newVariant.variants[vkey]);
-      }
+  addVariantData(key,variant) {
+    if(!this.__dataLinkedPaths || !this.__dataLinkedPaths['variant.variants.'+key]) {
+      variant.key$ = key;
+      this.push('variantsDataList', variant);
     }
   }
 
-  addVariantData(variant) {
-    let index = -1 +
-    this.push('variantsDataList', variant);
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
+  _onDuplicateSelection(e) {
+    let vkey = this._onAddVariant(e);
   }
 
   testEqual(a,b) {
@@ -310,9 +372,6 @@ class MGVariantsEditor extends Polymer.Element {
   _menuChanged(newMenu,oldMenu) {
   }
 
-  _onDuplicateSelection(e) {
-    let vkey = this._onAddVariant(e);
-  }
 }
 
 customElements.define(MGVariantsEditor.is, MGVariantsEditor);
