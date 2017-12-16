@@ -337,9 +337,9 @@ class MGVariantsEditor extends Polymer.Element {
 
   _onAddVariant(e){
     if (!this.variant) {
-      this.set('variant',{});
+      this.set('variant',{type:'custom:'});
     }
-    /* XXX */
+    /* XXX should get key from a better path */
     let vkey = MHA.DB.ref().push().key;
     let variants = this.variant.variants;
     if (!variants) {
