@@ -183,7 +183,6 @@ var MHA = {
 
   setItem: function(itemKey, itemData, sync) {
     if (sync) {
-      console.log(itemData);
       let registerData;
       let syncFunc = (path,value) => {
 
@@ -193,10 +192,12 @@ var MHA = {
 
         if (value === null || Array.isArray(value) || typeof value !== 'object') {
 
-          if (!registerData) {
-            registerData = {[path.split('.').join('/')]: value};
-          } else {
-            registerData[path.split('.').join('/')] = value;
+          if (MHA.data.get(path) !== value) {
+            if (!registerData) {
+              registerData = {[path.split('.').join('/')]: value};
+            } else {
+              registerData[path.split('.').join('/')] = value;
+            }
           }
 
           return value;
@@ -206,7 +207,6 @@ var MHA = {
 
       this.utils.deepSet(MHA.data, 'items.'+itemKey, itemData, syncFunc('items.'+itemKey, itemData));
 
-      console.log(registerData);
       if (this.AU.currentUser && registerData) {
         this.DB.ref('home').child(this.AU.currentUser.uid).update(registerData, error => {
           console.log('Synced.',registerData);

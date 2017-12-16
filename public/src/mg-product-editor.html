@@ -139,24 +139,46 @@
       /*
       MHA.setItem(this.itemKey, {variant: this.variant}, true);
       */
-      this.set('variant.data',this.itemName);
-      MHA.setItem(this.itemKey, {role:'product', variant: this.variant}, true);
+      //console.log(changes);
+      //this.set('variant.data',this.itemName);
+      if (this.variant) {
+        MHA.setItem(this.itemKey, {role:'product', variant: this.variant}, true);
+      }
     }
 
     _itemKeyChanged(itemKey) {
+
       super._itemKeyChanged(itemKey);
-      if (!itemKey) return;
 
-      this.set('variant', MHA.getItem({[itemKey]:{variant:null}}) || {
-        key$: itemKey,
-      });
+      this.set('variant',null);
 
+      if (!itemKey) {
+        return;
+      }
+
+      let item = MHA.getItem({[itemKey]:null});
+      for(let prop in item) {
+        switch(prop) {
+          case '_uid':
+            break;
+          case 'cover':
+            this.set('itemCover',item.cover);
+            break;
+          case 'name':
+            this.set('itemName', item.name);
+            break;
+          case 'role':
+            console.assert('product' == item.role, "XXX");
+            break;
+          case 'variant': {
+            MHA.utils.deepSet(this,'variant',item.variant);
+          } break;
+        }
+      }
     }
 
     updateChanges(path,value) {
-      let itemKey = path[1];
-      let itemProperty = path[2];
-      switch(itemProperty) {
+      switch(path[0]) {
         case 'cover': {
           this.set('itemCover',value);
         } break;
@@ -164,7 +186,11 @@
           this.set('itemName', value);
         } break;
         case 'variant': {
-          path = path.slice(2);
+          /* XXX Try to bind mg-data maybe */
+          /* Call deepSet to generate a different copy of data from MHA.data
+          so it can track changes by comparing old-new value */
+          MHA.utils.deepSet(this,path.join('.'),value);
+          /* XXX Can't easily track by values if the data was changed and need to be synced.
           switch(path.length) {
             case 1: {
               this.set(path,value);
@@ -173,6 +199,7 @@
               this.notifyPath(path,value);
             } break;
           }
+          */
         }
       }
     }
