@@ -141,6 +141,16 @@
         </mg-variant-cell>
       </template>
     </iron-selector>
+    <template is="dom-if" if="{{_hasComment(variant.comment)}}">
+      <mg-input
+        label="คอมเม้นท์"
+        value="{{variant.comment}}"
+        min-width="150"
+      > <iron-icon icon="editor:mode-edit" slot="prefix"></iron-icon>
+      </mg-input>
+    </template>
+
+    <!-- Comment -->
 
     <!-- Foot Buttons -->
     <div class="horizontal layout center-justified">
@@ -154,6 +164,20 @@
         on-click="_onDuplicateSelection"
         disabled="[[!selectedVariantCell]]"
       ></paper-icon-button>
+
+        <template is="dom-if" if="{{!_hasComment(variant.comment)}}">
+      <paper-icon-button
+        icon="editor:mode-edit"
+        on-click="_onAddComment"
+      ></paper-icon-button>
+        </template>
+
+        <template is="dom-if" if="{{_hasComment(variant.comment)}}">
+      <paper-icon-button
+        icon="booed:comment-disabled"
+        on-click="_onDeleteComment"
+      ></paper-icon-button>
+        </template>
 
       <paper-icon-button
         icon="backspace"
@@ -297,6 +321,18 @@ class MGVariantsEditor extends Polymer.Element {
     if (variants) {
       this.selectedVariantCell.set('hasChildren', true);
     }
+  }
+
+  _hasComment(comment) {
+    return typeof comment === 'string' ? true : false;
+  }
+
+  _onAddComment(e){
+    this.set('variant.comment', '');
+  }
+
+  _onDeleteComment(e){
+    this.set('variant.comment', null);
   }
 
   _onAddVariant(e){

@@ -140,18 +140,17 @@
       MHA.setItem(this.itemKey, {variant: this.variant}, true);
       */
       this.set('variant.data',this.itemName);
-      MHA.setItem(this.itemKey, {variant: this.variant}, true);
+      MHA.setItem(this.itemKey, {role:'product', variant: this.variant}, true);
     }
 
     _itemKeyChanged(itemKey) {
       super._itemKeyChanged(itemKey);
       if (!itemKey) return;
 
-      /*
       this.set('variant', MHA.getItem({[itemKey]:{variant:null}}) || {
         key$: itemKey,
       });
-      */
+
     }
 
     updateChanges(path,value) {
