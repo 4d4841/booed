@@ -130,27 +130,29 @@
     <!-- Children List -->
     <iron-selector
       id="variant-selector"
+      attr-for-selected="name"
       selected-attribute="selected"
       selected-item="{{selectedVariantCell}}"
-      >
-      <template is="dom-repeat" items="{{variantsDataList}}">
-        <mg-variant-cell
-          variant-type="[[_computeType(selectedTypeDef.name,selectedTypeDef.custom)]]"
-          variant="{{item}}"
-          >
-        </mg-variant-cell>
-      </template>
+      selected="{{selectedName}}"
+      > <template is="dom-repeat" items="{{variantsDataList}}">
+      <mg-variant-cell
+        name="[[item.key$]]"
+        variant-type="[[_computeType(selectedTypeDef.name,selectedTypeDef.custom)]]"
+        variant="{{item}}"
+        selected-name="{{selectedName}}"
+      ></mg-variant-cell>
+        </template>
     </iron-selector>
-    <template is="dom-if" if="{{_hasComment(variant.comment)}}">
-      <mg-input
-        label="คอมเม้นท์"
-        value="{{variant.comment}}"
-        min-width="150"
-      > <iron-icon icon="editor:mode-edit" slot="prefix"></iron-icon>
-      </mg-input>
-    </template>
 
     <!-- Comment -->
+      <template is="dom-if" if="{{_hasComment(variant.comment)}}">
+    <mg-input
+      label="คอมเม้นท์"
+      value="{{variant.comment}}"
+      min-width="150"
+    > <iron-icon icon="editor:mode-edit" slot="prefix"></iron-icon>
+    </mg-input>
+      </template>
 
     <!-- Foot Buttons -->
     <div class="horizontal layout center-justified">
@@ -304,6 +306,7 @@ class MGVariantsEditor extends Polymer.Element {
   }
 
   _variantsItemsChanged(changes) {
+    console.log(changes);
     if (this.variant) {
       for (let key in this.variant.variants) {
         this.addVariantData(key, this.variant.variants[key]);
