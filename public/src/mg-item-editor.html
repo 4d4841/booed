@@ -32,7 +32,7 @@
     border-radius: 5px;
   }
 
-  :host([nokey]){
+  :host([empty]){
     display: none;
   }
 
@@ -75,7 +75,7 @@ MGItemEditor = class __MGItemEditor extends Polymer.Element {
   static get is() { return 'mg-item-editor'; }
 
   static get properties() { return {
-    nokey: {
+    empty: {
       type: Boolean,
       notify: true,
       reflectToAttribute: true,
@@ -143,7 +143,7 @@ MGItemEditor = class __MGItemEditor extends Polymer.Element {
   */
 
   _itemKeyChanged(itemKey) {
-    this.set('nokey',itemKey ? false : true);
+    this.set('empty',itemKey ? false : true);
     this.set('itemName',this.defaultName);
   }
 

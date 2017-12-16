@@ -39,9 +39,11 @@
     width: 37px;
   }
 
+  /*
   :host(:not(.iron-selected)) #input {
     pointer-events: none;
   }
+  */
 
   mg-color-picker {
     width: 40px;
@@ -56,7 +58,7 @@
     </custom-style>
 
     <template is="dom-if" if="[[isColor]]">
-  <mg-color-picker id="color-picker" value="{{variant.data}}" component-type="hsl">
+  <mg-color-picker id="color-picker" value="{{variant.value}}" component-type="hsl">
   </mg-color-picker>
     </template>
 
@@ -64,10 +66,11 @@
 
   <mg-input
     id="input"
-    value="{{variant.data}}"
+    value="{{variant.value}}"
     label="[[variantType]]"
     min-width="[[_computeInputWidth(variantType)]]"
     icon="[[_formatIconType(variantType)]]"
+    focused="{{selected}}"
   > <template is="dom-if" if="[[hasChildren]]">
       <iron-icon slot="suffix" style="color:tomato" icon="chevron-right"></iron-icon>
     </template>
@@ -92,7 +95,9 @@ class MGVariantCell extends Polymer.Element {
     selected: {
       type: Boolean,
       value: false,
-      observer: '_selectedChanged'
+      observer: '_selectedChanged',
+      notify: true,
+      reflectToAttribute: true,
     },
     hasChildren: {
       type: Boolean,
@@ -109,7 +114,8 @@ class MGVariantCell extends Polymer.Element {
 
   _selectedChanged(selected) {
     if (selected) {
-      this.$.input.focus();
+      console.log('selected',this.$.input.value);
+      //this.$.input.focus();
     }
   }
 

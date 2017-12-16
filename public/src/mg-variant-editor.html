@@ -46,12 +46,12 @@
     border-radius: 5px;
   }
 
-  #data-container {
+  #value-container {
     @apply --paper-font-caption;
     border-bottom: 1px dotted var(--booed-shadow-color);
   }
 
-  #data-container iron-icon {
+  #value-container iron-icon {
     --iron-icon-height: 14px;
   }
 
@@ -61,9 +61,9 @@
     <div class="vertical layout">
   <div id="variants-container" class="paper-material vertical layout start-justified" elevation="1">
 
-    <template is="dom-if" if="{{variant.data}}">
-      <div id="data-container" class="horizontal layout center">
-        [[variant.data]]
+    <template is="dom-if" if="{{variant.value}}">
+      <div id="value-container" class="horizontal layout center">
+        [[variant.value]]
         <template is="dom-if" if="{{variant.variants}}">
           <iron-icon icon="chevron-right"></iron-icon>
           [[variant.type]]
@@ -304,8 +304,10 @@ class MGVariantsEditor extends Polymer.Element {
   }
 
   _variantsItemsChanged(changes) {
-    for (let key in this.variant.variants) {
-      this.addVariantData(key, this.variant.variants[key]);
+    if (this.variant) {
+      for (let key in this.variant.variants) {
+        this.addVariantData(key, this.variant.variants[key]);
+      }
     }
   }
 
@@ -346,7 +348,7 @@ class MGVariantsEditor extends Polymer.Element {
       this.set('variant.variants',{});
     }
 
-    this.set(['variant.variants',vkey],{key$:vkey, type:'custom:'});
+    this.set(['variant.variants',vkey],{key$:vkey, type:'custom:'}); /* XXX custom: leaked into db even no use*/
     //this.addVariantData(this.variant.variants[vkey]);
     return vkey;
   }

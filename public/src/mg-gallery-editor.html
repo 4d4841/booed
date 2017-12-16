@@ -587,7 +587,6 @@
 
       if (!itemKey) return;
 
-      //let item = MHA.get(['items',itemKey]);
       let item = MHA.getItem({[itemKey]:null});
       for(let prop in item) {
         switch(prop) {
