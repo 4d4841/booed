@@ -64,15 +64,6 @@
       variant="{{variant}}"
     ></mg-variant-editor>
 
-    <!--
-  <iron-selector
-    id="field-selector"
-    selected="{{selectedImages}}"
-    multi>
-  </iron-selector
--->
-
-
   </div>
   <mg-gallery-editor
     id="gallery-editor"
@@ -139,10 +130,15 @@
       /*
       MHA.setItem(this.itemKey, {variant: this.variant}, true);
       */
-      //console.log(changes);
-      //this.set('variant.data',this.itemName);
+      //this.set('variant.value',this.itemName);
+
       if (this.variant) {
-        MHA.setItem(this.itemKey, {role:'product', variant: this.variant}, true);
+
+        let itemData = MHA.utils.deepStruct(changes.path,changes.value);
+        itemData.role = 'product';
+        MHA.setItem(this.itemKey, itemData, true);
+
+        //MHA.setItem(this.itemKey, {role:'product', variant: this.variant}, true);
       }
     }
 
@@ -150,7 +146,7 @@
 
       super._itemKeyChanged(itemKey);
 
-      this.set('variant',null);
+      this.set('variant',undefined);
 
       if (!itemKey) {
         return;

@@ -294,6 +294,18 @@ var MHA = {
       }
 
     },
+    deepStruct(path,value) {
+      let paths = Polymer.Path.split(path);
+      let tree = {};
+      let miner = tree;
+      while (paths.length > 1) {
+        miner[paths[0]] = {};
+        miner = miner[paths[0]];
+        paths.shift();
+      }
+      miner[paths[0]] = value;
+      return tree;
+    },
   },
 };
 
