@@ -283,7 +283,8 @@ var MHA = {
       } else if (typeof value !== 'object' || value === null) {
           polymerElement.set(path, value);
       } else {
-        if (typeof polymerElement.get(path) !== 'object') {
+        oldValue = polymerElement.get(path);
+        if (typeof oldValue !== 'object' || oldValue === null || Array.isArray(oldValue)) {
           /* Overwrite non-object and to create a readable placeholder */
           polymerElement.set(path, {});
         }
