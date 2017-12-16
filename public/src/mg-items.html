@@ -298,7 +298,7 @@
       let itemKey = path[1];
 
       if (this.editor && itemKey == this.editor.itemKey) {
-        this.editor.updateChanges(path,change.value);
+        this.editor.updateChanges(path.slice(2),change.value);
       }
 
       if (path.length == 3 && path[2] == 'cover') {

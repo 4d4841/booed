@@ -627,10 +627,7 @@
 
     /* Set image thumbnails from global notification */
     updateChanges(path,value) {
-      let itemKey = path[1];
-      let itemProperty = path[2];
-
-      switch(itemProperty) {
+      switch(path[0]) {
         case 'cover': {
           this.set('itemCover',value);
         } break;
@@ -638,16 +635,16 @@
           this.set('itemName', value);
         } break;
         case 'images': {
-          let imageKey = path[3];
+          let imageKey = path[1];
 
           switch(path.length) {
-            case 4: {
+            case 2: {
               this._indexImage(imageKey,null,cb => {
-                this.push('iconList', {item:itemKey, key:imageKey, role:'photo'});
+                this.push('iconList', {item:this.itemKey, key:imageKey, role:'photo'});
               });
             } break;
-            case 5: {
-              let imageProperty = path[4];
+            case 3: {
+              let imageProperty = path[2];
               this._indexImage(imageKey,idx => {
                 this.set(['iconList',idx,imageProperty], value);
               });
