@@ -107,25 +107,13 @@ class MGVariantCell extends Polymer.Element {
       type: Boolean,
       computed: '_computeIsColor(variantType)',
     },
-    /* XXX will switch to variant.select$ on a boring day */
-    selectedName: {
-      type: String,
-      notify: true,
-    },
   }}
 
   static get observers() { return [
   ]}
 
   _selectedChanged(selected) {
-    if (selected) {
-      /* tell selector to select this cell by name*/
-      this.set('selectedName', this.variant.key$);
-
-      //XXX Better use this one day. since we can observe selected state
-      //from above there's no need to use selectedName.
-      //this.set('variant.selected$', selected);
-    }
+    this.set('variant.selected$', selected);
   }
 
   _computeHasChildren(variants) {

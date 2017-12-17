@@ -132,14 +132,12 @@
       id="variant-selector"
       attr-for-selected="name"
       selected-attribute="selected"
-      selected-item="{{selectedVariantCell}}"
-      selected="{{selectedName}}"
+      selected="{{selectedKey}}"
       > <template is="dom-repeat" items="{{variantsDataList}}">
       <mg-variant-cell
         name="[[item.key$]]"
         variant-type="[[_computeType(selectedTypeDef.name,selectedTypeDef.custom)]]"
         variant="{{item}}"
-        selected-name="{{selectedName}}"
       ></mg-variant-cell>
         </template>
     </iron-selector>
@@ -164,7 +162,7 @@
       <paper-icon-button
         icon="booed:duplicate-selection"
         on-click="_onDuplicateSelection"
-        disabled="[[!selectedVariantCell]]"
+        disabled="[[!selectedKey]]"
       ></paper-icon-button>
 
         <template is="dom-if" if="{{!_hasComment(variant.comment)}}">
@@ -234,10 +232,15 @@ class MGVariantsEditor extends Polymer.Element {
     selectedSubvariant: {
       type: Object,
     },
-    selectedVariantCell: {
-      type: Object,
-      value: null,
-      observer: '_selectedVariantCellChanged',
+
+    selectedVariants: {
+      type: Array,
+      value: function(){return {};},
+    },
+
+    selectedKey: {
+      type: String,
+      observer: '_selectedKeyChanged',
     },
 
     /* debugging */
@@ -251,7 +254,6 @@ class MGVariantsEditor extends Polymer.Element {
   }
 
   static get observers() { return [
-    '_subvariantsChanged(selectedSubvariant.variants)',
     '_selectedTypeDefChanged(selectedTypeDef.name,selectedTypeDef.custom)',
     '_variantDataListChanged(variantsDataList.splices)',
     '_variantTypeChanged(variant.type)',
@@ -260,7 +262,7 @@ class MGVariantsEditor extends Polymer.Element {
   ]}
 
   _variantChanged(newVariant) {
-    this.$['variant-selector'].select(null);
+    this.set('selectedKey',null);
     this.splice('variantsDataList',0,this.variantsDataList.length);
 
     if (newVariant) {
@@ -305,26 +307,54 @@ class MGVariantsEditor extends Polymer.Element {
     }
   }
 
+  /* An EXPERIMENT to rely on linked paths defined within __dataLinkedPaths.
+   * This is going to use it instead of using indexOf() or observed selected index.
+   * If one day this will broken it may then switch back to the variantsDataMap version.
+   */
+  _selectedKeyChanged(key,oldKey) {
+    if (oldKey) {
+      //this.unlinkPaths('variantsDataList.'+this.variantsDataMap.get(this.variant.variants[oldKey]));
+      this.unlinkPaths(this.__dataLinkedPaths['variant.variants.'+oldKey]);
+    }
+
+    this.set('selectedSubvariant',null);
+
+    if (key) {
+      this.set('selectedSubvariant', this.variant.variants[key]);
+
+      //this.linkPaths('variantsDataList.'+this.variantsDataMap.get(this.variant.variants[key]), 'selectedSubvariant');
+      this.linkPaths(this.__dataLinkedPaths['variant.variants.'+key],'selectedSubvariant');
+    }
+  }
+
   _variantsItemsChanged(changes) {
-    console.log(changes);
     if (this.variant) {
       for (let key in this.variant.variants) {
         this.addVariantData(key, this.variant.variants[key]);
       }
     }
+
+    if (changes) {
+      /*
+      for (let key in this.variant.variants) {
+      }
+      */
+
+      if (changes.path.length == 47 && changes.path.endsWith('.selected$')) { /* 'variant.variants.${key}.selected$' */
+        let key = changes.path.slice(17,37);
+        if (changes.value) {
+          this.set('selectedKey', key);
+        }
+      }
+
+    }
+
   }
 
   _variantsChanged(variants) {
     this.splice('variantsDataList',0,this.variantsDataList.length);
     for (let key in variants) {
       this.addVariantData(key, this.variant.variants[key]);
-    }
-  }
-
-
-  _subvariantsChanged(variants) {
-    if (variants) {
-      this.selectedVariantCell.set('hasChildren', true);
     }
   }
 
@@ -352,7 +382,7 @@ class MGVariantsEditor extends Polymer.Element {
     }
 
     this.set(['variant.variants',vkey],{key$:vkey, type:'custom:'}); /* XXX custom: leaked into db even no use*/
-    //this.addVariantData(this.variant.variants[vkey]);
+    this.set('selectedKey',vkey);
     return vkey;
   }
 
@@ -360,7 +390,7 @@ class MGVariantsEditor extends Polymer.Element {
     if (splices) {
       splices.indexSplices.forEach(s => {
         s.removed.forEach(v => {
-          //this.variantsDataMap.delete(so);
+          //this.variantsDataMap.delete(v);
           this.unlinkPaths('variant.variants.'+v.key$);
         });
         /* re-link all from the changed index */
@@ -372,25 +402,6 @@ class MGVariantsEditor extends Polymer.Element {
           }
         }
       });
-    }
-  }
-
-  /* An EXPERIMENT to rely on linked paths defined within __dataLinkedPaths.
-   * This is going to use it instead of using indexOf() or observed selected index.
-   * If one day this will broken it may then switch back to the variantsDataMap version.
-   */
-  _selectedVariantCellChanged(newElement,oldElement) {
-    if (oldElement) {
-      //this.unlinkPaths('variantsDataList.'+this.variantsDataMap.get(oldElement.variant));
-      this.unlinkPaths(this.__dataLinkedPaths['variant.variants.'+oldElement.variant.key$]);
-    }
-
-    this.set('selectedSubvariant',null);
-    if (newElement) {
-      this.set('selectedSubvariant', newElement.variant);
-
-      //this.linkPaths('variantsDataList.'+this.variantsDataMap.get(newElement.variant), 'selectedSubvariant');
-      this.linkPaths(this.__dataLinkedPaths['variant.variants.'+newElement.variant.key$],'selectedSubvariant');
     }
   }
 
