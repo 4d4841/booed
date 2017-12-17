@@ -209,6 +209,11 @@ class MGVariantsEditor extends Polymer.Element {
     },
     */
 
+    /* Paths-linking note: The element maintain 1:1 linkPaths from
+     * variant.variants (object) <= variantsDataList (array) and
+     * variantsDataList (current selected item) <= selectedSubvariant
+     * to route all changes from nested children up the product-editor.
+     */
     variantsDataList: {
       type: Array,
       value: function(){return [];},
@@ -268,7 +273,7 @@ class MGVariantsEditor extends Polymer.Element {
     if (newVariant) {
       if (newVariant.variants) {
         for(let vkey in newVariant.variants){
-          this.addVariantData(vkey, newVariant.variants[vkey]);
+          this._addVariantData(vkey, newVariant.variants[vkey]);
         }
       }
       if (newVariant.type) {
@@ -276,11 +281,6 @@ class MGVariantsEditor extends Polymer.Element {
         this.set('selectedTypeDef', {name:nc[0], custom:nc[1]});
       }
     }
-
-    /*
-      let nc = (newVariant.type||"custom:").split(':');
-      this.set('selectedTypeDef',{name:nc[0], custom:nc[1]});
-    */
   }
 
   _computeType(name,custom) {
@@ -314,6 +314,8 @@ class MGVariantsEditor extends Polymer.Element {
   _selectedKeyChanged(key,oldKey) {
     if (oldKey) {
       //this.unlinkPaths('variantsDataList.'+this.variantsDataMap.get(this.variant.variants[oldKey]));
+
+      /* Unlink old selectedSubvariant */
       this.unlinkPaths(this.__dataLinkedPaths['variant.variants.'+oldKey]);
     }
 
@@ -323,38 +325,85 @@ class MGVariantsEditor extends Polymer.Element {
       this.set('selectedSubvariant', this.variant.variants[key]);
 
       //this.linkPaths('variantsDataList.'+this.variantsDataMap.get(this.variant.variants[key]), 'selectedSubvariant');
+
+      /* Link selectedSubvariant to the indexed variantsDataList entry pointing to the new current key */
       this.linkPaths(this.__dataLinkedPaths['variant.variants.'+key],'selectedSubvariant');
     }
   }
 
-  _variantsItemsChanged(changes) {
-    if (this.variant) {
-      for (let key in this.variant.variants) {
-        this.addVariantData(key, this.variant.variants[key]);
-      }
+  _variantDataListChanged(splices) {
+    if (splices) {
+      splices.indexSplices.forEach(s => {
+        s.removed.forEach(v => {
+          //this.variantsDataMap.delete(v);
+
+          if (v === this.selectedSubvariant) {
+            console.assert(this.__dataLinkedPaths[this.__dataLinkedPaths['variant.variants.'+v.key$]] == 'selectedSubvariant', 'XXX');
+            this.unlinkPaths(this.__dataLinkedPaths['variant.variants.'+v.key$]);
+            this.set('selectedSubvariant', null);
+          }
+
+          this.unlinkPaths('variant.variants.'+v.key$);
+
+        });
+        /* Re-link all from the changed index */
+        for(let i = s.index,so; so = s.object[i]; ++i) {
+          //this.variantsDataMap.set(so,i);
+          this.linkPaths('variant.variants.'+so.key$,'variantsDataList.'+i);
+          if (so === this.selectedSubvariant) {
+            this.linkPaths('variantsDataList.'+i,'selectedSubvariant');
+          } else {
+            /* Clear any possible selectedSubvariant's linked path */
+            this.unlinkPaths('variantsDataList.'+i);
+          }
+        }
+
+        console.log(this.depth, this.__dataLinkedPaths);
+      });
     }
+  }
+
+  _addVariantData(key,variant) {
+    if(!this.__dataLinkedPaths || !this.__dataLinkedPaths['variant.variants.'+key]) {
+      variant.key$ = key;
+      this.push('variantsDataList', variant);
+    }
+  }
+
+  _variantsItemsChanged(changes) {
 
     if (changes) {
-      /*
-      for (let key in this.variant.variants) {
-      }
-      */
+      /* changes.path : 'variant.variants.${key}.selected$'
+       *
+       * "variant.variants." : 17
+       * ${key} : 20
+       * ".selected$" : 10
+       */
 
-      if (changes.path.length == 47 && changes.path.endsWith('.selected$')) { /* 'variant.variants.${key}.selected$' */
-        let key = changes.path.slice(17,37);
+      if (changes.path.length == 47 && changes.path.endsWith('.selected$')) {
+        /* variant.variants.${key}.selected$ */
+        /* Selected status set by cells */
         if (changes.value) {
-          this.set('selectedKey', key);
+          this.set('selectedKey', changes.path.slice(17,37));
+        }
+      } else if (changes.path.length == 37) {
+        /* variant.variants.${key} */
+        if (changes.value === null) {
+          this.splice('variantsDataList',this.__dataLinkedPaths[changes.path].split('.').pop(),1);
+        } else if (!this.__dataLinkedPaths || !this.__dataLinkedPaths[changes.path]) {
+          let key = changes.path.slice(17);
+          let variant = this.variant.variants[key];
+          variant.key$ = key;
+          this.push('variantsDataList', variant);
         }
       }
-
     }
-
   }
 
   _variantsChanged(variants) {
     this.splice('variantsDataList',0,this.variantsDataList.length);
     for (let key in variants) {
-      this.addVariantData(key, this.variant.variants[key]);
+      this._addVariantData(key, this.variant.variants[key]);
     }
   }
 
@@ -368,6 +417,14 @@ class MGVariantsEditor extends Polymer.Element {
 
   _onDeleteComment(e){
     this.set('variant.comment', null);
+  }
+
+  _onBackspace(e) {
+    if ( this.selectedKey ) {
+      this.set('variant.variants.'+this.selectedKey, null);
+    } else {
+
+    }
   }
 
   _onAddVariant(e){
@@ -384,32 +441,6 @@ class MGVariantsEditor extends Polymer.Element {
     this.set(['variant.variants',vkey],{key$:vkey, type:'custom:'}); /* XXX custom: leaked into db even no use*/
     this.set('selectedKey',vkey);
     return vkey;
-  }
-
-  _variantDataListChanged(splices) {
-    if (splices) {
-      splices.indexSplices.forEach(s => {
-        s.removed.forEach(v => {
-          //this.variantsDataMap.delete(v);
-          this.unlinkPaths('variant.variants.'+v.key$);
-        });
-        /* re-link all from the changed index */
-        for(let i = s.index,so; so = s.object[i]; ++i) {
-          //this.variantsDataMap.set(so,i);
-          this.linkPaths('variant.variants.'+so.key$,'variantsDataList.'+i);
-          if (so == this.selectedSubvariant) {
-            this.linkPaths('variantsDataList.'+i,'selectedSubvariant');
-          }
-        }
-      });
-    }
-  }
-
-  addVariantData(key,variant) {
-    if(!this.__dataLinkedPaths || !this.__dataLinkedPaths['variant.variants.'+key]) {
-      variant.key$ = key;
-      this.push('variantsDataList', variant);
-    }
   }
 
   _onDuplicateSelection(e) {
