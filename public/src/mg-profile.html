@@ -375,7 +375,7 @@
         <div
           on-click="_toggleInfo"
           class="main-info center enter vertical end-justified layout"
-          hidden="[[_shouldHideInfoPanel(me.user.email,state)]]"
+          hidden$="[[_shouldHideInfoPanel(me.user.email,state)]]"
         > <iron-collapse opened="[[expand]]">
 
             <p style="font-size:13px; padding: 0 10px 0 10px;text-align:justify;text-align-last:center">
