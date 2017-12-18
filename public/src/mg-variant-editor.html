@@ -160,24 +160,21 @@
       ></paper-icon-button>
 
       <paper-icon-button
+        icon="remove"
+        on-click="_onRemoveVariant"
+        disabled="[[!selectedKey]]"
+      ></paper-icon-button>
+
+      <paper-icon-button
         icon="booed:duplicate-selection"
         on-click="_onDuplicateSelection"
         disabled="[[!selectedKey]]"
       ></paper-icon-button>
 
-        <template is="dom-if" if="{{!_hasComment(variant.comment)}}">
       <paper-icon-button
-        icon="editor:mode-edit"
-        on-click="_onAddComment"
+        icon="{{_formatIconComment(variant.comment)}}"
+        on-click="_onToggleComment"
       ></paper-icon-button>
-        </template>
-
-        <template is="dom-if" if="{{_hasComment(variant.comment)}}">
-      <paper-icon-button
-        icon="booed:comment-disabled"
-        on-click="_onDeleteComment"
-      ></paper-icon-button>
-        </template>
 
       <paper-icon-button
         icon="backspace"
@@ -364,6 +361,10 @@ class MGVariantsEditor extends Polymer.Element {
   }
 
   _addVariantData(key,variant) {
+    if (!variant) {
+      return;
+    }
+
     if(!this.__dataLinkedPaths || !this.__dataLinkedPaths['variant.variants.'+key]) {
       variant.key$ = key;
       this.push('variantsDataList', variant);
@@ -407,21 +408,28 @@ class MGVariantsEditor extends Polymer.Element {
     }
   }
 
+  _formatIconComment(comment) {
+    if (typeof comment === 'string') {
+      return "booed:comment-disabled";
+    } else {
+      return "editor:mode-edit";
+    }
+  }
+
   _hasComment(comment) {
     return typeof comment === 'string' ? true : false;
   }
 
-  _onAddComment(e){
-    this.set('variant.comment', '');
-  }
-
-  _onDeleteComment(e){
-    this.set('variant.comment', null);
+  _onToggleComment(e){
+    if (typeof this.variant.comment === 'string') {
+      this.set('variant.comment', null);
+    } else {
+      this.set('variant.comment', '');
+    }
   }
 
   _onBackspace(e) {
     if ( this.selectedKey ) {
-      this.set('variant.variants.'+this.selectedKey, null);
     } else {
 
     }
@@ -441,6 +449,15 @@ class MGVariantsEditor extends Polymer.Element {
     this.set(['variant.variants',vkey],{key$:vkey, type:'custom:'}); /* XXX custom: leaked into db even no use*/
     this.set('selectedKey',vkey);
     return vkey;
+  }
+
+  _onRemoveVariant(e) {
+    let deletingKey = this.selectedKey;
+    this.set('selectedKey',null);
+    this.set('variant.variants.'+deletingKey, null);
+    if (!Object.values(this.variant.variants).some(value => value)) {
+      this.set('variant.variants', null);
+    }
   }
 
   _onDuplicateSelection(e) {
