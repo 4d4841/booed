@@ -136,10 +136,10 @@
       key="[[item.key]]"
       class="image-icon"
       thumbnail="[[item.thumbnail]]"
-      icon='photo'
+      icon='image:photo'
       rep="[[item.rep]]"
       progress="[[item._progress]]"
-      name="[[item.name]]"
+      label="[[item.name]]"
       selection-order="[[item._selectionOrder]]"
       deleted="[[item.deleted]]"
       on-tap="_onItemTap"
@@ -770,7 +770,7 @@
           role: this.itemRole,
           name: this.itemName,
           //thumbnail: MHA.get(['items',this.itemKey,'images',this.itemCover,'thumbnail']),
-          thumbnail: MHA.getItem({[itemKey]:{images:{[itemCover]:{thumbnail:null}}}}),
+          thumbnail: MHA.getItem({[this.itemKey]:{images:{[this.itemCover]:{thumbnail:null}}}}),
         }
 
         this.push('clipboardList',copy);

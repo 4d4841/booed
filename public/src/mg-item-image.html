@@ -57,7 +57,7 @@
   src="[[src]]"
   roi="[[roi]]"
   icon="[[icon]]"
-  label="[[name]]"
+  label="[[label]]"
   deleted$="[[deleted]]"
   placeholder='images/logo-pumpkin-outline-grayout.svg'
   transition="1.5s"
@@ -90,7 +90,7 @@ class MGItemImage extends Polymer.Element {
       observer: '_thumbnailChanged',
     },
 
-    name: String,
+    label: String,
     key: String,
     src: String,
     icon: String,

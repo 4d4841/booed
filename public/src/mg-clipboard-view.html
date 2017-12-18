@@ -84,7 +84,7 @@
         thumbnail="[[item.thumbnail]]"
         rep="[[item.rep]]"
         roi="[[item.roiThumbnail]]"
-        name="[[item.name]]"
+        label="[[_formatLabel(item.item,item.name,item.role)]]"
         deleted="[[item.deleted]]"
         on-tap="_onItemTap"
       > <paper-icon-button icon="editor:mode-edit" class="image-edit-button-icon" on-tap="_onEditImage">
@@ -114,6 +114,18 @@ class MGClipboardView extends MGClipboard {
 
   _formatRoleIcon(role){
     return MGIconForRole(role);
+  }
+
+  _formatLabel(itemKey,name,role) {
+    switch(role) {
+      case 'gallery': {
+        let images = MHA.getItem({[itemKey]:{images:null}});
+        return (images ? "×" + Object.entries(images).length : '') +" "+ name;
+      } break;
+      case 'product':
+        return name;
+    }
+    return name;
   }
 
   _onItemTap(e) {
