@@ -176,10 +176,6 @@
         on-click="_onToggleComment"
       ></paper-icon-button>
 
-      <paper-icon-button
-        icon="backspace"
-        on-click="_onBackspace"
-      ></paper-icon-button>
     </div>
 
   </div>
@@ -355,7 +351,6 @@ class MGVariantsEditor extends Polymer.Element {
           }
         }
 
-        console.log(this.depth, this.__dataLinkedPaths);
       });
     }
   }
@@ -428,13 +423,6 @@ class MGVariantsEditor extends Polymer.Element {
     }
   }
 
-  _onBackspace(e) {
-    if ( this.selectedKey ) {
-    } else {
-
-    }
-  }
-
   _onAddVariant(e){
     if (!this.variant) {
       this.set('variant',{type:'custom:'});
@@ -461,7 +449,20 @@ class MGVariantsEditor extends Polymer.Element {
   }
 
   _onDuplicateSelection(e) {
-    let vkey = this._onAddVariant(e);
+    var newKey;
+    function cloneFunc(path, value) {
+
+      if (path.slice(-30).startsWith('.variants.')) {
+        let replacingKey = MHA.DB.ref().push().key;
+        let newpath = path.slice(0, path.length-20) + replacingKey;
+        let newval = Object.assign({}, value, {key$: replacingKey});
+        if (!newKey) newKey = replacingKey;
+        return [newpath,newval,cloneFunc];
+      }
+
+      return;
+    }
+    MHA.utils.deepSet(this, 'variant.variants.< 20 chars new key >', this.variant.variants[this.selectedKey], cloneFunc);
   }
 
   testEqual(a,b) {

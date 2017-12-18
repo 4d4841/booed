@@ -187,11 +187,10 @@ var MHA = {
       let syncFunc = (path,value) => {
 
         if(path.slice(-1) == '$' || typeof value === 'undefined') {
-          return;
+          return [path,value]; /* Resign the replacer for any path end with $ */
         }
 
         if (value === null || Array.isArray(value) || typeof value !== 'object') {
-
           if (MHA.data.get(path) !== value) {
             if (!registerData) {
               registerData = {[path.split('.').join('/')]: value};
@@ -199,10 +198,9 @@ var MHA = {
               registerData[path.split('.').join('/')] = value;
             }
           }
-
-          return value;
         }
-        return syncFunc;
+
+        return;
       };
 
       this.utils.deepSet(MHA.data, 'items.'+itemKey, itemData, syncFunc('items.'+itemKey, itemData));
@@ -258,16 +256,21 @@ var MHA = {
      * To delete a deep property, set null as the counter-value
      * in the structure of the object argument.
      *
-     * replacer : A callback that can be optionally specified to intercept
-     * the given values. Must be the value for leaf nodes/values.
+     * replacer : A callback that can be optionally specified to override
+     * the given path/values. It returns an array for new path,value,replacer
+     * or undefined for observation purpose.
      */
     deepSet(polymerElement, path, value, replacer) {
+      /* XXX Why does it need this? */
       if (typeof value === 'undefined') {
         return;
       }
 
-      if (replacer && typeof replacer != 'function') {
-        value = replacer;
+      if (replacer) {
+        let replacing = replacer(path,value);
+        if (replacing) {
+          [path,value,replacer] = replacing;
+        }
       }
 
       if (Array.isArray(value)) {
@@ -289,7 +292,7 @@ var MHA = {
           polymerElement.set(path, {});
         }
         Object.keys(value).forEach(key => {
-          this.deepSet(polymerElement, path+'.'+key, value[key], replacer ? replacer(path+'.'+key,value[key]) : null);
+          this.deepSet(polymerElement, path+'.'+key, value[key], replacer);
         });
       }
 

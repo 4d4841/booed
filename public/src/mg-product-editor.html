@@ -127,18 +127,12 @@
     ]}
 
     _variantChanges(changes) {
-      /*
-      MHA.setItem(this.itemKey, {variant: this.variant}, true);
-      */
-      //this.set('variant.value',this.itemName);
-
       if (this.variant) {
 
         let itemData = MHA.utils.deepStruct(changes.path,changes.value);
         itemData.role = 'product';
         MHA.setItem(this.itemKey, itemData, true);
 
-        //MHA.setItem(this.itemKey, {role:'product', variant: this.variant}, true);
       }
     }
 
