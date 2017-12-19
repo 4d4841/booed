@@ -22,483 +22,479 @@
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="mg-input.html">
 
-<dom-module id="mg-profile">
+    <dom-module id="mg-profile">
   <template strip-whitespace>
-      <custom-style>
-    <style is="custom-style" include="mg-common-styles iron-flex iron-flex-alignment">
-      :host {
-        @apply --layout-vertical;
-        @apply --layout-center;
-      }
+<style include="mg-common-styles iron-flex iron-flex-alignment">
+:host {
+  @apply --layout-vertical;
+  @apply --layout-center;
+}
 
-      a:link {
-            text-decoration: none;
-      }
+a:link {
+      text-decoration: none;
+}
 
-      mg-button > * {
-        font-family: 'Athiti', sans-serif;
-        font-size: 18px;
-        font-weight: 500;
-        padding: 8px 44px;
-        background-color: white;
-      }
+mg-button > * {
+  font-family: 'Athiti', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  padding: 8px 44px;
+  background-color: white;
+}
 
-      mg-button > *:active {
-        background-color: #000;
-        color: white;
-      }
+mg-button > *:active {
+  background-color: #000;
+  color: white;
+}
 
-      mg-button > *:focus {
-        background-color: azure;
-        color: #202020;
-      }
+mg-button > *:focus {
+  background-color: azure;
+  color: #202020;
+}
 
-      mg-button.single-button,
-      mg-button.upper-button,
-      mg-button.lower-button {
-        @apply --layout-vertical;
-        padding:0;
-        margin:0;
-      }
+mg-button.single-button,
+mg-button.upper-button,
+mg-button.lower-button {
+  @apply --layout-vertical;
+  padding:0;
+  margin:0;
+}
 
-      mg-button.single-button >*,
-      mg-button.upper-button >*,
-      mg-button.lower-button >* {
-        border-radius: 5px;
-        padding:0;
-        height:40px;
-        box-shadow: 1px 1px 2px var(--booed-shadow-color);
-      }
+mg-button.single-button >*,
+mg-button.upper-button >*,
+mg-button.lower-button >* {
+  border-radius: 5px;
+  padding:0;
+  height:40px;
+  box-shadow: 1px 1px 2px var(--booed-shadow-color);
+}
 
-      mg-button.upper-button >* {
-        border-bottom: 0px;
-        border-radius: 5px 5px 0 0 ;
-      }
+mg-button.upper-button >* {
+  border-bottom: 0px;
+  border-radius: 5px 5px 0 0 ;
+}
 
-      mg-button.lower-button >* {
-        border-top: 1px dotted black;
-        border-radius: 0 0 5px 5px;
-      }
+mg-button.lower-button >* {
+  border-top: 1px dotted black;
+  border-radius: 0 0 5px 5px;
+}
 
-      mg-button >*:active {
-        background-color:#202020;
-        color: white;
-      }
+mg-button >*:active {
+  background-color:#202020;
+  color: white;
+}
 
-      .button {
-        width: 100%;
-        height: 40px;
-        --paper-button: {
-          @apply --layout-horizontal;
-          font-family: 'Mitr', sans-serif;
-          font-size: 16px;
-          font-weight: bold;
-        }
-      }
+.button {
+  width: 100%;
+  height: 40px;
+  --paper-button: {
+    @apply --layout-horizontal;
+    font-family: 'Mitr', sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+  }
+}
 
-      .button iron-icon {
-        margin-right: 10px;
-      }
+.button iron-icon {
+  margin-right: 10px;
+}
 
-      .card-actions {
-        width:100%;
-        margin-top:30px;
-        min-width:240px;
-        padding:0;
-      }
+.card-actions {
+  width:100%;
+  margin-top:30px;
+  min-width:240px;
+  padding:0;
+}
 
-      #loginBB {
-        font-family: 'Athiti', sans-serif;
-        font-size: 16px;
-        font-weight: bold;
-        border-top: 1px dashed tomato;
-        height: 40px;
-        margin: 0;
-        padding: 0;
-        border-radius: 0;
-        @apply --layout-flex;
-      }
+#loginBB {
+  font-family: 'Athiti', sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  border-top: 1px dashed tomato;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  @apply --layout-flex;
+}
 
-      #loginGG {
-        max-width: 50px;
-        min-width: 50px;
-        width: 50px;
-        height: 40px;
-        background-color: tomato;
-        padding: 0;
-        border-radius: 0;
-        margin: 0;
-      }
+#loginGG {
+  max-width: 50px;
+  min-width: 50px;
+  width: 50px;
+  height: 40px;
+  background-color: tomato;
+  padding: 0;
+  border-radius: 0;
+  margin: 0;
+}
 
-      #loginGG >*:active {
-        background-color:orange;
-      }
+#loginGG >*:active {
+  background-color:orange;
+}
 
-      #id-card {
-        min-width: 240px;
-        z-index: 1;
-        border-radius: 10px;
-        overflow: hidden;
-        box-sizing: border-box;
-      }
+#id-card {
+  min-width: 240px;
+  z-index: 1;
+  border-radius: 10px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
 
-      #id-card[state=waiting] {
-        border-radius: 50%;
-      }
+#id-card[state=waiting] {
+  border-radius: 50%;
+}
 
-      .main-frame {
-        min-width:240px;
-        @apply --layout-vertical;
-        transition: opacity 0.5s;
-        background-color: white;
-        box-shadow: 1px 1px 5px var(--booed-shadow-color);
-       /* max-width:300px; */
-        border-radius: 10px;
-        padding:20px;
-        z-index: 1;
-        box-sizing: border-box;
-      }
+.main-frame {
+  min-width:240px;
+  @apply --layout-vertical;
+  transition: opacity 0.5s;
+  background-color: white;
+  box-shadow: 1px 1px 5px var(--booed-shadow-color);
+ /* max-width:300px; */
+  border-radius: 10px;
+  padding:20px;
+  z-index: 1;
+  box-sizing: border-box;
+}
 
-      /*
-      #home-button {
-        width: 100%;
-        height: 40px;
-        background-size: 90%;
-        background-repeat: no-repeat;
-        background-position: center;
-        background-image: url(/images/logo-bounce-in.svg);
-      }
+/*
+#home-button {
+  width: 100%;
+  height: 40px;
+  background-size: 90%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url(/images/logo-bounce-in.svg);
+}
 
-      #home-button[state=waiting] {
-        display: none;
-      }
-      */
+#home-button[state=waiting] {
+  display: none;
+}
+*/
 
-      .info-button {
-        --paper-icon-button: {
-          width: 32px;
-          height: 32px;
-        };
-      }
+.info-button {
+  --paper-icon-button: {
+    width: 32px;
+    height: 32px;
+  };
+}
 
-      .main-info {
-        width:220px;
-        box-sizing: border-box;
-        @apply --layout-vertical;
-        @apply --layout-end-justified;
-        transition: opacity 0.5s;
-        box-shadow: 1px 1px 3px var(--booed-shadow-color);
-        border-radius: 5px;
-        border-radius: 0 0 5px 5px;
-        background: var(--booed-contents-background);
-        z-index: 0;
-        padding: 0px;
-        transition: background-color 0.5s, max-height 0.5s ease-in;
-        overflow: hidden;
-      }
+.main-info {
+  width:220px;
+  box-sizing: border-box;
+  @apply --layout-vertical;
+  @apply --layout-end-justified;
+  transition: opacity 0.5s;
+  box-shadow: 1px 1px 3px var(--booed-shadow-color);
+  border-radius: 5px;
+  border-radius: 0 0 5px 5px;
+  background: var(--booed-contents-background);
+  z-index: 0;
+  padding: 0px;
+  transition: background-color 0.5s, max-height 0.5s ease-in;
+  overflow: hidden;
+}
 
-      h3  {
-        margin: 0;
-        padding: 5px 0;
-        font-family: 'Mitr', sans-serif;
-        font-size: 16px;
-        @apply --layout-horizontal;
-        @apply --layout-center;
-      }
+h3  {
+  margin: 0;
+  padding: 5px 0;
+  font-family: 'Mitr', sans-serif;
+  font-size: 16px;
+  @apply --layout-horizontal;
+  @apply --layout-center;
+}
 
-      h3 iron-icon {
-        margin-right: 10px;
-      }
+h3 iron-icon {
+  margin-right: 10px;
+}
 
-      .photo {
-        height: 240px;
-        min-width: 240px;
-        background-size: cover;
-        margin: 0px;
-      }
+.photo {
+  height: 240px;
+  min-width: 240px;
+  background-size: cover;
+  margin: 0px;
+}
 
-      .under-photo {
-        background: linear-gradient(
-          transparent 0,
-          purple 100px);
-        background-repeat: no-repeat;
-        color: white;
-        text-align: left;
-        text-shadow: 1px 1px 3px #200020;
-        max-height: 40px;
-        line-height: 20px;
-        height: 40px;
-        min-width: 240px;
-        z-index:1;
-        display: block;
-        position: absolute;
-        top: 200px;
-        overflow: hidden;
-        padding-left: 10px;
-        box-sizing: border-box;
-      }
+.under-photo {
+  background: linear-gradient(
+    transparent 0,
+    purple 100px);
+  background-repeat: no-repeat;
+  color: white;
+  text-align: left;
+  text-shadow: 1px 1px 3px #200020;
+  max-height: 40px;
+  line-height: 20px;
+  height: 40px;
+  min-width: 240px;
+  z-index:1;
+  display: block;
+  position: absolute;
+  top: 200px;
+  overflow: hidden;
+  padding-left: 10px;
+  box-sizing: border-box;
+}
 
-      .under-photo h3  {
-        padding: 0;
-      }
+.under-photo h3  {
+  padding: 0;
+}
 
-      @media (max-width: 767px) {
-      }
+@media (max-width: 767px) {
+}
 
-    </style>
-      </custom-style>
+</style>
 
-    <paper-card id="id-card" state$="[[state]]">
-      <!--
-      <a href="/" class="center vertical layout">
-        <paper-button id="home-button" alt="home" title="home" state$="[[state]]"></paper-button>
-      </a>
-      -->
-      <iron-pages
-        id="pages"
-        selected="[[state]]"
-        attr-for-selected="state"
-        class="center vertical layout"
-      > <div
-          state="waiting"
-          style="width:200px;height:150px;margin-top:50px"
-          class="layout horizontal center center-justified">
-          <img src="images/logo-bounce.svg">
-        </div>
-        <div state="init" class="center end-justified vertical layout">
-          <!-- Begin: init -->
-            <dom-if if="[[!me.user.email]]">
-          <template>
-            <!-- Begin: login panel -->
+<paper-card id="id-card" state$="[[state]]">
+  <!--
+  <a href="/" class="center vertical layout">
+    <paper-button id="home-button" alt="home" title="home" state$="[[state]]"></paper-button>
+  </a>
+  -->
+  <iron-pages
+    id="pages"
+    selected="[[state]]"
+    attr-for-selected="state"
+    class="center vertical layout"
+  > <div
+      state="waiting"
+      style="width:200px;height:150px;margin-top:50px"
+      class="layout horizontal center center-justified">
+      <img src="images/logo-bounce.svg">
+    </div>
+    <div state="init" class="center end-justified vertical layout">
+      <!-- Begin: init -->
+        <dom-if if="[[!me.user.email]]">
+      <template>
+        <!-- Begin: login panel -->
 
-            <iron-icon style="color:tomato;margin-top:20px;--iron-icon-height: 50px; --iron-icon-width: 50px;" icon="booed:pumpkin"></iron-icon>
-            <h3>เข้าสู่ระบบสมาชิก</h3>
+    <iron-icon style="color:tomato;margin-top:20px;--iron-icon-height: 50px; --iron-icon-width: 50px;" icon="booed:pumpkin"></iron-icon>
+    <h3>เข้าสู่ระบบสมาชิก</h3>
 
-            <mg-input
-              value="{{accountEmail}}"
-              type="email" id="accountEmail" name="accountEmail" pattern=".{2,50}"
-              label="อีเมล"
-              min-width="180"
-              icon="communication:email"
-            ></mg-input>
+    <mg-input
+      value="{{accountEmail}}"
+      type="email" id="accountEmail" name="accountEmail" pattern=".{2,50}"
+      label="อีเมล"
+      min-width="180"
+      icon="communication:email"
+    ></mg-input>
 
-            <mg-input
-              value="{{accountPassword}}"
-              type="email" id="accountEmail" name="accountEmail" pattern=".{2,50}"
-              label="พาสเวิร์ด"
-              icon="communication:vpn-key"
-              min-width="180"
-            ></mg-input>
+    <mg-input
+      value="{{accountPassword}}"
+      type="email" id="accountEmail" name="accountEmail" pattern=".{2,50}"
+      label="พาสเวิร์ด"
+      icon="communication:vpn-key"
+      min-width="180"
+    ></mg-input>
 
-            <div class="card-actions
-              layout
-              horizontal
-              justified"
-              ><paper-button
-                id="loginBB"
-                on-click="_signIn"
-              > เข้าระบบ
-              </paper-button>
+    <div class="card-actions
+      layout
+      horizontal
+      justified"
+      ><paper-button
+        id="loginBB"
+        on-click="_signIn"
+      > เข้าระบบ
+      </paper-button>
 
-              <paper-button
-                id="loginGG"
-                on-click="_googleSignIn"
-                class="layout horizontal center-justified"
-              > <iron-icon icon="booed:google" style="color:white"></iron-icon>
-              </paper-button>
-            </div>
-            <!-- End: login panel -->
-          </template>
-            </dom-if>
+      <paper-button
+        id="loginGG"
+        on-click="_googleSignIn"
+        class="layout horizontal center-justified"
+      > <iron-icon icon="booed:google" style="color:white"></iron-icon>
+      </paper-button>
+    </div>
+    <!-- End: login panel -->
+      </template>
+        </dom-if>
 
-            <dom-if if="[[me.user.email]]">
-          <template>
-            <!-- begin: user panel -->
-              <iron-image
-                class="photo"
-                src="[[me.user.photoURL]]"
-                sizing="cover"
-              ></iron-image>
-              <div class="under-photo">
-                <h3>[[me.user.email]]<br>[[me.user.displayName]]</h3>
-              </div>
+        <dom-if if="[[me.user.email]]">
+      <template>
+        <!-- begin: user panel -->
+          <iron-image
+            class="photo"
+            src="[[me.user.photoURL]]"
+            sizing="cover"
+          ></iron-image>
+          <div class="under-photo">
+            <h3>[[me.user.email]]<br>[[me.user.displayName]]</h3>
+          </div>
 
-              <paper-button
-                class="button"
-                on-click="_signOut"
-                class="layout horizontal center-justified"
-              > <iron-icon icon="maps:local-cafe" style="color:tomato"></iron-icon>
-                ออกจากระบบ
-              </paper-button>
-            <!-- End: user panel -->
-          </template>
-            </dom-if>
-          <!-- End: init -->
-        </div>
-        <div state="welcome" class="center end-justified vertical layout">
-          <h3>ยินดีต้อนรับสู่ระบบสมาชิกค่ะ</h3>
-            <dom-if if="[[response]]">
-          <template>
-          <p style="padding:0;margin:0;margin-bottom:10px">[[response.successMessage]]</p>
-          </template>
-            </dom-if>
+          <paper-button
+            class="button"
+            on-click="_signOut"
+            class="layout horizontal center-justified"
+          > <iron-icon icon="maps:local-cafe" style="color:tomato"></iron-icon>
+            ออกจากระบบ
+          </paper-button>
+        <!-- End: user panel -->
+      </template>
+        </dom-if>
+      <!-- End: init -->
+    </div>
+    <div state="welcome" class="center end-justified vertical layout">
+      <h3>ยินดีต้อนรับสู่ระบบสมาชิกค่ะ</h3>
+        <dom-if if="[[response]]">
+      <template>
+      <p style="padding:0;margin:0;margin-bottom:10px">[[response.successMessage]]</p>
+      </template>
+        </dom-if>
 
-            <dom-if if="[[me.user.email]]">
-          <template>
-            <!-- begin: user panel -->
-              <div class="under-photo">
-                <h3>[[me.user.email]]<br>[[me.user.displayName]]</h3>
-              </div>
-              <iron-image class="photo" src="[[me.user.photoURL]]" sizing="cover"></iron-image>
+        <dom-if if="[[me.user.email]]">
+      <template>
+        <!-- begin: user panel -->
+          <div class="under-photo">
+            <h3>[[me.user.email]]<br>[[me.user.displayName]]</h3>
+          </div>
+          <iron-image class="photo" src="[[me.user.photoURL]]" sizing="cover"></iron-image>
 
-              <paper-button class="button" on-click="_signOut" class="layout horizontal center-justified">
-              <iron-icon icon="maps:local-cafe" style="color:tomato"></iron-icon> ออกจากระบบ
-              </paper-button>
-            <!-- End: user panel -->
-          </template>
-            </dom-if>
+          <paper-button class="button" on-click="_signOut" class="layout horizontal center-justified">
+          <iron-icon icon="maps:local-cafe" style="color:tomato"></iron-icon> ออกจากระบบ
+          </paper-button>
+        <!-- End: user panel -->
+      </template>
+        </dom-if>
 
-        </div>
-        <div state="error" class="center end-justified vertical layout">
-          <h3>เกิดความผิดพลาด</h3>
-          <p style="padding:0;margin:0;margin-bottom:10px">[[response.errorMessage]]</p>
+    </div>
+    <div state="error" class="center end-justified vertical layout">
+      <h3>เกิดความผิดพลาด</h3>
+      <p style="padding:0;margin:0;margin-bottom:10px">[[response.errorMessage]]</p>
 
-              <a style="width:260px;border-top: 1px dashed lightgray;padding:0;margin:0" href="/user/profile">
-            <paper-button class="button" class="layout horizontal center-justified">
-            <iron-icon icon="error" style="color:tomato"></iron-icon> ลองอีกครั้ง?
-            </paper-button>
-              </a>
+          <a style="width:260px;border-top: 1px dashed lightgray;padding:0;margin:0" href="/user/profile">
+        <paper-button class="button" class="layout horizontal center-justified">
+        <iron-icon icon="error" style="color:tomato"></iron-icon> ลองอีกครั้ง?
+        </paper-button>
+          </a>
 
-        </div>
-      </iron-pages>
-    </paper-card>
-        <div
-          on-click="_toggleInfo"
-          class="main-info center enter vertical end-justified layout"
-          hidden$="[[_shouldHideInfoPanel(me.user.email,state)]]"
-        > <iron-collapse opened="[[expand]]">
+    </div>
+  </iron-pages>
+</paper-card>
+<div
+  on-click="_toggleInfo"
+  class="main-info center enter vertical end-justified layout"
+  hidden$="[[_shouldHideInfoPanel(me.user.email,state)]]"
+> <iron-collapse opened="[[expand]]">
 
-            <p style="font-size:13px; padding: 0 10px 0 10px;text-align:justify;text-align-last:center">
-              หากคุณยังไม่ลงทะเบียนเป็นสมาชิก คุณสามารถเข้าสู่ระบบสมาชิกด้วย <span style="font-weight:bold">บัญชีกูเกิล</span> ของคุณได้ทันที เพียงกด<br>
-              <iron-icon style="margin:5px;padding:0 5px;background-color:tomato;border-radius:5px;color:white;--iron-icon-width:20px;" icon="booed:google"></iron-icon> <br>(หรือ<a href="https://accounts.google.com/SignUp">สร้างบัญชีใหม่</a>ถ้ายังไม่มี)
-              <br><br>
-              การเป็นสมาชิกจะช่วยให้คุณติดตามสถานะรายการ หรือรับบริการอื่นๆ ได้สะดวกรวดเร็วยิ่งขึ้น
-              นอกจากนี้คุณยังสามารถปรับปรุงข้อมูลส่วนตัว รับการแจ้งเตือนเฉพาะสิ่งที่น่าสนใจ
-              สมัครหรือยกเลิกบริการข่าวสารและโปรโมชั่นต่างๆ ตลอดจนถึงการเข้าใช้งานฟีเจ้อร์อื่นๆ
-              เช่นการสร้างร้านของคุณเอง เป็นต้น
-            </p>
+    <p style="font-size:13px; padding: 0 10px 0 10px;text-align:justify;text-align-last:center">
+      หากคุณยังไม่ลงทะเบียนเป็นสมาชิก คุณสามารถเข้าสู่ระบบสมาชิกด้วย <span style="font-weight:bold">บัญชีกูเกิล</span> ของคุณได้ทันที เพียงกด<br>
+      <iron-icon style="margin:5px;padding:0 5px;background-color:tomato;border-radius:5px;color:white;--iron-icon-width:20px;" icon="booed:google"></iron-icon> <br>(หรือ<a href="https://accounts.google.com/SignUp">สร้างบัญชีใหม่</a>ถ้ายังไม่มี)
+      <br><br>
+      การเป็นสมาชิกจะช่วยให้คุณติดตามสถานะรายการ หรือรับบริการอื่นๆ ได้สะดวกรวดเร็วยิ่งขึ้น
+      นอกจากนี้คุณยังสามารถปรับปรุงข้อมูลส่วนตัว รับการแจ้งเตือนเฉพาะสิ่งที่น่าสนใจ
+      สมัครหรือยกเลิกบริการข่าวสารและโปรโมชั่นต่างๆ ตลอดจนถึงการเข้าใช้งานฟีเจ้อร์อื่นๆ
+      เช่นการสร้างร้านของคุณเอง เป็นต้น
+    </p>
 
-          </iron-collapse>
+  </iron-collapse>
 
-          <iron-icon style="display:block;--iron-icon-width:20px" icon="help"></iron-icon>
-        </div>
-
-
+  <iron-icon style="display:block;--iron-icon-width:20px" icon="help"></iron-icon>
+</div>
   </template>
   <script>
-    class MGProfile extends Polymer.Element {
-      static get is() { return 'mg-profile'; }
+class MGProfile extends Polymer.Element {
+  static get is() { return 'mg-profile'; }
 
-      static get properties() { return {
+  static get properties() { return {
 
-        state: {
-          type: String,
-          reflectToAttribute: true,
-          value: 'waiting'
-        },
+    state: {
+      type: String,
+      reflectToAttribute: true,
+      value: 'waiting'
+    },
 
-        expand: {
-          type: Boolean,
-          reflectToAttribute: true,
-          value: false
-        },
+    expand: {
+      type: Boolean,
+      reflectToAttribute: true,
+      value: false
+    },
 
-        me: {
-          type: Object,
-          value: {waiting: true},
-          notify: true,
-        },
+    me: {
+      type: Object,
+      value: {waiting: true},
+      notify: true,
+    },
 
-        admin: {
-          type: Boolean,
-          value: false
-        },
+    admin: {
+      type: Boolean,
+      value: false
+    },
 
-      }}
+  }}
 
-      static get observers() { return [
-        '_visibleChanged(visible)',
-        '_waitingChanged(me.waiting)',
-      ]}
+  static get observers() { return [
+    '_visibleChanged(visible)',
+    '_waitingChanged(me.waiting)',
+  ]}
 
-      connectedCallback() {
-        super.connectedCallback();
-        this.__validWaiting = true;
-        MHA.AU.onAuthStateChanged(this._onAuthStateChanged.bind(this));
-      }
+  connectedCallback() {
+    super.connectedCallback();
+    this.__validWaiting = true;
+    MHA.AU.onAuthStateChanged(this._onAuthStateChanged.bind(this));
+  }
 
-      _visibleChanged(visible) {
-        console.log("visible");
-        if (this.visible) {
-          this.dispatchEvent(new CustomEvent('change-section', {
-            bubbles: true, composed: true, detail: {title: 'Profile'}}));
-          if (this.me.waiting) {
-            this.state = 'waiting';
-          }
-        }
-      }
-
-      _waitingChanged(waiting) {
-        if (waiting == true) {
-          this.state = 'waiting';
-        } else {
-          this.state = 'init';
-        }
-      }
-
-      _onAuthStateChanged(user) {
-        this.set('me.user', user);
-        this.set('me.waiting',false);
-      }
-
-      _shouldHideInfoPanel(email,state) {
-        return email || state == "waiting" || state == "error";
-      }
-
-      _signIn(e) {
-        /* XXX */
-      }
-
-      _googleSignIn(e) {
+  _visibleChanged(visible) {
+    console.log("visible");
+    if (this.visible) {
+      this.dispatchEvent(new CustomEvent('change-section', {
+        bubbles: true, composed: true, detail: {title: 'Profile'}}));
+      if (this.me.waiting) {
         this.state = 'waiting';
-
-        MHA.AU.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(
-          function() {
-            var provider = new firebase.auth.GoogleAuthProvider();
-            return MHA.AU.signInWithRedirect(provider);
-          })
-          .catch(function(error) {
-            var errorCode = error.code;
-            var errorMessage = error.message;
-            console.log("Error", error);
-          });
       }
-
-      _signOut(e) {
-        MHA.AU.signOut();
-        this.state = "init";
-      }
-
-      _calculateAvatarStyle(url) {
-
-      }
-
-      _toggleInfo(e) {
-        this.expand = !this.expand;
-      }
-
     }
+  }
 
-    customElements.define(MGProfile.is, MGProfile);
+  _waitingChanged(waiting) {
+    if (waiting == true) {
+      this.state = 'waiting';
+    } else {
+      this.state = 'init';
+    }
+  }
+
+  _onAuthStateChanged(user) {
+    this.set('me.user', user);
+    this.set('me.waiting',false);
+  }
+
+  _shouldHideInfoPanel(email,state) {
+    return email || state == "waiting" || state == "error";
+  }
+
+  _signIn(e) {
+    /* XXX */
+  }
+
+  _googleSignIn(e) {
+    this.state = 'waiting';
+
+    MHA.AU.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(
+      function() {
+        var provider = new firebase.auth.GoogleAuthProvider();
+        return MHA.AU.signInWithRedirect(provider);
+      })
+      .catch(function(error) {
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        console.log("Error", error);
+      });
+  }
+
+  _signOut(e) {
+    MHA.AU.signOut();
+    this.state = "init";
+  }
+
+  _calculateAvatarStyle(url) {
+
+  }
+
+  _toggleInfo(e) {
+    this.expand = !this.expand;
+  }
+
+}
+
+customElements.define(MGProfile.is, MGProfile);
   </script>
-</dom-module>
+    </dom-module>

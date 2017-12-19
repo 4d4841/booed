@@ -18,76 +18,74 @@
 <link rel="import" href="mg-quilt.html">
 
 
-<dom-module id="mg-list">
+    <dom-module id="mg-list">
   <template strip-whitespace>
-      <custom-style>
-    <style include="mg-common-styles iron-flex iron-flex-alignment">
-      :host {
-        @apply --layout-vertical;
-        @apply --layout-center;
-      }
-    </style>
-      </custom-style>
+<style include="mg-common-styles iron-flex iron-flex-alignment">
+:host {
+  @apply --layout-vertical;
+  @apply --layout-center;
+}
+</style>
 <!--
-    <app-route
-        route="{{route}}"
-        pattern="/:tag"
-        data="{{routeData}}"
-        tail="{{subroute}}">
-    </app-route>
+<app-route
+    route="{{route}}"
+    pattern="/:tag"
+    data="{{routeData}}"
+    tail="{{subroute}}">
+</app-route>
 -->
-    <!--<span style="white-space:nowrap">For now, a collection of <a href="https://ko.wikipedia.org/wiki/%EB%AC%B8%ED%98%84%EC%95%84">Moon HyunA</a>'s photos are used as test subjects<br>to demonstrate <a href="https://github.com/4d4841/booed/blob/master/public/src/mg-quilt.html">mg-quilt</a> with no intention for any copyright infringement.</span>-->
-    <mg-quilt visible="[[visible]]" selected="{{selected}}" style="width: calc(100% - 20px)"></mg-quilt>
-
+<!--<span style="white-space:nowrap">For now, a collection of <a href="https://ko.wikipedia.org/wiki/%EB%AC%B8%ED%98%84%EC%95%84">Moon HyunA</a>'s photos are used as test subjects<br>to demonstrate <a href="https://github.com/4d4841/booed/blob/master/public/src/mg-quilt.html">mg-quilt</a> with no intention for any copyright infringement.</span>-->
+<mg-quilt visible="[[visible]]" selected="{{selected}}" style="width: calc(100% - 20px)"></mg-quilt>
   </template>
+
   <script>
-  (function(){
-    var _MGListAppMenu = { entries: [
-            {path:"/home/new-releases", name:"new-releases", icon:"booed:new-releases", title:"New Releases"},
-            {path:"/home/best-sellers", name:"best-sellers", icon:"favorite", title:"แนะนำ"},
-            {path:"/home/dresses", name:"dresses", icon:"booed:dresses", title:"ドレス" },
-            {path:"/home/lingeries", name:"lingeries", icon:"booed:lingeries", title:"ชุดชั้นใน"},
-            {path:"/home/night-dresses", name:"night-dresses", icon:"booed:night-dresses", title:"파자마"},
-            {path:"/home/swimwears", name:"swimwears", icon:"booed:swimwears", title:"水着"},
-            {path:"/home/sales", name:"sales", icon:"loyalty", title:"Sales"},
-          ]};
+(function(){
+  var _MGListAppMenu = { entries: [
+          {path:"/home/new-releases", name:"new-releases", icon:"booed:new-releases", title:"New Releases"},
+          {path:"/home/best-sellers", name:"best-sellers", icon:"favorite", title:"แนะนำ"},
+          {path:"/home/dresses", name:"dresses", icon:"booed:dresses", title:"ドレス" },
+          {path:"/home/lingeries", name:"lingeries", icon:"booed:lingeries", title:"ชุดชั้นใน"},
+          {path:"/home/night-dresses", name:"night-dresses", icon:"booed:night-dresses", title:"파자마"},
+          {path:"/home/swimwears", name:"swimwears", icon:"booed:swimwears", title:"水着"},
+          {path:"/home/sales", name:"sales", icon:"loyalty", title:"Sales"},
+        ]};
 
-    class MGList extends Polymer.Element {
-      static get is() { return 'mg-list'; }
+  class MGList extends Polymer.Element {
+    static get is() { return 'mg-list'; }
 
-      static get properties() { return {
+    static get properties() { return {
 
-        menu: {
-          type: Object,
-          notify: true,
-        },
+      menu: {
+        type: Object,
+        notify: true,
+      },
 
-        visible: {
-          type: Boolean,
-          value: false,
-          observer: '_visibleChanged'
-        },
-      }}
+      visible: {
+        type: Boolean,
+        value: false,
+        observer: '_visibleChanged'
+      },
+    }}
 
-      static get observers() { return [
-        '_onMenuSelected(menu.selected)',
-      ]}
+    static get observers() { return [
+      '_onMenuSelected(menu.selected)',
+    ]}
 
-      _onMenuSelected(selected) {
-        if (this.visible) {
-          this.set('selected', selected);
-        }
+    _onMenuSelected(selected) {
+      if (this.visible) {
+        this.set('selected', selected);
       }
-
-      _visibleChanged(visible) {
-        if (visible) {
-          this.set('menu', _MGListAppMenu);
-        }
-      }
-
     }
 
-    customElements.define(MGList.is, MGList);
-  })();
+    _visibleChanged(visible) {
+      if (visible) {
+        this.set('menu', _MGListAppMenu);
+      }
+    }
+
+  }
+
+  customElements.define(MGList.is, MGList);
+})();
   </script>
-</dom-module>
+    </dom-module>

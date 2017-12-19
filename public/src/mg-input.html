@@ -15,36 +15,33 @@
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-styles/typography.html">
 
-<dom-module id="mg-input">
-<template strip-whitespace>
-    <customstyle>
-  <style>
-  iron-icon {
-    --iron-icon-width:20px;
-    --iron-icon-height:20px;
-    padding-right:5px;
-  }
+    <dom-module id="mg-input">
+  <template strip-whitespace>
+<style>
+iron-icon {
+  --iron-icon-width:20px;
+  --iron-icon-height:20px;
+  padding-right:5px;
+}
+</style>
 
-  </style>
-    </customstyle>
-
-  <paper-input
-    id="input"
-    value={{value}}
-    label="{{label}}"
-    focused="{{focused}}"
-    readonly="{{readonly}}"
-    disabled="{{disabled}}"
-    autofocus="{{autofocus}}"
-    always-float-label="[[computedFloatLabel]]"
-    error-message="{{errorMessage}}"
-    invalid="{{invalid}}"
-  > <template is="dom-if" if="[[icon]]">
-      <iron-icon icon="[[icon]]" slot="prefix"></iron-icon>
-    </template>
-    <slot name="prefix" slot="prefix"></slot>
-    <slot name="suffix" slot="suffix"></slot>
-  </paper-input>
+<paper-input
+  id="input"
+  value={{value}}
+  label="{{label}}"
+  focused="{{focused}}"
+  readonly="{{readonly}}"
+  disabled="{{disabled}}"
+  autofocus="{{autofocus}}"
+  always-float-label="[[computedFloatLabel]]"
+  error-message="{{errorMessage}}"
+  invalid="{{invalid}}"
+> <template is="dom-if" if="[[icon]]">
+    <iron-icon icon="[[icon]]" slot="prefix"></iron-icon>
+  </template>
+  <slot name="prefix" slot="prefix"></slot>
+  <slot name="suffix" slot="suffix"></slot>
+</paper-input>
 <!--
   <paper-input
     id="input"
@@ -56,8 +53,8 @@
   </paper-input>
 -->
 
-</template>
-<script>
+  </template>
+  <script>
 (function(){
 let MeasureContext = null;
 let MeasureContext2 = null;
@@ -163,5 +160,5 @@ class MGInput extends Polymer.Element {
 
 customElements.define(MGInput.is, MGInput);
 })();
-</script>
-</dom-module>
+  </script>
+    </dom-module>

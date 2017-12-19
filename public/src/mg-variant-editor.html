@@ -22,175 +22,174 @@
 <link rel="import" href="mg-variant-cell.html">
 <link rel="import" href="mg-input.html">
 
-<dom-module id="mg-variant-editor">
-<template strip-whitespace>
-    <custom-style>
-  <style is="custom-style" include="paper-material-styles mg-common-styles iron-flex iron-flex-alignment">
-  :host {
-    /*border: 2px solid tomato;*/
-    width: auto;
-    height: auto;
-    @apply --layout-horizontal;
-    @apply --layout-start-justified;
-    box-sizing: content-box;
-  }
+    <dom-module id="mg-variant-editor">
+  <template strip-whitespace>
+<style include="paper-material-styles mg-common-styles iron-flex iron-flex-alignment">
+:host {
+  /*border: 2px solid tomato;*/
+  width: auto;
+  height: auto;
+  @apply --layout-horizontal;
+  @apply --layout-start-justified;
+  box-sizing: content-box;
+}
 
-  #variant-selector {
-    max-height: 20vh;
-    overflow-y: auto;
-  }
+#variant-selector {
+  max-height: 20vh;
+  overflow-y: auto;
+}
 
-  #variants-container {
-    padding: 5px;
-    margin: 5px;
-    border-radius: 5px;
-  }
+#variants-container {
+  padding: 5px;
+  margin: 5px;
+  border-radius: 5px;
+}
 
-  #value-container {
-    @apply --paper-font-caption;
-    border-bottom: 1px dotted var(--booed-shadow-color);
-  }
+#value-container {
+  @apply --paper-font-caption;
+  border-bottom: 1px dotted var(--booed-shadow-color);
+}
 
-  #value-container iron-icon {
-    --iron-icon-height: 14px;
-  }
+#value-container iron-icon {
+  --iron-icon-height: 14px;
+}
 
-  </style>
-    </custom-style>
+</style>
 
-    <div class="vertical layout">
-  <div id="variants-container" class="paper-material vertical layout start-justified" elevation="1">
-
-    <template is="dom-if" if="{{variant.value}}">
-      <div id="value-container" class="horizontal layout center">
-        [[variant.value]]
-        <template is="dom-if" if="{{variant.variants}}">
-          <iron-icon icon="chevron-right"></iron-icon>
-          [[variant.type]]
-        </template>
-      </div>
-    </template>
-    <!-- Type Selector -->
-      <template is="dom-if" if="{{variantsDataList.length}}">
-    <div class="horizontal layout">
-      <paper-dropdown-menu
-        style="width:95px;margin-right:10px"
-        label="ตัวเลือก"
-      > <paper-listbox
-          attr-for-selected="name"
-          slot="dropdown-content"
-          class="dropdown-content layout start"
-          selected="{{selectedTypeDef.name}}"
-        > <template is="dom-repeat" items="[[menu.entries]]">
-            <paper-icon-item label="[[item.title]]" name="[[item.name]]">
-              <iron-icon icon="[[item.icon]]" slot="item-icon"></iron-icon>
-              [[item.title]]
-            </paper-icon-item>
-          </template>
-        </paper-listbox>
-      </paper-dropdown-menu>
-
-      <template is="dom-if" if="[[testEqual(selectedTypeDef.name,'custom')]]">
-
-        <mg-input
-          label="ชื่อ"
-          value="{{selectedTypeDef.custom}}"
-          min-width="70"
-        > <iron-icon icon="editor:mode-edit" slot="prefix"></iron-icon>
-        </mg-input>
-
-      </template>
-      <template is="dom-if" if="[[testEqual(selectedTypeDef.name,'price')]]">
-        <paper-dropdown-menu
-          style="width:95px"
-          label="สกุลเงิน"
-        > <paper-listbox
-            slot="dropdown-content"
-            class="dropdown-content"
-            attr-for-selected="currency"
-            selected="{{selectedTypeDef.custom}}"
-          > <paper-icon-item label="บาท" currency="thb">
-              <iron-icon icon="booed:attach-money-thb" slot="item-icon"></iron-icon> บาท
-            </paper-icon-item>
-            <paper-icon-item label="เยน" currency="jpy">
-              <iron-icon icon="booed:attach-money-jpy" slot="item-icon"></iron-icon> เยน
-            </paper-icon-item>
-            <paper-icon-item label="วอน" currency="krw">
-              <iron-icon icon="booed:attach-money-krw" slot="item-icon"></iron-icon> วอน
-            </paper-icon-item>
-            <paper-icon-item label="ยูเอสดอลล่าร์" currency="usd">
-              <iron-icon icon="editor:attach-money" slot="item-icon"></iron-icon> ยูเอสดอลล่าร์
-            </paper-icon-item>
-          </paper-listbox>
-        </paper-dropdown-menu>
+  <div class="vertical layout">
+<div id="variants-container" class="paper-material vertical layout start-justified" elevation="1">
+  <!-- Editor title -->
+  <template is="dom-if" if="{{variant.value}}">
+    <div id="value-container" class="horizontal layout center">
+      [[variant.value]]
+      <template is="dom-if" if="{{variant.variants}}">
+        <iron-icon icon="chevron-right"></iron-icon>
+        [[variant.type]]
       </template>
     </div>
-      </template>
-
-    <!-- Children List -->
-    <iron-selector
-      id="variant-selector"
-      attr-for-selected="name"
-      selected-attribute="selected"
-      selected="{{selectedKey}}"
-      > <template is="dom-repeat" items="{{variantsDataList}}">
-      <mg-variant-cell
-        name="[[item.key$]]"
-        variant-type="[[_computeType(selectedTypeDef.name,selectedTypeDef.custom)]]"
-        variant="{{item}}"
-      ></mg-variant-cell>
-        </template>
-    </iron-selector>
-
-    <!-- Comment -->
-      <template is="dom-if" if="{{_hasComment(variant.comment)}}">
-    <mg-input
-      label="คอมเม้นท์"
-      value="{{variant.comment}}"
-      min-width="150"
-    > <iron-icon icon="editor:mode-edit" slot="prefix"></iron-icon>
-    </mg-input>
-      </template>
-
-    <!-- Foot Buttons -->
-    <div class="horizontal layout center-justified">
-      <paper-icon-button
-        icon="add"
-        on-click="_onAddVariant"
-      ></paper-icon-button>
-
-      <paper-icon-button
-        icon="remove"
-        on-click="_onRemoveVariant"
-        disabled="[[!selectedKey]]"
-      ></paper-icon-button>
-
-      <paper-icon-button
-        icon="booed:duplicate-selection"
-        on-click="_onDuplicateSelection"
-        disabled="[[!selectedKey]]"
-      ></paper-icon-button>
-
-      <paper-icon-button
-        icon="{{_formatIconComment(variant.comment)}}"
-        on-click="_onToggleComment"
-      ></paper-icon-button>
-
-    </div>
-
-  </div>
-    </div>
-
-  <template is="dom-if" if="[[selectedSubvariant]]">
-    <mg-variant-editor
-      menu="[[menu]]"
-      variant="{{selectedSubvariant}}"
-      depth="[[_deeper(depth)]]"
-    ></mg-variant-editor>
   </template>
 
-</template>
-<script>
+    <!-- Type Selector -->
+    <template is="dom-if" if="{{variantsDataList.length}}">
+  <div class="horizontal layout">
+    <paper-dropdown-menu
+      style="width:95px;margin-right:10px"
+      label="ตัวเลือก"
+    > <paper-listbox
+        attr-for-selected="name"
+        slot="dropdown-content"
+        class="dropdown-content layout start"
+        selected="{{selectedTypeDef.name}}"
+      > <template is="dom-repeat" items="[[menu.entries]]">
+          <paper-icon-item label="[[item.title]]" name="[[item.name]]">
+            <iron-icon icon="[[item.icon]]" slot="item-icon"></iron-icon>
+            [[item.title]]
+          </paper-icon-item>
+        </template>
+      </paper-listbox>
+    </paper-dropdown-menu>
+
+    <template is="dom-if" if="[[testEqual(selectedTypeDef.name,'custom')]]">
+
+      <mg-input
+        label="ชื่อ"
+        value="{{selectedTypeDef.custom}}"
+        min-width="70"
+      > <iron-icon icon="editor:mode-edit" slot="prefix"></iron-icon>
+      </mg-input>
+
+    </template>
+
+      <template is="dom-if" if="[[testEqual(selectedTypeDef.name,'price')]]">
+    <paper-dropdown-menu
+      style="width:95px"
+      label="สกุลเงิน"
+    > <paper-listbox
+        slot="dropdown-content"
+        class="dropdown-content"
+        attr-for-selected="currency"
+        selected="{{selectedTypeDef.custom}}"
+      > <paper-icon-item label="บาท" currency="thb">
+      <iron-icon icon="booed:attach-money-thb" slot="item-icon"></iron-icon> บาท
+        </paper-icon-item>
+        <paper-icon-item label="เยน" currency="jpy">
+      <iron-icon icon="booed:attach-money-jpy" slot="item-icon"></iron-icon> เยน
+        </paper-icon-item>
+        <paper-icon-item label="วอน" currency="krw">
+      <iron-icon icon="booed:attach-money-krw" slot="item-icon"></iron-icon> วอน
+        </paper-icon-item>
+        <paper-icon-item label="ยูเอสดอลล่าร์" currency="usd">
+      <iron-icon icon="editor:attach-money" slot="item-icon"></iron-icon> ยูเอสดอลล่าร์
+        </paper-icon-item>
+      </paper-listbox>
+    </paper-dropdown-menu>
+      </template>
+
+  </div>
+    </template>
+    <!-- End: Type Selector -->
+
+  <!-- Children List -->
+  <iron-selector
+    id="variant-selector"
+    attr-for-selected="name"
+    selected-attribute="selected"
+    selected="{{selectedKey}}"
+    > <template is="dom-repeat" items="{{variantsDataList}}">
+    <mg-variant-cell
+      name="[[item.key$]]"
+      variant-type="[[_computeType(selectedTypeDef.name,selectedTypeDef.custom)]]"
+      variant="{{item}}"
+    ></mg-variant-cell>
+      </template>
+  </iron-selector>
+
+  <!-- Comment -->
+    <template is="dom-if" if="{{_hasComment(variant.comment)}}">
+  <mg-input
+    label="คอมเม้นท์"
+    value="{{variant.comment}}"
+    min-width="150"
+  > <iron-icon icon="editor:mode-edit" slot="prefix"></iron-icon>
+  </mg-input>
+    </template>
+
+  <!-- Foot Buttons -->
+  <div class="horizontal layout center-justified">
+<paper-icon-button
+  icon="add"
+  on-click="_onAddVariant"
+></paper-icon-button>
+<paper-icon-button
+  icon="remove"
+  on-click="_onRemoveVariant"
+  disabled="[[!selectedKey]]"
+></paper-icon-button>
+<paper-icon-button
+  icon="booed:duplicate-selection"
+  on-click="_onDuplicateSelection"
+  disabled="[[!selectedKey]]"
+></paper-icon-button>
+<paper-icon-button
+  icon="{{_formatIconComment(variant.comment)}}"
+  on-click="_onToggleComment"
+></paper-icon-button>
+  </div>
+
+</div>
+  </div>
+
+  <!-- Child editor -->
+  <template is="dom-if" if="[[selectedSubvariant]]">
+<mg-variant-editor
+  menu="[[menu]]"
+  variant="{{selectedSubvariant}}"
+  depth="[[_deeper(depth)]]"
+></mg-variant-editor>
+  </template>
+
+  </template>
+  <script>
 class MGVariantsEditor extends Polymer.Element {
   static get is() { return 'mg-variant-editor'; }
 
@@ -476,5 +475,5 @@ class MGVariantsEditor extends Polymer.Element {
 }
 
 customElements.define(MGVariantsEditor.is, MGVariantsEditor);
-</script>
-</dom-module>
+  </script>
+    </dom-module>

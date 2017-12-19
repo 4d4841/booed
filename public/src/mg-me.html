@@ -13,84 +13,82 @@
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 
-<dom-module id="mg-list">
+    <dom-module id="mg-list">
   <script>
-  (function(){
-    class MGMe extends Polymer.Element {
-      static get is() { return 'mg-me'; }
+class MGMe extends Polymer.Element {
+  static get is() { return 'mg-me'; }
 
-      static get properties() { return {
+  static get properties() { return {
 
-        me: {
-          type: Object,
-          notify: true,
-        },
+    me: {
+      type: Object,
+      notify: true,
+    },
 
-        displayName: {
-          type: String,
-          notify: true,
-        },
+    displayName: {
+      type: String,
+      notify: true,
+    },
 
-        photoURL: {
-          type: String,
-          readOnly: true,
-          notify: true,
-        },
+    photoURL: {
+      type: String,
+      readOnly: true,
+      notify: true,
+    },
 
-        waiting: {
-          type: Boolean,
-          value: false,
-          notify: true,
-        },
-      }}
+    waiting: {
+      type: Boolean,
+      value: false,
+      notify: true,
+    },
+  }}
 
-      static get observers() { return [
-        '_displayNameChanged(user.displayName)',
-        '_photoURLChanged(user.photoURL)',
-      ]}
+  static get observers() { return [
+    '_displayNameChanged(user.displayName)',
+    '_photoURLChanged(user.photoURL)',
+  ]}
 
-      connectedCallback() {
-        super.connectedCallback();
-        MHA.AU.onAuthStateChanged(this._onAuthStateChanged.bind(this));
-      }
+  connectedCallback() {
+    super.connectedCallback();
+    MHA.AU.onAuthStateChanged(this._onAuthStateChanged.bind(this));
+  }
 
-      _displayNameChanged(name) {
-        name = name || '👻';
-        this.set('me.displayName', name);
-      }
-      
-      _photoURLChanged(photoURL) {
-        this._setPhotoURL(photoURL);
+  _displayNameChanged(name) {
+    name = name || '👻';
+    this.set('me.displayName', name);
+  }
+
+  _photoURLChanged(photoURL) {
+    this._setPhotoURL(photoURL);
 //        this.set('me.photoURL', photoURL);
-      }
+  }
 
 
-      _onAuthStateChanged(user) {
-        this.set('me.user',user);
-        this.set('me.waiting', false);
-      }
+  _onAuthStateChanged(user) {
+    this.set('me.user',user);
+    this.set('me.waiting', false);
+  }
 
-      googleSignIn() {
-        this.set('me.waiting', true);
-        MHA.AU.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(
-          function() {
-            var provider = new firebase.auth.GoogleAuthProvider();
-            return MHA.AU.signInWithRedirect(provider);
-          })
-          .catch(function(error) {
-            var errorCode = error.code;
-            var errorMessage = error.message;
-            console.log("Error", error);
-          });
-      }
+  googleSignIn() {
+    this.set('me.waiting', true);
+    MHA.AU.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(
+      function() {
+        var provider = new firebase.auth.GoogleAuthProvider();
+        return MHA.AU.signInWithRedirect(provider);
+      })
+      .catch(function(error) {
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        console.log("Error", error);
+      });
+  }
 
-      signOut() {
-        MHA.AU.signOut();
-        this.set('me.waiting', false);
-      }
-    }
+  signOut() {
+    MHA.AU.signOut();
+    this.set('me.waiting', false);
+  }
+}
 
-    customElements.define(MGMe.is, MGMe);
-  })();
+customElements.define(MGMe.is, MGMe);
   </script>
-</dom-module>
+    </dom-module>

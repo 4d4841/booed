@@ -39,205 +39,192 @@
 <link rel="import" href="mg-input.html">
 <link rel="import" href="mg-sections.html">
 
-<dom-module id="mg-about">
-<template>
-    <custom-style>
-  <style include="iron-flex iron-flex-alignment">
+    <dom-module id="mg-about">
+  <template>
+<style include="iron-flex iron-flex-alignment">
 
-    :host {
-      color: var(--booed-secondary-color);
-      @apply --layout-vertical;
-      @apply --layout-center;
-      @apply --layout-center-justified;
-    }
+:host {
+  color: var(--booed-secondary-color);
+  @apply --layout-vertical;
+  @apply --layout-center;
+  @apply --layout-center-justified;
+}
 
-    h1 {
-      font-weight: 300;
-    }
+h1 {
+  font-weight: 300;
+}
 
-    .github {
-      margin-top: 50px;
-      width: 240px;
-      height: 240px;
-      border-radius: 40px;
-      padding: 10px;
-      overflow: hidden;
-      @apply --layout-vertical;
-      @apply --layout-center;
-      --paper-card-content: {
-        box-shadow: inset 0px 5px 6px -3px rgba(255, 0, 0, 1.0);
-      }
-    }
+.github {
+  margin-top: 50px;
+  width: 240px;
+  height: 240px;
+  border-radius: 40px;
+  padding: 10px;
+  overflow: hidden;
+  @apply --layout-vertical;
+  @apply --layout-center;
+  --paper-card-content: {
+    box-shadow: inset 0px 5px 6px -3px rgba(255, 0, 0, 1.0);
+  }
+}
 
-    paper-slider {
-      height: 20px;
-      width: 300px;
-    }
+paper-slider {
+  height: 20px;
+  width: 300px;
+}
 
-    .button {
-      width: 80px;
-      height: 80px;
-    }
+.button {
+  width: 80px;
+  height: 80px;
+}
 
-    .logo-button {
-      width: 400px;
-      height: 100px;
-      margin-left: 15px;
-        border-radius: 0;
-      --paper-button: {
-        border-radius: 0;
-      }
-    }
+.logo-button {
+  width: 400px;
+  height: 100px;
+  margin-left: 15px;
+    border-radius: 0;
+  --paper-button: {
+    border-radius: 0;
+  }
+}
 
-    a:link {
-      text-decoration: none;
-    }
+a:link {
+  text-decoration: none;
+}
 
-    iron-icon[icon="gorenger:akarenger"] {
-      color: black;
-      background: radial-gradient(circle at center, tomato 0, crimson 55%, transparent 55%);
-    }
+iron-icon[icon="gorenger:akarenger"] {
+  color: black;
+  background: radial-gradient(circle at center, tomato 0, crimson 55%, transparent 55%);
+}
 
-    iron-icon[icon="gorenger:aorenger"] {
-      color: black;
-      background: radial-gradient(circle at center, skyblue 0, royalblue 55%, transparent 55%);
-    }
+iron-icon[icon="gorenger:aorenger"] {
+  color: black;
+  background: radial-gradient(circle at center, skyblue 0, royalblue 55%, transparent 55%);
+}
 
-    iron-icon[icon="gorenger:kirenger"] {
-      color: black;
-      background: radial-gradient(circle at center, yellow 0, gold 55%, transparent 55%);
-    }
+iron-icon[icon="gorenger:kirenger"] {
+  color: black;
+  background: radial-gradient(circle at center, yellow 0, gold 55%, transparent 55%);
+}
 
-    iron-icon[icon="gorenger:momorenger"] {
-      color: crimson;
-      background: radial-gradient(circle at center, white 0, pink 55%, transparent 55%);
-    }
+iron-icon[icon="gorenger:momorenger"] {
+  color: crimson;
+  background: radial-gradient(circle at center, white 0, pink 55%, transparent 55%);
+}
 
-    iron-icon[icon="gorenger:midorenger"] {
-      color: black;
-      background: radial-gradient(circle at center, olivedrab 0, darkolivegreen 55%, transparent 55%);
-    }
+iron-icon[icon="gorenger:midorenger"] {
+  color: black;
+  background: radial-gradient(circle at center, olivedrab 0, darkolivegreen 55%, transparent 55%);
+}
 
-    .display-icon {
-      display: block;
-      @apply --layout-center;
-      @apply --layout-center-justified;
-      width: calc(var(--display-icon-size,21px) + 10px);
-      height: calc(var(--display-icon-size,21px) + 10px);
-      --iron-icon-width: var(--display-icon-size,21px);
-      --iron-icon-height: var(--display-icon-size,21px);
-      /*
-      --iron-icon-width: 32px;
-      --iron-icon-height: 32px;
-      */
-      @apply --layout-vertical;
-      @apply --layout-center;
-    }
+.display-icon {
+  display: block;
+  @apply --layout-center;
+  @apply --layout-center-justified;
+  width: calc(var(--display-icon-size,21px) + 10px);
+  height: calc(var(--display-icon-size,21px) + 10px);
+  --iron-icon-width: var(--display-icon-size,21px);
+  --iron-icon-height: var(--display-icon-size,21px);
+  /*
+  --iron-icon-width: 32px;
+  --iron-icon-height: 32px;
+  */
+  @apply --layout-vertical;
+  @apply --layout-center;
+}
 
-    .display-icon-card {
-      font-size: 10px;
-      min-width: 80px;
-      @apply --layout-vertical;
-      @apply --layout-center;
-      @apply --layout-start-justified;
-      width: calc(var(--display-icon-size,21px) + 20px);
-      padding: 5px;
-      word-wrap: break-word;
-      margin: 5px;
-    }
+.display-icon-card {
+  font-size: 10px;
+  min-width: 80px;
+  @apply --layout-vertical;
+  @apply --layout-center;
+  @apply --layout-start-justified;
+  width: calc(var(--display-icon-size,21px) + 20px);
+  padding: 5px;
+  word-wrap: break-word;
+  margin: 5px;
+}
 
-    .display-icon-card[matched] .display-icon {
-      color: var(--google-blue-700);
-    }
+.display-icon-card[matched] .display-icon {
+  color: var(--google-blue-700);
+}
 
-    mg-sections {
-      background-color: snow;
-      width: calc(100vw - 20px);
-      border-bottom:1px dashed var(--booed-shadow-color)
-    }
+mg-sections {
+  background-color: snow;
+  width: calc(100vw - 20px);
+  border-bottom:1px dashed var(--booed-shadow-color)
+}
 
-  </style>
-    </custom-style>
+</style>
 
-  <iron-pages
-    class="vertical layout center"
-    selected="[[page]]"
-    attr-for-selected="name"
-    selected-attribute="visible"
-    fallback-selection="card"
-  > <paper-card class="github layout self-center" name="card">
-      <a href="/">
-        <paper-icon-button src="/images/logo-bounce-in.svg" class="logo-button layout vertical center-justified" noink>
-      </a>
-      <a href="https://github.com/4d4841/booed">
-        <paper-icon-button src="https://assets-cdn.github.com/images/modules/logos_page/Octocat.png" class="button layout vertical center-justified" noink>
-        </paper-icon-button>
-      </a>
-    </paper-card>
+<iron-pages
+  class="vertical layout center"
+  selected="[[page]]"
+  attr-for-selected="name"
+  selected-attribute="visible"
+  fallback-selection="card"
+> <paper-card class="github layout self-center" name="card">
+    <a href="/">
+      <paper-icon-button src="/images/logo-bounce-in.svg" class="logo-button layout vertical center-justified" noink>
+    </a>
+    <a href="https://github.com/4d4841/booed">
+      <paper-icon-button src="https://assets-cdn.github.com/images/modules/logos_page/Octocat.png" class="button layout vertical center-justified" noink>
+      </paper-icon-button>
+    </a>
+  </paper-card>
 
-    <div name="icons" style="width:100%;height:100%;font-size:16px" class="vertical layout">
+  <div name="icons" style="width:100%;height:100%;font-size:16px" class="vertical layout">
 
-        <template is="dom-if" if="[[clickedIcon]]">
-      <paper-dialog class="horizontal layout start" style="border-radius:5px" class="horizontal layout center center-justified" id="dialog" opened="{{clickedIcon}}">
-
-        <iron-icon icon="[[clickedIcon]]"></iron-icon>
-
-        <div id="icon-xml-source" class="flex" style="font-family:monospace;font-size:12px;word-break: break-all">
-          [[_formatXMLIcon(clickedIcon)]]
-        </div>
-
-      </paper-dialog>
-        </template>
-
-          <div class="horizontal layout start-justified wrap" style="box-sizing:border-box ;border-bottom: 1px dashed var(--booed-shadow-color)">
-        <template
-          id="repeater"
-          is="dom-repeat"
-          items="{{iconSets}}"
-          observe="show"
-          filter="_showObserver"
-        >
-      <paper-checkbox checked="{{item.show}}" style="height:30px;margin-left: 10px; font-size:14px">
-        [[item.name]]
-      </paper-checkbox>
-        </template>
-          </div>
-
-
-        <app-toolbar>
-      <div style="margin-top:20px" >Size:</div>
-      <paper-slider style="margin-top:20px" value="{{iconSize}}" min="10" max="200" editable></paper-slider>
-      <div class="flex"></div>
-
-      <mg-input
-        label="Space-separated keywords or regexes"
-        icon="search"
-        value="{{willSearch}}"
-        autofocus
-      ></mg-input>
-        </app-toolbar>
-
-      <mg-sections sections="{{iconSections}}" class="icons-container horizontal layout wrap">
-
-          <template id="repeater" is="dom-repeat" items="[[iconList]]">
-        <div slot="[[item.section]]" class="display-icon-card" on-click="_onClickIcon" matched$="[[_matchesSection(item.section)]]">
-          <div class="display-icon vertical layout center">
-            <iron-icon icon$="[[item.set]]:[[item.id]]"></iron-icon>
-          </div>
-          <span style="word-wrap:break-word;width:calc(100% - 10px)">[[item.id]]</span>
-        </div>
-          </template>
-
-      </mg-sections>
-
-      <!--footer-->
-      <div style="height:50px">
-      </div>
-
+<template is="dom-if" if="[[clickedIcon]]">
+  <paper-dialog class="horizontal layout start" style="border-radius:5px" class="horizontal layout center center-justified" id="dialog" opened="{{clickedIcon}}">
+    <iron-icon icon="[[clickedIcon]]"></iron-icon>
+    <div id="icon-xml-source" class="flex" style="font-family:monospace;font-size:12px;word-break: break-all">
+      [[_formatXMLIcon(clickedIcon)]]
     </div>
+  </paper-dialog>
+</template>
 
+<div class="horizontal layout start-justified wrap" style="box-sizing:border-box ;border-bottom: 1px dashed var(--booed-shadow-color)">
+  <template
+    id="repeater"
+    is="dom-repeat"
+    items="{{iconSets}}"
+    observe="show"
+    filter="_showObserver"
+  > <paper-checkbox checked="{{item.show}}" style="height:30px;margin-left: 10px; font-size:14px">
+      [[item.name]]
+    </paper-checkbox>
+  </template>
+</div>
 
-  </iron-pages>
+<app-toolbar>
+  <div style="margin-top:20px" >Size:</div>
+  <paper-slider style="margin-top:20px" value="{{iconSize}}" min="10" max="200" editable></paper-slider>
+  <div class="flex"></div>
+  <mg-input
+    label="Space-separated keywords or regexes"
+    icon="search"
+    value="{{willSearch}}"
+    autofocus
+  ></mg-input>
+</app-toolbar>
+
+<mg-sections sections="{{iconSections}}" class="icons-container horizontal layout wrap">
+  <template id="repeater" is="dom-repeat" items="[[iconList]]">
+    <div slot="[[item.section]]" class="display-icon-card" on-click="_onClickIcon" matched$="[[_matchesSection(item.section)]]">
+      <div class="display-icon vertical layout center">
+        <iron-icon icon$="[[item.set]]:[[item.id]]"></iron-icon>
+      </div>
+      <span style="word-wrap:break-word;width:calc(100% - 10px)">[[item.id]]</span>
+    </div>
+  </template>
+</mg-sections>
+
+<!--footer-->
+<div style="height:50px">
+</div>
+  </div>
+</iron-pages>
 
 <app-route
     route="{{route}}"
@@ -246,9 +233,8 @@
     tail="{{subroute}}">
 </app-route>
 
-</template>
-<script>
-
+  </template>
+  <script>
 class MGAbout extends Polymer.Element {
 
   static get is() { return 'mg-about'; }
@@ -445,8 +431,6 @@ class MGAbout extends Polymer.Element {
   }
 
 }
-
 customElements.define(MGAbout.is, MGAbout);
-
-</script>
-</dom-module>
+  </script>
+    </dom-module>

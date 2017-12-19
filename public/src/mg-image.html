@@ -15,183 +15,180 @@
 <link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 
-<dom-module id="mg-image">
-
+    <dom-module id="mg-image">
   <template>
 
-    <style>
+<style>
 
-      :host {
-        display: block;
-        background-repeat: no-repeat;
-        background-position: center;
-        box-sizing: border-box;
-        @apply --mg-image;
-      }
+:host {
+  display: block;
+  background-repeat: no-repeat;
+  background-position: center;
+  box-sizing: border-box;
+  @apply --mg-image;
+}
 
-    </style>
+</style>
 
-    <slot></slot>
+<slot></slot>
 
   </template>
 
   <script>
 
-    class MGImage extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element) {
+class MGImage extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element) {
 
-      static get is() { return 'mg-image'; }
+  static get is() { return 'mg-image'; }
 
-      static get properties() { return {
+  static get properties() { return {
 
-        alt: String,
+    alt: String,
 
-        width: {
-          type: Number,
-        },
+    width: {
+      type: Number,
+    },
 
-        height: {
-          type: Number,
-        },
+    height: {
+      type: Number,
+    },
 
-        /* XXX
-        storage: {
-          type: String,
-          observer: '_storageChanged',
-        },
-        */
+    /* XXX
+    storage: {
+      type: String,
+      observer: '_storageChanged',
+    },
+    */
 
-        src: {
-          type: String,
-          value: "",
-          observer: '_srcChanged',
-        },
+    src: {
+      type: String,
+      value: "",
+      observer: '_srcChanged',
+    },
 
-        roi: {
-          type: Array,
-        },
+    roi: {
+      type: Array,
+    },
 
-        sizing: {
-          type: String,
-          value: "cover",
-          observer: '_sizingChanged',
-        },
+    sizing: {
+      type: String,
+      value: "cover",
+      observer: '_sizingChanged',
+    },
 
-        positioning: {
-          type: String,
-          value: "center",
-          observer: '_positioningChanged',
-        },
+    positioning: {
+      type: String,
+      value: "center",
+      observer: '_positioningChanged',
+    },
 
-        placeholder: {
-          type: String,
-          value: '',
-          observer: '_placeholderChanged'
-        },
+    placeholder: {
+      type: String,
+      value: '',
+      observer: '_placeholderChanged'
+    },
 
-        loaded: {
-          type: Boolean,
-          value: false,
-          notify: true,
-        },
+    loaded: {
+      type: Boolean,
+      value: false,
+      notify: true,
+    },
 
-      }}
+  }}
 
-      static get observers() { return [
-        '_roiChanged(roi,naturalWidth,naturalHeight,width,height)',
-      ]}
+  static get observers() { return [
+    '_roiChanged(roi,naturalWidth,naturalHeight,width,height)',
+  ]}
 
-      _sizingChanged(sizing) {
-        this.style.backgroundSize = sizing;
+  _sizingChanged(sizing) {
+    this.style.backgroundSize = sizing;
+  }
+
+  _positioningChanged(positioning) {
+    this.style.backgroundPosition = positioning;
+  }
+
+  /* XXX Add a property to prevent scaling of cover mode, just for keeping ROIs in frames */
+  _roiChanged(roi, nw, nh, width, height) {
+    this.set('loaded',false);
+
+    if (width && width != 'auto') this.style.width = width+'px';
+    if (height && height != 'auto') this.style.height = height+'px';
+
+    if (roi && nw && nh) {
+      width = width || this.clientWidth;
+      height = height || this.clientHeight;
+      let vw = width;
+      let vh = height;
+
+      /* convert 0..1 to natural geometry */
+      let l = roi[0] * nw;
+      let t = roi[1] * nh;
+      let w = roi[2] * nw;
+      let h = roi[3] * nh;
+
+      if (w/h > vw/vh) {
+        /* fit horizontal */
+        vh = vw * h/w;
+      } else {
+        /* fit vertical */
+        vw = vh * w/h;
       }
 
-      _positioningChanged(positioning) {
-        this.style.backgroundPosition = positioning;
-      }
+      let s = vw/w;
 
-      /* XXX Add a property to prevent scaling of cover mode, just for keeping ROIs in frames */
-      _roiChanged(roi, nw, nh, width, height) {
-        this.set('loaded',false);
+      let x = (width-vw)/2 - l*s;
+      let y = (height-vh)/2 - t*s;
 
-        if (width && width != 'auto') this.style.width = width+'px';
-        if (height && height != 'auto') this.style.height = height+'px';
+      this.set('sizing', `${nw*s}px ${nh*s}px`);
+      this.set('positioning', `${x}px ${y}px`);
+    } else {
+      this.set('sizing', 'cover');
+      this.set('positioning', 'center');
+    }
+    this.set('loaded',true);
+  }
 
-        if (roi && nw && nh) {
-          width = width || this.clientWidth;
-          height = height || this.clientHeight;
-          let vw = width;
-          let vh = height;
-
-          /* convert 0..1 to natural geometry */
-          let l = roi[0] * nw;
-          let t = roi[1] * nh;
-          let w = roi[2] * nw;
-          let h = roi[3] * nh;
-
-          if (w/h > vw/vh) {
-            /* fit horizontal */
-            vh = vw * h/w;
-          } else {
-            /* fit vertical */
-            vw = vh * w/h;
-          }
-
-          let s = vw/w;
-
-          let x = (width-vw)/2 - l*s;
-          let y = (height-vh)/2 - t*s;
-
-          this.set('sizing', `${nw*s}px ${nh*s}px`);
-          this.set('positioning', `${x}px ${y}px`);
-        } else {
-          this.set('sizing', 'cover');
-          this.set('positioning', 'center');
-        }
-        this.set('loaded',true);
-      }
-
-      _srcChanged(src) {
-        if (src) {
-          this.set('loaded',false);
-          let imgLoader = new Image();
-          imgLoader.onload = e => {
-            /* src has changed, discards updates */
-            if (imgLoader.src != MGAbsoluteUrl(this.src)) {
-              return;
-            }
-
-            this.style.backgroundImage = 'url(\'' + imgLoader.src + '\')';
-            this.setProperties({
-              naturalWidth: imgLoader.naturalWidth,
-              naturalHeight: imgLoader.naturalHeight,
-            });
-            this.set('loaded',true);
-          };
-          imgLoader.src = src;
-        } else {
-          if (!this.placeholder) {
-            this.style.backgroundImage = 'none';
-          } else this.style.backgroundImage = 'url(\'' + this.placeholder + '\')';
-          this.set('loaded',false);
-        }
-      }
-
-      _placeholderChanged(placeholder) {
-
-        if (this.style.backgroundImage) {
+  _srcChanged(src) {
+    if (src) {
+      this.set('loaded',false);
+      let imgLoader = new Image();
+      imgLoader.onload = e => {
+        /* src has changed, discards updates */
+        if (imgLoader.src != MGAbsoluteUrl(this.src)) {
           return;
         }
 
-        if (!placeholder) {
-          this.style.backgroundImage = "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)";
-        } else {
-          this.style.backgroundImage = 'url(\'' + placeholder + '\')';
-        }
-      }
+        this.style.backgroundImage = 'url(\'' + imgLoader.src + '\')';
+        this.setProperties({
+          naturalWidth: imgLoader.naturalWidth,
+          naturalHeight: imgLoader.naturalHeight,
+        });
+        this.set('loaded',true);
+      };
+      imgLoader.src = src;
+    } else {
+      if (!this.placeholder) {
+        this.style.backgroundImage = 'none';
+      } else this.style.backgroundImage = 'url(\'' + this.placeholder + '\')';
+      this.set('loaded',false);
+    }
+  }
 
+  _placeholderChanged(placeholder) {
+
+    if (this.style.backgroundImage) {
+      return;
     }
 
-    customElements.define(MGImage.is, MGImage);
+    if (!placeholder) {
+      this.style.backgroundImage = "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=)";
+    } else {
+      this.style.backgroundImage = 'url(\'' + placeholder + '\')';
+    }
+  }
 
+}
+
+customElements.define(MGImage.is, MGImage);
   </script>
-
-</dom-module>
+    </dom-module>

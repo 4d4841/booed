@@ -18,308 +18,304 @@
 <link rel="import" href="mg-badge-button.html">
 <link rel="import" href="mg-menu.html">
 
-<dom-module id="mg-profile-button">
+    <dom-module id="mg-profile-button">
   <template strip-whitespace>
-      <custom-style>
-    <style include="mg-badge-button">
-      .arrow {
-        pointer-events: none;
-        position: absolute;
-        top: -4px;
-      }
+<style include="mg-badge-button">
+.arrow {
+  pointer-events: none;
+  position: absolute;
+  top: -4px;
+}
 
-      /*
-      #pyramid {
-        width: 0;
-        height: 0;
-        border-left: 10px solid transparent;
-        border-right: 10px solid transparent;
-        border-bottom: 10px solid black;
-        position: absolute;
-        margin-top:30px;
-        margin-left:10px;
-      }
-      */
+/*
+#pyramid {
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 10px solid black;
+  position: absolute;
+  margin-top:30px;
+  margin-left:10px;
+}
+*/
 
-      .photo {
-        height: 200px;
-        width: 200px;
-        background-size: contain;
-        margin: 0px;
-      }
+.photo {
+  height: 200px;
+  width: 200px;
+  background-size: contain;
+  margin: 0px;
+}
 
-      h3  {
-        padding: 0;
-        margin: 0;
-        padding-bottom: 20px;
-      }
+h3  {
+  padding: 0;
+  margin: 0;
+  padding-bottom: 20px;
+}
 
-      .under-photo {
-        background: linear-gradient(
-          transparent 0,
-          purple 100px);
-        background-repeat: no-repeat;
-        color: white;
-        text-align: left;
-        text-shadow: 1px 1px 3px #200020;
-        max-height: 40px;
-        line-height: 20px;
-        height: 40px;
-        width: 200px;
-        z-index:1;
-        display: block;
-        position: absolute;
-        top: 160px;
-        overflow: hidden;
-        padding-left: 10px;
-        box-sizing: border-box;
-        pointer-events: none;
-      }
+.under-photo {
+  background: linear-gradient(
+    transparent 0,
+    purple 100px);
+  background-repeat: no-repeat;
+  color: white;
+  text-align: left;
+  text-shadow: 1px 1px 3px #200020;
+  max-height: 40px;
+  line-height: 20px;
+  height: 40px;
+  width: 200px;
+  z-index:1;
+  display: block;
+  position: absolute;
+  top: 160px;
+  overflow: hidden;
+  padding-left: 10px;
+  box-sizing: border-box;
+  pointer-events: none;
+}
 
 
-      #id-card {
-        width:200px;
-        border-radius: 5px;
-        overflow: hidden;
-        box-sizing: border-box;
-        @apply --layout-vertical;
-        @apply --layout-end-justified;
-        position: absolute;
-        top: 36px;
-        right: 0;
-      }
+#id-card {
+  width:200px;
+  border-radius: 5px;
+  overflow: hidden;
+  box-sizing: border-box;
+  @apply --layout-vertical;
+  @apply --layout-end-justified;
+  position: absolute;
+  top: 36px;
+  right: 0;
+}
 
-      #panel {
-        display: none;
-        transition: opacity 0.25s;
-      }
+#panel {
+  display: none;
+  transition: opacity 0.25s;
+}
 
-      #panel[show] {
-        display: block;
-      }
+#panel[show] {
+  display: block;
+}
 
-      .button {
-        margin: 0;
-        height: 40px;
-        width: 100%;
-        --paper-button: {
-          @apply --layout-horizontal;
-          @apply --layout-start-justified;
-          font-family: 'Mitr', sans-serif;
-          font-size: 16px;
-        };
-      }
+.button {
+  margin: 0;
+  height: 40px;
+  width: 100%;
+  --paper-button: {
+    @apply --layout-horizontal;
+    @apply --layout-start-justified;
+    font-family: 'Mitr', sans-serif;
+    font-size: 16px;
+  };
+}
 
-      .button:not(:last-of-type) {
-        border-bottom: 1px dashed tomato;
-      }
+.button:not(:last-of-type) {
+  border-bottom: 1px dashed tomato;
+}
 
-      .button iron-icon {
-        margin-right: 10px;
-      }
+.button iron-icon {
+  margin-right: 10px;
+}
 
-      a {
-        color: var(--booed-primary-color);
-      }
-      a:link {
-            text-decoration: none;
-      }
+a {
+  color: var(--booed-primary-color);
+}
+a:link {
+      text-decoration: none;
+}
 
-    </style>
-      </custom-style>
+</style>
 
-      <div id="panel" show$="[[showPanel]]">
-    <svg class="arrow">
-      <defs id="defs2">
-        <filter id="blurshadow">
-          <feGaussianBlur stdDeviation="1.2" />
-        </filter>
-      </defs>
-      <path
-        transform="translate(13,31)"
-        id="arrow-shadow"
-        d="M 16,10 0,10 8,0 Z"
-        style="opacity:0.3;fill:#000000;stroke:none;filter:url(#blurshadow);" />
-    </svg>
+  <div id="panel" show$="[[showPanel]]">
+<svg class="arrow">
+  <defs id="defs2">
+    <filter id="blurshadow">
+      <feGaussianBlur stdDeviation="1.2" />
+    </filter>
+  </defs>
+  <path
+    transform="translate(13,31)"
+    id="arrow-shadow"
+    d="M 16,10 0,10 8,0 Z"
+    style="opacity:0.3;fill:#000000;stroke:none;filter:url(#blurshadow);" />
+</svg>
 
-    <paper-card id="id-card">
-      <div class="under-photo">
-        <h3>[[me.user.email]]<br>[[me.user.displayName]]</h3>
-      </div>
-      <paper-button style="padding:0;margin:0" on-tap="_openProfile">
-      <iron-image
-        class="photo"
-        src="[[image]]"
-        sizing="cover"
-      ></iron-image>
-      </paper-button>
-      <mg-menu path="{{route.path}}" menu="[[menu.entries.0.submenu]]"></mg-menu>
-    </paper-card>
+  <paper-card id="id-card">
+<div class="under-photo">
+  <h3>[[me.user.email]]<br>[[me.user.displayName]]</h3>
+</div>
+<paper-button style="padding:0;margin:0" on-tap="_openProfile">
+<iron-image
+  class="photo"
+  src="[[image]]"
+  sizing="cover"
+></iron-image>
+</paper-button>
+<mg-menu path="{{route.path}}" menu="[[menu.entries.0.submenu]]"></mg-menu>
+  </paper-card>
 
-    <svg class="arrow"
-      xmlns:svg="http://www.w3.org/2000/svg"
-      xmlns="http://www.w3.org/2000/svg"
-      xmlns:xlink="http://www.w3.org/1999/xlink"
-      viewBox="0 0 200 200"
-      preserveAspectRatio="none"
-      width="200"
-      height="200"
-      overflow="visible"
-      ><clipPath id="arrow-mask">
-        <path
-          transform="translate(173,10) scale(1,-1)"
-          id="arrow"
-          d="M 16,10 0,10 8,0 Z"
-        />
-      </clipPath>
-      <image id="arrow"
-        clip-path="url(#arrow-mask)"
-        transform="translate(-160,40) scale(1,-1)"
-        height="200px"
-        width="200px"
-      />
-    </svg>
+<svg class="arrow"
+  xmlns:svg="http://www.w3.org/2000/svg"
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  viewBox="0 0 200 200"
+  preserveAspectRatio="none"
+  width="200"
+  height="200"
+  overflow="visible"
+> <clipPath id="arrow-mask">
+    <path
+      transform="translate(173,10) scale(1,-1)"
+      id="arrow"
+      d="M 16,10 0,10 8,0 Z"
+    />
+  </clipPath>
+  <image id="arrow"
+    clip-path="url(#arrow-mask)"
+    transform="translate(-160,40) scale(1,-1)"
+    height="200px"
+    width="200px"
+  />
+</svg>
   </div>
-
-
 
   </template>
   <script>
-  (function() {
-  let memoizedTemplate;
+(function() {
+let memoizedTemplate;
 
-    class MGProfileButton extends MGBadgeButton {
-      static get is() { return 'mg-profile-button'; }
+  class MGProfileButton extends MGBadgeButton {
+    static get is() { return 'mg-profile-button'; }
 
-      static get template() {
-        if (!memoizedTemplate) {
-          memoizedTemplate = Polymer.DomModule.import(this.is, 'template');
-          let superTemplateContents = document.importNode(MGBadgeButton.template.content, true);
-          let insert = memoizedTemplate.content.querySelector('#panel');
-          memoizedTemplate.content.insertBefore(superTemplateContents, insert);
-        }
-        return memoizedTemplate;
+    static get template() {
+      if (!memoizedTemplate) {
+        memoizedTemplate = Polymer.DomModule.import(this.is, 'template');
+        let superTemplateContents = document.importNode(MGBadgeButton.template.content, true);
+        let insert = memoizedTemplate.content.querySelector('#panel');
+        memoizedTemplate.content.insertBefore(superTemplateContents, insert);
       }
+      return memoizedTemplate;
+    }
 
-      static get properties() { return {
-        icon: {
-          type: String,
-          value: "booed:pumpkin"
-        },
-        pathStyle: {
-          type: String,
-          value: "fill:tomato;fill-rule:evenodd;opacity:0.9"
-        },
-        showPanel: {
-          type: Boolean,
-          value: false,
-        },
-        me: {
-          type: Object,
-        },
-        route: {
-          type: Object,
-          notify: true
-        },
-        menu: Object,
-      }}
+    static get properties() { return {
+      icon: {
+        type: String,
+        value: "booed:pumpkin"
+      },
+      pathStyle: {
+        type: String,
+        value: "fill:tomato;fill-rule:evenodd;opacity:0.9"
+      },
+      showPanel: {
+        type: Boolean,
+        value: false,
+      },
+      me: {
+        type: Object,
+      },
+      route: {
+        type: Object,
+        notify: true
+      },
+      menu: Object,
+    }}
 
-      static get observers() { return [
-        '_avatarChanged(me.user.photoURL)',
-        '_waitingChanged(me.waiting)',
-      ]}
+    static get observers() { return [
+      '_avatarChanged(me.user.photoURL)',
+      '_waitingChanged(me.waiting)',
+    ]}
 
-      connectedCallback() {
-        super.connectedCallback();
-        window.addEventListener('close-contextual-menu', this._closeSubmenu.bind(this));
+    connectedCallback() {
+      super.connectedCallback();
+      window.addEventListener('close-contextual-menu', this._closeSubmenu.bind(this));
 
-        this.addEventListener('blur', e => {
-          this.$.panel.style.opacity = 0;
-          Polymer.Async.timeOut.run(() => {
-            this.showPanel = false;
-          }, 250);
-        },true);
-      }
-
-      _avatarChanged(photoURL) {
-        if (photoURL) {
-          this.icon = null;
-          this.image = photoURL;
-          this.$.button.style.color = "rgba(0,0,0,0)";
-
-          /* Fill the arrow area with a flip image of profile photo to polish
-          the continuity with the profile photo */
-
-          this.$.arrow.setAttributeNS('http://www.w3.org/1999/xlink','href', photoURL);
-        }
-        else {
-          this.icon = "booed:pumpkin";
-          this.image = '';
-          this.$.button.style.color = "var(--booed-primary-color)";
-          this.$.arrow.setAttributeNS('http://www.w3.org/1999/xlink','href', '');
-
-          this.$.panel.style.opacity = 0;
-          Polymer.Async.timeOut.run(() => {
-            this.showPanel = false;
-          }, 250);
-        }
-      }
-
-      _waitingChanged(waiting) {
-        this.set('spinnerActive',waiting);
-      }
-
-      _closeSubmenu(e) {
-        if (e.detail && e.detail.sender != this) {
-          this.$.panel.style.opacity = 0;
-          Polymer.Async.timeOut.run(() => {
-            this.showPanel = false;
-          }, 250);
-        }
-      }
-
-      _canShowPanel(me,showPanel) {
-        return me && me.user && this.showPanel;
-      }
-
-      _onButtonClick(e) {
-        let sp = !this.showPanel;
-        if (!this.me || !this.me.user) {
-          this._openProfile(e);
-        } else if (!this.route.path.startsWith("/user/profile")) {
-          if (sp) {
-            this.set('showPanel', true);
-            Polymer.Async.timeOut.run(() => {
-              this.$.panel.style.opacity = 1;
-            }, 0);
-          }
-          else {
-            this.$.panel.style.opacity = 0;
-            Polymer.Async.timeOut.run(() => {
-              this.set('showPanel',!this.showPanel);
-            }, 250);
-          }
-        }
-
-        if (sp) {
-          this.dispatchEvent(new CustomEvent('close-contextual-menu', {
-            bubbles: true, composed: true, detail:{sender:this}}));
-        }
-
-        this.focus();
-      }
-
-      _openProfile(e) {
+      this.addEventListener('blur', e => {
         this.$.panel.style.opacity = 0;
         Polymer.Async.timeOut.run(() => {
           this.showPanel = false;
         }, 250);
-        this.set('route.path','/user/profile');
-      }
-
+      },true);
     }
 
-    customElements.define(MGProfileButton.is, MGProfileButton);
-  })();
+    _avatarChanged(photoURL) {
+      if (photoURL) {
+        this.icon = null;
+        this.image = photoURL;
+        this.$.button.style.color = "rgba(0,0,0,0)";
+
+        /* Fill the arrow area with a flip image of profile photo to polish
+        the continuity with the profile photo */
+
+        this.$.arrow.setAttributeNS('http://www.w3.org/1999/xlink','href', photoURL);
+      }
+      else {
+        this.icon = "booed:pumpkin";
+        this.image = '';
+        this.$.button.style.color = "var(--booed-primary-color)";
+        this.$.arrow.setAttributeNS('http://www.w3.org/1999/xlink','href', '');
+
+        this.$.panel.style.opacity = 0;
+        Polymer.Async.timeOut.run(() => {
+          this.showPanel = false;
+        }, 250);
+      }
+    }
+
+    _waitingChanged(waiting) {
+      this.set('spinnerActive',waiting);
+    }
+
+    _closeSubmenu(e) {
+      if (e.detail && e.detail.sender != this) {
+        this.$.panel.style.opacity = 0;
+        Polymer.Async.timeOut.run(() => {
+          this.showPanel = false;
+        }, 250);
+      }
+    }
+
+    _canShowPanel(me,showPanel) {
+      return me && me.user && this.showPanel;
+    }
+
+    _onButtonClick(e) {
+      let sp = !this.showPanel;
+      if (!this.me || !this.me.user) {
+        this._openProfile(e);
+      } else if (!this.route.path.startsWith("/user/profile")) {
+        if (sp) {
+          this.set('showPanel', true);
+          Polymer.Async.timeOut.run(() => {
+            this.$.panel.style.opacity = 1;
+          }, 0);
+        }
+        else {
+          this.$.panel.style.opacity = 0;
+          Polymer.Async.timeOut.run(() => {
+            this.set('showPanel',!this.showPanel);
+          }, 250);
+        }
+      }
+
+      if (sp) {
+        this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+          bubbles: true, composed: true, detail:{sender:this}}));
+      }
+
+      this.focus();
+    }
+
+    _openProfile(e) {
+      this.$.panel.style.opacity = 0;
+      Polymer.Async.timeOut.run(() => {
+        this.showPanel = false;
+      }, 250);
+      this.set('route.path','/user/profile');
+    }
+
+  }
+
+  customElements.define(MGProfileButton.is, MGProfileButton);
+})();
   </script>
-</dom-module>
+    </dom-module>

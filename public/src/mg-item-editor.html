@@ -17,56 +17,51 @@
 <link rel="import" href="mg-input.html">
 <link rel="import" href="mg-clipboard-view.html">
 
-<dom-module id="mg-item-editor">
-<template strip-whitespace>
+    <dom-module id="mg-item-editor">
+  <template strip-whitespace>
+<style>
 
-    <custom-style>
-  <style>
+:host {
+  display: block;
+  background-size: 60%;
+  background-position: center;
+  @apply --layout-vertical;
+  @apply --layout-flex;
+  border-radius: 5px;
+}
 
-  :host {
-    display: block;
-    background-size: 60%;
-    background-position: center;
-    @apply --layout-vertical;
-    @apply --layout-flex;
-    border-radius: 5px;
-  }
+:host([empty]){
+  display: none;
+}
 
-  :host([empty]){
-    display: none;
-  }
+#name-editor {
+  margin-left: 8px;
+  margin-right: 20px;
+}
 
-  #name-editor {
-    margin-left: 8px;
-    margin-right: 20px;
-  }
+mg-clipboard-view {
+  margin-right: 20px;
+}
 
-  mg-clipboard-view {
-    margin-right: 20px;
-  }
+@media (max-width: 767px) {
+}
 
-  @media (max-width: 767px) {
-  }
+</style>
 
-  </style>
-    </custom-style>
+  <div class="horizontal layout">
+<mg-input
+  id="name-editor"
+  label="[[_formatLabelDescription(itemRole)]]"
+  icon="[[iconForRole(itemRole)]]"
+  focused="{{focusedName}}"
+  value="{{itemName}}"
+></mg-input>
+  </div>
 
-    <div class="horizontal layout">
-  <mg-input
-    id="name-editor"
-    label="[[_formatLabelDescription(itemRole)]]"
-    icon="[[iconForRole(itemRole)]]"
-    focused="{{focusedName}}"
-    value="{{itemName}}"
-  ></mg-input>
-    </div>
+<mg-clipboard-view></mg-clipboard-view>
 
-  <mg-clipboard-view
-  ></mg-clipboard-view>
-
-</template>
-<script>
-
+  </template>
+  <script>
 var MGItemEditor
 (function() {
 
@@ -182,6 +177,5 @@ MGItemEditor = class __MGItemEditor extends Polymer.Element {
 
 customElements.define(MGItemEditor.is, MGItemEditor);
 })();
-
-</script>
-</dom-module>
+  </script>
+    </dom-module>

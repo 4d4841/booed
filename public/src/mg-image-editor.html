@@ -23,210 +23,214 @@
 <link rel="import" href="mg-image.html">
 <link rel="import" href="mg-balloon.html">
 
-<dom-module id="mg-image-editor">
+    <dom-module id="mg-image-editor">
   <template strip-whitespace>
-      <custom-style>
-    <style include="mg-common-styles iron-flex iron-flex-alignment">
+<style include="mg-common-styles iron-flex iron-flex-alignment">
 
-      :host {
-        display: none;
-        position: absolute;
-        width: 0;
-        height: 0;
-        @apply --layout-vertical;
-        @apply --layout-center-justified;
-        @apply --layout-center;
-        background-color: black;
-        opacity: 0;
-        transition: opacity 0.25s;
-        z-index:-1;
-      }
+:host {
+  display: none;
+  position: absolute;
+  width: 0;
+  height: 0;
+  @apply --layout-vertical;
+  @apply --layout-center-justified;
+  @apply --layout-center;
+  background-color: black;
+  opacity: 0;
+  transition: opacity 0.25s;
+  z-index:-1;
+}
 
-      :host([active]) {
-        display: block;
-        position: fixed;
-        z-index:1000;
-        width:100%;
-        height:100%;
-        top: 0;
-        left: 0;
-        @apply --layout-vertical;
-        @apply --layout-center-justified;
-        @apply --layout-center;
-      }
+:host([active]) {
+  display: block;
+  position: fixed;
+  z-index:1000;
+  width:100%;
+  height:100%;
+  top: 0;
+  left: 0;
+  @apply --layout-vertical;
+  @apply --layout-center-justified;
+  @apply --layout-center;
+}
 
-      .image-info {
-        color: lightgray;
-        position: absolute;
-        top: 0;
-        left: 0;
-      }
+.image-info {
+  color: lightgray;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
 
-      #thumbnail {
-        pointer-events: none;
-        border-radius: 5px 5px 0 0;
-        overflow: hidden;
-        border-bottom: 1px solid gray;
-      }
+#thumbnail {
+  pointer-events: none;
+  border-radius: 5px 5px 0 0;
+  overflow: hidden;
+  border-bottom: 1px solid gray;
+}
 
-      #thumbnail-balloon {
-        display: none;
-        position: absolute;
-        z-index: 10;
-        transition: width 1s, height 1s;
-      }
+#thumbnail-balloon {
+  display: none;
+  position: absolute;
+  z-index: 10;
+  transition: width 1s, height 1s;
+}
 
-      .control-panel {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        width: calc(100% - 10px);
-      }
+.control-panel {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: calc(100% - 10px);
+}
 
-      .edit-buttons {
-        color: lightgray;
-      }
+.edit-buttons {
+  color: lightgray;
+}
 
-      .edit-buttons paper-icon-button[icon=image:photo-size-select-large] {
-        color: lightgray;
-      }
+.edit-buttons paper-icon-button[icon=image:photo-size-select-large] {
+  color: lightgray;
+}
 
-      .thumbnail-panel-buttons paper-icon-button[icon=close],
-      .edit-buttons paper-icon-button[icon=close][edited] {
-        color: red;
-      }
+.thumbnail-panel-buttons paper-icon-button[icon=close],
+.edit-buttons paper-icon-button[icon=close][edited] {
+  color: red;
+}
 
-      .thumbnail-panel-buttons paper-icon-button[icon=done],
-      .edit-buttons paper-icon-button[icon=done][edited] {
-        color: green;
-      }
+.thumbnail-panel-buttons paper-icon-button[icon=done],
+.edit-buttons paper-icon-button[icon=done][edited] {
+  color: green;
+}
 
-      .edit-buttons paper-icon-button:active {
-        color: white;
-      }
+.edit-buttons paper-icon-button:active {
+  color: white;
+}
 
-      .navigator-buttons paper-icon-button {
-        color: white;
-      }
+.navigator-buttons paper-icon-button {
+  color: white;
+}
 
-      #view {
-        background-size: contain;
-        pointer-events: none;
-      }
+#view {
+  background-size: contain;
+  pointer-events: none;
+}
 
-      /*
-      #image-container {
-        height: calc(100% - 120px);
-        width: calc(100% - 60px);
-        border: 1px solid red;
-        pointer-events: none;
-      }
-      */
+/*
+#image-container {
+  height: calc(100% - 120px);
+  width: calc(100% - 60px);
+  border: 1px solid red;
+  pointer-events: none;
+}
+*/
 
 
-    </style>
-      </custom-style>
+</style>
 
     <div class="image-info" hidden$="[[loading]]">
-      <template is="dom-if" if="[[!data.item]]">
-        <span>clipboard data<iron-icon style="--iron-icon-height:15px" icon="help"></iron-icon>
-          <paper-tooltip>
-            editing clipboard data is not associated with an item until
-            pasting into an item triggers the server syncing.
-            until then all the modifications have hitherto been kept
-            locally within the clipboard.
-          </paper-tooltip>
-        </span><br>
-      </template>
-      <!--
-        <template is="dom-if" if="[[data.name]]"> name: [[data.name]] <br> </template>
-        width: [[imagewidth]]<br>
-        height: [[imageheight]]<br>
-      -->
-    </div>
-    <div class="control-panel horizontal layout justified">
-      <div style="width:120px"></div>
-      <div class="navigator-buttons" hidden$="{{_hidesNavigator(before,data)}}">
-        <paper-icon-button id="skip-previous" icon="av:skip-previous" on-tap="_setPreviousData" hidden$="[[!before]]">
-        </paper-icon-button>
-
-        <paper-icon-button id="skip-next" icon="av:skip-next" on-tap="_setNextData" hidden$="[[!after]]">
-        </paper-icon-button>
-      </div>
-      <div class="edit-buttons">
-
-        <paper-icon-button style="overflow:visible" id="update-thumbnail-button" icon="image:photo-size-select-large" on-tap="_openThumbnailDialog">
-        </paper-icon-button>
-
-        <paper-icon-button id="save-button" icon="done" on-tap="_deactivateSave" edited$="{{edited}}">
-        </paper-icon-button>
-
-        <paper-icon-button id="close-button" icon="close" on-tap="_deactivateClose" edited$="{{edited}}">
-        </paper-icon-button>
-
-        <paper-tooltip for="update-thumbnail-button">Update thumbnail</paper-tooltip>
-        <paper-tooltip for="close-button">Close</paper-tooltip>
-        <paper-tooltip for="save-button">Save changes</paper-tooltip>
-      </div>
+  <template is="dom-if" if="[[!data.item]]">
+<span>clipboard data<iron-icon style="--iron-icon-height:15px" icon="help"></iron-icon>
+  <paper-tooltip>
+    editing clipboard data is not associated with an item until
+    pasting into an item triggers the server syncing.
+    until then all the modifications have hitherto been kept
+    locally within the clipboard.
+  </paper-tooltip>
+</span><br>
+  </template>
     </div>
 
-    <template is="dom-if" if="[[loading]]">
-      <img style="position:absolute" width="200px" height="200px" src="/images/logo-pumpkin-bouncing.svg">
-    </template>
+<div class="control-panel horizontal layout justified">
 
-    <mg-balloon id="thumbnail-balloon"
-      no-overlap
-      vertical-align="top"
-      dynamic-align
-      horizontal-align="auto"
-    > <!--<div class="self-center" id="thumbnail"></div>-->
-      <!--<img src="/images/logo-pumpkin-bouncing.svg" class="self-center" id="thumbnail">-->
-      <mg-image
-        id="thumbnail"
-        src="/images/logo-pumpkin-bouncing.svg"
-        class="self-center"
-        loaded="{{thumbnailLoaded}}"
-        roi="[[data.roiThumbnail]]"
-      >
-      </mg-image>
-      <div class="horizontal layout end-justified thumbnail-panel-buttons" style="width:100%">
-        <paper-icon-button id="save-thumbnail-button" icon="done" on-tap="_setThumbnail">
-        </paper-icon-button>
-      </div>
-    </mg-balloon>
-    <paper-tooltip for="save-thumbnail-button">สร้างทั้มเนลใหม่</paper-tooltip>
+  <div style="width:120px"></div>
 
+  <div class="navigator-buttons" hidden$="{{_hidesNavigator(before,data)}}">
+<paper-icon-button id="skip-previous" icon="av:skip-previous" on-tap="_setPreviousData" hidden$="[[!before]]">
+</paper-icon-button>
+<paper-icon-button id="skip-next" icon="av:skip-next" on-tap="_setNextData" hidden$="[[!after]]">
+</paper-icon-button>
+  </div>
 
-    <svg
-      xmlns:svg="http://www.w3.org/2000/svg"
-      xmlns="http://www.w3.org/2000/svg"
-      xmlns:xlink="http://www.w3.org/1999/xlink"
-      id="view"
-      version="1.1"
-      viewBox="0 0 200 200"
-      preserveAspectRatio="none"
-      width="0"
-      height="0"
-      overflow="visible"
-      hidden$="[[loading]]">
+  <div class="edit-buttons">
+<paper-icon-button
+  style="overflow:visible"
+  id="update-thumbnail-button"
+  icon="image:photo-size-select-large"
+  on-tap="_openThumbnailDialog"
+></paper-icon-button>
+<paper-icon-button
+  id="save-button"
+  icon="done"
+  on-tap="_deactivateSave"
+  edited$="{{edited}}"
+></paper-icon-button>
+<paper-icon-button
+  id="close-button"
+  icon="close"
+  on-tap="_deactivateClose"
+  edited$="{{edited}}"
+></paper-icon-button>
+<paper-tooltip for="update-thumbnail-button">Update thumbnail</paper-tooltip>
+<paper-tooltip for="close-button">Close</paper-tooltip>
+<paper-tooltip for="save-button">Save changes</paper-tooltip>
+  </div>
 
-      <defs>
-        <path id="chevrons" d="M -2.6,4.6 -7.2,0 -2.6,-4.6 -4,-6 -10,0 -4,6 Z M 2.6,4.6 7.2,0 2.6,-4.6 4,-6 10,0 4,6 Z" style$="[[_styleArrow(tracking)]]"/>
-        <path id="chevron" d="M -2.6,4.6 -7.2,0 -2.6,-4.6 -4,-6 -10,0 -4,6 Z" style$="[[_styleArrow(tracking)]]"/>
-        <path id="lock" d="M16 10h-2v2h2v-2zm0 4h-2v2h2v-2zm-8-4H6v2h2v-2zm4 0h-2v2h2v-2zm8-6H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12z"></path>
-      </defs>
-      <use xlink:href="#lock" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataLeft,dataTop,0,0.8)]]" style$="[[_styleLock(scaleFactor,tracking,keepAspect)]]"/>
+</div>
 
-      <path d$="[[rPath]]" style$="[[_styleBorder(scaleFactor,tracking)]]"/>
-      <path d$="[[rPathInner]]" style$="[[_styleBorder(scaleFactor,tracking,keepAspect,1)]]"/>
+<template is="dom-if" if="[[loading]]">
+  <img style="position:absolute" width="200px" height="200px" src="/images/logo-pumpkin-bouncing.svg">
+</template>
 
-      <use id="chevrontop" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataMidW,dataTop,'top')]]" />
-      <use id="chevronleft" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataLeft,dataMidH,'left')]]" />
-      <use id="chevronbottom" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataMidW,dataBottom,'bottom')]]" />
-      <use id="chevronright" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataRight,dataMidH,'right')]]" />
+<mg-balloon id="thumbnail-balloon"
+  no-overlap
+  vertical-align="top"
+  dynamic-align
+  horizontal-align="auto"
+> <!--<div class="self-center" id="thumbnail"></div>-->
+  <!--<img src="/images/logo-pumpkin-bouncing.svg" class="self-center" id="thumbnail">-->
+  <mg-image
+    id="thumbnail"
+    src="/images/logo-pumpkin-bouncing.svg"
+    class="self-center"
+    loaded="{{thumbnailLoaded}}"
+    roi="[[data.roiThumbnail]]"
+  >
+  </mg-image>
+  <div class="horizontal layout end-justified thumbnail-panel-buttons" style="width:100%">
+    <paper-icon-button id="save-thumbnail-button" icon="done" on-tap="_setThumbnail">
+    </paper-icon-button>
+  </div>
+</mg-balloon>
 
-    </svg>
+<paper-tooltip for="save-thumbnail-button">สร้างทั้มเนลใหม่</paper-tooltip>
 
+<svg
+  xmlns:svg="http://www.w3.org/2000/svg"
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  id="view"
+  version="1.1"
+  viewBox="0 0 200 200"
+  preserveAspectRatio="none"
+  width="0"
+  height="0"
+  overflow="visible"
+  hidden$="[[loading]]">
+
+  <defs>
+    <path id="chevrons" d="M -2.6,4.6 -7.2,0 -2.6,-4.6 -4,-6 -10,0 -4,6 Z M 2.6,4.6 7.2,0 2.6,-4.6 4,-6 10,0 4,6 Z" style$="[[_styleArrow(tracking)]]"/>
+    <path id="chevron" d="M -2.6,4.6 -7.2,0 -2.6,-4.6 -4,-6 -10,0 -4,6 Z" style$="[[_styleArrow(tracking)]]"/>
+    <path id="lock" d="M16 10h-2v2h2v-2zm0 4h-2v2h2v-2zm-8-4H6v2h2v-2zm4 0h-2v2h2v-2zm8-6H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12z"></path>
+  </defs>
+  <use xlink:href="#lock" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataLeft,dataTop,0,0.8)]]" style$="[[_styleLock(scaleFactor,tracking,keepAspect)]]"/>
+
+  <path d$="[[rPath]]" style$="[[_styleBorder(scaleFactor,tracking)]]"/>
+  <path d$="[[rPathInner]]" style$="[[_styleBorder(scaleFactor,tracking,keepAspect,1)]]"/>
+
+  <use id="chevrontop" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataMidW,dataTop,'top')]]" />
+  <use id="chevronleft" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataLeft,dataMidH,'left')]]" />
+  <use id="chevronbottom" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataMidW,dataBottom,'bottom')]]" />
+  <use id="chevronright" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataRight,dataMidH,'right')]]" />
+
+</svg>
   </template>
   <script>
 
@@ -237,517 +241,517 @@
  * - Allows representations to have other representations as src.
  */
 
-    class MGImageEditor extends Polymer.GestureEventListeners(
-      Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)
-    ) {
-      static get is() { return 'mg-image-editor'; }
+class MGImageEditor extends Polymer.GestureEventListeners(
+  Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)
+) {
+  static get is() { return 'mg-image-editor'; }
 
-      static get properties() { return {
-        data: {
-          type: Object,
-          notify: true,
-          observer: '_dataChanged',
-        },
-        after: Object,
-        before: Object,
+  static get properties() { return {
+    data: {
+      type: Object,
+      notify: true,
+      observer: '_dataChanged',
+    },
+    after: Object,
+    before: Object,
 
-        rep: {
-          type: String,
-          notify: true,
-          observer: '_repChanged',
-        },
+    rep: {
+      type: String,
+      notify: true,
+      observer: '_repChanged',
+    },
 
-        src: {
-          type: String,
-          observer: '_srcChanged',
-          value: null,
-        },
+    src: {
+      type: String,
+      observer: '_srcChanged',
+      value: null,
+    },
 
-        thumbnailLoaded: {
-          type: Boolean,
-          value: false,
-          observer: '_thumbNailLoaded',
-        },
+    thumbnailLoaded: {
+      type: Boolean,
+      value: false,
+      observer: '_thumbNailLoaded',
+    },
 
-        active: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true,
-        },
+    active: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
 
-        edited: {
-          type: Boolean,
-          value: false,
-        },
+    edited: {
+      type: Boolean,
+      value: false,
+    },
 
-        imageWidth: { type: Number, value: 0 },
-        imageHeight: { type: Number, value: 0 },
-        viewWidth: { type:Number, value: 0 },
-        viewHeight: { type:Number, value: 0 },
+    imageWidth: { type: Number, value: 0 },
+    imageHeight: { type: Number, value: 0 },
+    viewWidth: { type:Number, value: 0 },
+    viewHeight: { type:Number, value: 0 },
 
-        dataTop: {type:Number, value: 0},
-        dataLeft: {type:Number, value: 0},
-        dataWidth: {type:Number, value: 1},
-        dataHeight: {type:Number, value: 1},
-        dataMidH: {type:Number, value: 0.5},
-        dataMidW: {type:Number, value: 0.5},
+    dataTop: {type:Number, value: 0},
+    dataLeft: {type:Number, value: 0},
+    dataWidth: {type:Number, value: 1},
+    dataHeight: {type:Number, value: 1},
+    dataMidH: {type:Number, value: 0.5},
+    dataMidW: {type:Number, value: 0.5},
 
-        dataRight: Number,
-        dataBottom: Number,
+    dataRight: Number,
+    dataBottom: Number,
 
-        scaleFactor: { type: Number, value: 1 },
-        keepAspect: Number,
-        rPath: {
-          type: String,
-          value: "M 0 0 v 0 h 0 v 0 Z",
-        },
-        rPathInner: String,
+    scaleFactor: { type: Number, value: 1 },
+    keepAspect: Number,
+    rPath: {
+      type: String,
+      value: "M 0 0 v 0 h 0 v 0 Z",
+    },
+    rPathInner: String,
 
-        loading: Boolean,
+    loading: Boolean,
 
-        tracking: {
-          type: Object,
-          value: null,
-        },
+    tracking: {
+      type: Object,
+      value: null,
+    },
 
-        imageLoader: Object,
+    imageLoader: Object,
 
-      }}
+  }}
 
-      static get observers() { return [
-        '_dataRectChanged(data.roi)',
-        '_dataThumbnailChanged(data.thumbnail)',
-        '_editorRectChanged(dataLeft, dataTop, dataWidth, dataHeight, imageWidth, imageHeight)',
-        '_updateTitle(active, data.name, imageWidth, imageHeight)',
-      ]}
+  static get observers() { return [
+    '_dataRectChanged(data.roi)',
+    '_dataThumbnailChanged(data.thumbnail)',
+    '_editorRectChanged(dataLeft, dataTop, dataWidth, dataHeight, imageWidth, imageHeight)',
+    '_updateTitle(active, data.name, imageWidth, imageHeight)',
+  ]}
 
-      connectedCallback() {
-        super.connectedCallback();
-        this.addEventListener('iron-resize', e => {
-          this._setImageWH( this.imageWidth, this.imageHeight );
-        },true);
-        Polymer.Gestures.addListener(this, 'track', e => this._onTrack(e));
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener('iron-resize', e => {
+      this._setImageWH( this.imageWidth, this.imageHeight );
+    },true);
+    Polymer.Gestures.addListener(this, 'track', e => this._onTrack(e));
 
-        document.addEventListener('keydown', e => {
-          if (this.active) {
-            if (!e.ctrlKey) {
-              e.preventDefault();
-            }
-
-            switch(e.key) {
-              case 'ArrowLeft':
-                this.set('data',this.before);
-                break;
-              case 'ArrowRight':
-                this.set('data',this.after);
-                break;
-              case 'Control':
-                this.set('keepAspect', this.dataWidth/this.dataHeight);
-                break;
-            }
-          }
-        });
-
-        document.addEventListener('keyup', e => {
-          if (this.active) {
-            if (!e.ctrlKey) {
-              e.preventDefault();
-            }
-
-            switch(e.key) {
-              case 'Escape':
-                e.preventDefault();
-                this._deactivateClose(e);
-              break;
-              case 'Control':
-                this.set('keepAspect', null);
-                break;
-            }
-          }
-        });
-
-      }
-
-      _dataRectChanged(roi) {
-        if (roi) {
-          this.setProperties({
-            dataLeft: roi[0],
-            dataTop: roi[1],
-            dataWidth: roi[2],
-            dataHeight: roi[3],
-          });
-        } else {
-          this.setProperties({
-            dataLeft: 0,
-            dataTop: 0,
-            dataWidth: 1,
-            dataHeight: 1,
-          });
-        }
-      }
-
-      _dataThumbnailChanged(thumbnail) {
-        thumbnail && MHA.registerRepresentation(thumbnail, {
-          src: (key,src) => { if (key == this.data.thumbnail) {
-            this.$.thumbnail.src = src;
-            /* XXX balloon should wrap refit() to have this automatic */
-            Polymer.Async.timeOut.run(() => {
-              this.$['thumbnail-balloon'].refit();
-            }, 0);
-          }}
-        });
-      }
-
-      _editorRectChanged(l,t,w,h,iw,ih) {
-        if (!this.data) {
-          return;
+    document.addEventListener('keydown', e => {
+      if (this.active) {
+        if (!e.ctrlKey) {
+          e.preventDefault();
         }
 
-        this.setProperties({
-          dataRight: l + w,
-          dataBottom: t + h,
-          dataMidW: l + w/2,
-          dataMidH: t + h/2,
-          rPath: `M 0 0 v ${ih} h ${iw} v -${ih} Z M ${l*iw} ${t*ih} h ${w*iw} v ${h*ih} h -${w*iw} Z`,
-          rPathInner: `M ${l*iw} ${t*ih} h ${w*iw} v ${h*ih} h -${w*iw} Z`,
-        });
-
-      }
-
-      _updateTitle(a, n,w,h) {
-        if (a && !this._OldTitle) {
-          this._OldTitle = document.title;
-        }
-        if (!a && this._OldTitle) {
-          document.title = this._OldTitle;
-          delete this._OldTitle;
-        }
-
-        if (w && h && this._OldTitle) {
-          document.title = `${n} (${w}×${h}) - Booed`;
-        }
-      }
-
-      _hidesNavigator(before, data) {
-        if (before == data) return true;
-        return false;
-      }
-
-      _styleLock(lw,tracking,lock) {
-        lw *= 1.3;
-        return lock
-          ? tracking
-            ? 'fill:none; stroke:none'
-            : `fill:gold; stroke-width:${lw/2}; stroke:black`
-          : 'fill:none;stroke:none';
-      }
-
-      _styleBorder(lw,tracking,lock,over) {
-        lw *= 1.3;
-        return over
-          ? tracking
-            ? 'fill:none; stroke:none'
-            : `fill:none; stroke-width:${lw};stroke:${lock ? 'gold' : 'white'}; stroke-dasharray:${lw*3},${lw*3}`
-          : tracking
-            ? 'fill:rgba(0,0,0,0.9); stroke:none'
-            : `fill:none; stroke-width:${lw}; stroke:black`;
-      }
-
-      _styleArrow(tracking) {
-        return tracking
-          ? 'fill:rgba(255,255,255,0.3); stroke:none'
-          : 'fill:white; stroke-width:1; stroke:black';
-      }
-
-      _translateArrows(s,t,w,h,x,y,r,ss) {
-        ss = ss || 1;
-        x = x || 0;
-        y = y || 0;
-        let xlink = "http://www.w3.org/1999/xlink";
-        switch(r) {
-          case 'top':
-            r = t ? 90 : 270;
-            this.$.chevrontop.setAttributeNS(xlink, "href",
-              y > 0 && !t ? '#chevrons' : y == 0 && t ? '' : '#chevron');
-          break;
-          case 'left':
-            r = t ? 0 : 180;
-            this.$.chevronleft.setAttributeNS(xlink, "href",
-              x > 0 && !t ? '#chevrons' : x == 0 && t  ? '' : '#chevron');
+        switch(e.key) {
+          case 'ArrowLeft':
+            this.set('data',this.before);
             break;
-          case 'bottom':
-            r = t ? 270 : 90;
-            this.$.chevronbottom.setAttributeNS(xlink, "href",
-              y < 1 && !t ? '#chevrons' : y == 1 && t  ? '' : '#chevron');
+          case 'ArrowRight':
+            this.set('data',this.after);
             break;
-          case 'right':
-            r = t ? 180 : 0;
-            this.$.chevronright.setAttributeNS(xlink, "href",
-              x < 1 && !t ? '#chevrons' : x == 1 && t  ? '' : '#chevron');
+          case 'Control':
+            this.set('keepAspect', this.dataWidth/this.dataHeight);
             break;
-          default: r = r || 0;
+        }
+      }
+    });
+
+    document.addEventListener('keyup', e => {
+      if (this.active) {
+        if (!e.ctrlKey) {
+          e.preventDefault();
         }
 
-        let ret = `translate(${x*w},${y*h})`;
-        if (r) ret += ` rotate(${r})`;
-        ret+= ` scale(${1.2*s*ss})`;
-
-        return ret;
-      }
-
-      _setImageWH(w,h) {
-        if (!w || !h) return;
-
-        let vw = this.clientWidth - 60;
-        let vh = this.clientHeight - 120;
-
-        if (vw < 0 || vh < 0) return;
-
-        if (w/h > vw/vh) {
-          vh = vw * h/w;
-        } else {
-          vw = vh * w/h;
-        }
-
-        this.setProperties({
-          scaleFactor:  w/vw,
-          viewWidth: vw,
-          viewHeight: vh,
-          imageWidth: w,
-          imageHeight: h,
-          _EW: 20/vw,
-          _EH: 20/vh,
-        });
-
-        this.$.view.setAttribute('width', vw);
-        this.$.view.setAttribute('height', vh);
-        this.$.view.setAttribute('viewBox',`0 0 ${w} ${h}`);
-
-      }
-
-      _onTrack(e) {
-        let originalTarget = e.originalTarget || e.path[0];
-        if (originalTarget != this && originalTarget != this.$.view) return;
-        let viewBB = this.$.view.getBoundingClientRect();
-
-        /* It will store 0..1 in database */
-        let ax = (e.detail.x - viewBB.left) / this.viewWidth;
-        let ay = (e.detail.y - viewBB.top) / this.viewHeight;
-        let ew = this._EW;
-        let eh = this._EH;
-        let ddx = e.detail.ddx / this.viewWidth;
-        let ddy = e.detail.ddy / this.viewHeight;
-
-        switch (e.detail.state) {
-          case 'start':
-            /* Hack to prevent tracking locked into some kind of drag mode with a double-clicking */
+        switch(e.key) {
+          case 'Escape':
             e.preventDefault();
-
-            this.tracking = {
-              ax: ax, ay: ay,
-              ll:this.dataLeft, tt: this.dataTop,
-              ww: this.dataWidth, hh: this.dataHeight,
-              l: 0, t: 0, w: 0, h: 0,
-            };
-
-            if (ax >= this.dataLeft + ew && ax < this.dataRight - ew
-              && ay >= this.dataTop + eh && ay < this.dataBottom - eh) {
-              /* Mousedown in the middle */
-              this.tracking.l = 1;
-              this.tracking.t = 1;
-            } else {
-              if (ax < this.dataLeft + ew) {
-                this.tracking.l = 1;
-                this.tracking.w = -1;
-              } else if (ax >= this.dataRight - ew) {
-                this.tracking.w = 1;
-              }
-
-              if (ay < this.dataTop + eh) {
-                this.tracking.t = 1;
-                this.tracking.h = -1;
-              } else if (ay >= this.dataBottom - eh) {
-                this.tracking.h = 1;
-              }
-            }
-
+            this._deactivateClose(e);
+          break;
+          case 'Control':
+            this.set('keepAspect', null);
             break;
-          case 'end': {
-            this.set('tracking', null);
-            this.set('edited',true);
-            //this.set('data.roi',[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight]);
+        }
+      }
+    });
 
-          } break;
-          case 'track': {
-            let dx = ax - this.tracking.ax;
-            let dy = ay - this.tracking.ay;
+  }
 
-            /* XXXX hack to clear selection */
-            if ( document.selection ) {
-              document.selection.empty();
-            } else if ( window.getSelection ) {
-              window.getSelection().removeAllRanges();
-            }
+  _dataRectChanged(roi) {
+    if (roi) {
+      this.setProperties({
+        dataLeft: roi[0],
+        dataTop: roi[1],
+        dataWidth: roi[2],
+        dataHeight: roi[3],
+      });
+    } else {
+      this.setProperties({
+        dataLeft: 0,
+        dataTop: 0,
+        dataWidth: 1,
+        dataHeight: 1,
+      });
+    }
+  }
 
-            let ll = this.tracking.ll + this.tracking.l * dx;
-            let tt = this.tracking.tt + this.tracking.t * dy;
-            let ww = this.tracking.ww + this.tracking.w * dx;
-            let hh = this.tracking.hh + this.tracking.h * dy;
+  _dataThumbnailChanged(thumbnail) {
+    thumbnail && MHA.registerRepresentation(thumbnail, {
+      src: (key,src) => { if (key == this.data.thumbnail) {
+        this.$.thumbnail.src = src;
+        /* XXX balloon should wrap refit() to have this automatic */
+        Polymer.Async.timeOut.run(() => {
+          this.$['thumbnail-balloon'].refit();
+        }, 0);
+      }}
+    });
+  }
+
+  _editorRectChanged(l,t,w,h,iw,ih) {
+    if (!this.data) {
+      return;
+    }
+
+    this.setProperties({
+      dataRight: l + w,
+      dataBottom: t + h,
+      dataMidW: l + w/2,
+      dataMidH: t + h/2,
+      rPath: `M 0 0 v ${ih} h ${iw} v -${ih} Z M ${l*iw} ${t*ih} h ${w*iw} v ${h*ih} h -${w*iw} Z`,
+      rPathInner: `M ${l*iw} ${t*ih} h ${w*iw} v ${h*ih} h -${w*iw} Z`,
+    });
+
+  }
+
+  _updateTitle(a, n,w,h) {
+    if (a && !this._OldTitle) {
+      this._OldTitle = document.title;
+    }
+    if (!a && this._OldTitle) {
+      document.title = this._OldTitle;
+      delete this._OldTitle;
+    }
+
+    if (w && h && this._OldTitle) {
+      document.title = `${n} (${w}×${h}) - Booed`;
+    }
+  }
+
+  _hidesNavigator(before, data) {
+    if (before == data) return true;
+    return false;
+  }
+
+  _styleLock(lw,tracking,lock) {
+    lw *= 1.3;
+    return lock
+      ? tracking
+        ? 'fill:none; stroke:none'
+        : `fill:gold; stroke-width:${lw/2}; stroke:black`
+      : 'fill:none;stroke:none';
+  }
+
+  _styleBorder(lw,tracking,lock,over) {
+    lw *= 1.3;
+    return over
+      ? tracking
+        ? 'fill:none; stroke:none'
+        : `fill:none; stroke-width:${lw};stroke:${lock ? 'gold' : 'white'}; stroke-dasharray:${lw*3},${lw*3}`
+      : tracking
+        ? 'fill:rgba(0,0,0,0.9); stroke:none'
+        : `fill:none; stroke-width:${lw}; stroke:black`;
+  }
+
+  _styleArrow(tracking) {
+    return tracking
+      ? 'fill:rgba(255,255,255,0.3); stroke:none'
+      : 'fill:white; stroke-width:1; stroke:black';
+  }
+
+  _translateArrows(s,t,w,h,x,y,r,ss) {
+    ss = ss || 1;
+    x = x || 0;
+    y = y || 0;
+    let xlink = "http://www.w3.org/1999/xlink";
+    switch(r) {
+      case 'top':
+        r = t ? 90 : 270;
+        this.$.chevrontop.setAttributeNS(xlink, "href",
+          y > 0 && !t ? '#chevrons' : y == 0 && t ? '' : '#chevron');
+      break;
+      case 'left':
+        r = t ? 0 : 180;
+        this.$.chevronleft.setAttributeNS(xlink, "href",
+          x > 0 && !t ? '#chevrons' : x == 0 && t  ? '' : '#chevron');
+        break;
+      case 'bottom':
+        r = t ? 270 : 90;
+        this.$.chevronbottom.setAttributeNS(xlink, "href",
+          y < 1 && !t ? '#chevrons' : y == 1 && t  ? '' : '#chevron');
+        break;
+      case 'right':
+        r = t ? 180 : 0;
+        this.$.chevronright.setAttributeNS(xlink, "href",
+          x < 1 && !t ? '#chevrons' : x == 1 && t  ? '' : '#chevron');
+        break;
+      default: r = r || 0;
+    }
+
+    let ret = `translate(${x*w},${y*h})`;
+    if (r) ret += ` rotate(${r})`;
+    ret+= ` scale(${1.2*s*ss})`;
+
+    return ret;
+  }
+
+  _setImageWH(w,h) {
+    if (!w || !h) return;
+
+    let vw = this.clientWidth - 60;
+    let vh = this.clientHeight - 120;
+
+    if (vw < 0 || vh < 0) return;
+
+    if (w/h > vw/vh) {
+      vh = vw * h/w;
+    } else {
+      vw = vh * w/h;
+    }
+
+    this.setProperties({
+      scaleFactor:  w/vw,
+      viewWidth: vw,
+      viewHeight: vh,
+      imageWidth: w,
+      imageHeight: h,
+      _EW: 20/vw,
+      _EH: 20/vh,
+    });
+
+    this.$.view.setAttribute('width', vw);
+    this.$.view.setAttribute('height', vh);
+    this.$.view.setAttribute('viewBox',`0 0 ${w} ${h}`);
+
+  }
+
+  _onTrack(e) {
+    let originalTarget = e.originalTarget || e.path[0];
+    if (originalTarget != this && originalTarget != this.$.view) return;
+    let viewBB = this.$.view.getBoundingClientRect();
+
+    /* It will store 0..1 in database */
+    let ax = (e.detail.x - viewBB.left) / this.viewWidth;
+    let ay = (e.detail.y - viewBB.top) / this.viewHeight;
+    let ew = this._EW;
+    let eh = this._EH;
+    let ddx = e.detail.ddx / this.viewWidth;
+    let ddy = e.detail.ddy / this.viewHeight;
+
+    switch (e.detail.state) {
+      case 'start':
+        /* Hack to prevent tracking locked into some kind of drag mode with a double-clicking */
+        e.preventDefault();
+
+        this.tracking = {
+          ax: ax, ay: ay,
+          ll:this.dataLeft, tt: this.dataTop,
+          ww: this.dataWidth, hh: this.dataHeight,
+          l: 0, t: 0, w: 0, h: 0,
+        };
+
+        if (ax >= this.dataLeft + ew && ax < this.dataRight - ew
+          && ay >= this.dataTop + eh && ay < this.dataBottom - eh) {
+          /* Mousedown in the middle */
+          this.tracking.l = 1;
+          this.tracking.t = 1;
+        } else {
+          if (ax < this.dataLeft + ew) {
+            this.tracking.l = 1;
+            this.tracking.w = -1;
+          } else if (ax >= this.dataRight - ew) {
+            this.tracking.w = 1;
+          }
+
+          if (ay < this.dataTop + eh) {
+            this.tracking.t = 1;
+            this.tracking.h = -1;
+          } else if (ay >= this.dataBottom - eh) {
+            this.tracking.h = 1;
+          }
+        }
+
+        break;
+      case 'end': {
+        this.set('tracking', null);
+        this.set('edited',true);
+        //this.set('data.roi',[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight]);
+
+      } break;
+      case 'track': {
+        let dx = ax - this.tracking.ax;
+        let dy = ay - this.tracking.ay;
+
+        /* XXXX hack to clear selection */
+        if ( document.selection ) {
+          document.selection.empty();
+        } else if ( window.getSelection ) {
+          window.getSelection().removeAllRanges();
+        }
+
+        let ll = this.tracking.ll + this.tracking.l * dx;
+        let tt = this.tracking.tt + this.tracking.t * dy;
+        let ww = this.tracking.ww + this.tracking.w * dx;
+        let hh = this.tracking.hh + this.tracking.h * dy;
+
+        if (ll < 0) {
+          ww = ww + ll; ll = 0;
+        } else if (ll + ww > 1) {
+          ww = 1 - ll;
+        }
+
+        if (tt < 0) {
+          hh = hh + tt; tt = 0;
+        } else if (tt + hh > 1) {
+          hh = 1 - tt;
+        }
+
+        if (this.keepAspect) {
+          if (this.tracking.l == 1 && this.tracking.t == 1
+            && this.tracking.w == 0 && this.tracking.h == 0) {
 
             if (ll < 0) {
-              ww = ww + ll; ll = 0;
-            } else if (ll + ww > 1) {
-              ww = 1 - ll;
+              ll = 0;
+            } else if (ll + this.tracking.ww > 1) {
+              ll = 1 - this.tracking.ww;
             }
-
             if (tt < 0) {
-              hh = hh + tt; tt = 0;
-            } else if (tt + hh > 1) {
-              hh = 1 - tt;
+              tt = 0;
+            } else if (tt + this.tracking.hh > 1) {
+              tt = 1 - this.tracking.hh;
+            }
+            ww = this.tracking.ww;
+            hh = this.tracking.hh;
+
+          } else if (this.tracking.l == 1 && this.tracking.w == -1
+            && this.tracking.t == 1 && this.tracking.h == -1 ) {
+            if (ww/hh < this.keepAspect) {
+              hh = ww / this.keepAspect;
+              tt = this.tracking.tt + this.tracking.hh - hh;
+            } else {
+              ww = hh * this.keepAspect;
+              ll = this.tracking.ll + this.tracking.ww - ww;
+            }
+          } else if (this.tracking.l == 0 && this.tracking.w == 1
+            && this.tracking.t == 1 && this.tracking.h == -1 ) {
+            if (ww/hh < this.keepAspect) {
+              hh = ww / this.keepAspect;
+              tt = this.tracking.tt + this.tracking.hh - hh;
+            } else {
+              ww = hh * this.keepAspect;
+            }
+          } else if (this.tracking.l == 1 && this.tracking.w == -1
+            && this.tracking.t == 0 && this.tracking.h == 1 ) {
+            if (ww/hh < this.keepAspect) {
+              hh = ww / this.keepAspect;
+            } else {
+              ww = hh * this.keepAspect;
+              ll = this.tracking.ll + this.tracking.ww - ww;
+            }
+          } else if (this.tracking.w == 1 && this.tracking.h == 1) {
+            if (ww/hh < this.keepAspect) {
+              hh = ww / this.keepAspect;
+            } else {
+              ww = hh * this.keepAspect;
+            }
+          } else if (this.tracking.w) {
+            tt -= ((ww / this.keepAspect) - hh) * 0.5;
+            hh = ww / this.keepAspect;
+
+            if (tt < 0) { tt = 0; }
+            if (tt + hh > 1) { tt = 1 - hh; }
+            if (tt < 0) {
+              hh = 1;
+              ww = hh * this.keepAspect;
+              ll = this.tracking.ll + this.tracking.ww - ww;
             }
 
-            if (this.keepAspect) {
-              if (this.tracking.l == 1 && this.tracking.t == 1
-                && this.tracking.w == 0 && this.tracking.h == 0) {
+          } else if (this.tracking.h) {
+            ll -= ((hh * this.keepAspect) - ww) * 0.5;
+            ww = hh * this.keepAspect;
 
-                if (ll < 0) {
-                  ll = 0;
-                } else if (ll + this.tracking.ww > 1) {
-                  ll = 1 - this.tracking.ww;
-                }
-                if (tt < 0) {
-                  tt = 0;
-                } else if (tt + this.tracking.hh > 1) {
-                  tt = 1 - this.tracking.hh;
-                }
-                ww = this.tracking.ww;
-                hh = this.tracking.hh;
-
-              } else if (this.tracking.l == 1 && this.tracking.w == -1
-                && this.tracking.t == 1 && this.tracking.h == -1 ) {
-                if (ww/hh < this.keepAspect) {
-                  hh = ww / this.keepAspect;
-                  tt = this.tracking.tt + this.tracking.hh - hh;
-                } else {
-                  ww = hh * this.keepAspect;
-                  ll = this.tracking.ll + this.tracking.ww - ww;
-                }
-              } else if (this.tracking.l == 0 && this.tracking.w == 1
-                && this.tracking.t == 1 && this.tracking.h == -1 ) {
-                if (ww/hh < this.keepAspect) {
-                  hh = ww / this.keepAspect;
-                  tt = this.tracking.tt + this.tracking.hh - hh;
-                } else {
-                  ww = hh * this.keepAspect;
-                }
-              } else if (this.tracking.l == 1 && this.tracking.w == -1
-                && this.tracking.t == 0 && this.tracking.h == 1 ) {
-                if (ww/hh < this.keepAspect) {
-                  hh = ww / this.keepAspect;
-                } else {
-                  ww = hh * this.keepAspect;
-                  ll = this.tracking.ll + this.tracking.ww - ww;
-                }
-              } else if (this.tracking.w == 1 && this.tracking.h == 1) {
-                if (ww/hh < this.keepAspect) {
-                  hh = ww / this.keepAspect;
-                } else {
-                  ww = hh * this.keepAspect;
-                }
-              } else if (this.tracking.w) {
-                tt -= ((ww / this.keepAspect) - hh) * 0.5;
-                hh = ww / this.keepAspect;
-
-                if (tt < 0) { tt = 0; }
-                if (tt + hh > 1) { tt = 1 - hh; }
-                if (tt < 0) {
-                  hh = 1;
-                  ww = hh * this.keepAspect;
-                  ll = this.tracking.ll + this.tracking.ww - ww;
-                }
-
-              } else if (this.tracking.h) {
-                ll -= ((hh * this.keepAspect) - ww) * 0.5;
-                ww = hh * this.keepAspect;
-
-                if (ll < 0) { ll = 0; }
-                if (ll + ww > 1) { ll = 1 - ww; }
-                if (ll < 0) {
-                  ww = 1;
-                  hh = ww / this.keepAspect;
-                  tt = this.tracking.tt + this.tracking.hh - hh;
-                }
-              }
+            if (ll < 0) { ll = 0; }
+            if (ll + ww > 1) { ll = 1 - ww; }
+            if (ll < 0) {
+              ww = 1;
+              hh = ww / this.keepAspect;
+              tt = this.tracking.tt + this.tracking.hh - hh;
             }
-
-            /* XXX */
-
-            ll = ll > 1 ? 1 : ll < 0 ? 0 : ll;
-            ww = ww < ew*3 ? ew*3 : ll + ww > 1 ? 1 - ll : ww;
-            if (ll + ww > 1) {ll = 1 - ww;}
-
-            tt = tt > 1 ? 1 : tt < 0 ? 0 : tt;
-            hh = hh < eh*3 ? eh*3 : tt + hh > 1 ? 1 - tt : hh;
-            if (tt + hh > 1) {tt = 1 - hh;}
-
-            this.setProperties({
-              dataLeft: ll,
-              dataTop: tt,
-              dataWidth: ww,
-              dataHeight: hh,
-            });
-
-          } break;
-        }
-      }
-
-      _thumbNailLoaded(loaded) {
-        if (loaded) {
-          let area = (250*250);
-          let tw = this.$.thumbnail.naturalWidth;
-          let th = this.$.thumbnail.naturalHeight;
-
-          if (this.data && this.data.roiThumbnail) {
-            tw *= this.data.roiThumbnail[2];
-            th *= this.data.roiThumbnail[3];
           }
-
-          let w = Math.ceil(Math.sqrt(area * tw/th));
-          let h = Math.ceil(area / w);
-
-          this.$.thumbnail.setProperties({
-            width: w,
-            height: h,
-          });
         }
+
+        /* XXX */
+
+        ll = ll > 1 ? 1 : ll < 0 ? 0 : ll;
+        ww = ww < ew*3 ? ew*3 : ll + ww > 1 ? 1 - ll : ww;
+        if (ll + ww > 1) {ll = 1 - ww;}
+
+        tt = tt > 1 ? 1 : tt < 0 ? 0 : tt;
+        hh = hh < eh*3 ? eh*3 : tt + hh > 1 ? 1 - tt : hh;
+        if (tt + hh > 1) {tt = 1 - hh;}
+
+        this.setProperties({
+          dataLeft: ll,
+          dataTop: tt,
+          dataWidth: ww,
+          dataHeight: hh,
+        });
+
+      } break;
+    }
+  }
+
+  _thumbNailLoaded(loaded) {
+    if (loaded) {
+      let area = (250*250);
+      let tw = this.$.thumbnail.naturalWidth;
+      let th = this.$.thumbnail.naturalHeight;
+
+      if (this.data && this.data.roiThumbnail) {
+        tw *= this.data.roiThumbnail[2];
+        th *= this.data.roiThumbnail[3];
       }
 
-      _dataChanged(data) {
-        this.set('edited',false);
-        if (data) {
-          this.set('active',true);
-          this.style.opacity = 1;
-          this.set('loading', true);
+      let w = Math.ceil(Math.sqrt(area * tw/th));
+      let h = Math.ceil(area / w);
 
-          data.roi || this.set('data.roi', [0,0,1,1] );
-          this.setProperties({
-            rep: data.rep,
-            dataLeft: data.roi[0],
-            dataTop: data.roi[1],
-            dataWidth: data.roi[2],
-            dataHeight: data.roi[3],
-          });
+      this.$.thumbnail.setProperties({
+        width: w,
+        height: h,
+      });
+    }
+  }
 
-        } else {
-          this.set('rep', null);
-          this.set('active',false);
-        }
-      }
+  _dataChanged(data) {
+    this.set('edited',false);
+    if (data) {
+      this.set('active',true);
+      this.style.opacity = 1;
+      this.set('loading', true);
 
-      _repChanged(rep) {
-        if (rep) {
-          MHA.registerRepresentation(rep, {
-            src: (key,src) => { if (key == this.rep) {
+      data.roi || this.set('data.roi', [0,0,1,1] );
+      this.setProperties({
+        rep: data.rep,
+        dataLeft: data.roi[0],
+        dataTop: data.roi[1],
+        dataWidth: data.roi[2],
+        dataHeight: data.roi[3],
+      });
+
+    } else {
+      this.set('rep', null);
+      this.set('active',false);
+    }
+  }
+
+  _repChanged(rep) {
+    if (rep) {
+      MHA.registerRepresentation(rep, {
+        src: (key,src) => { if (key == this.rep) {
 /***
 
 Storage Note: To allow pulling image back from storage, it needs to set CORS using gsutil. eg.
@@ -755,144 +759,143 @@ Storage Note: To allow pulling image back from storage, it needs to set CORS usi
 gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": ["https://be-booed.firebaseapp.com", "http://localhost:5000"], "responseHeader": ["Content-Type"]}]' ) gs://be-booed.appspot.com
 
 ***/
-              this.set('imageLoader', new Image());
-              this.imageLoader.crossOrigin="anonymous";
-              this.imageLoader.onload = e => {
-                this._setImageWH(this.imageLoader.naturalWidth,this.imageLoader.naturalHeight);
-                this.set('src',this.imageLoader.src);
-                this.set('loading', false);
-              };
-              this.imageLoader.src = src;
-            }}
-          });
-        } else {
-          this.set('src',null);
-          this.set('imageLoader', null);
+          this.set('imageLoader', new Image());
+          this.imageLoader.crossOrigin="anonymous";
+          this.imageLoader.onload = e => {
+            this._setImageWH(this.imageLoader.naturalWidth,this.imageLoader.naturalHeight);
+            this.set('src',this.imageLoader.src);
+            this.set('loading', false);
+          };
+          this.imageLoader.src = src;
+        }}
+      });
+    } else {
+      this.set('src',null);
+      this.set('imageLoader', null);
 
-          this.$.view.setAttribute('viewBox','0 0 200 200');
-          this.$.view.setAttribute('width', 200);
-          this.$.view.setAttribute('height', 200);
-        }
-      }
+      this.$.view.setAttribute('viewBox','0 0 200 200');
+      this.$.view.setAttribute('width', 200);
+      this.$.view.setAttribute('height', 200);
+    }
+  }
 
-      _srcChanged(src) {
-        this.$.view.style.backgroundImage = `url(${src})`;
-      }
+  _srcChanged(src) {
+    this.$.view.style.backgroundImage = `url(${src})`;
+  }
 
-      _deactivateClose(e) {
-        this.style.opacity = 0;
-        Polymer.Async.timeOut.run(() => {
-          this.set('data',null);
-        }, 250);
-      }
+  _deactivateClose(e) {
+    this.style.opacity = 0;
+    Polymer.Async.timeOut.run(() => {
+      this.set('data',null);
+    }, 250);
+  }
 
-      _deactivateSave(e) {
-        let roi = (this.dataLeft == 0 && this.dataTop == 0 && this.dataWidth == 1 && this.dataHeight == 1)
-          ? null
-          : [this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight];
-        this.set('data.roi', roi);
-        /* Update database */
-        let itemKey = this.data.item;
-        if (itemKey) {
+  _deactivateSave(e) {
+    let roi = (this.dataLeft == 0 && this.dataTop == 0 && this.dataWidth == 1 && this.dataHeight == 1)
+      ? null
+      : [this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight];
+    this.set('data.roi', roi);
+    /* Update database */
+    let itemKey = this.data.item;
+    if (itemKey) {
 
-            MHA.DB.ref().update({['home/'+MHA.AU.currentUser.uid+'/items/'+itemKey+'/images/'+this.data.key+'/roi']: roi}, error => {
-              error && console.error("ERR",error);
-            });
-        }
-
-        this.set('edited',false);
-        if (!this.after)
-          this._deactivateClose(e)
-      }
-
-      _openThumbnailDialog(e) {
-
-        this.dispatchEvent(new CustomEvent('close-contextual-menu', {
-          bubbles: true, composed: true, detail:{sender:this}
-        }));
-
-        if (this.$['thumbnail-balloon'].visible) {
-          this.$['thumbnail-balloon'].close();
-          return;
-        }
-
-        this.$['thumbnail-balloon'].positionTarget = this.$['update-thumbnail-button'];
-        this.$['thumbnail-balloon'].open();
-        this.$['thumbnail-balloon'].focus();
-      }
-
-      _setThumbnail(e) {
-        let itemKey = this.data.item;
-        if (!itemKey) {
-          /* Does not generate icon if editing clipboard data (no itemKey).
-           * Stores roiThumbnail which will be used to generate the thumbnail
-           * when pasting and replaces thumbnail rep with the image rep so it
-           * will regenerate thumbnail from the original image.
-           */
-
-          this.set('data.roiThumbnail',[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight]);
-          this.set('data.thumbnail',this.data.rep);
-
-          return;
-        }
-
-        let imageKey = this.data.key;
-        console.assert(imageKey, "No image key?!?");
-
-        /* Generating thumbnail with canvas */
-        let area = (250*250);
-
-        let tl = this.imageWidth * this.dataLeft;
-        let tt = this.imageHeight * this.dataTop;
-        let tw = this.imageWidth * this.dataWidth;
-        let th = this.imageHeight * this.dataHeight;
-
-        let w = Math.ceil(Math.sqrt(area * tw/th));
-        let h = Math.ceil(area / w);
-
-        let canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-
-        console.assert(this.imageLoader, "No Image in this!?");
-
-        canvas.getContext('2d').drawImage(this.imageLoader, tl, tt, tw, th, 0, 0, w, h);
-        canvas.toBlob(thumbnailBlob => {
-          MHA.registerRepresentation(thumbnailBlob, {
-            complete: (thumbnailKey,complete) => {
-              /* XXX verify current thumbnailKey */
-
-              MHA.setItem( itemKey, {
-                /* Reset roiThumbnail since it has been baked */
-                images: { [imageKey]: { thumbnail: thumbnailKey, roiThumbnail: null } },
-              });
-
-              let uid = MHA.AU.currentUser.uid;
-              let registerData = {
-                ['representations/'+thumbnailKey+'/uid']: uid,
-                ['home/'+uid+'/items/'+itemKey+'/images/'+imageKey+'/thumbnail']: thumbnailKey,
-              };
-
-              MHA.DB.ref().update(registerData, error => {
-                error && console.error("ERR",error);
-              });
-
-            },
-          });
-        }, 'image/jpeg',0.8);
-
-      }
-
-      _setPreviousData(e) {
-        this.set('data',this.before);
-      }
-
-      _setNextData(e) {
-        this.set('data',this.after);
-      }
-
+        MHA.DB.ref().update({['home/'+MHA.AU.currentUser.uid+'/items/'+itemKey+'/images/'+this.data.key+'/roi']: roi}, error => {
+          error && console.error("ERR",error);
+        });
     }
 
-    customElements.define(MGImageEditor.is, MGImageEditor);
+    this.set('edited',false);
+    if (!this.after)
+      this._deactivateClose(e)
+  }
+
+  _openThumbnailDialog(e) {
+
+    this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+      bubbles: true, composed: true, detail:{sender:this}
+    }));
+
+    if (this.$['thumbnail-balloon'].visible) {
+      this.$['thumbnail-balloon'].close();
+      return;
+    }
+
+    this.$['thumbnail-balloon'].positionTarget = this.$['update-thumbnail-button'];
+    this.$['thumbnail-balloon'].open();
+    this.$['thumbnail-balloon'].focus();
+  }
+
+  _setThumbnail(e) {
+    let itemKey = this.data.item;
+    if (!itemKey) {
+      /* Does not generate icon if editing clipboard data (no itemKey).
+       * Stores roiThumbnail which will be used to generate the thumbnail
+       * when pasting and replaces thumbnail rep with the image rep so it
+       * will regenerate thumbnail from the original image.
+       */
+
+      this.set('data.roiThumbnail',[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight]);
+      this.set('data.thumbnail',this.data.rep);
+
+      return;
+    }
+
+    let imageKey = this.data.key;
+    console.assert(imageKey, "No image key?!?");
+
+    /* Generating thumbnail with canvas */
+    let area = (250*250);
+
+    let tl = this.imageWidth * this.dataLeft;
+    let tt = this.imageHeight * this.dataTop;
+    let tw = this.imageWidth * this.dataWidth;
+    let th = this.imageHeight * this.dataHeight;
+
+    let w = Math.ceil(Math.sqrt(area * tw/th));
+    let h = Math.ceil(area / w);
+
+    let canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+
+    console.assert(this.imageLoader, "No Image in this!?");
+
+    canvas.getContext('2d').drawImage(this.imageLoader, tl, tt, tw, th, 0, 0, w, h);
+    canvas.toBlob(thumbnailBlob => {
+      MHA.registerRepresentation(thumbnailBlob, {
+        complete: (thumbnailKey,complete) => {
+          /* XXX verify current thumbnailKey */
+
+          MHA.setItem( itemKey, {
+            /* Reset roiThumbnail since it has been baked */
+            images: { [imageKey]: { thumbnail: thumbnailKey, roiThumbnail: null } },
+          });
+
+          let uid = MHA.AU.currentUser.uid;
+          let registerData = {
+            ['representations/'+thumbnailKey+'/uid']: uid,
+            ['home/'+uid+'/items/'+itemKey+'/images/'+imageKey+'/thumbnail']: thumbnailKey,
+          };
+
+          MHA.DB.ref().update(registerData, error => {
+            error && console.error("ERR",error);
+          });
+
+        },
+      });
+    }, 'image/jpeg',0.8);
+
+  }
+
+  _setPreviousData(e) {
+    this.set('data',this.before);
+  }
+
+  _setNextData(e) {
+    this.set('data',this.after);
+  }
+}
+
+customElements.define(MGImageEditor.is, MGImageEditor);
   </script>
-</dom-module>
+    </dom-module>

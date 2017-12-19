@@ -19,89 +19,87 @@
 <link rel="import" href="mg-item-image.html">
 <link rel="import" href="mg-image-editor.html">
 
-<dom-module id="mg-clipboard-view">
-<template strip-whitespace>
-    <custom-style>
-  <style is="custom-style" include="mg-common-styles iron-flex iron-flex-alignment">
+    <dom-module id="mg-clipboard-view">
+  <template strip-whitespace>
+<style include="mg-common-styles iron-flex iron-flex-alignment">
 
-    .copied-collapse {
-      background-color: white;
-      border-radius: 5px;
-    }
+.copied-collapse {
+  background-color: white;
+  border-radius: 5px;
+}
 
-    .copied-container {
-      @apply --layout-horizontal;
-      @apply --layout-wrap;
-      box-shadow: inset 1px 1px 1px var(--booed-shadow-color);
-      border-radius: 5px;
-      padding: 5px;
-      margin: 5px;
-      background-color: rgba(0,0,0,0.02);
-    }
+.copied-container {
+  @apply --layout-horizontal;
+  @apply --layout-wrap;
+  box-shadow: inset 1px 1px 1px var(--booed-shadow-color);
+  border-radius: 5px;
+  padding: 5px;
+  margin: 5px;
+  background-color: rgba(0,0,0,0.02);
+}
 
-    .copied-icon {
-      margin: 0 5px 5px 0;
-      --mg-image: {
-        width: 80px;
-        height: 80px;
-      };
-    }
+.copied-icon {
+  margin: 0 5px 5px 0;
+  --mg-image: {
+    width: 80px;
+    height: 80px;
+  };
+}
 
-    .copied-icon:hover .image-edit-button-icon {
-      opacity: 1;
-    }
+.copied-icon:hover .image-edit-button-icon {
+  opacity: 1;
+}
 
-    .image-edit-button-icon {
-      opacity: 0.6;
-      position: absolute;
-      right: 0;
-      top: 0;
-      width: 25px;
-      height: 25px;
-      @apply --layout-self-end;
-      z-index: 3;
-      color: black;
-      background-color: white;
-      box-shadow: inset 1px -1px 1px var(--booed-shadow-color);
-      border-radius: 0 0 0 25%;
-      padding: 3px;
-      --iron-icon-width: 20px;
-      --iron-icon-height: 20px;
-      transition: opacity 1s;
-    }
+.image-edit-button-icon {
+  opacity: 0.6;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 25px;
+  height: 25px;
+  @apply --layout-self-end;
+  z-index: 3;
+  color: black;
+  background-color: white;
+  box-shadow: inset 1px -1px 1px var(--booed-shadow-color);
+  border-radius: 0 0 0 25%;
+  padding: 3px;
+  --iron-icon-width: 20px;
+  --iron-icon-height: 20px;
+  transition: opacity 1s;
+}
 
-  </style>
-    </custom-style>
+</style>
 
-  <iron-collapse class="copied-collapse vertical layout" opened="[[clipboardList.length]]">
-    <div class="copied-container">
+<iron-collapse class="copied-collapse vertical layout" opened="[[clipboardList.length]]">
+  <div class="copied-container">
 
-        <template is="dom-repeat" items="{{clipboardList}}">
-      <mg-item-image
-        key="[[item.key]]"
-        icon="[[_formatRoleIcon(item.role)]]"
-        class="copied-icon"
-        thumbnail="[[item.thumbnail]]"
-        rep="[[item.rep]]"
-        roi="[[item.roiThumbnail]]"
-        label="[[_formatLabel(item.item,item.name,item.role)]]"
-        deleted="[[item.deleted]]"
-        on-tap="_onItemTap"
-      > <paper-icon-button icon="editor:mode-edit" class="image-edit-button-icon" on-tap="_onEditImage">
-        </paper-icon-button>
-      </mg-item-image>
-        </template>
+    <template is="dom-repeat" items="{{clipboardList}}">
+  <mg-item-image
+    key="[[item.key]]"
+    icon="[[_formatRoleIcon(item.role)]]"
+    class="copied-icon"
+    thumbnail="[[item.thumbnail]]"
+    rep="[[item.rep]]"
+    roi="[[item.roiThumbnail]]"
+    label="[[_formatLabel(item.item,item.name,item.role)]]"
+    deleted="[[item.deleted]]"
+    on-tap="_onItemTap"
+  > <paper-icon-button icon="editor:mode-edit" class="image-edit-button-icon" on-tap="_onEditImage">
+    </paper-icon-button>
+  </mg-item-image>
+    </template>
 
-    </div>
-  </iron-collapse>
+  </div>
+</iron-collapse>
 
-  <mg-image-editor
-    id="image-editor"
-    data="{{editingData}}"
-  ></mg-image-editor>
+<mg-image-editor
+  id="image-editor"
+  data="{{editingData}}"
+></mg-image-editor>
 
-</template>
-<script>
+  </template>
+  <script>
 class MGClipboardView extends MGClipboard {
   static get is() { return 'mg-clipboard-view'; }
 
@@ -144,5 +142,5 @@ class MGClipboardView extends MGClipboard {
 }
 
 customElements.define(MGClipboardView.is, MGClipboardView);
-</script>
-</dom-module>
+  </script>
+    </dom-module>

@@ -14,49 +14,47 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="mg-common-styles.html">
 
-
-<dom-module id="mg-modal">
+    <dom-module id="mg-modal">
   <template strip-whitespace>
-    <style>
-      :host {
-        @apply --layout-horizontal;
-      }
+<style>
+:host {
+  @apply --layout-horizontal;
+}
 
-      .badge {
-        z-index: 1;
-        display: block;
-        position: fixed;
-        width: 25px;
-        height: 25px;
-        pointer-events: none;
-      }
+.badge {
+  z-index: 1;
+  display: block;
+  position: fixed;
+  width: 25px;
+  height: 25px;
+  pointer-events: none;
+}
 
-      .badge[hidden] {
-        display:none;
-      }
+.badge[hidden] {
+  display:none;
+}
 
-      paper-icon-button {
-        color: var(--booed-primary-color);
-        --paper-icon-button-ink-color: var(--booed-header-color);
-      }
-    </style>
+paper-icon-button {
+  color: var(--booed-primary-color);
+  --paper-icon-button-ink-color: var(--booed-header-color);
+}
+</style>
 
-    <slot></slot>
-
+<slot></slot>
 
   </template>
   <script>
-    class MGModal extends Polymer.Element {
-      static get is() { return 'mg-modal'; }
+class MGModal extends Polymer.Element {
+  static get is() { return 'mg-modal'; }
 
-      static get properties() { return {
-      }}
+  static get properties() { return {
+  }}
 
-      static get observers() { return [
-      ]}
+  static get observers() { return [
+  ]}
 
-    }
+}
 
-    customElements.define(MGModal.is, MGModal);
+customElements.define(MGModal.is, MGModal);
   </script>
-</dom-module>
+    </dom-module>

@@ -16,65 +16,61 @@
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="mg-icons.html">
 
-<dom-module id="mg-network-warning">
-
+    <dom-module id="mg-network-warning">
   <template>
 
-    <style include="mg-button">
+<style include="mg-button">
 
-      :host {
-        display: block;
-        padding: 40px 20px;
-        text-align: center;
-        color: var(--booed-secondary-color);
-      }
+:host {
+  display: block;
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--booed-secondary-color);
+}
 
-      iron-icon {
-        display: inline-block;
-        width: 30px;
-        height: 30px;
-      }
+iron-icon {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+}
 
-      h1 {
-        margin: 50px 0 10px 0;
-        font-weight: 300;
-      }
+h1 {
+  margin: 50px 0 10px 0;
+  font-weight: 300;
+}
 
-      p {
-        margin: 0;
-      }
+p {
+  margin: 0;
+}
 
-    </style>
+</style>
 
-    <div hidden$="[[offline]]">
-      <h1>Couldn't reach the server</h1>
-    </div>
-    <div hidden$="[[!offline]]">
-      <iron-icon icon="perm-scan-wifi"></iron-icon>
-      <h1>No internet connection</h1>
-      <p>Check if your device is connected to a mobile network or WiFi.</p>
-    </div>
-    <paper-button on-click="_tryReconnect"> Try Again </paper-button>
+<div hidden$="[[offline]]">
+  <h1>Couldn't reach the server</h1>
+</div>
+<div hidden$="[[!offline]]">
+  <iron-icon icon="perm-scan-wifi"></iron-icon>
+  <h1>No internet connection</h1>
+  <p>Check if your device is connected to a mobile network or WiFi.</p>
+</div>
+<paper-button on-click="_tryReconnect"> Try Again </paper-button>
 
   </template>
-
   <script>
 
-    class MGNetworkWarning extends Polymer.Element {
+class MGNetworkWarning extends Polymer.Element {
 
-      static get is() { return 'mg-network-warning'; }
+  static get is() { return 'mg-network-warning'; }
 
-      static get properties() { return {
-        offline: Boolean
-      }}
+  static get properties() { return {
+    offline: Boolean
+  }}
 
-      _tryReconnect() {
-        this.dispatchEvent(new CustomEvent('try-reconnect', {composed: true}));
-      }
-    }
+  _tryReconnect() {
+    this.dispatchEvent(new CustomEvent('try-reconnect', {composed: true}));
+  }
+}
 
-    customElements.define(MGNetworkWarning.is, MGNetworkWarning);
-
+customElements.define(MGNetworkWarning.is, MGNetworkWarning);
   </script>
-
-</dom-module>
+    </dom-module>

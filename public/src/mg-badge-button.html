@@ -18,161 +18,158 @@
 <link rel="import" href="mg-common-styles.html">
 <link rel="import" href="mg-icons.html">
 
-<dom-module id="mg-badge-button">
+    <dom-module id="mg-badge-button">
   <template strip-whitespace>
-      <custom-style>
-    <style include="mg-common-styles iron-flex iron-flex-alignment">
-      :host {
-        @apply --layout-vertical;
-        margin-top:-3px;
-      }
+<style include="mg-common-styles iron-flex iron-flex-alignment">
+  :host {
+    @apply --layout-vertical;
+    margin-top:-3px;
+  }
 
-      .photo-icon {
-        width: 28px;
-        height: 28px;
-        border-radius: 50% 50%;
-        border: 1px solid var(--booed-shadow-color);
-        box-sizing: border-box;
-        position: absolute;
-        pointer-events: none;
-        margin-left: 6px;
-        margin-top: 6px;
-        background-size: contain;
-        box-shadow: inset 1px 1px 3px whitesmoke;
-        /*
-        margin-left:6px;
-        margin-top:6px;
-        */
-      }
+  .photo-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50% 50%;
+    border: 1px solid var(--booed-shadow-color);
+    box-sizing: border-box;
+    position: absolute;
+    pointer-events: none;
+    margin-left: 6px;
+    margin-top: 6px;
+    background-size: contain;
+    box-shadow: inset 1px 1px 3px whitesmoke;
+    /*
+    margin-left:6px;
+    margin-top:6px;
+    */
+  }
 
-      .badge {
-        z-index: 1;
-        display: inline-block;
-        margin-left: 20px;
-        position: absolute;
-        width: 25px;
-        height: 25px;
-        margin-top: 3px;
-        pointer-events: none;
-      }
+  .badge {
+    z-index: 1;
+    display: inline-block;
+    margin-left: 20px;
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    margin-top: 3px;
+    pointer-events: none;
+  }
 
-      .badge[hidden] {
-        display:none;
-      }
+  .badge[hidden] {
+    display:none;
+  }
 
-      #button {
-        transition: color 2s;
-        color: var(--booed-primary-color);
-        /*
-        height: 40px;
-        width: 40px;
-        padding: 10px;
-        */
-        --paper-icon-button-ink-color: var(--booed-header-color);
-        --paper-icon-button : {
-        };
-      }
+  #button {
+    transition: color 2s;
+    color: var(--booed-primary-color);
+    /*
+    height: 40px;
+    width: 40px;
+    padding: 10px;
+    */
+    --paper-icon-button-ink-color: var(--booed-header-color);
+    --paper-icon-button : {
+    };
+  }
 
-    </style>
-      </custom-style>
+</style>
 
-    <paper-spinner-lite style="--paper-spinner-stroke-width:2px;--paper-spinner-color:tomato;position:absolute;top:3px" class="layout self-center" active="{{spinnerActive}}"></paper-spinner-lite>
-    <div id="photoIcon" class="photo-icon" hidden$="[[_noImage(image)]]">
-    </div>
-    <paper-icon-button id="button" on-tap="_onButtonClick" icon="[[icon]]"></paper-icon-button>
+<paper-spinner-lite style="--paper-spinner-stroke-width:2px;--paper-spinner-color:tomato;position:absolute;top:3px" class="layout self-center" active="{{spinnerActive}}"></paper-spinner-lite>
+<div id="photoIcon" class="photo-icon" hidden$="[[_noImage(image)]]">
+</div>
+<paper-icon-button id="button" on-tap="_onButtonClick" icon="[[icon]]"></paper-icon-button>
 
-    <svg class="badge" hidden$="[[_hideBadge(value)]]">
-      <path id="path" d$="[[path]]" style$="[[_computePathStyle(pathStyle)]]">
-        <animateTransform attributeType="xml"
-          attributeName="transform"
-          type="rotate"
-          from="0 12 12"
-          to="360 12 12"
-          dur="5s"
-          repeatCount="indefinite"
-        />
-      </path>
-      <text
-        id="text" y="17" x="12"
-        style$="[[_computeTextStyle(textStyle)]]">
-        [[value]]
-      </text>
-    </svg>
-
-
+<svg class="badge" hidden$="[[_hideBadge(value)]]">
+  <path id="path" d$="[[path]]" style$="[[_computePathStyle(pathStyle)]]">
+    <animateTransform attributeType="xml"
+      attributeName="transform"
+      type="rotate"
+      from="0 12 12"
+      to="360 12 12"
+      dur="5s"
+      repeatCount="indefinite"
+    />
+  </path>
+  <text
+    id="text" y="17" x="12"
+    style$="[[_computeTextStyle(textStyle)]]">
+    [[value]]
+  </text>
+</svg>
   </template>
+
   <script>
-    class MGBadgeButton extends Polymer.Element {
-      static get is() { return 'mg-badge-button'; }
+class MGBadgeButton extends Polymer.Element {
+  static get is() { return 'mg-badge-button'; }
 
-      static get properties() { return {
-        icon: {
-          type: String,
-          value: null,
-        },
-        image: {
-          type: String,
-          value: null,
-          observer: '_imageChanged',
-        },
-        path: {
-          type: String,
-          value: "M 23,12 20.56,9.22 20.9,5.54 17.29,4.72 15.4,1.54 12,3 8.6,1.54 6.71,4.72 3.1,5.53 3.44,9.21 1,12 3.44,14.78 3.1,18.47 6.71,19.29 8.6,22.47 12,21 l 3.4,1.46 1.89,-3.18 3.61,-0.82 -0.34,-3.68 z"
-        },
-        pathStyle: {
-          type: String,
-          value: "fill:tomato;fill-rule:evenodd"
-        },
-        badgeOpacity: {
-          type: Number,
-          value: 0.8
-        },
-        textStyle: {
-          type: String,
-          value: "fill:white"
-        },
-        value: {
-          type: String,
-          value: null
-        },
-        spinnerActive: Boolean,
-      }}
+  static get properties() { return {
+    icon: {
+      type: String,
+      value: null,
+    },
+    image: {
+      type: String,
+      value: null,
+      observer: '_imageChanged',
+    },
+    path: {
+      type: String,
+      value: "M 23,12 20.56,9.22 20.9,5.54 17.29,4.72 15.4,1.54 12,3 8.6,1.54 6.71,4.72 3.1,5.53 3.44,9.21 1,12 3.44,14.78 3.1,18.47 6.71,19.29 8.6,22.47 12,21 l 3.4,1.46 1.89,-3.18 3.61,-0.82 -0.34,-3.68 z"
+    },
+    pathStyle: {
+      type: String,
+      value: "fill:tomato;fill-rule:evenodd"
+    },
+    badgeOpacity: {
+      type: Number,
+      value: 0.8
+    },
+    textStyle: {
+      type: String,
+      value: "fill:white"
+    },
+    value: {
+      type: String,
+      value: null
+    },
+    spinnerActive: Boolean,
+  }}
 
-      static get observers() { return [
-      ]}
+  static get observers() { return [
+  ]}
 
-      _imageChanged(src) {
-        if (src) {
-          this.$.photoIcon.style.backgroundImage = `url(${src})`;
-        } else  {
-          this.$.photoIcon.style.backgroundImage = "none";
-        }
-      }
-
-      _noImage(image) {
-        return this.image ? false:true;
-      }
-
-      _hideBadge(value) {
-        if (value === null) {
-          return true;
-        }
-        return false;
-      }
-
-      _computePathStyle(ps) {
-        return "fill-opacity:"+this.badgeOpacity+";"+ps;
-      }
-
-      _computeTextStyle(ts) {
-        return ts+";font-style:normal;font-weight:bold;font-size:14px;text-align:center;text-anchor:middle;fill-opacity:1;stroke:none;"
-      }
-
-      _onButtonClick(e) {
-        console.log("click",e);
-      }
+  _imageChanged(src) {
+    if (src) {
+      this.$.photoIcon.style.backgroundImage = `url(${src})`;
+    } else  {
+      this.$.photoIcon.style.backgroundImage = "none";
     }
+  }
 
-    customElements.define(MGBadgeButton.is, MGBadgeButton);
+  _noImage(image) {
+    return this.image ? false:true;
+  }
+
+  _hideBadge(value) {
+    if (value === null) {
+      return true;
+    }
+    return false;
+  }
+
+  _computePathStyle(ps) {
+    return "fill-opacity:"+this.badgeOpacity+";"+ps;
+  }
+
+  _computeTextStyle(ts) {
+    return ts+";font-style:normal;font-weight:bold;font-size:14px;text-align:center;text-anchor:middle;fill-opacity:1;stroke:none;"
+  }
+
+  _onButtonClick(e) {
+    console.log("click",e);
+  }
+}
+
+customElements.define(MGBadgeButton.is, MGBadgeButton);
   </script>
-</dom-module>
+    </dom-module>

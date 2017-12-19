@@ -42,553 +42,543 @@
 
 <!-- Since 'home' is the default route, eagerly load it. -->
 
-<dom-module id="mg-app">
-<template>
-    <custom-style>
-  <style include="mg-common-styles iron-flex iron-flex-alignment">
-    :host {
-      display: block;
-      position: relative;
-      transition: padding-top 0.5s;
-      /*min-height: calc(100vh - 145px);*/
-      /* 5px wider than height to prevent layout resetting due to scrollbar on/off */
-      --booed-primary-color: #213; /*sienna;*/
-      --booed-secondary-color: #757575;
-      --booed-accent-color: #172C50;
-      --booed-shadow-color: rgba(57,27,56,0.3);
+    <dom-module id="mg-app">
+  <template>
+<style include="mg-common-styles iron-flex iron-flex-alignment">
+  :host {
+    display: block;
+    position: relative;
+    transition: padding-top 0.5s;
+    /*min-height: calc(100vh - 145px);*/
+    /* 5px wider than height to prevent layout resetting due to scrollbar on/off */
+    --booed-primary-color: #213; /*sienna;*/
+    --booed-secondary-color: #757575;
+    --booed-accent-color: #172C50;
+    --booed-shadow-color: rgba(57,27,56,0.3);
 
-      --booed-header-background: white;/*rgba(255,250,250,0.95);var(--booed-accent-color);*/ /*#f4eed7;*/
-      --booed-contents-background: var(--booed-header-background);
-      --booed-menu-color: salmon;
-      --booed-outer-color: #f9f6f6;
+    --booed-header-background: white;/*rgba(255,250,250,0.95);var(--booed-accent-color);*/ /*#f4eed7;*/
+    --booed-contents-background: var(--booed-header-background);
+    --booed-menu-color: salmon;
+    --booed-outer-color: #f9f6f6;
 /*        --booed-menu-focus-color: tomato;*/
-      --booed-menu-focus-color: var(--booed-primary-color);
-      --booed-title-height: 35px;
-      --booed-menu-height: 30px;
-      --booed-header-height: 65px;
-      --booed-logo-margin: 4px;
-      --booed-logo-height: calc(var(--booed-title-height) - var(--booed-logo-margin) * 2);
+    --booed-menu-focus-color: var(--booed-primary-color);
+    --booed-title-height: 35px;
+    --booed-menu-height: 30px;
+    --booed-header-height: 65px;
+    --booed-logo-margin: 4px;
+    --booed-logo-height: calc(var(--booed-title-height) - var(--booed-logo-margin) * 2);
 
-      --booed-menu-font: {
-        font-family: 'Mitr', sans-serif;
-        font-size: 16px;
-      };
+    --booed-menu-font: {
+      font-family: 'Mitr', sans-serif;
+      font-size: 16px;
+    };
 
-      --disabled-text-color: var(--booed-shadow-color);
+    --disabled-text-color: var(--booed-shadow-color);
 
-      --primary-text-color: black;
-      --paper-button-ink-color: var(--booed-accent-color);
-      --paper-spinner-color: var(--booed-accent-color);
-      -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    --primary-text-color: black;
+    --paper-button-ink-color: var(--booed-accent-color);
+    --paper-spinner-color: var(--booed-accent-color);
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 /*        padding-top: calc(var(--booed-header-height) + var(--booed-title-height) + var(--booed-menu-height) + 50px);*/
-      color: var(--booed-primary-color);
-      background-color: var(--booed-contents-background);
-      padding-top: 100px;
+    color: var(--booed-primary-color);
+    background-color: var(--booed-contents-background);
+    padding-top: 100px;
+  }
+
+  app-header {
+    z-index: 2;
+    @apply --layout-fixed-top;
+    @apply --layout-horizontal;
+    background-color: var(--booed-header-background);
+    /*
+    background: linear-gradient(
+      var(--booed-header-background) var(--booed-header-height),
+      transparent var(--booed-header-height),
+      transparent calc(var(--booed-header-height) + var(--booed-title-height))),
+      url(/images/season.jpg);
+    */
+
+    height: var(--booed-header-height);
+  }
+
+  .tool-bar {
+    @apply --layout-vertical;
+  }
+
+  .title-bar {
+    @apply --layout-horizontal;
+    position: relative;
+    height: var(--booed-title-height);
+    /*overflow: hidden;*/
+    width: 100%;
+    padding:0;
+    z-index: 1;
+
+    background-color: var(--booed-outer-color);
+    box-shadow: inset -1px -1px 6px -3px var(--booed-shadow-color);
+    border-radius: 0 0px 10px 0;
+
+  }
+
+  .menu-bar {
+    @apply --layout-horizontal;
+    position: relative;
+    height: var(--booed-menu-height);
+    /*overflow: hidden;*/
+    width: 100%;
+    padding:0;
+    /* border-top: 1px dashed var(--booed-menu-color) */
+  }
+
+  div.header-filler {
+    @apply --layout-flex;
+    min-width: 320px;
+    height: var(--booed-title-height);
+  }
+
+  .head-logo {
+    border-radius: 10px 10px 0 0;
+    @apply --layout-flex;
+    @apply --layout-horizontal;
+    min-width: 100px;
+    max-width: 180px;
+    /*min-width:  calc(var(--booed-logo-height) * 3.7);*/
+    height: var(--booed-title-height);
+    --paper-button-ink-color: white;
+
+    background-image: url(/images/logo-sat/logo-B-sat.svg), url(/images/logo-sat/logo-o-sat.svg), url(/images/logo-sat/logo-oo-sat.svg), url(/images/logo-sat/logo-e-sat.svg), url(/images/logo-sat/logo-d-sat.svg);
+    background-size:
+     auto var(--booed-logo-height),
+     auto var(--booed-logo-height),
+     auto var(--booed-logo-height),
+     auto var(--booed-logo-height),
+     auto var(--booed-logo-height);
+    background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+    background-position: 10px var(--booed-logo-margin), calc(20% + 18px) var(--booed-logo-margin), calc(40% + 18px) var(--booed-logo-margin), calc(60% + 18px) var(--booed-logo-margin), calc(80% + 18px) var(--booed-logo-margin);
+  }
+
+  .left-bar-item {
+    width: 40px;
+  }
+
+  .announcer {
+    position: fixed;
+    height: 0;
+    overflow: hidden;
+  }
+
+  :host(:not([page=detail])) .back-btn {
+    display: none;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  paper-tabs,
+  paper-tab {
+    @apply --layout-horizontal;
+    padding:0;
+    cursor: ew-resize;
+  }
+
+  paper-tabs {
+    --paper-tabs-selection-bar-color: #a7b7c1;
+    /*--paper-tabs-selection-bar-color: var(--booed-menu-color);*/
+    height: var(--booed-menu-height);
+    width:100%;
+    --paper-tabs-selection-bar: {
+      /*height:27px;*/
+      /*background-image: linear-gradient(to right, rgba(255,85,85,0), rgba(255,85,85,0.5), rgba(255,85,85,0.5), rgba(255,85,85,0));*/
+      /*background-image: linear-gradient(rgba(255,85,85,0.5) 4px,transparent 4px,  transparent 30px);*/
+    };
+    --paper-tabs: {
     }
+  }
 
-    app-header {
-      z-index: 2;
-      @apply --layout-fixed-top;
-      @apply --layout-horizontal;
-      background-color: var(--booed-header-background);
-      /*
-      background: linear-gradient(
-        var(--booed-header-background) var(--booed-header-height),
-        transparent var(--booed-header-height),
-        transparent calc(var(--booed-header-height) + var(--booed-title-height))),
-        url(/images/season.jpg);
-      */
+  paper-tab {
+    font-family: 'Mitr', sans-serif;
+    font-size: 16px;
+    color: var(--booed-menu-focus-color);
+    padding:0 8px;
+    height: var(--booed-menu-height);
+    /*border-radius: 20px 20px 0 0;*/
+    /*overflow: hidden;*/
+    --paper-tab-ink: var(--booed-menu-focus-color);
+    --paper-tab-content: {
+      transition: opacity 0.5s;
+      --iron-icon-fill-color: var(--booed-menu-focus-color);
+      --iron-icon-width: 28px;
+      --iron-icon-height: 28px;
+    };
+    --paper-tab-content-unselected: {
+      color: var(--booed-menu-color);
+      --iron-icon-fill-color: var(--booed-menu-color);
+    };
+  }
 
-      height: var(--booed-header-height);
+  paper-tab iron-icon.expand-more-icon {
+    --iron-icon-fill-color: gray;
+  }
+
+  paper-tab:hover iron-icon.expand-more-icon {
+    --iron-icon-fill-color: tomato;
+  }
+
+  .tab-icon {
+    margin-right:8px;
+    /*--iron-icon-fill-color: var(--booed-accent-color);*/
+    --iron-icon-fill-color: tomato;
+  }
+
+  #drawer {
+    z-index:3;
+    --app-drawer-content-container: {
+      background: white;
     }
+  }
 
-    .tool-bar {
-      @apply --layout-vertical;
-    }
+  #drawer-contents {
+    @apply --layout-vertical;
+    overflow: hidden;
+  }
 
-    .title-bar {
-      @apply --layout-horizontal;
-      position: relative;
-      height: var(--booed-title-height);
-      /*overflow: hidden;*/
-      width: 100%;
-      padding:0;
-      z-index: 1;
+  #drawer-contents #profile-container {
+    @apply --layout-vertical;
+    background: tomato;
+    color: white;
+  }
 
-      background-color: var(--booed-outer-color);
-      box-shadow: inset -1px -1px 6px -3px var(--booed-shadow-color);
-      border-radius: 0 0px 10px 0;
-
-    }
-
-    .menu-bar {
-      @apply --layout-horizontal;
-      position: relative;
-      height: var(--booed-menu-height);
-      /*overflow: hidden;*/
-      width: 100%;
-      padding:0;
-      /* border-top: 1px dashed var(--booed-menu-color) */
-    }
-
-    div.header-filler {
-      @apply --layout-flex;
-      min-width: 320px;
-      height: var(--booed-title-height);
-    }
-
-    .head-logo {
-      border-radius: 10px 10px 0 0;
-      @apply --layout-flex;
-      @apply --layout-horizontal;
-      min-width: 100px;
-      max-width: 180px;
-      /*min-width:  calc(var(--booed-logo-height) * 3.7);*/
-      height: var(--booed-title-height);
-      --paper-button-ink-color: white;
-
-      background-image: url(/images/logo-sat/logo-B-sat.svg), url(/images/logo-sat/logo-o-sat.svg), url(/images/logo-sat/logo-oo-sat.svg), url(/images/logo-sat/logo-e-sat.svg), url(/images/logo-sat/logo-d-sat.svg);
-      background-size:
-       auto var(--booed-logo-height),
-       auto var(--booed-logo-height),
-       auto var(--booed-logo-height),
-       auto var(--booed-logo-height),
-       auto var(--booed-logo-height);
-      background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
-      background-position: 10px var(--booed-logo-margin), calc(20% + 18px) var(--booed-logo-margin), calc(40% + 18px) var(--booed-logo-margin), calc(60% + 18px) var(--booed-logo-margin), calc(80% + 18px) var(--booed-logo-margin);
-    }
-
-    .left-bar-item {
-      width: 40px;
-    }
-
-    .announcer {
-      position: fixed;
-      height: 0;
+  #drawer-contents #app-menu {
+    --mg-menu-collapse: {
+      border-radius: 5px 0 0 5px;
+      background-image:
+        /*linear-gradient( to left, rgba(255,255,255,1) 0px, rgba(255,255,255,0) 10px ) ,*/
+        linear-gradient( to right, rgba(0,0,0,0.05) 100px, rgba(0,0,0,0.02) 300px );
+    };
+    /*
+    --mg-menu-button: {
       overflow: hidden;
+      border-radius: 8px 0 0 8px;
     }
+    */
+  }
 
-    :host(:not([page=detail])) .back-btn {
-      display: none;
-    }
+  #drawer-contents #profile-menu {
+    border-bottom: 1px dashed tomato;
+    --mg-menu-collapse: {
+      border-radius: 5px 0 0 5px;
+      background-image:
+        /*linear-gradient( to left, rgba(255,255,255,1) 0px, rgba(255,255,255,0) 10px ) ,*/
+        linear-gradient( to right, rgba(0,0,0,0.05) 100px, rgba(0,0,0,0.02) 300px );
+      margin-bottom: 10px;
+    };
+  }
 
-    [hidden] {
-      display: none !important;
-    }
+  #drawer-contents .photo-button[icon="booed:pumpkin"] {
+    border: none;
+  }
 
-    paper-tabs,
-    paper-tab {
-      @apply --layout-horizontal;
-      padding:0;
-      cursor: ew-resize;
-    }
-
-    paper-tabs {
-      --paper-tabs-selection-bar-color: #a7b7c1;
-      /*--paper-tabs-selection-bar-color: var(--booed-menu-color);*/
-      height: var(--booed-menu-height);
-      width:100%;
-      --paper-tabs-selection-bar: {
-        /*height:27px;*/
-        /*background-image: linear-gradient(to right, rgba(255,85,85,0), rgba(255,85,85,0.5), rgba(255,85,85,0.5), rgba(255,85,85,0));*/
-        /*background-image: linear-gradient(rgba(255,85,85,0.5) 4px,transparent 4px,  transparent 30px);*/
-      };
-      --paper-tabs: {
-      }
-    }
-
-    paper-tab {
-      font-family: 'Mitr', sans-serif;
-      font-size: 16px;
-      color: var(--booed-menu-focus-color);
-      padding:0 8px;
-      height: var(--booed-menu-height);
-      /*border-radius: 20px 20px 0 0;*/
-      /*overflow: hidden;*/
-      --paper-tab-ink: var(--booed-menu-focus-color);
-      --paper-tab-content: {
-        transition: opacity 0.5s;
-        --iron-icon-fill-color: var(--booed-menu-focus-color);
-        --iron-icon-width: 28px;
-        --iron-icon-height: 28px;
-      };
-      --paper-tab-content-unselected: {
-        color: var(--booed-menu-color);
-        --iron-icon-fill-color: var(--booed-menu-color);
-      };
-    }
-
-    paper-tab iron-icon.expand-more-icon {
-      --iron-icon-fill-color: gray;
-    }
-
-    paper-tab:hover iron-icon.expand-more-icon {
-      --iron-icon-fill-color: tomato;
-    }
-
-    .tab-icon {
-      margin-right:8px;
-      /*--iron-icon-fill-color: var(--booed-accent-color);*/
-      --iron-icon-fill-color: tomato;
-    }
-
-    #drawer {
-      z-index:3;
-      --app-drawer-content-container: {
-        background: white;
-      }
-    }
-
-    #drawer-contents {
-      @apply --layout-vertical;
+  #drawer-contents .photo-button {
+    margin: 20px 0 10px 0;
+    @apply --layout-self-center;
+    height: 120px;
+    width: 120px;
+    box-sizing: border-box;
+    --paper-icon-button-ink-color: tomato;
+    --paper-icon-button : {
       overflow: hidden;
-    }
-
-    #drawer-contents #profile-container {
-      @apply --layout-vertical;
-      background: tomato;
-      color: white;
-    }
-
-    #drawer-contents #app-menu {
-      --mg-menu-collapse: {
-        border-radius: 5px 0 0 5px;
-        background-image:
-          /*linear-gradient( to left, rgba(255,255,255,1) 0px, rgba(255,255,255,0) 10px ) ,*/
-          linear-gradient( to right, rgba(0,0,0,0.05) 100px, rgba(0,0,0,0.02) 300px );
-      };
-      /*
-      --mg-menu-button: {
-        overflow: hidden;
-        border-radius: 8px 0 0 8px;
-      }
-      */
-    }
-
-    #drawer-contents #profile-menu {
-      border-bottom: 1px dashed tomato;
-      --mg-menu-collapse: {
-        border-radius: 5px 0 0 5px;
-        background-image:
-          /*linear-gradient( to left, rgba(255,255,255,1) 0px, rgba(255,255,255,0) 10px ) ,*/
-          linear-gradient( to right, rgba(0,0,0,0.05) 100px, rgba(0,0,0,0.02) 300px );
-        margin-bottom: 10px;
-      };
-    }
-
-    #drawer-contents .photo-button[icon="booed:pumpkin"] {
-      border: none;
-    }
-
-    #drawer-contents .photo-button {
-      margin: 20px 0 10px 0;
-      @apply --layout-self-center;
-      height: 120px;
-      width: 120px;
-      box-sizing: border-box;
-      --paper-icon-button-ink-color: tomato;
-      --paper-icon-button : {
-        overflow: hidden;
-        border-radius: 50%;
-        margin: 0;
-        padding: 0px;
-      };
-    }
-
-    #drawer-contents h3  {
+      border-radius: 50%;
       margin: 0;
-      padding: 5px 0;
-      font-family: 'Mitr', sans-serif;
-      font-size: 16px;
-      @apply --layout-horizontal;
-      @apply --layout-center;
-    }
+      padding: 0px;
+    };
+  }
 
-    #drawer-contents h3 iron-icon {
-      margin-right: 10px;
+  #drawer-contents h3  {
+    margin: 0;
+    padding: 5px 0;
+    font-family: 'Mitr', sans-serif;
+    font-size: 16px;
+    @apply --layout-horizontal;
+    @apply --layout-center;
+  }
+
+  #drawer-contents h3 iron-icon {
+    margin-right: 10px;
+  }
+
+  #pages {
+    margin: 0 auto;
+    min-height: calc(100vh - 100px); /* 5px wider than height to prevent layout resetting due to scrollbar on/off */
+  }
+
+  footer {
+    color: var(--booed-menu-color);
+    @apply --layout-fixed-bottom;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 34px;
+    position: fixed;
+    --iron-icon-fill-color: var(--booed-primary-color);
+    @apply --layout-vertical;
+    user-select: none;
+  }
+
+  .page-end {
+    background: linear-gradient( transparent 0, var(--booed-header-background) 10px);
+    width:100%;
+    height:10px;
+  }
+
+  .footer {
+    height: 24px;
+    box-shadow: inset 0px 5px 6px -3px var(--booed-shadow-color);
+    background-color: var(--booed-outer-color);
+  }
+
+  .footer a {
+    color: var(--booed-primary-color);
+    padding: 0 5px;
+    text-decoration: none;
+    border-radius: 0 0 5px 5px;
+    transition: background-color 0.25s, box-shadow 0.3s ease-in-out;
+    box-shadow: 0 1px 2px rgba(0,0,0,0);
+  }
+
+  .footer a:hover {
+    background-color: var(--booed-contents-background);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+
+  #menu-button {
+    padding-left: 16px;
+  }
+
+  #balloon {
+    display: none;
+    z-index: 10;
+    margin: 0;
+  }
+
+  #balloon mg-menu {
+/*        --mg-menu-item : { border-bottom: 1px dotted tomato };
+    --mg-menu-last-item : { border-bottom: none };*/
+    --mg-menu-collapse: {
+      border-radius: 5px 0 0 5px;
+      background-image:
+        /*linear-gradient( to left, rgba(255,255,255,1) 0px, rgba(255,255,255,0) 10px ) ,*/
+        linear-gradient( to right, rgba(0,0,0,0.05) 100px, rgba(0,0,0,0.02) 300px );
+    };
+  }
+
+  /* small screen */
+  @media (max-width: 767px) {
+    :host {
+      /*padding-top: calc(var(--booed-header-height) + var(--booed-title-height) + var(--booed-menu-height));*/
+      padding-top:70px;
     }
 
     #pages {
-      margin: 0 auto;
-      min-height: calc(100vh - 100px); /* 5px wider than height to prevent layout resetting due to scrollbar on/off */
+      min-height: calc(100vh - 70px);
+    }
+
+    #profile-button {
+      display: none;
+    }
+
+    app-header {
+      height: var(--booed-header-height);
+      min-width: 300px;
+    }
+
+    .head-logo {
+      background-image:  url(/images/logo-sat/logo-packed-sat.svg);
+      background-size: auto var(--booed-logo-height);
+      background-repeat: no-repeat;
+      background-position: center var(--booed-logo-margin);
+      transition: background-position 0.25s;
     }
 
     footer {
-      color: var(--booed-menu-color);
-      @apply --layout-fixed-bottom;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 34px;
-      position: fixed;
-      --iron-icon-fill-color: var(--booed-primary-color);
-      @apply --layout-vertical;
-      user-select: none;
-    }
-
-    .page-end {
-      background: linear-gradient( transparent 0, var(--booed-header-background) 10px);
-      width:100%;
-      height:10px;
-    }
-
-    .footer {
-      height: 24px;
-      box-shadow: inset 0px 5px 6px -3px var(--booed-shadow-color);
-      background-color: var(--booed-outer-color);
-    }
-
-    .footer a {
-      color: var(--booed-primary-color);
-      padding: 0 5px;
-      text-decoration: none;
-      border-radius: 0 0 5px 5px;
-      transition: background-color 0.25s, box-shadow 0.3s ease-in-out;
-      box-shadow: 0 1px 2px rgba(0,0,0,0);
-    }
-
-    .footer a:hover {
-      background-color: var(--booed-contents-background);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    }
-
-    #menu-button {
-      padding-left: 16px;
-    }
-
-    #balloon {
       display: none;
-      z-index: 10;
-      margin: 0;
+    }
+  }
+
+  @media (max-width: 430px) {
+    :host {
+      --booed-logo-height: 20px;
     }
 
-    #balloon mg-menu {
-/*        --mg-menu-item : { border-bottom: 1px dotted tomato };
-      --mg-menu-last-item : { border-bottom: none };*/
-      --mg-menu-collapse: {
-        border-radius: 5px 0 0 5px;
-        background-image:
-          /*linear-gradient( to left, rgba(255,255,255,1) 0px, rgba(255,255,255,0) 10px ) ,*/
-          linear-gradient( to right, rgba(0,0,0,0.05) 100px, rgba(0,0,0,0.02) 300px );
-      };
+    .head-logo {
+      background-position: margin var(--booed-logo-margin);
+      margin-left: -70px;
+      margin-top: 6px;
+      border-radius: 0;
     }
+  }
 
-    /* small screen */
-    @media (max-width: 767px) {
-      :host {
-        /*padding-top: calc(var(--booed-header-height) + var(--booed-title-height) + var(--booed-menu-height));*/
-        padding-top:70px;
-      }
+</style>
 
-      #pages {
-        min-height: calc(100vh - 70px);
-      }
+<app-location route="{{route}}"></app-location>
+<app-route
+    route="{{route}}"
+    pattern="/:page"
+    data="{{routeData}}"
+    tail="{{subroute}}"></app-route>
 
-      #profile-button {
-        display: none;
-      }
+<iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
 
-      app-header {
-        height: var(--booed-header-height);
-        min-width: 300px;
-      }
+    <app-header role="navigation" id="header" effects="waterfall" reveals>
+  <div class="tool-bar">
+<div class="title-bar horizontal layout center-justified">
+  <div class="layout horizontal" style="position:absolute;left:0">
+      <template is="dom-if" if="[[_shouldRenderDrawer]]">
+    <mg-badge-button
+      id="menu-button"
+      on-tap="_toggleDrawer"
+      icon="menu"
+      path-style="fill:tomato"
+      value="">
+    </mg-badge-button>
+      </template>
+  </div>
 
-      .head-logo {
-        background-image:  url(/images/logo-sat/logo-packed-sat.svg);
-        background-size: auto var(--booed-logo-height);
-        background-repeat: no-repeat;
-        background-position: center var(--booed-logo-margin);
-        transition: background-position 0.25s;
-      }
+    <div class="header-filler"></div>
+  <paper-button class="head-logo" on-tap='_openHome'></paper-button>
+    <div class="header-filler"></div>
 
-      footer {
-        display: none;
-      }
-    }
+  <div class="layout horizontal" style="position:fixed;right:10px">
+  <mg-badge-button id="fmPicker" icon="wc" path-style="fill:lightpink" ></mg-badge-button>
+  <mg-badge-button id="languae-button" icon="language" path-style="fill:blue" ></mg-badge-button>
+  <mg-cart-button id="cart-button" cart="{{cart}}" ></mg-cart-button>
+  <mg-profile-button id="profile-button" route="{{route}}" me="[[me]]" menu="[[profileMenu]]"></mg-profile-button>
+  </div>
 
-    @media (max-width: 430px) {
-      :host {
-        --booed-logo-height: 20px;
-      }
+</div>
+<div class="menu-bar" hidden$="[[!_shouldShowTabs]]">
+      <dom-if if="[[_shouldRenderTabs]]">
+    <template>
+  <paper-tabs
+    attr-for-selected="name"
+    selected="{{menu.selected}}"
+    hide-scroll-buttons
+    scrollable
+    fit-container
+    noink
+    align-bottom
+    >
 
-      .head-logo {
-        background-position: margin var(--booed-logo-margin);
-        margin-left: -70px;
-        margin-top: 6px;
-        border-radius: 0;
-      }
-    }
+      <dom-repeat items="[[menu.entries]]">
+    <template strip-whitespace>
+      <paper-tab
+        name$="[[item.name]]"
+        on-tap="_onMenuTap">
+        <iron-icon class="tab-icon" icon="[[item.icon]]"></iron-icon>
 
-  </style>
-    </custom-style>
+        [[item.title]]
 
-  <app-location route="{{route}}"></app-location>
-  <app-route
-      route="{{route}}"
-      pattern="/:page"
-      data="{{routeData}}"
-      tail="{{subroute}}"></app-route>
-
-  <iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
-
-  <app-header role="navigation" id="header" effects="waterfall" reveals>
-
-      <!-- XXX Begin: Cannot keep logo and top buttons here for some reasons -->
-      <!-- FIXME Merge with title toolbars -->
-      <!-- XXX End: Cannot keep logo and top buttons here for some reasons -->
-
-      <!--
-        <audio autoplay loop>
-          <source src="images/piano.mp3" type="audio/mpeg">
-        </audio>
-        <video id="video" autoplay muted loop playsinline poster="videos/head.jpg" class="center">
-          <source src="videos/head.webm" type="video/webm">
-          <source src="videos/head.ogv" type="video/ogv">
-          <source src="videos/head.mp4" type="video/mp4">
-          Your browser does not support this video tag.
-        </video>
-        -->
-    <div class="tool-bar">
-      <div class="title-bar horizontal layout center-justified">
-        <div class="layout horizontal" style="position:absolute;left:0">
-            <template is="dom-if" if="[[_shouldRenderDrawer]]">
-          <mg-badge-button
-            id="menu-button"
-            on-tap="_toggleDrawer"
-            icon="menu"
-            path-style="fill:tomato"
-            value="">
-          </mg-badge-button>
-            </template>
+          <dom-if if="[[item.submenu]]">
+        <template>
+        <div on-tap="_onMenuTapExpand">
+        <iron-icon class="expand-more-icon" icon="expand-more"></iron-icon>
         </div>
+        </template>
+          </dom-if>
 
-          <div class="header-filler"></div>
-        <paper-button class="head-logo" on-tap='_openHome'></paper-button>
-          <div class="header-filler"></div>
+      </paper-tab>
+    </template>
+      </dom-repeat>
 
-        <div class="layout horizontal" style="position:fixed;right:10px">
-        <mg-badge-button id="fmPicker" icon="wc" path-style="fill:lightpink" ></mg-badge-button>
-        <mg-badge-button id="languae-button" icon="language" path-style="fill:blue" ></mg-badge-button>
-        <mg-cart-button id="cart-button" cart="{{cart}}" ></mg-cart-button>
-        <mg-profile-button id="profile-button" route="{{route}}" me="[[me]]" menu="[[profileMenu]]"></mg-profile-button>
-        </div>
+  </paper-tabs>
+    </template>
+      </dom-if>
+</div>
+  </div>
+    </app-header>
 
-      </div>
-      <div class="menu-bar" hidden$="[[!_shouldShowTabs]]">
-            <dom-if if="[[_shouldRenderTabs]]">
-          <template>
-        <paper-tabs
-          attr-for-selected="name"
-          selected="{{menu.selected}}"
-          hide-scroll-buttons
-          scrollable
-          fit-container
-          noink
-          align-bottom
-          >
-
-            <dom-repeat items="[[menu.entries]]">
-          <template strip-whitespace>
-            <paper-tab
-              name$="[[item.name]]"
-              on-tap="_onMenuTap">
-              <iron-icon class="tab-icon" icon="[[item.icon]]"></iron-icon>
-
-              [[item.title]]
-
-                <dom-if if="[[item.submenu]]">
-              <template>
-              <div on-tap="_onMenuTapExpand">
-              <iron-icon class="expand-more-icon" icon="expand-more"></iron-icon>
-              </div>
-              </template>
-                </dom-if>
-
-            </paper-tab>
-          </template>
-            </dom-repeat>
-
-        </paper-tabs>
-          </template>
-            </dom-if>
-      </div>
-    </div>
-  </app-header>
-
-        <mg-balloon id="balloon" no-overlap vertical-align="top" dynamic-align horizontal-align="auto" hidden$="[[smallScreen]]">
-          <mg-menu path="{{route.path}}" style="min-width:200px; padding:0" menu="[[submenu]]"></mg-menu>
-        </mg-balloon>
-
+<mg-balloon
+  id="balloon"
+  no-overlap
+  dynamic-align
+  vertical-align="top"
+  horizontal-align="auto"
+  hidden$="[[smallScreen]]"
+> <mg-menu path="{{route.path}}" style="min-width:200px; padding:0" menu="[[submenu]]"></mg-menu>
+</mg-balloon>
 
     <dom-if if="[[_shouldRenderDrawer]]">
   <template>
-  <app-drawer id="drawer" opened="{{drawerOpened}}" swipe-open tabindex="0">
-    <div id="drawer-contents">
-      <!--<div id="profile-container" style$="[[_computeProfileContainerStyleWithPhoto(me.user.photoURL)]]">-->
-      <div id="profile-container">
-        <paper-icon-button class="photo-button" on-tap="_openProfile" icon$="[[_computeMeIcon(me.user.photoURL)]]" src="[[me.user.photoURL]]"></paper-icon-button>
-        <h3 class="self-center">[[me.user.displayName]]</h3>
-      </div>
-      <mg-menu path="{{route.path}}" id="profile-menu" menu="[[profileMenu]]"></mg-menu>
-      <mg-menu path="{{route.path}}" id="app-menu" menu="[[menu]]"></mg-menu>
-    </div>
-  </app-drawer>
+<app-drawer id="drawer" opened="{{drawerOpened}}" swipe-open tabindex="0">
+
+  <div id="drawer-contents">
+<!--<div id="profile-container" style$="[[_computeProfileContainerStyleWithPhoto(me.user.photoURL)]]">-->
+<div id="profile-container">
+  <paper-icon-button class="photo-button" on-tap="_openProfile" icon$="[[_computeMeIcon(me.user.photoURL)]]" src="[[me.user.photoURL]]"></paper-icon-button>
+  <h3 class="self-center">[[me.user.displayName]]</h3>
+</div>
+<mg-menu path="{{route.path}}" id="profile-menu" menu="[[profileMenu]]"></mg-menu>
+<mg-menu path="{{route.path}}" id="app-menu" menu="[[menu]]"></mg-menu>
+  </div>
+
+</app-drawer>
   </template>
     </dom-if>
 
-  <iron-pages
-    id="pages"
-    role="main"
-    selected="[[page]]"
-    attr-for-selected="name"
-    selected-attribute="visible"
-    fallback-selection="404">
-    <mg-list menu="{{menu}}" name="home"></mg-list>
-    <mg-user
-      id="user"
-      menu="{{menu}}"
-      profile-menu="{{profileMenu}}"
-      name="user"
-      me="{{me}}"
-      route="{{subroute}}"
-      ></mg-user>
-    <mg-about name="about" route="{{subroute}}"></mg-about>
-    <mg-404-warning name="404"></mg-404-warning>
-
-  </iron-pages>
-
+<iron-pages
+  id="pages"
+  role="main"
+  selected="[[page]]"
+  attr-for-selected="name"
+  selected-attribute="visible"
+  fallback-selection="404"
+> <mg-list menu="{{menu}}" name="home"></mg-list>
+  <mg-user
+    id="user"
+    menu="{{menu}}"
+    profile-menu="{{profileMenu}}"
+    name="user"
+    me="{{me}}"
+    route="{{subroute}}"
+    ></mg-user>
+  <mg-about name="about" route="{{subroute}}"></mg-about>
+  <mg-404-warning name="404"></mg-404-warning>
+</iron-pages>
 
 
-  <footer>
-    <div class="page-end"></div>
-    <div class="footer horizontal layout around-justified center">
-      <a class="horizontal layout center" href="about">
-        <iron-icon style="--iron-icon-width:15px;" icon="copyright"></iron-icon> 2017 <img style="padding: 0; margin: -2px 0 0 5px; vertical-align: middle; height:14px" src="/images/logo-sat/logo-packed-sat.svg">
-      </a>
-      <div class="horizontal layout center">
-        <a class="horizontal layout center" href="https://www.polymer-project.org/">With <iron-icon style="--iron-icon-width:15px;padding-left: 3px;" icon="booed:polymer-color"></iron-icon></a>
-        <iron-icon style="--iron-icon-width:15px;" icon="add"></iron-icon>
-        <a class="horizontal layout center" href="https://www.youtube.com/watch?v=uAALIM_5u1Q">
-          <iron-icon style="--iron-icon-width:15px;padding-right: 3px;--iron-icon-fill-color: tomato" icon="favorite"></iron-icon>
-          <font style="font-family: 'Henny Penny', cursive;color:purple">Moon HyunA</font>
-          <iron-icon style="--iron-icon-width:15px;padding-left: 3px;--iron-icon-fill-color: orange" icon="booed:moon"></iron-icon>
-          <iron-icon style="--iron-icon-width:20px;padding-right: 3px;--iron-icon-fill-color: olivedrab" icon="cricket"></iron-icon>
-        </a>
-      </div>
-    </div>
-  </footer>
 
-  <!-- a11y announcer -->
-  <!--
-  <div class="announcer" aria-live="assertive">[[_a11yLabel]]</div>
+<footer>
+  <div class="page-end"></div>
+
+  <div class="footer horizontal layout around-justified center">
+<a class="horizontal layout center" href="about">
+  <iron-icon style="--iron-icon-width:15px;" icon="copyright"></iron-icon> 2017 <img style="padding: 0; margin: -2px 0 0 5px; vertical-align: middle; height:14px" src="/images/logo-sat/logo-packed-sat.svg">
+</a>
+<div class="horizontal layout center">
+  <a class="horizontal layout center" href="https://www.polymer-project.org/">With <iron-icon style="--iron-icon-width:15px;padding-left: 3px;" icon="booed:polymer-color"></iron-icon></a>
+  <iron-icon style="--iron-icon-width:15px;" icon="add"></iron-icon>
+  <a class="horizontal layout center" href="https://www.youtube.com/watch?v=uAALIM_5u1Q">
+    <iron-icon style="--iron-icon-width:15px;padding-right: 3px;--iron-icon-fill-color: tomato" icon="favorite"></iron-icon>
+    <font style="font-family: 'Henny Penny', cursive;color:purple">Moon HyunA</font>
+    <iron-icon style="--iron-icon-width:15px;padding-left: 3px;--iron-icon-fill-color: orange" icon="booed:moon"></iron-icon>
+    <iron-icon style="--iron-icon-width:20px;padding-right: 3px;--iron-icon-fill-color: olivedrab" icon="cricket"></iron-icon>
+  </a>
+</div>
+  </div>
+
+</footer>
+
+<!-- a11y announcer -->
+<!--
+<div class="announcer" aria-live="assertive">[[_a11yLabel]]</div>
 -->
-</template>
+  </template>
 
-<script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-storage.js"></script>
-<script>
+  <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-storage.js"></script>
+  <script>
 
 var MHA_INITIALIZED;
 
@@ -1038,5 +1028,5 @@ class MGApp extends Polymer.Element {
 
 customElements.define(MGApp.is, MGApp);
 
-</script>
-</dom-module>
+  </script>
+    </dom-module>

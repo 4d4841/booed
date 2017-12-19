@@ -17,84 +17,83 @@
 <link rel="import" href="mg-button.html">
 <link rel="import" href="mg-icons.html">
 
-<dom-module id="mg-404-warning">
+    <dom-module id="mg-404-warning">
   <template>
-    <style include="mg-button">
+<style include="mg-button">
 
-      :host {
-        display: block;
-        color: var(--booed-secondary-color);
-        @apply --layout-vertical;
-        @apply --layout-center;
-      }
+:host {
+  display: block;
+  color: var(--booed-secondary-color);
+  @apply --layout-vertical;
+  @apply --layout-center;
+}
 
-      iron-icon {
-        display: block;
-        width: 80px;
-        height: 80px;
-      }
+iron-icon {
+  display: block;
+  width: 80px;
+  height: 80px;
+}
 
-      h1 {
-        font-weight: 300;
-      }
+h1 {
+  font-weight: 300;
+}
 
-      paper-card {
-        margin-top: 50px;
-        width: 240px;
-        height: 240px;
-        border-radius: 50%;
-        padding: 20px;
-        overflow: hidden;
-        @apply --layout-vertical;
-        @apply --layout-center;
-        @apply --layout-end-justified;
-      }
+paper-card {
+  margin-top: 50px;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  padding: 20px;
+  overflow: hidden;
+  @apply --layout-vertical;
+  @apply --layout-center;
+  @apply --layout-end-justified;
+}
 
-      .button {
-        margin-bottom: -40px;
-        width: 300px;
-        height: 80px;
-        background: tomato;
-        --paper-button: {
-          @apply --layout-vertical;
-          @apply --layout-start-justified;
-          font-family: 'Mitr', sans-serif;
-          font-size: 16px;
-          font-weight: bold;
-          color: white;
-          padding: 20px;
-        }
-      }
+.button {
+  margin-bottom: -40px;
+  width: 300px;
+  height: 80px;
+  background: tomato;
+  --paper-button: {
+    @apply --layout-vertical;
+    @apply --layout-start-justified;
+    font-family: 'Mitr', sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    padding: 20px;
+  }
+}
 
-      .button iron-icon {
-        margin-right: 10px;
-      }
+.button iron-icon {
+  margin-right: 10px;
+}
 
-      a:link {
-            text-decoration: none;
-      }
+a:link {
+      text-decoration: none;
+}
 
-    </style>
+</style>
+<paper-card>
+    <iron-icon style="color:tomato" icon="booed:pumpkin-404"></iron-icon>
+    <h1>เอ๋..หน้านี้ไม่มีนะ?</h1>
 
-  <paper-card>
-      <iron-icon style="color:tomato" icon="booed:pumpkin-404"></iron-icon>
-      <h1>เอ๋..หน้านี้ไม่มีนะ?</h1>
-
-      <a style="border-top: 1px dashed lightgray;padding:0;margin:0" href="/">
-    <paper-button class="button" class="layout horizontal center-justified">
-    กลับหน้าหลักกัน
-    </paper-button>
-      </a>
-  </paper-card>
+    <a style="border-top: 1px dashed lightgray;padding:0;margin:0" href="/">
+  <paper-button class="button" class="layout horizontal center-justified">
+  กลับหน้าหลักกัน
+  </paper-button>
+    </a>
+</paper-card>
 
   </template>
   <script>
 
-    class MG404Warning extends Polymer.Element {
-      static get is() { return 'mg-404-warning'; }
-    }
+class MG404Warning extends Polymer.Element {
+  static get is() { return 'mg-404-warning'; }
+}
 
-    customElements.define(MG404Warning.is, MG404Warning);
+customElements.define(MG404Warning.is, MG404Warning);
 
   </script>
-</dom-module>
+    </dom-module>

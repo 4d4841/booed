@@ -20,206 +20,202 @@
 <link rel="import" href="mg-icons.html">
 <link rel="import" href="mg-image.html">
 
-<dom-module id="mg-thumbnail">
+    <dom-module id="mg-thumbnail">
   <template strip-whitespace>
-      <custom-style>
-    <style include="mg-common-styles iron-flex iron-flex-alignment">
-      :host {
-      }
+<style include="mg-common-styles iron-flex iron-flex-alignment">
+:host {
+}
 
-      :host([deleted]) paper-button{
-        opacity: 0.3;
-      }
+:host([deleted]) paper-button{
+  opacity: 0.3;
+}
 
-      :host(.iron-selected) {
-        --mg-thumbnail : {
-          background-color: tomato;
-        };
-      }
+:host(.iron-selected) {
+  --mg-thumbnail : {
+    background-color: tomato;
+  };
+}
 
-      .photo-frame {
-        display: inline-block;
-        text-decoration: none;
-        padding: 0;
-        border-radius: 5px;
-        box-shadow: 1px 1px 1px var(--booed-shadow-color);
-        background-color: white;
-        overflow: hidden;
-        border: 2px solid transparent;
-        @apply --mg-thumbnail;
-      }
+.photo-frame {
+  display: inline-block;
+  text-decoration: none;
+  padding: 0;
+  border-radius: 5px;
+  box-shadow: 1px 1px 1px var(--booed-shadow-color);
+  background-color: white;
+  overflow: hidden;
+  border: 2px solid transparent;
+  @apply --mg-thumbnail;
+}
 
-      .photo-frame > mg-image {
-        background-color: whitesmoke;
-        border-radius: 5px;
-        overflow: hidden;
-        @apply --layout-vertical;
-        @apply --layout-center;
-      }
+.photo-frame > mg-image {
+  background-color: whitesmoke;
+  border-radius: 5px;
+  overflow: hidden;
+  @apply --layout-vertical;
+  @apply --layout-center;
+}
 
-      .label {
-        position: absolute;
-        left: 0;
-        bottom: 0;
-        width: 100%;
-        text-transform: none;
-        white-space: nowrap;
-        color: black;
-        background-color: rgba(255,255,255,0.65);
-        box-shadow: inset 0 -3px 6px white;
-        height: 20px;
-        line-height: 25px;
-        z-index: 1;
-        text-align: center;
-        @apply --layout-horizontal;
-        @apply --layout-center-justified;
-      }
+.label {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  text-transform: none;
+  white-space: nowrap;
+  color: black;
+  background-color: rgba(255,255,255,0.65);
+  box-shadow: inset 0 -3px 6px white;
+  height: 20px;
+  line-height: 25px;
+  z-index: 1;
+  text-align: center;
+  @apply --layout-horizontal;
+  @apply --layout-center-justified;
+}
 
-      :host(.iron-selected) .label {
-        color: white;
-        background-color: rgba(255,99,71,0.65);
-        box-shadow: inset 0 -3px 6px tomato;
-      }
+:host(.iron-selected) .label {
+  color: white;
+  background-color: rgba(255,99,71,0.65);
+  box-shadow: inset 0 -3px 6px tomato;
+}
 
-      .icon {
-        --iron-icon-width: 15px;
-        --iron-icon-height: 15px;
-        min-width: 20px;
-      }
+.icon {
+  --iron-icon-width: 15px;
+  --iron-icon-height: 15px;
+  min-width: 20px;
+}
 
-      .spinner {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        transition: opacity 0s;
-        opacity: 1;
-      }
+.spinner {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transition: opacity 0s;
+  opacity: 1;
+}
 
-      .spinner[loaded] {
-        opacity: 0;
-        transition: opacity 0.5s;
-      }
+.spinner[loaded] {
+  opacity: 0;
+  transition: opacity 0.5s;
+}
 
-      .deleted {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(255,255,255,0.5);
-        color: rgba(0,0,0,0.5);
-        --iron-icon-width: 80px;
-        --iron-icon-height: 80px;
-        @apply --layout-vertical;
-        @apply --layout-center;
-        @apply --layout-center-justified;
-      }
+.deleted {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255,255,255,0.5);
+  color: rgba(0,0,0,0.5);
+  --iron-icon-width: 80px;
+  --iron-icon-height: 80px;
+  @apply --layout-vertical;
+  @apply --layout-center;
+  @apply --layout-center-justified;
+}
+</style>
 
-    </style>
-      </custom-style>
+<paper-button class="photo-frame">
+  <mg-image
+    width="[[width]]"
+    height="[[height]]"
+    src="[[src]]"
+    roi="[[roi]]"
+    sizing="cover"
+    loaded="{{isLoaded}}"
+  > <!--Pumpkin spinner-->
+    <template is="dom-if" if="{{spinner}}">
+      <img class="spinner" src="images/logo-pumpkin-gray-bouncing.svg" draggable="false" loaded$="{{isLoaded}}">
+    </template>
 
-    <paper-button class="photo-frame">
-      <mg-image
-        width="[[width]]"
-        height="[[height]]"
-        src="[[src]]"
-        roi="[[roi]]"
-        sizing="cover"
-        loaded="{{isLoaded}}"
-      >
-        <!--Pumpkin spinner-->
-        <template is="dom-if" if="{{spinner}}">
-          <img class="spinner" src="images/logo-pumpkin-gray-bouncing.svg" draggable="false" loaded$="{{isLoaded}}">
+    <template is="dom-if" if="{{deleted}}">
+      <div class="deleted">
+        <iron-icon icon="delete"></iron-icon>
+      </div>
+    </template>
+
+    <!--Selection order-->
+    <template is="dom-if" if="{{showLabel}}">
+      <div class="label horizontal layout center start-justified">
+        <template is="dom-if" if="{{icon}}">
+          <iron-icon class="icon" icon="[[icon]]"></iron-icon>
         </template>
-
-        <template is="dom-if" if="{{deleted}}">
-          <div class="deleted">
-            <iron-icon icon="delete"></iron-icon>
-          </div>
+        <template is="dom-repeat" items="{{_formatIcons(icons)}}">
+          <iron-icon class="icon" style$="[[_formatIconStyle(item)]]" icon="[[item]]"></iron-icon>
         </template>
+        <div id="labelSpan">[[label]]</div>
+      </div>
+    </template>
+    <slot></slot>
 
-        <!--Selection order-->
-        <template is="dom-if" if="{{showLabel}}">
-          <div class="label horizontal layout center start-justified">
-            <template is="dom-if" if="{{icon}}">
-              <iron-icon class="icon" icon="[[icon]]"></iron-icon>
-            </template>
-            <template is="dom-repeat" items="{{_formatIcons(icons)}}">
-              <iron-icon class="icon" style$="[[_formatIconStyle(item)]]" icon="[[item]]"></iron-icon>
-            </template>
-            <div id="labelSpan">[[label]]</div>
-          </div>
-        </template>
-        <slot></slot>
+  </mg-image>
 
-      </mg-image>
+</paper-button>
+<paper-tooltip id="tooltip" animation-delay="0">
+  [[label]]
+</paper-tooltip>
+</template>
 
-    </paper-button>
-    <paper-tooltip id="tooltip" animation-delay="0">
-      [[label]]
-    </paper-tooltip>
-
-  </template>
   <script>
-    class MGThumbnail extends Polymer.GestureEventListeners(Polymer.Element) {
-      static get is() { return 'mg-thumbnail'; }
+class MGThumbnail extends Polymer.GestureEventListeners(Polymer.Element) {
+  static get is() { return 'mg-thumbnail'; }
 
-      static get properties() { return {
-        key: String,
+  static get properties() { return {
+    key: String,
 
-        src: {
-          type: String,
-          value: "",
-        },
+    src: {
+      type: String,
+      value: "",
+    },
 
-        roi: Array,
+    roi: Array,
 
-        transition: String,
+    transition: String,
 
-        deleted: Boolean,
+    deleted: Boolean,
 
-        icon: String,
+    icon: String,
 
-        icons: Object,
+    icons: Object,
 
-        label: String,
-        showLabel: {
-          type: Boolean,
-          computed: '_computeHasLabel(icon, icons, label)',
-        },
+    label: String,
+    showLabel: {
+      type: Boolean,
+      computed: '_computeHasLabel(icon, icons, label)',
+    },
 
-        spinner: {
-          type: Boolean,
-          value: false,
-        },
-      }}
+    spinner: {
+      type: Boolean,
+      value: false,
+    },
+  }}
 
-      static get observers() { return [
-      ]}
+  static get observers() { return [
+  ]}
 
-      _computeHasLabel(icon, icons, label) {
-        if (icon || (icons && Object.keys(icons).length > 0) || label ) {
-          return true;
-        }
-        return false;
-      }
-
-      _formatIconStyle(icon) {
-        /* XXX Temp */
-        if (icon == "booed:new-releases") return "color:gold";
-        if (icon == "booed:sales-baht") return "color:red";
-        if (this.icons[icon] === true) {
-          return "color:tomato";
-        }  else if (this.icons[icon] === false) {
-          return "color:black";
-        }
-        return "color:lightgray";
-      }
-
-      _formatIcons(icons) {
-        return Object.keys(icons);
-      }
-
+  _computeHasLabel(icon, icons, label) {
+    if (icon || (icons && Object.keys(icons).length > 0) || label ) {
+      return true;
     }
+    return false;
+  }
 
-    customElements.define(MGThumbnail.is, MGThumbnail);
+  _formatIconStyle(icon) {
+    /* XXX Temp */
+    if (icon == "booed:new-releases") return "color:gold";
+    if (icon == "booed:sales-baht") return "color:red";
+    if (this.icons[icon] === true) {
+      return "color:tomato";
+    }  else if (this.icons[icon] === false) {
+      return "color:black";
+    }
+    return "color:lightgray";
+  }
+
+  _formatIcons(icons) {
+    return Object.keys(icons);
+  }
+
+}
+
+customElements.define(MGThumbnail.is, MGThumbnail);
   </script>
-</dom-module>
+    </dom-module>

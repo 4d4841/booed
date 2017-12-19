@@ -13,58 +13,60 @@
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 
-<dom-module id="mg-clipboard">
-<template strip-whitespace>
-</template>
-<script>
+    <dom-module id="mg-clipboard">
+  <template strip-whitespace>
+  </template>
+  <script>
+
 var MGClipboard;
+
 (function() {
-  let __MGClipboardData = [];
 
-  let __MGClipboardInstances = [];
-  let __MGClipboardNotifying = false;
+let __MGClipboardData = [];
 
-  MGClipboard = class __MGClipboard extends Polymer.Element {
-    static get is() { return 'mg-clipboard'; }
+let __MGClipboardInstances = [];
+let __MGClipboardNotifying = false;
 
-    static get properties() { return {
-      clipboardList: {
-        type: Array,
-        value: __MGClipboardData,
-        notify: true,
-      },
-    }}
+MGClipboard = class __MGClipboard extends Polymer.Element {
+  static get is() { return 'mg-clipboard'; }
 
-    static get observers() { return [
-      '_clipboardChanged(clipboardList.splices)'
-    ]}
+  static get properties() { return {
+    clipboardList: {
+      type: Array,
+      value: __MGClipboardData,
+      notify: true,
+    },
+  }}
 
-    connectedCallback() {
-      super.connectedCallback();
-      __MGClipboardInstances.push(this);
-    }
+  static get observers() { return [
+    '_clipboardChanged(clipboardList.splices)'
+  ]}
 
-    disconnectedCallback() {
-      __MGClipboardInstances.splice(__MGClipboardInstances.indexOf(this),1);
-      super.disconnectedCallback();
-    }
-
-    _clipboardChanged(splices) {
-      if (!__MGClipboardNotifying && splices) {
-        __MGClipboardNotifying = true;
-        __MGClipboardInstances.forEach(instance => {
-          if (instance != this) {
-            instance.notifySplices('clipboardList', splices);
-          }
-        });
-        __MGClipboardNotifying = false;
-      }
-    }
-
+  connectedCallback() {
+    super.connectedCallback();
+    __MGClipboardInstances.push(this);
   }
 
-  customElements.define(MGClipboard.is, MGClipboard);
-})();
+  disconnectedCallback() {
+    __MGClipboardInstances.splice(__MGClipboardInstances.indexOf(this),1);
+    super.disconnectedCallback();
+  }
 
-</script>
-</dom-module>
+  _clipboardChanged(splices) {
+    if (!__MGClipboardNotifying && splices) {
+      __MGClipboardNotifying = true;
+      __MGClipboardInstances.forEach(instance => {
+        if (instance != this) {
+          instance.notifySplices('clipboardList', splices);
+        }
+      });
+      __MGClipboardNotifying = false;
+    }
+  }
+
+}
+
+customElements.define(MGClipboard.is, MGClipboard);
+})();
+  </script>
+    </dom-module>

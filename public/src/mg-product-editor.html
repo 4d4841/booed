@@ -22,184 +22,181 @@
 <link rel="import" href="mg-variant-editor.html">
 
 
-<dom-module id="mg-product-editor">
-<template strip-whitespace>
-    <custom-style>
-  <style is="custom-style" include="mg-item-editor mg-common-styles iron-flex iron-flex-alignment">
+    <dom-module id="mg-product-editor">
+  <template strip-whitespace>
+<style include="mg-item-editor mg-common-styles iron-flex iron-flex-alignment">
 
-    #product-editor {
-    }
+#product-editor {
+}
 
-    #variant-editor {
-      padding: 20px 0 30px 10px;
-      overflow: auto;
-      width: calc(100vw - 300px);
-      margin: 0;
-    }
+#variant-editor {
+  padding: 20px 0 30px 10px;
+  overflow: auto;
+  width: calc(100vw - 300px);
+  margin: 0;
+}
 
-  </style>
-    </custom-style>
+</style>
 
-  <mg-clipboard clipboard-list="{{clipboardList}}"></mg-clipboard>
+<mg-clipboard clipboard-list="{{clipboardList}}"></mg-clipboard>
 
-  <div id="product-editor" class="vertical layout" hidden$="[[!itemKey]]">
+<div id="product-editor" class="vertical layout" hidden$="[[!itemKey]]">
 
-    <div id="control-panel" class="horizontal layout wrap end" >
+  <div id="control-panel" class="horizontal layout wrap end" >
 
-        <div style="display:inline-block">
-      <paper-icon-button icon="booed:add-gallery" on-tap="_onAddGalleryTap"></paper-icon-button>
-      <paper-tooltip>เพิ่มแกลเลอรี่</paper-tooltip>
-        </div>
+      <div style="display:inline-block">
+    <paper-icon-button icon="booed:add-gallery" on-tap="_onAddGalleryTap"></paper-icon-button>
+    <paper-tooltip>เพิ่มแกลเลอรี่</paper-tooltip>
+      </div>
 
-        <div style="display:inline-block">
-      <paper-icon-button disabled="[[!clipboardList.length]]" icon="content-paste" on-click="_onPasteButtonTap"></paper-icon-button>
-      <paper-tooltip>แปะ</paper-tooltip>
-        </div>
-
-    </div>
-
-    <mg-variant-editor
-      id="variant-editor"
-      menu="[[variantMenu]]"
-      variant="{{variant}}"
-    ></mg-variant-editor>
+      <div style="display:inline-block">
+    <paper-icon-button disabled="[[!clipboardList.length]]" icon="content-paste" on-click="_onPasteButtonTap"></paper-icon-button>
+    <paper-tooltip>แปะ</paper-tooltip>
+      </div>
 
   </div>
-  <mg-gallery-editor
-    id="gallery-editor"
-    class="flex"
-    me="[[me]]"
-    item-key="{{galleryItemKey}}"
-    clipboard-list="{{clipboardList}}"
-  ></mg-gallery-editor>
 
-</template>
-<script>
+  <mg-variant-editor
+    id="variant-editor"
+    menu="[[variantMenu]]"
+    variant="{{variant}}"
+  ></mg-variant-editor>
+
+</div>
+<mg-gallery-editor
+  id="gallery-editor"
+  class="flex"
+  me="[[me]]"
+  item-key="{{galleryItemKey}}"
+  clipboard-list="{{clipboardList}}"
+></mg-gallery-editor>
+
+  </template>
+  <script>
 (function() {
-  let memoizedTemplate;
+let memoizedTemplate;
 
-  class MGProductEditor extends MGItemEditor {
-    static get is() { return 'mg-product-editor'; }
+class MGProductEditor extends MGItemEditor {
+  static get is() { return 'mg-product-editor'; }
 
-    static get template() {
-      if (!memoizedTemplate) {
-        memoizedTemplate = Polymer.DomModule.import(this.is, 'template');
-        let superTemplateContents = document.importNode(MGItemEditor.template.content, true);
-        let editor = memoizedTemplate.content.querySelector('#product-editor');
-        let firstChild = editor.firstChild;
-        editor.insertBefore(superTemplateContents, firstChild);
+  static get template() {
+    if (!memoizedTemplate) {
+      memoizedTemplate = Polymer.DomModule.import(this.is, 'template');
+      let superTemplateContents = document.importNode(MGItemEditor.template.content, true);
+      let editor = memoizedTemplate.content.querySelector('#product-editor');
+      let firstChild = editor.firstChild;
+      editor.insertBefore(superTemplateContents, firstChild);
+    }
+    return memoizedTemplate;
+  }
+
+  static get properties() { return {
+    variantMenu: {
+      type: Object,
+      value: {
+        entries: [
+          {name:"custom", icon:"editor:mode-edit", title:"ตั้งค่า" },
+          {name:"price", icon:"editor:attach-money", title:"ราคา" },
+          {name:"color", icon:"image:color-lens", title:"สี" },
+          {name:"size", icon:"av:equalizer", title:"ขนาด" },
+        ],
       }
-      return memoizedTemplate;
+    },
+
+    variant: {
+      type: Object,
+    },
+
+    itemRole: {
+      type: String,
+      value: "product",
+      readOnly: true,
+    },
+
+  }}
+
+  static get observers() { return [
+    '_variantChanges(variant.*)',
+  ]}
+
+  _variantChanges(changes) {
+    if (this.variant) {
+
+      let itemData = MHA.utils.deepStruct(changes.path,changes.value);
+      itemData.role = 'product';
+      MHA.setItem(this.itemKey, itemData, true);
+    }
+  }
+
+  _itemKeyChanged(itemKey) {
+
+    super._itemKeyChanged(itemKey);
+
+    this.set('variant',undefined);
+
+    if (!itemKey) {
+      return;
     }
 
-    static get properties() { return {
-      variantMenu: {
-        type: Object,
-        value: {
-          entries: [
-            {name:"custom", icon:"editor:mode-edit", title:"ตั้งค่า" },
-            {name:"price", icon:"editor:attach-money", title:"ราคา" },
-            {name:"color", icon:"image:color-lens", title:"สี" },
-            {name:"size", icon:"av:equalizer", title:"ขนาด" },
-          ],
-        }
-      },
-
-      variant: {
-        type: Object,
-      },
-
-      itemRole: {
-        type: String,
-        value: "product",
-        readOnly: true,
-      },
-
-    }}
-
-    static get observers() { return [
-      '_variantChanges(variant.*)',
-    ]}
-
-    _variantChanges(changes) {
-      if (this.variant) {
-
-        let itemData = MHA.utils.deepStruct(changes.path,changes.value);
-        itemData.role = 'product';
-        MHA.setItem(this.itemKey, itemData, true);
-
+    let item = MHA.getItem({[itemKey]:null});
+    for(let prop in item) {
+      switch(prop) {
+        case '_uid':
+          break;
+        case 'cover':
+          this.set('itemCover',item.cover);
+          break;
+        case 'name':
+          this.set('itemName', item.name);
+          break;
+        case 'role':
+          console.assert('product' == item.role, "XXX");
+          break;
+        case 'variant': {
+          MHA.utils.deepSet(this,'variant',item.variant);
+        } break;
       }
     }
+  }
 
-    _itemKeyChanged(itemKey) {
-
-      super._itemKeyChanged(itemKey);
-
-      this.set('variant',undefined);
-
-      if (!itemKey) {
-        return;
-      }
-
-      let item = MHA.getItem({[itemKey]:null});
-      for(let prop in item) {
-        switch(prop) {
-          case '_uid':
-            break;
-          case 'cover':
-            this.set('itemCover',item.cover);
-            break;
-          case 'name':
-            this.set('itemName', item.name);
-            break;
-          case 'role':
-            console.assert('product' == item.role, "XXX");
-            break;
-          case 'variant': {
-            MHA.utils.deepSet(this,'variant',item.variant);
+  updateChanges(path,value) {
+    switch(path[0]) {
+      case 'cover': {
+        this.set('itemCover',value);
+      } break;
+      case 'name': {
+        this.set('itemName', value);
+      } break;
+      case 'variant': {
+        /* XXX Try to bind mg-data maybe */
+        /* Call deepSet to generate a different copy of data from MHA.data
+        so it can track changes by comparing old-new value */
+        MHA.utils.deepSet(this,path.join('.'),value);
+        /* XXX Can't easily track by values if the data was changed and need to be synced.
+        switch(path.length) {
+          case 1: {
+            this.set(path,value);
+          } break;
+          default: {
+            this.notifyPath(path,value);
           } break;
         }
+        */
       }
     }
+  }
 
-    updateChanges(path,value) {
-      switch(path[0]) {
-        case 'cover': {
-          this.set('itemCover',value);
-        } break;
-        case 'name': {
-          this.set('itemName', value);
-        } break;
-        case 'variant': {
-          /* XXX Try to bind mg-data maybe */
-          /* Call deepSet to generate a different copy of data from MHA.data
-          so it can track changes by comparing old-new value */
-          MHA.utils.deepSet(this,path.join('.'),value);
-          /* XXX Can't easily track by values if the data was changed and need to be synced.
-          switch(path.length) {
-            case 1: {
-              this.set(path,value);
-            } break;
-            default: {
-              this.notifyPath(path,value);
-            } break;
-          }
-          */
-        }
-      }
-    }
+  _onAddGalleryTap(e) {
+    this.$['gallery-editor'].newItem('แกลเลอรี่'+this.itemName);
+  }
 
-    _onAddGalleryTap(e) {
-      this.$['gallery-editor'].newItem('แกลเลอรี่'+this.itemName);
-    }
-
-    _onPasteButtonTap(e) {
-
-    }
+  _onPasteButtonTap(e) {
 
   }
 
-  customElements.define(MGProductEditor.is, MGProductEditor);
+}
+
+customElements.define(MGProductEditor.is, MGProductEditor);
 })();
-</script>
-</dom-module>
+  </script>
+    </dom-module>

@@ -20,295 +20,291 @@
 <link rel="import" href="mg-items.html">
 <link rel="import" href="mg-image.html">
 
-<dom-module id="mg-user">
+    <dom-module id="mg-user">
   <template strip-whitespace>
-      <custom-style>
-    <style include="mg-common-styles iron-flex iron-flex-alignment">
-      :host {
-      }
+<style include="mg-common-styles iron-flex iron-flex-alignment">
+:host {
+}
 
-      @media (max-width: 767px) {
-      }
+@media (max-width: 767px) {
+}
+</style>
 
-    </style>
-      </custom-style>
+<iron-pages
+  selected="[[page]]"
+  attr-for-selected="name"
+  selected-attribute="visible"
+  fallback-selection="404"
+  >
+  <mg-profile
+    name="profile"
+    me="{{me}}"
+  ></mg-profile>
+  <div name="order">
+    Order section
+  </div>
+  <mg-items
+    id="items"
+    name="items"
+    me="[[me]]"
+    route="{{subroute}}"
+  ></mg-items>
+  <div name="store">
+    show store
+  </div>
+  <div name="inbox">
+    show inbox
+  </div>
+  <div name="help">
+    <center>
+    <img width="150px" src="images/logo-full.svg">
+    <h2>Aide-toi, le ciel t'aidera.</h2>
+    <div style="width:400px">
 
-    <iron-pages
-      selected="[[page]]"
-      attr-for-selected="name"
-      selected-attribute="visible"
-      fallback-selection="404"
-      >
-      <mg-profile
-        name="profile"
-        me="{{me}}"
-      ></mg-profile>
-      <div name="order">
-        Order section
-      </div>
-      <mg-items
-        id="items"
-        name="items"
-        me="[[me]]"
-        route="{{subroute}}"
-      ></mg-items>
-      <div name="store">
-        show store
-      </div>
-      <div name="inbox">
-        show inbox
-      </div>
-      <div name="help">
-        <center>
-        <img width="150px" src="images/logo-full.svg">
-        <h2>Aide-toi, le ciel t'aidera.</h2>
-        <div style="width:400px">
+    <h3>Booed</h3>
 
-        <h3>Booed</h3>
+      This is a demo website for Booed Project, a free shopping application
+      being built with Polymer and Firebase. The goal is to allow third
+      parties to create their own shops, manage merchandises and stocks and
+      receive orders. While the front page will be used to prioritize all shops'
+      products and categories, each user will be able to customize fronts
+      for their own shops.
 
-          This is a demo website for Booed Project, a free shopping application
-          being built with Polymer and Firebase. The goal is to allow third
-          parties to create their own shops, manage merchandises and stocks and
-          receive orders. While the front page will be used to prioritize all shops'
-          products and categories, each user will be able to customize fronts
-          for their own shops.
+    <h3>l10n</h3>
+    Thai,Korean,Japanese,English
 
-        <h3>l10n</h3>
-        Thai,Korean,Japanese,English
+    <h3>Source</h3>
+      Please visit <a href="https://github.com/4d4841/booed">https://github.com/4d4841/booed</a> for more information.
+    </div>
+   </center>
+  </div>
+</iron-pages>
 
-        <h3>Source</h3>
-          Please visit <a href="https://github.com/4d4841/booed">https://github.com/4d4841/booed</a> for more information.
-        </div>
-       </center>
-      </div>
-    </iron-pages>
-
-    <app-route
-        route="{{route}}"
-        pattern="/:page"
-        data="{{routeData}}"
-        tail="{{subroute}}">
-    </app-route>
-
+<app-route
+    route="{{route}}"
+    pattern="/:page"
+    data="{{routeData}}"
+    tail="{{subroute}}">
+</app-route>
   </template>
   <script>
-  (function(){
-    var _MGUserAppMenu = { entries: [
-            { name:"profile", path:"/user/profile", icon:"booed:face-female", title:"โพรไฟล์"},
-            { name:"order", path:"/user/order", icon:"credit-card", title:"รายการสั่งซื้อ"},
-            { name:"items", path:"/user/items", icon:"widgets", title:"ไอเท็ม",
-              submenu: { entries:[
-                  { name:"products", path:"/user/items/products", icon:"maps:local-mall", title:"สินค้า" },
-                  { name:"articles", path:"/user/items/articles", icon:"maps:local-library", title:"อาร์ติเคิล" },
-                  { name:"collections", path:"/user/items/collections", icon:"group-work", title:"คอลเลคชั่น" },
-                  { name:"galleries", path:"/user/items/galleries", icon:"image:photo-library", title:"แกลเลอรี่" },
-              ]}
-            },
-            { name:"store", path:"/user/store", icon:"store", title:"ร้าน"},
-            { name:"inbox", path:"/user/inbox", icon:"inbox", title:"อินบอกซ์"},
-            { name:"help", icon:"help", title:"ความช่วยเหลือ",
-              submenu: { entries:[
-                  { name:"tos", path:"/about/tos", icon:"info", title:"เงื่อนไขการให้บริการ", },
-                  { name:"policy", path:"/about/privacy-policy", icon:"info", title:"นโยบายความเป็นส่วนตัว", },
-              ]}
-            },
-          ]};
-          /*
-              submenu: { entries:[
-                  { name:"tos", path:"/about/tos", icon:"info", title:"เงื่อนไขการให้บริการ", },
-                  { name:"policy", path:"/about/privacy-policy", icon:"info", title:"นโยบายความเป็นส่วนตัว", submenu: { entries:[
-                  { name:"products", path:"/user/items/products", icon:"local-mall", title:"สินค้า" },
-                  { name:"articles", path:"/user/items/articles", icon:"local-library", title:"อาร์ติเคิล" },
-                  { name:"collections", path:"/user/items/collections", icon:"group-work", title:"คอลเลคชั่น" },
-                  { name:"galleries", path:"/user/items/galleries", icon:"photo-library", title:"แกลเลอรี่",submenu: { entries:[
-                  { name:"products", path:"/user/items/products", icon:"local-mall", title:"สินค้า" },
-                  { name:"articles", path:"/user/items/articles", icon:"local-library", title:"อาร์ติเคิล" },
-                  { name:"collections", path:"/user/items/collections", icon:"group-work", title:"คอลเลคชั่น" },
-                  { name:"galleries", path:"/user/items/galleries", icon:"photo-library", title:"แกลเลอรี่" },
-              ]} },
-              */
-
-    var _MGProfileMenu = { entries: [
-            { name: "user-menu",
-              icon: "account-box",
-              submenu: { entries:[
-                { name: "profile", path:"/user/profile", icon:"booed:face-female", title:"โพรไฟล์"},
-                { name: "signout",
-                  icon: "maps:local-cafe",
-                  color: "tomato",
-                  title: "ออกจากระบบ"},
-              ]}
-            }
-          ]};
-
-
-    var _MGSignInMenu = { entries: [
-            { name: "profile", path: "/user/profile", icon: "lock", title: "เข้าสู่ระบบ"},
-            { name: "help", icon: "help", title: "ความช่วยเหลือ",
-              submenu: { entries: [
-                  { name: "tos", path: "/about/tos", icon: "info", title: "เงื่อนไขการให้บริการ", },
-                  { name:"policy", path:"/about/privacy-policy", icon:"info", title:"นโยบายความเป็นส่วนตัว" },
-              ]}
-            },
-          ]};
-
-    class MGUser extends Polymer.Element {
-      static get is() { return 'mg-user'; }
-
-      static get properties() { return {
-
-        route: {
-          type: Object,
-          notify: true,
-          observer: '_routeChanged'
+(function(){
+var _MGUserAppMenu = { entries: [
+        { name:"profile", path:"/user/profile", icon:"booed:face-female", title:"โพรไฟล์"},
+        { name:"order", path:"/user/order", icon:"credit-card", title:"รายการสั่งซื้อ"},
+        { name:"items", path:"/user/items", icon:"widgets", title:"ไอเท็ม",
+          submenu: { entries:[
+              { name:"products", path:"/user/items/products", icon:"maps:local-mall", title:"สินค้า" },
+              { name:"articles", path:"/user/items/articles", icon:"maps:local-library", title:"อาร์ติเคิล" },
+              { name:"collections", path:"/user/items/collections", icon:"group-work", title:"คอลเลคชั่น" },
+              { name:"galleries", path:"/user/items/galleries", icon:"image:photo-library", title:"แกลเลอรี่" },
+          ]}
         },
-
-        subroute: {
-          type: Object,
+        { name:"store", path:"/user/store", icon:"store", title:"ร้าน"},
+        { name:"inbox", path:"/user/inbox", icon:"inbox", title:"อินบอกซ์"},
+        { name:"help", icon:"help", title:"ความช่วยเหลือ",
+          submenu: { entries:[
+              { name:"tos", path:"/about/tos", icon:"info", title:"เงื่อนไขการให้บริการ", },
+              { name:"policy", path:"/about/privacy-policy", icon:"info", title:"นโยบายความเป็นส่วนตัว", },
+          ]}
         },
-
-        routeData: {
-          type: Object,
-        },
-
-        page: {
-          type: String,
-          reflectToAttribute: true,
-          notify: true,
-          observer: '_pageChanged'
-        },
-
-        me: {
-          type: Object,
-          notify: true,
-        },
-
-        menu: {
-          type: Object,
-          notify: true,
-        },
-
-        userMenu: {
-          type: Object,
-          observer: '_userMenuChanged',
-        },
-
-        userMenuSelected: {
-          type: String,
-          observer: '_userMenuSelectedChanged',
-        },
-
-        profileMenu: {
-          type: Object,
-          notify: true
-        },
-
-        visible: {
-          type: Boolean,
-          reflectToAttribute: true,
-          value: false,
-          observer: '_visibleChanged',
-        },
-      }}
-
-      static get observers() { return [
-        '_userChanged(me.user)',
-        '_menuSelectedChanged(menu.selected)',
-      ]}
-
-      _userMenuChanged(userMenu) {
-        if (this.visible) {
-          this.set('menu',userMenu);
-          this.set('menu.selected', this.userMenuSelected);
-        }
-      }
-
-      _visibleChanged( visible ) {
-        if (visible) {
-          this.set('menu',this.userMenu);
-          this.set('menu.selected', this.userMenuSelected);
-        }
-      }
-
-      _setMenu(menu) {
-        if (this.menu && menu) {
-          menu.selected = this.menu.selected;
-        }
-        this.set('menu', menu);
-      }
-
-      _userChanged(user) {
-        if (user) {
-          this.set('userMenu', _MGUserAppMenu);
-
-          _MGProfileMenu.entries[0].title = this.me.user.email;
-          _MGProfileMenu.entries[0].submenu.action = this._onProfileMenu.bind(this);
-          this.set('profileMenu', _MGProfileMenu);
-
-        } else {
-          this.set('userMenu', _MGSignInMenu);
-          this.set('profileMenu', { entries: [
-            { action:this._signGoogle.bind(this), name: "profile", icon: "booed:google", title: "เข้าสู่ระบบด้วยบัญชีกูเกิ้ล"},
-          ]});
-        }
-      }
-
-      _signGoogle(){
-        console.log("sign g");
-      }
-
-      _menuSelectedChanged(selected) {
-        if (this.menu == this.userMenu) {
-          this.set('page', selected);
-        }
-      }
-
-      _setMenuSelected(selected) {
-        if (this.menu == this.userMenu) {
-          for(let i = 0; i < this.menu.entries.length; ++i) {
-            if (this.menu.entries[i].name == selected) {
-              this.set('page', selected);
-              return;
-            }
-          }
-        }
-      }
-
-      _userMenuSelectedChanged(selected) {
-        this._setMenuSelected(selected);
-      }
-
-      _routeChanged( route) {
-        if (route.prefix == '/user') {
-          let page = this.routeData.page;
-          this.set('userMenuSelected', page);
-        }
-      }
-
-      _pageChanged( page ) {
-        this.dispatchEvent(new CustomEvent('change-section', {
-          bubbles: true,
-          composed: true,
-          detail: {title: page && page[0].toUpperCase() + page.slice(1)}
-         }));
-         this.set('routeData.page',page);
-      }
-
-      _onProfileMenu (e) {
-        MHA.AU.signOut();
-      }
-
+      ]};
       /*
-      _visualChanged(visible,menu) {
-        if (this.visible) {
-          this.dispatchEvent(new CustomEvent('change-section', {
-            bubbles: true, composed: true, detail: {title: 'User : 👻', menu:this.menu}}));
+          submenu: { entries:[
+              { name:"tos", path:"/about/tos", icon:"info", title:"เงื่อนไขการให้บริการ", },
+              { name:"policy", path:"/about/privacy-policy", icon:"info", title:"นโยบายความเป็นส่วนตัว", submenu: { entries:[
+              { name:"products", path:"/user/items/products", icon:"local-mall", title:"สินค้า" },
+              { name:"articles", path:"/user/items/articles", icon:"local-library", title:"อาร์ติเคิล" },
+              { name:"collections", path:"/user/items/collections", icon:"group-work", title:"คอลเลคชั่น" },
+              { name:"galleries", path:"/user/items/galleries", icon:"photo-library", title:"แกลเลอรี่",submenu: { entries:[
+              { name:"products", path:"/user/items/products", icon:"local-mall", title:"สินค้า" },
+              { name:"articles", path:"/user/items/articles", icon:"local-library", title:"อาร์ติเคิล" },
+              { name:"collections", path:"/user/items/collections", icon:"group-work", title:"คอลเลคชั่น" },
+              { name:"galleries", path:"/user/items/galleries", icon:"photo-library", title:"แกลเลอรี่" },
+          ]} },
+          */
+
+var _MGProfileMenu = { entries: [
+        { name: "user-menu",
+          icon: "account-box",
+          submenu: { entries:[
+            { name: "profile", path:"/user/profile", icon:"booed:face-female", title:"โพรไฟล์"},
+            { name: "signout",
+              icon: "maps:local-cafe",
+              color: "tomato",
+              title: "ออกจากระบบ"},
+          ]}
+        }
+      ]};
+
+
+var _MGSignInMenu = { entries: [
+        { name: "profile", path: "/user/profile", icon: "lock", title: "เข้าสู่ระบบ"},
+        { name: "help", icon: "help", title: "ความช่วยเหลือ",
+          submenu: { entries: [
+              { name: "tos", path: "/about/tos", icon: "info", title: "เงื่อนไขการให้บริการ", },
+              { name:"policy", path:"/about/privacy-policy", icon:"info", title:"นโยบายความเป็นส่วนตัว" },
+          ]}
+        },
+      ]};
+
+class MGUser extends Polymer.Element {
+  static get is() { return 'mg-user'; }
+
+  static get properties() { return {
+
+    route: {
+      type: Object,
+      notify: true,
+      observer: '_routeChanged'
+    },
+
+    subroute: {
+      type: Object,
+    },
+
+    routeData: {
+      type: Object,
+    },
+
+    page: {
+      type: String,
+      reflectToAttribute: true,
+      notify: true,
+      observer: '_pageChanged'
+    },
+
+    me: {
+      type: Object,
+      notify: true,
+    },
+
+    menu: {
+      type: Object,
+      notify: true,
+    },
+
+    userMenu: {
+      type: Object,
+      observer: '_userMenuChanged',
+    },
+
+    userMenuSelected: {
+      type: String,
+      observer: '_userMenuSelectedChanged',
+    },
+
+    profileMenu: {
+      type: Object,
+      notify: true
+    },
+
+    visible: {
+      type: Boolean,
+      reflectToAttribute: true,
+      value: false,
+      observer: '_visibleChanged',
+    },
+  }}
+
+  static get observers() { return [
+    '_userChanged(me.user)',
+    '_menuSelectedChanged(menu.selected)',
+  ]}
+
+  _userMenuChanged(userMenu) {
+    if (this.visible) {
+      this.set('menu',userMenu);
+      this.set('menu.selected', this.userMenuSelected);
+    }
+  }
+
+  _visibleChanged( visible ) {
+    if (visible) {
+      this.set('menu',this.userMenu);
+      this.set('menu.selected', this.userMenuSelected);
+    }
+  }
+
+  _setMenu(menu) {
+    if (this.menu && menu) {
+      menu.selected = this.menu.selected;
+    }
+    this.set('menu', menu);
+  }
+
+  _userChanged(user) {
+    if (user) {
+      this.set('userMenu', _MGUserAppMenu);
+
+      _MGProfileMenu.entries[0].title = this.me.user.email;
+      _MGProfileMenu.entries[0].submenu.action = this._onProfileMenu.bind(this);
+      this.set('profileMenu', _MGProfileMenu);
+
+    } else {
+      this.set('userMenu', _MGSignInMenu);
+      this.set('profileMenu', { entries: [
+        { action:this._signGoogle.bind(this), name: "profile", icon: "booed:google", title: "เข้าสู่ระบบด้วยบัญชีกูเกิ้ล"},
+      ]});
+    }
+  }
+
+  _signGoogle(){
+    console.log("sign g");
+  }
+
+  _menuSelectedChanged(selected) {
+    if (this.menu == this.userMenu) {
+      this.set('page', selected);
+    }
+  }
+
+  _setMenuSelected(selected) {
+    if (this.menu == this.userMenu) {
+      for(let i = 0; i < this.menu.entries.length; ++i) {
+        if (this.menu.entries[i].name == selected) {
+          this.set('page', selected);
+          return;
         }
       }
-      */
     }
+  }
 
-    customElements.define(MGUser.is, MGUser);
-  })();
+  _userMenuSelectedChanged(selected) {
+    this._setMenuSelected(selected);
+  }
+
+  _routeChanged( route) {
+    if (route.prefix == '/user') {
+      let page = this.routeData.page;
+      this.set('userMenuSelected', page);
+    }
+  }
+
+  _pageChanged( page ) {
+    this.dispatchEvent(new CustomEvent('change-section', {
+      bubbles: true,
+      composed: true,
+      detail: {title: page && page[0].toUpperCase() + page.slice(1)}
+     }));
+     this.set('routeData.page',page);
+  }
+
+  _onProfileMenu (e) {
+    MHA.AU.signOut();
+  }
+
+  /*
+  _visualChanged(visible,menu) {
+    if (this.visible) {
+      this.dispatchEvent(new CustomEvent('change-section', {
+        bubbles: true, composed: true, detail: {title: 'User : 👻', menu:this.menu}}));
+    }
+  }
+  */
+}
+
+customElements.define(MGUser.is, MGUser);
+})();
   </script>
-</dom-module>
+    </dom-module>

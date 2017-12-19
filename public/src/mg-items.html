@@ -27,537 +27,534 @@
 <link rel="import" href="mg-thumbnail.html">
 
 
-<dom-module id="mg-items">
-<template strip-whitespace>
-    <custom-style>
-  <style is="custom-style" include="mg-common-styles iron-flex iron-flex-alignment">
-    :host {
-      @apply --layout-horizontal;
-    }
-
-    #new-item-button {
-      margin-left: 25px;
-      width: 180px;
-      padding:0;
-      height:40px;
-      box-shadow: 1px 1px 2px var(--booed-shadow-color);
-      --paper-button: {
-        font-family: 'Mitr', sans-serif;
-        font-size: 16px;
-        background-color: tomato;
-        color: white;
-      }
-    }
-
-    #new-item-balloon {
-      display: none;
-      z-index: 10;
-      margin: 0;
-    }
-
-    .side-bar {
-      position:relative;
-      @apply --layout-vertical;
-      min-width: 250px;
-      height: calc(100vh - 100px);
-      /*border-right:1px dashed tomato;*/
-    }
-
-    .items-container {
-      @apply --layout-vertical;
-      padding: 20px;
-      height: calc(100vh - 215px);
-      margin-top: 10px;
-      overflow-y: auto;
-    }
-
-    .item {
-      margin-bottom: 10px;
-      --mg-image: {
-        width: 180px;
-        height: 150px;
-      }
-    }
-
-    .editor-container {
-      margin-left: 20px;
-      width: 100%;
-      @apply --layout-vertical;
-      height: calc(100vh - 100px);
-    }
-
-    #editor {
-      margin: 0 20px 20px 20px;
-      width: 100%;
-      @apply --layout-flex;
-    }
-
-    a {
-      text-decoration: none;
-    }
-
-    /*
-    #top-smooth-edge {
-      width: calc(100% - 15px);
-      height: 10px;
-      position:absolute;
-      top: 48px;
-      z-index: 2;
-      background: linear-gradient(to bottom, white 2px, transparent 10px);
-      pointer-events: none;
-    }
-    */
-
-    #new-item-button::before {
-      content: "สร้างไอเท็ม";
-    }
-
-    @media (max-width: 767px) {
-      #new-item-button {
-        margin-left: 25px;
-        width: 100px;
-      }
-
-      #new-item-button::before {
-        content: "สร้าง";
-      }
-
-      .item {
-        width: 100px;
-        height: 100px;
-        --mg-image: {
-          width: 100px;
-          height: 100px;
-        }
-      }
-
-      .side-bar {
-        min-width: 150px;
-      }
-
-      .items-container {
-        height: calc(100vh - 140px);
-      }
-
-      .side-bar {
-        height: calc(100vh - 70px);
-      }
-
-      .editor-container {
-        height: calc(100vh - 70px);
-      }
-
-    }
-
-    mg-thumbnail iron-icon {
-      margin-left: 10px;
-    }
-
-  </style>
-    </custom-style>
-
-  <mg-data items="{{items}}"></mg-data>
-  <div class="side-bar">
-    <paper-button id="new-item-button" on-tap="_openNewItemMenu">
-      <iron-icon icon="add"></iron-icon>
-    </paper-button>
-
-    <!--<div id="top-smooth-edge"></div>-->
-    <iron-selector class="items-container" attr-for-selected="key" selected="[[itemKey]]">
-    <template is="dom-repeat" items="[[itemList]]" mutable-data>
-      <mg-thumbnail
-        key="[[item.key]]"
-        label="[[_formatLabel(item.images,item.name,item.role)]]"
-        icon="[[_formatRoleIcon(item.role)]]"
-        src="[[item._src]]"
-        class="item"
-        on-click="_onThumbnailClick"
-      >
-      </mg-thumbnail>
-    </template>
-    </iron-selector>
-
-  </div>
-
-  <mg-balloon
-    id="new-item-balloon"
-    no-overlap
-    vertical-align="top"
-    dynamic-align
-    horizontal-align="auto"
-  > <mg-menu menu="[[newItemMenu]]"></mg-menu>
-  </mg-balloon>
-
-  <div class="editor-container">
-    <mg-product-editor
-      id="product-editor"
-      class="flex"
-      me="[[me]]"
-    ></mg-product-editor>
-
-    <mg-gallery-editor
-      id="gallery-editor"
-      class="flex"
-      me="[[me]]"
-    ></mg-gallery-editor>
-  </div>
-
-  <app-route
-      route="{{route}}"
-      pattern="/:itemKey"
-      data="{{routeData}}"
-      tail="{{subroute}}">
-  </app-route>
-
-</template>
-<script>
-  class MGItems extends Polymer.Element {
-    static get is() { return 'mg-items'; }
-    static get properties() { return {
-      me: Object,
-
-      items: Object,
-
-      itemList: {
-        type: Array,
-        value: function(){return [];},
-      },
-
-      itemKey: {
-        type: String,
-      },
-      itemRole: {
-        type: String,
-      },
-
-      editor: {
-        type: Object,
-        computed: '_computeSelectEditor(itemRole)'
-      },
-
-      menu: {
-        type: Object,
-        value: { entries: [
-          {name:"products", icon:"local-mall", title:"สินค้า" },
-          {name:"articles", icon:"local-library", title:"อาร์ติเคิล" },
-          {name:"collections", icon:"group-work", title:"คอลเลคชั่น" },
-          {name:"galleries", icon:"photo-library", title:"แกลเลอรี่" },
-        ]}
-      },
-      newItemMenu: {
-        type: Object,
-        value: {
-          entries: [
-            {name:"product", icon:"maps:local-mall", title:"สินค้า" },
-            {name:"article", icon:"maps:local-library", title:"อาร์ติเคิล" },
-            {name:"collection", icon:"group-work", title:"คอลเลคชั่น" },
-            {name:"gallery", icon:"image:photo-library", title:"แกลเลอรี่" },
-          ],
-        }
-      },
-      visible: {
-        type: Boolean,
-        value: false,
-      },
-
-      route: {
-        type: Object,
-        notify: true,
-        observer: '_routeChanged',
-      },
-      routeData: {
-        type: Object,
-      },
-      subroute: Object,
-
-    }}
-
-    static get observers() { return [
-      '_itemsChanged(items.*)',
-      '_routeDataItemKeyChanged(routeData.itemKey)',
-      '_uidItemKeyChanged(me.user.uid, itemKey)',
-      '_userChanged(me.user.uid)',
-      '_visibleChanged(visible)',
-    ]}
-
-    connectedCallback() {
-      super.connectedCallback();
-      window.addEventListener('close-contextual-menu', this._closeSubmenu.bind(this));
-      this.menu.action = e => this._onSelectedItemType(e);
-      this.newItemMenu.action = e => this._onNewItem(e);
-    }
-
-    disconnectedCallback() {
-      delete this.newItemMenu.target;
-      super.disconnectedCallback();
-    }
-
-    _itemsChanged(change) {
-      let path = change.path.split('.');
-      if (path.length < 2) return;
-      let itemKey = path[1];
-
-      if (this.editor && itemKey == this.editor.itemKey) {
-        this.editor.updateChanges(path.slice(2),change.value);
-      }
-
-      if (path.length == 3 && path[2] == 'cover') {
-        this.itemList.every((item,index) => {
-          if (itemKey == item.key) {
-            this._setCover(itemKey,change.value);
-            return false;
-          }
-          return true;
-        });
-      } else if (path.length == 5 && path[4] == 'thumbnail') {
-        let imageKey = path[3];
-        this.itemList.every((item,index) => {
-          if (itemKey == item.key &&
-            //imageKey == MHA.get(['items',itemKey,'cover'])) {
-            imageKey == MHA.getItem({[itemKey]:{cover:null}})) {
-
-            this._setCover(itemKey,imageKey);
-            return false;
-          }
-          return true;
-        });
-      }
-
-    }
-
-    _routeDataItemKeyChanged(key) {
-      this.set('itemKey', key);
-    }
-
-    _uidItemKeyChanged(uid, itemKey) {
-      if (this._Unsubscribe) {
-        this._Unsubscribe();
-      }
-
-      if (!uid || !itemKey) {
-        return;
-      }
-
-      let ref,callback;
-      this._Unsubscribe = () => {ref.off('value', callback); delete this._Unsubscribe};
-      ref = MHA.DB.ref('home').child(uid).child('items').child(itemKey);
-      callback = ref.on('value', itemSS => {
-
-        let v = itemSS.val();
-        if (v) {
-          if (!v.role) {
-            /* If files got uploaded beforehand */
-            return;
-          }
-
-          this.set('itemRole',v.role);
-          this.editor.set('itemKey',itemKey);
-
-          if (v.role != 'gallery') { this.set('galleryKey', null); }
-          if (v.role != 'article') { this.set('articleKey', null); }
-          if (v.role != 'product') { this.set('productKey', null); }
-          if (v.role != 'collection') { this.set('collectionKey', null); }
-
-          let item = {
-            _uid: uid,
-            name: v.name,
-            role: v.role,
-            time: v.time,
-            cover: v.cover,
-            variant: v.variant,
-          }
-
-          itemSS.child('images').forEach(imgRef => {
-            let val = imgRef.val();
-
-                item.images = item.images || {};
-              item.images[imgRef.key] = item.images[imgRef.key] || val;
-            item.images[imgRef.key].deleted = val.deleted || null;
-            item.images[imgRef.key].roi = val.roi || null;
-
-          });
-
-          MHA.setItem(itemSS.key,item);
-
-        } else if (!this.itemRole) {
-          /* editorRole isn't defined. This is not creating a new item. */
-          this.set('itemKey', null);
-          if (this.route) {
-            this.set('route.path', '');
-          }
-        }
-
-      }, error => {
-        console.error("ERR", error);
-        this._Unsubscribe();
-      });
-
-      if (this.route) {
-        this.set('route.path', itemKey);
-      }
-    }
-
-    _userChanged(uid) {
-      this.set('itemList',[]);
-      if (this._UidChangedCallback) {
-        this._UidChangedCallback.ref.off('child_added', this._UidChangedCallback.cb, this);
-        delete this._UidChangedCallback;
-      }
-      if (uid) {
-        this._UidChangedCallback = {ref:MHA.DB.ref('home').child(uid).child('items')};
-        this._UidChangedCallback.cb
-         = this._UidChangedCallback.ref.on('child_added', function(snapshot) {
-          let val = snapshot.val();
-
-          if( this.itemList.every(function(item){
-            /* Check if item exists */
-            return item.key != snapshot.key;
-          })) {
-            /* New item found in snapshot, insert into item list.
-             * In expected case it may already add placeholders for keeping
-             * items that are being constructed.
-             */
-            this.unshift('itemList',{
-              key: snapshot.key,
-              role: val.role,
-              name: val.name,
-              images: val.images,
-            }) - 1;
-          }
-
-          val._uid = uid;
-          MHA.setItem(snapshot.key,val);
-
-          let itemRef = MHA.DB.ref('home')
-                              .child(uid)
-                              .child('items')
-                              .child(snapshot.key);
-
-          /* Listen to name changes */
-          itemRef.child('name').on('value', nameSnapshot => {
-            this._setPhotoKeyProperty(snapshot.key, 'name', nameSnapshot.val());
-          });
-
-          /* Listen to images changes */
-          itemRef.child('cover').on('value', coverSnapshot => {
-              MHA.setItem(snapshot.key,{cover:coverSnapshot.val()});
-              this._setCover(snapshot.key, coverSnapshot.val());
-          });
-
-        },function(error){},this);
-      }
-    }
-
-    _visibleChanged(visible) {
-      if (visible) {
-        this.set('itemKey', this.itemKey || this._CurrentItemKey);
-      } else {
-        this._CurrentItemKey = this.itemKey;
-        this.set('itemKey', null);
-      }
-    }
-
-    _setCover(itemKey,imageKey) {
-      if (!imageKey) {
-        this._setPhotoKeyProperty(itemKey, '_src', 'images/logo-pumpkin-face-grayout.svg');
-        return;
-      }
-
-      //let thumbnail = MHA.get(['items',itemKey,'images',imageKey,'thumbnail']);
-      /* Oh dear */
-      let thumbnail = MHA.getItem({[itemKey]:{images:{[imageKey]:{thumbnail:null}}}});
-      if (thumbnail) {
-        let uid = MHA.AU.currentUser.uid;
-        MHA.registerRepresentation(thumbnail, { src: (key,src) => {
-          this._setPhotoKeyProperty(itemKey, '_src', src);
-        }});
-      }
-    }
-
-    _formatLabel(images,str,role) {
-      str = str || "(ไม่มีชื่อ)";
-      return role == 'gallery'
-        ? (images ? "×" + Object.entries(images).length : '') +" "+ str
-        : str;
-    }
-
-    _formatRoleIcon(role) {
-      return MGIconForRole(role);
-    }
-
-    _indexItem(itemKey) {
-      for (let i = 0, data; data = this.itemList[i]; ++i) {
-        if (data.key == itemKey) {
-          return i;
-        }
-      }
-      return -1;
-    }
-
-    _setPhotoKeyProperty(key,prop,val) {
-      let idx = this._indexItem(key);
-      if (idx > -1) {
-        this.itemList[idx][prop] = val;
-        this.notifyPath(['itemList',idx,prop]);
-      }
-    }
-
-    _onThumbnailClick(e) {
-      this.set('itemKey',e.model.item.key);
-    }
-
-    _onSelectedItemType(e) {
-      console.log("Not yet implemented. Should display only ->", e.model.item.name);
-    }
-
-    _computeSelectEditor(newRole) {
-      let newEditor = this.$[newRole+'-editor'];
-
-      if (this.editor && this.editor !== newEditor) {
-        this.editor.set('itemKey',null);
-      }
-
-      return newEditor;
-    }
-
-    _onNewItem(e) {
-      this._closeSubmenu(e);
-      this.set('itemRole',e.model.item.name);
-      this.set('itemKey',this.editor.newItem());
-    }
-
-    _routeChanged(route) {
-      if (route.prefix == '/user/items') {
-        /* Checks if it was editing an item, set the URL back to the item */
-        let key = this.itemKey || this._CurrentItemKey;
-        if (key && !route.path) {
-          delete this._CurrentItemKey; /* Delete or it will keep bouncing back trying */
-          this.set('route.path', key);
-        }
-      }
-    }
-
-    _closeSubmenu(e) {
-      if (e.detail && e.detail.sender != this) {
-        this.$['new-item-balloon'].close();
-      }
-    }
-
-    /* XXX implement contextual behavior */
-    _openNewItemMenu(e) {
-      this.dispatchEvent(new CustomEvent('close-contextual-menu', {
-        bubbles: true, composed: true, detail:{sender:this}
-      }));
-
-      if (this.$['new-item-balloon'].visible) {
-        this.$['new-item-balloon'].close();
-        return;
-      }
-
-      this.$['new-item-balloon'].positionTarget = this.$['new-item-button'];
-      this.$['new-item-balloon'].open();
+    <dom-module id="mg-items">
+  <template strip-whitespace>
+<style include="mg-common-styles iron-flex iron-flex-alignment">
+:host {
+  @apply --layout-horizontal;
+}
+
+#new-item-button {
+  margin-left: 25px;
+  width: 180px;
+  padding:0;
+  height:40px;
+  box-shadow: 1px 1px 2px var(--booed-shadow-color);
+  --paper-button: {
+    font-family: 'Mitr', sans-serif;
+    font-size: 16px;
+    background-color: tomato;
+    color: white;
+  }
+}
+
+#new-item-balloon {
+  display: none;
+  z-index: 10;
+  margin: 0;
+}
+
+.side-bar {
+  position:relative;
+  @apply --layout-vertical;
+  min-width: 250px;
+  height: calc(100vh - 100px);
+  /*border-right:1px dashed tomato;*/
+}
+
+.items-container {
+  @apply --layout-vertical;
+  padding: 20px;
+  height: calc(100vh - 215px);
+  margin-top: 10px;
+  overflow-y: auto;
+}
+
+.item {
+  margin-bottom: 10px;
+  --mg-image: {
+    width: 180px;
+    height: 150px;
+  }
+}
+
+.editor-container {
+  margin-left: 20px;
+  width: 100%;
+  @apply --layout-vertical;
+  height: calc(100vh - 100px);
+}
+
+#editor {
+  margin: 0 20px 20px 20px;
+  width: 100%;
+  @apply --layout-flex;
+}
+
+a {
+  text-decoration: none;
+}
+
+/*
+#top-smooth-edge {
+  width: calc(100% - 15px);
+  height: 10px;
+  position:absolute;
+  top: 48px;
+  z-index: 2;
+  background: linear-gradient(to bottom, white 2px, transparent 10px);
+  pointer-events: none;
+}
+*/
+
+#new-item-button::before {
+  content: "สร้างไอเท็ม";
+}
+
+@media (max-width: 767px) {
+  #new-item-button {
+    margin-left: 25px;
+    width: 100px;
+  }
+
+  #new-item-button::before {
+    content: "สร้าง";
+  }
+
+  .item {
+    width: 100px;
+    height: 100px;
+    --mg-image: {
+      width: 100px;
+      height: 100px;
     }
   }
-  customElements.define(MGItems.is, MGItems);
-</script>
-</dom-module>
+
+  .side-bar {
+    min-width: 150px;
+  }
+
+  .items-container {
+    height: calc(100vh - 140px);
+  }
+
+  .side-bar {
+    height: calc(100vh - 70px);
+  }
+
+  .editor-container {
+    height: calc(100vh - 70px);
+  }
+
+}
+
+mg-thumbnail iron-icon {
+  margin-left: 10px;
+}
+
+</style>
+
+<mg-data items="{{items}}"></mg-data>
+
+  <div class="side-bar">
+<paper-button id="new-item-button" on-tap="_openNewItemMenu">
+  <iron-icon icon="add"></iron-icon>
+</paper-button>
+
+<!--<div id="top-smooth-edge"></div>-->
+<iron-selector class="items-container" attr-for-selected="key" selected="[[itemKey]]">
+    <template is="dom-repeat" items="[[itemList]]" mutable-data>
+  <mg-thumbnail
+    key="[[item.key]]"
+    label="[[_formatLabel(item.images,item.name,item.role)]]"
+    icon="[[_formatRoleIcon(item.role)]]"
+    src="[[item._src]]"
+    class="item"
+    on-click="_onThumbnailClick"
+  ></mg-thumbnail>
+    </template>
+</iron-selector>
+  </div>
+
+<mg-balloon
+  id="new-item-balloon"
+  no-overlap
+  vertical-align="top"
+  dynamic-align
+  horizontal-align="auto"
+> <mg-menu menu="[[newItemMenu]]"></mg-menu>
+</mg-balloon>
+
+  <div class="editor-container">
+<mg-product-editor
+  id="product-editor"
+  class="flex"
+  me="[[me]]"
+></mg-product-editor>
+
+<mg-gallery-editor
+  id="gallery-editor"
+  class="flex"
+  me="[[me]]"
+></mg-gallery-editor>
+  </div>
+
+<app-route
+  route="{{route}}"
+  pattern="/:itemKey"
+  data="{{routeData}}"
+  tail="{{subroute}}"
+></app-route>
+
+  </template>
+  <script>
+class MGItems extends Polymer.Element {
+  static get is() { return 'mg-items'; }
+  static get properties() { return {
+    me: Object,
+
+    items: Object,
+
+    itemList: {
+      type: Array,
+      value: function(){return [];},
+    },
+
+    itemKey: {
+      type: String,
+    },
+    itemRole: {
+      type: String,
+    },
+
+    editor: {
+      type: Object,
+      computed: '_computeSelectEditor(itemRole)'
+    },
+
+    menu: {
+      type: Object,
+      value: { entries: [
+        {name:"products", icon:"local-mall", title:"สินค้า" },
+        {name:"articles", icon:"local-library", title:"อาร์ติเคิล" },
+        {name:"collections", icon:"group-work", title:"คอลเลคชั่น" },
+        {name:"galleries", icon:"photo-library", title:"แกลเลอรี่" },
+      ]}
+    },
+    newItemMenu: {
+      type: Object,
+      value: {
+        entries: [
+          {name:"product", icon:"maps:local-mall", title:"สินค้า" },
+          {name:"article", icon:"maps:local-library", title:"อาร์ติเคิล" },
+          {name:"collection", icon:"group-work", title:"คอลเลคชั่น" },
+          {name:"gallery", icon:"image:photo-library", title:"แกลเลอรี่" },
+        ],
+      }
+    },
+    visible: {
+      type: Boolean,
+      value: false,
+    },
+
+    route: {
+      type: Object,
+      notify: true,
+      observer: '_routeChanged',
+    },
+    routeData: {
+      type: Object,
+    },
+    subroute: Object,
+
+  }}
+
+  static get observers() { return [
+    '_itemsChanged(items.*)',
+    '_routeDataItemKeyChanged(routeData.itemKey)',
+    '_uidItemKeyChanged(me.user.uid, itemKey)',
+    '_userChanged(me.user.uid)',
+    '_visibleChanged(visible)',
+  ]}
+
+  connectedCallback() {
+    super.connectedCallback();
+    window.addEventListener('close-contextual-menu', this._closeSubmenu.bind(this));
+    this.menu.action = e => this._onSelectedItemType(e);
+    this.newItemMenu.action = e => this._onNewItem(e);
+  }
+
+  disconnectedCallback() {
+    delete this.newItemMenu.target;
+    super.disconnectedCallback();
+  }
+
+  _itemsChanged(change) {
+    let path = change.path.split('.');
+    if (path.length < 2) return;
+    let itemKey = path[1];
+
+    if (this.editor && itemKey == this.editor.itemKey) {
+      this.editor.updateChanges(path.slice(2),change.value);
+    }
+
+    if (path.length == 3 && path[2] == 'cover') {
+      this.itemList.every((item,index) => {
+        if (itemKey == item.key) {
+          this._setCover(itemKey,change.value);
+          return false;
+        }
+        return true;
+      });
+    } else if (path.length == 5 && path[4] == 'thumbnail') {
+      let imageKey = path[3];
+      this.itemList.every((item,index) => {
+        if (itemKey == item.key &&
+          //imageKey == MHA.get(['items',itemKey,'cover'])) {
+          imageKey == MHA.getItem({[itemKey]:{cover:null}})) {
+
+          this._setCover(itemKey,imageKey);
+          return false;
+        }
+        return true;
+      });
+    }
+
+  }
+
+  _routeDataItemKeyChanged(key) {
+    this.set('itemKey', key);
+  }
+
+  _uidItemKeyChanged(uid, itemKey) {
+    if (this._Unsubscribe) {
+      this._Unsubscribe();
+    }
+
+    if (!uid || !itemKey) {
+      return;
+    }
+
+    let ref,callback;
+    this._Unsubscribe = () => {ref.off('value', callback); delete this._Unsubscribe};
+    ref = MHA.DB.ref('home').child(uid).child('items').child(itemKey);
+    callback = ref.on('value', itemSS => {
+
+      let v = itemSS.val();
+      if (v) {
+        if (!v.role) {
+          /* If files got uploaded beforehand */
+          return;
+        }
+
+        this.set('itemRole',v.role);
+        this.editor.set('itemKey',itemKey);
+
+        if (v.role != 'gallery') { this.set('galleryKey', null); }
+        if (v.role != 'article') { this.set('articleKey', null); }
+        if (v.role != 'product') { this.set('productKey', null); }
+        if (v.role != 'collection') { this.set('collectionKey', null); }
+
+        let item = {
+          _uid: uid,
+          name: v.name,
+          role: v.role,
+          time: v.time,
+          cover: v.cover,
+          variant: v.variant,
+        }
+
+        itemSS.child('images').forEach(imgRef => {
+          let val = imgRef.val();
+
+              item.images = item.images || {};
+            item.images[imgRef.key] = item.images[imgRef.key] || val;
+          item.images[imgRef.key].deleted = val.deleted || null;
+          item.images[imgRef.key].roi = val.roi || null;
+
+        });
+
+        MHA.setItem(itemSS.key,item);
+
+      } else if (!this.itemRole) {
+        /* editorRole isn't defined. This is not creating a new item. */
+        this.set('itemKey', null);
+        if (this.route) {
+          this.set('route.path', '');
+        }
+      }
+
+    }, error => {
+      console.error("ERR", error);
+      this._Unsubscribe();
+    });
+
+    if (this.route) {
+      this.set('route.path', itemKey);
+    }
+  }
+
+  _userChanged(uid) {
+    this.set('itemList',[]);
+    if (this._UidChangedCallback) {
+      this._UidChangedCallback.ref.off('child_added', this._UidChangedCallback.cb, this);
+      delete this._UidChangedCallback;
+    }
+    if (uid) {
+      this._UidChangedCallback = {ref:MHA.DB.ref('home').child(uid).child('items')};
+      this._UidChangedCallback.cb
+       = this._UidChangedCallback.ref.on('child_added', function(snapshot) {
+        let val = snapshot.val();
+
+        if( this.itemList.every(function(item){
+          /* Check if item exists */
+          return item.key != snapshot.key;
+        })) {
+          /* New item found in snapshot, insert into item list.
+           * In expected case it may already add placeholders for keeping
+           * items that are being constructed.
+           */
+          this.unshift('itemList',{
+            key: snapshot.key,
+            role: val.role,
+            name: val.name,
+            images: val.images,
+          }) - 1;
+        }
+
+        val._uid = uid;
+        MHA.setItem(snapshot.key,val);
+
+        let itemRef = MHA.DB.ref('home')
+                            .child(uid)
+                            .child('items')
+                            .child(snapshot.key);
+
+        /* Listen to name changes */
+        itemRef.child('name').on('value', nameSnapshot => {
+          this._setPhotoKeyProperty(snapshot.key, 'name', nameSnapshot.val());
+        });
+
+        /* Listen to images changes */
+        itemRef.child('cover').on('value', coverSnapshot => {
+            MHA.setItem(snapshot.key,{cover:coverSnapshot.val()});
+            this._setCover(snapshot.key, coverSnapshot.val());
+        });
+
+      },function(error){},this);
+    }
+  }
+
+  _visibleChanged(visible) {
+    if (visible) {
+      this.set('itemKey', this.itemKey || this._CurrentItemKey);
+    } else {
+      this._CurrentItemKey = this.itemKey;
+      this.set('itemKey', null);
+    }
+  }
+
+  _setCover(itemKey,imageKey) {
+    if (!imageKey) {
+      this._setPhotoKeyProperty(itemKey, '_src', 'images/logo-pumpkin-face-grayout.svg');
+      return;
+    }
+
+    //let thumbnail = MHA.get(['items',itemKey,'images',imageKey,'thumbnail']);
+    /* Oh dear */
+    let thumbnail = MHA.getItem({[itemKey]:{images:{[imageKey]:{thumbnail:null}}}});
+    if (thumbnail) {
+      let uid = MHA.AU.currentUser.uid;
+      MHA.registerRepresentation(thumbnail, { src: (key,src) => {
+        this._setPhotoKeyProperty(itemKey, '_src', src);
+      }});
+    }
+  }
+
+  _formatLabel(images,str,role) {
+    str = str || "(ไม่มีชื่อ)";
+    return role == 'gallery'
+      ? (images ? "×" + Object.entries(images).length : '') +" "+ str
+      : str;
+  }
+
+  _formatRoleIcon(role) {
+    return MGIconForRole(role);
+  }
+
+  _indexItem(itemKey) {
+    for (let i = 0, data; data = this.itemList[i]; ++i) {
+      if (data.key == itemKey) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  _setPhotoKeyProperty(key,prop,val) {
+    let idx = this._indexItem(key);
+    if (idx > -1) {
+      this.itemList[idx][prop] = val;
+      this.notifyPath(['itemList',idx,prop]);
+    }
+  }
+
+  _onThumbnailClick(e) {
+    this.set('itemKey',e.model.item.key);
+  }
+
+  _onSelectedItemType(e) {
+    console.log("Not yet implemented. Should display only ->", e.model.item.name);
+  }
+
+  _computeSelectEditor(newRole) {
+    let newEditor = this.$[newRole+'-editor'];
+
+    if (this.editor && this.editor !== newEditor) {
+      this.editor.set('itemKey',null);
+    }
+
+    return newEditor;
+  }
+
+  _onNewItem(e) {
+    this._closeSubmenu(e);
+    this.set('itemRole',e.model.item.name);
+    this.set('itemKey',this.editor.newItem());
+  }
+
+  _routeChanged(route) {
+    if (route.prefix == '/user/items') {
+      /* Checks if it was editing an item, set the URL back to the item */
+      let key = this.itemKey || this._CurrentItemKey;
+      if (key && !route.path) {
+        delete this._CurrentItemKey; /* Delete or it will keep bouncing back trying */
+        this.set('route.path', key);
+      }
+    }
+  }
+
+  _closeSubmenu(e) {
+    if (e.detail && e.detail.sender != this) {
+      this.$['new-item-balloon'].close();
+    }
+  }
+
+  /* XXX implement contextual behavior */
+  _openNewItemMenu(e) {
+    this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+      bubbles: true, composed: true, detail:{sender:this}
+    }));
+
+    if (this.$['new-item-balloon'].visible) {
+      this.$['new-item-balloon'].close();
+      return;
+    }
+
+    this.$['new-item-balloon'].positionTarget = this.$['new-item-button'];
+    this.$['new-item-balloon'].open();
+  }
+}
+customElements.define(MGItems.is, MGItems);
+  </script>
+    </dom-module>

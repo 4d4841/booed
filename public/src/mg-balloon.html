@@ -17,192 +17,189 @@
 <link rel="import" href="../bower_components/iron-fit-behavior/iron-fit-behavior.html">
 <link rel="import" href="mg-balloon-content.html">
 
-<dom-module id="mg-balloon">
+    <dom-module id="mg-balloon">
   <template>
-      <custom-style>
-    <style include="iron-flex iron-flex-alignment">
-      :host {
-        transition: opacity 0.2s;
-      }
+<style include="iron-flex iron-flex-alignment">
+  :host {
+    transition: opacity 0.2s;
+  }
 
-      .hidden {
-        display: none !important;
-      }
+  .hidden {
+    display: none !important;
+  }
 
-      #arrow {
-        @apply --layout-vertical;
-        @apply --layout-center;
-      }
+  #arrow {
+    @apply --layout-vertical;
+    @apply --layout-center;
+  }
 
-      .arrow-element {
-        pointer-events: none;
-        position: absolute;
-        left: calc(50% - 8px);
-      }
+  .arrow-element {
+    pointer-events: none;
+    position: absolute;
+    left: calc(50% - 8px);
+  }
 
-      #content: {
-      }
+  #content: {
+  }
 
-      #content:focus {
-        outline: none;
-      }
-    </style>
-      </custom-style>
+  #content:focus {
+    outline: none;
+  }
+</style>
 
-    <div id="arrow">
-      <svg class="arrow-element">
-        <defs id="defs2">
-          <filter id="blurshadow">
-            <feGaussianBlur stdDeviation="1.2" />
-          </filter>
-        </defs>
-        <path
-           id="arrow-shadow"
-           d="M 16,10 0,10 8,0 Z"
-           style="opacity:0.3;fill:#000000;stroke:none;filter:url(#blurshadow);" />
-      </svg>
-      <svg class="arrow-element" style="z-index:10">
-        <path
-           id="arrow"
-           d="M 16,10 0,10 8,0 Z"
-           style="fill:#ffffff;stroke:none;" />
-      </svg>
-    </div>
+  <div id="arrow">
+<svg class="arrow-element">
+  <defs id="defs2">
+    <filter id="blurshadow">
+      <feGaussianBlur stdDeviation="1.2" />
+    </filter>
+  </defs>
+  <path
+     id="arrow-shadow"
+     d="M 16,10 0,10 8,0 Z"
+     style="opacity:0.3;fill:#000000;stroke:none;filter:url(#blurshadow);" />
+</svg>
+<svg class="arrow-element" style="z-index:10">
+  <path
+     id="arrow"
+     d="M 16,10 0,10 8,0 Z"
+     style="fill:#ffffff;stroke:none;" />
+</svg>
+  </div>
 
-    <!--XXX Try to fix horizontal-align to be center, now it fall off-screen -->
-    <mg-balloon-content
-      id="content"
-      no-overlap
-      auto-fit-on-attach
-      vertical-align="top"
-      horizontal-align="center"
-      horizontal-offset="-10"
-      position-target="[[positionTarget]]"
-      tabindex="0"
-      on-mousedown="_hackRefocusXXX"
-    ><slot></slot>
-    <a href="#" style="opacity:0;position:absolute;" tabindex="1" id="focusMe"></a>
-    </mg-balloon-content>
+<!--XXX Try to fix horizontal-align to be center, now it fall off-screen -->
+<mg-balloon-content
+  id="content"
+  no-overlap
+  auto-fit-on-attach
+  vertical-align="top"
+  horizontal-align="center"
+  horizontal-offset="-10"
+  position-target="[[positionTarget]]"
+  tabindex="0"
+  on-mousedown="_hackRefocusXXX"
+><slot></slot>
+<a href="#" style="opacity:0;position:absolute;" tabindex="1" id="focusMe"></a>
+</mg-balloon-content>
 
   </template>
-
   <script>
-  (function(){
+(function(){
 
-    var _raf = null;
+var _raf = null;
 
-    class MGBalloon extends Polymer.mixinBehaviors([Polymer.IronFitBehavior], Polymer.Element) {
-      _hackRefocusXXX(e) {
-        Polymer.Async.timeOut.run(() => {
-          this.$.content.focus();
-        }, 0);
+class MGBalloon extends Polymer.mixinBehaviors([Polymer.IronFitBehavior], Polymer.Element) {
+  _hackRefocusXXX(e) {
+    Polymer.Async.timeOut.run(() => {
+      this.$.content.focus();
+    }, 0);
+  }
+
+  static get is() { return 'mg-balloon'; }
+
+  static get properties() { return {
+    positionTarget: {
+      type: Object,
+      observer: '_positionTargetChanged'
+    },
+
+    visible: {
+      type: Boolean,
+      notify: true,
+    },
+  }}
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.autoFitOnAttach = true;
+    /*
+    this.$.content.positionTarget = this.$.pos;
+    */
+    this.verticalOffset = -10;
+    this.horizontalAlign = 'center';
+
+    window.addEventListener('resize', e => this._refit(e));
+    window.addEventListener('scroll', e => this._refit(e));
+    this.addEventListener('mg-menu-toggle-opened', e => this._refit(e));
+
+    /* XXX This can't be done since mg-app use a single node for many things
+       XXX or could this be decided by parent.
+    window.addEventListener('close-contextual-menu', e => {
+      this.close();
+    });
+    */
+    this.$.content.addEventListener('focus', e => {
+      this._refit(e);
+      if (this._WillClose) {
+        this._WillClose.cancel();
+        delete this._WillClose;
       }
+    },true);
 
-      static get is() { return 'mg-balloon'; }
-
-      static get properties() { return {
-        positionTarget: {
-          type: Object,
-          observer: '_positionTargetChanged'
-        },
-
-        visible: {
-          type: Boolean,
-          notify: true,
-        },
-      }}
-
-      connectedCallback() {
-        super.connectedCallback();
-        this.autoFitOnAttach = true;
-        /*
-        this.$.content.positionTarget = this.$.pos;
-        */
-        this.verticalOffset = -10;
-        this.horizontalAlign = 'center';
-
-        window.addEventListener('resize', e => this._refit(e));
-        window.addEventListener('scroll', e => this._refit(e));
-        this.addEventListener('mg-menu-toggle-opened', e => this._refit(e));
-
-        /* XXX This can't be done since mg-app use a single node for many things
-           XXX or could this be decided by parent.
-        window.addEventListener('close-contextual-menu', e => {
-          this.close();
-        });
-        */
-        this.$.content.addEventListener('focus', e => {
-          this._refit(e);
-          if (this._WillClose) {
-            this._WillClose.cancel();
-            delete this._WillClose;
+    this.$.content.addEventListener('blur', e => {
+      let pos = this.positionTarget;
+      this._WillClose = Polymer.Debouncer.debounce(this._WillClose,
+        Polymer.Async.timeOut.after(200), () => {
+          if (pos == this.positionTarget) {
+            this.close();
           }
-        },true);
-
-        this.$.content.addEventListener('blur', e => {
-          let pos = this.positionTarget;
-          this._WillClose = Polymer.Debouncer.debounce(this._WillClose,
-            Polymer.Async.timeOut.after(200), () => {
-              if (pos == this.positionTarget) {
-                this.close();
-              }
-            }
-          );
-        },true);
-      }
-
-      _positionTargetChanged(target) {
-        Polymer.Async.timeOut.run(() => {
-          this._refit();
-        }, 0);
-      }
-
-      _refit() {
-        _raf && window.cancelAnimationFrame(_raf);
-        _raf = window.requestAnimationFrame(function(){
-          _raf = null;
-          this.refit();
-        }.bind(this));
-      }
-
-      refit() {
-        /* Place arrow at the center of the target */
-        //this.style.width = this.positionTarget.offsetWidth+"px";
-        //this.horizontalOffset = this.positionTarget.offsetWidth/2;
-        /*
-        if(!this.positionTarget.offsetParent) {
-          this.style.display = "none";
         }
-        */
-        super.refit();
-        this.$.content.refit();
-      }
+      );
+    },true);
+  }
 
-      open() {
-        this.set('visible', true);
-        this.style.display = 'block';
-        this.style.opacity = 0;
-        if (this._WillClose) {
-          this._WillClose.cancel();
-          delete this._WillClose;
-        }
-        Polymer.Async.timeOut.run(() => {
-          this.refit();
-          this.style.opacity = 1;
-          this.$.content.focus();
-        }, 0);
-      }
+  _positionTargetChanged(target) {
+    Polymer.Async.timeOut.run(() => {
+      this._refit();
+    }, 0);
+  }
 
-      close() {
-        this.set('visible', false);
-        this.style.opacity = 0;
-        Polymer.Async.timeOut.run(() => {
-          this.style.display = 'none';
-        }, 200);
-      }
+  _refit() {
+    _raf && window.cancelAnimationFrame(_raf);
+    _raf = window.requestAnimationFrame(function(){
+      _raf = null;
+      this.refit();
+    }.bind(this));
+  }
 
+  refit() {
+    /* Place arrow at the center of the target */
+    //this.style.width = this.positionTarget.offsetWidth+"px";
+    //this.horizontalOffset = this.positionTarget.offsetWidth/2;
+    /*
+    if(!this.positionTarget.offsetParent) {
+      this.style.display = "none";
     }
-    customElements.define(MGBalloon.is, MGBalloon);
-  })();
+    */
+    super.refit();
+    this.$.content.refit();
+  }
+
+  open() {
+    this.set('visible', true);
+    this.style.display = 'block';
+    this.style.opacity = 0;
+    if (this._WillClose) {
+      this._WillClose.cancel();
+      delete this._WillClose;
+    }
+    Polymer.Async.timeOut.run(() => {
+      this.refit();
+      this.style.opacity = 1;
+      this.$.content.focus();
+    }, 0);
+  }
+
+  close() {
+    this.set('visible', false);
+    this.style.opacity = 0;
+    Polymer.Async.timeOut.run(() => {
+      this.style.display = 'none';
+    }, 200);
+  }
+
+}
+customElements.define(MGBalloon.is, MGBalloon);
+})();
   </script>
-</dom-module>
+    </dom-module>

@@ -20,244 +20,244 @@
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 
-<dom-module id="mg-menu">
+    <dom-module id="mg-menu">
   <template strip-whitespace>
-      <custom-style>
-    <style include="iron-flex iron-flex-alignment">
-      :host {
-        padding: 0;
-        margin: 0;
-        --mg-menu-height: 40px;
-        width: 100%;
-      }
+<style include="iron-flex iron-flex-alignment">
+:host {
+  padding: 0;
+  margin: 0;
+  --mg-menu-height: 40px;
+  width: 100%;
+}
 
-      a {
-        width: 100%;
-      }
+a {
+  width: 100%;
+}
 
-      a:link {
-        text-decoration: none;
-        color: var(--booed-primary-color);
-      }
+a:link {
+  text-decoration: none;
+  color: var(--booed-primary-color);
+}
 
-      paper-listbox {
-        padding: 0;
-        margin: 0;
-      }
+paper-listbox {
+  padding: 0;
+  margin: 0;
+}
 
-      .expand-button {
-        width: 40px;
-        height: 40px;
-        --paper-icon-button: {
-          border-radius: 5px;
-        };
-      }
+.expand-button {
+  width: 40px;
+  height: 40px;
+  --paper-icon-button: {
+    border-radius: 5px;
+  };
+}
 
-      iron-collapse {
-        /*background-color: rgba(255,99,71,0.05);*/
-        /*
-        background-image:
-          linear-gradient( to left, rgba(255,255,255,1) 0px, rgba(255,255,255,0) 10px ) ,
-          linear-gradient( to right, rgba(255,99,71,0.1) 100px, rgba(255,255,255,0.1) 300px )
-          ;
-        border-left: 1px dashed tomato;
-        border-radius: 5px 0 0 5px;
-          */
+iron-collapse {
+  /*background-color: rgba(255,99,71,0.05);*/
+  /*
+  background-image:
+    linear-gradient( to left, rgba(255,255,255,1) 0px, rgba(255,255,255,0) 10px ) ,
+    linear-gradient( to right, rgba(255,99,71,0.1) 100px, rgba(255,255,255,0.1) 300px )
+    ;
+  border-left: 1px dashed tomato;
+  border-radius: 5px 0 0 5px;
+    */
 
-        padding: 0;
-        margin: 0;
-        margin-left: 14px;
-        width: calc(100% - 14px);
-        overflow:hidden;
-        border: 1px solid rgba(255,255,255,0.5);
-        @apply --mg-menu-collapse;
-      }
+  padding: 0;
+  margin: 0;
+  margin-left: 14px;
+  width: calc(100% - 14px);
+  overflow:hidden;
+  border: 1px solid rgba(255,255,255,0.5);
+  @apply --mg-menu-collapse;
+}
 
-      .menu-item,
-      .submenu-item {
-        @apply --booed-menu-font;
-        --paper-item-selected: { background: transparent };
-        --paper-item-focused-before: { opacity: 0 };
-        --paper-item-selected-weight: normal;
-        background: none;
-        margin: 0;
-        padding:0;
-        min-height: var(--mg-menu-height);
-        @apply --mg-menu-item;
-        color: var(--booed-primary-color);
-      }
+.menu-item,
+.submenu-item {
+  @apply --booed-menu-font;
+  --paper-item-selected: { background: transparent };
+  --paper-item-focused-before: { opacity: 0 };
+  --paper-item-selected-weight: normal;
+  background: none;
+  margin: 0;
+  padding:0;
+  min-height: var(--mg-menu-height);
+  @apply --mg-menu-item;
+  color: var(--booed-primary-color);
+}
 
-      .submenu-item:last-of-type,
-      .menu-item:last-of-type {
-        @apply --mg-menu-last-item;
-      }
+.submenu-item:last-of-type,
+.menu-item:last-of-type {
+  @apply --mg-menu-last-item;
+}
 
-      paper-listbox {
-        background: none;
-      }
+paper-listbox {
+  background: none;
+}
 
-      .menu-item {
-        width: 100%;
-      }
+.menu-item {
+  width: 100%;
+}
 
-      .menu-item
-      paper-button {
-        height: 100%;
-        width: 100%;
-        border-radius: 0;
-        padding: 0 10px 0 14px;
-        margin: 0;
-        @apply --mg-menu-button;
-        --paper-button: {
-          text-transform: none;
-          color: var(--booed-primary-color);
-          @apply --layout-horizontal;
-          @apply --layout-start-justified;
-          @apply --booed-menu-font;
-          @apply --layout-end;
-          --paper-button-ink-color: red;
-          overflow: hidden;
-        }
-      }
+.menu-item
+paper-button {
+  height: 100%;
+  width: 100%;
+  border-radius: 0;
+  padding: 0 10px 0 14px;
+  margin: 0;
+  @apply --mg-menu-button;
+  --paper-button: {
+    text-transform: none;
+    color: var(--booed-primary-color);
+    @apply --layout-horizontal;
+    @apply --layout-start-justified;
+    @apply --booed-menu-font;
+    @apply --layout-end;
+    --paper-button-ink-color: red;
+    overflow: hidden;
+  }
+}
 
-      .menu-item-icon {
-        margin-right: 5px;
-        min-width: 20px;
-        width: 20px;
-        pointer-events: none;
-      }
+.menu-item-icon {
+  margin-right: 5px;
+  min-width: 20px;
+  width: 20px;
+  pointer-events: none;
+}
 
-      div.filler {
-        background-color: red;
-      }
+div.filler {
+  background-color: red;
+}
 
-    </style>
-      </custom-style>
+</style>
 
     <paper-listbox selected-item="{{selectedItem}}">
-        <dom-repeat items="[[menu.entries]]">
+  <dom-repeat items="[[menu.entries]]">
+<template>
+<!-- has submenu -->
+    <dom-if if="[[item.submenu]]">
+  <template>
+<paper-item tabindex="-1" class="submenu-item vertical layout start">
+
+  <div class="menu-item horizontal layout center" style="width:100%;">
+        <dom-if if="[[item]]">
       <template>
-      <!-- has submenu -->
-          <dom-if if="[[item.submenu]]">
-        <template>
-
-          <paper-item tabindex="-1" class="submenu-item vertical layout start">
-
-            <div class="menu-item horizontal layout center" style="width:100%;">
-
-                <dom-if if="[[item]]">
-              <template>
-              <paper-button style="min-height:var(--mg-menu-height)" class="horizontal layout center" on-tap="_onMenuButtonTap">
-                <iron-icon class="menu-item-icon" icon="[[item.icon]]" style$="[[_computeIconColorStyle(item)]]"></iron-icon>
-                  [[item.title]]
-              </paper-button>
-              </template>
-                </dom-if>
-
-              <div class="flex filler"></div>
-
-              <paper-icon-button class="expand-button" icon="[[_computeOpenedIcon(item.opened)]]" on-tap="_onSubmenu" noink>
-              </paper-icon-button>
-
-            </div>
-
-
-            <iron-collapse opened="[[item.opened]]" transitioning="{{trans}}">
-                <mg-menu menu="[[item.submenu]]"></mg-menu>
-            </iron-collapse>
-          </paper-item>
-
-        </template>
-          </dom-if>
-
-      <!-- no submenu -->
-          <dom-if if="[[!item.submenu]]">
-        <template>
-          <paper-item tabindex="-1" class="menu-item horizontal layout center start-justified">
-
-            <paper-button style="min-height:var(--mg-menu-height)" class="horizontal layout center" on-tap="_onMenuButtonTap">
-              <iron-icon class="menu-item-icon" icon="[[item.icon]]" style$="[[_computeIconColorStyle(item)]]"></iron-icon>
-                [[item.title]]
-            </paper-button>
-
-          </paper-item>
-        </template>
-          </dom-if>
-
-
+    <paper-button
+      style="min-height:var(--mg-menu-height)"
+      class="horizontal layout center"
+      on-tap="_onMenuButtonTap"
+    > <iron-icon
+        class="menu-item-icon"
+        icon="[[item.icon]]"
+        style$="[[_computeIconColorStyle(item)]]"
+      ></iron-icon>
+      [[item.title]]
+    </paper-button>
       </template>
-        </dom-repeat>
-    </paper-listbox>
+        </dom-if>
 
+    <div class="flex filler"></div>
+
+    <paper-icon-button
+      class="expand-button"
+      icon="[[_computeOpenedIcon(item.opened)]]"
+      on-tap="_onSubmenu" noink>
+    </paper-icon-button>
+  </div>
+
+    <iron-collapse opened="[[item.opened]]" transitioning="{{trans}}">
+  <mg-menu menu="[[item.submenu]]"></mg-menu>
+    </iron-collapse>
+
+</paper-item>
+  </template>
+    </dom-if>
+
+<!-- no submenu -->
+    <dom-if if="[[!item.submenu]]">
+  <template>
+<paper-item tabindex="-1" class="menu-item horizontal layout center start-justified">
+  <paper-button style="min-height:var(--mg-menu-height)" class="horizontal layout center" on-tap="_onMenuButtonTap">
+    <iron-icon class="menu-item-icon" icon="[[item.icon]]" style$="[[_computeIconColorStyle(item)]]"></iron-icon>
+      [[item.title]]
+  </paper-button>
+</paper-item>
+  </template>
+    </dom-if>
+
+</template>
+  </dom-repeat>
+    </paper-listbox>
   </template>
   <script>
-    class MGMenu extends Polymer.Element {
-      static get is() { return 'mg-menu'; }
+class MGMenu extends Polymer.Element {
+  static get is() { return 'mg-menu'; }
 
-      static get properties() { return {
-        selectedItem: {
-          type: Object,
-          notify: true
-        },
+  static get properties() { return {
+    selectedItem: {
+      type: Object,
+      notify: true
+    },
 
-        menu: {
-          type: Object,
-          notify: true,
-        },
+    menu: {
+      type: Object,
+      notify: true,
+    },
 
-        path: {
-          type: Object,
-          notify: true,
-        },
+    path: {
+      type: Object,
+      notify: true,
+    },
 
-        trans: Object,
-      }}
+    trans: Object,
+  }}
 
-      static get observers() { return [
-        '_transitioningChanged(trans)'
-      ]}
+  static get observers() { return [
+    '_transitioningChanged(trans)'
+  ]}
 
-      _computeIconColorStyle(item) {
-        if (item.color) return "color:"+item.color;
-        return "";
-      }
+  _computeIconColorStyle(item) {
+    if (item.color) return "color:"+item.color;
+    return "";
+  }
 
-      _transitioningChanged(t) {
-        this.dispatchEvent(new CustomEvent('mg-menu-toggle-opened', {
-          bubbles: true, composed: true, detail:{sender:this}}));
-      }
+  _transitioningChanged(t) {
+    this.dispatchEvent(new CustomEvent('mg-menu-toggle-opened', {
+      bubbles: true, composed: true, detail:{sender:this}}));
+  }
 
-      _onMenuButtonTap(e) {
-        this.dispatchEvent(new CustomEvent('close-contextual-menu', {
-          bubbles: true, composed: true, detail:{sender:null}}));
+  _onMenuButtonTap(e) {
+    this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+      bubbles: true, composed: true, detail:{sender:null}}));
 
-        if (e.model.item.path) {
-          this.set('path',e.model.item.path);
-        } else if (e.model.item.action) {
-          e.model.item.action(e);
-        } else if (this.menu.action) {
-          this.menu.action(e);
-        }
-      }
-
-      _computeOpenedIcon(opened) {
-        return opened ? "expand-less" : "expand-more";
-      }
-
-      _onSubmenu(e) {
-        e.model.item.opened = e.model.item.opened || false;
-        e.model.set('item.opened', !e.model.item.opened);
-          /*
-        let collapse = e.target.getElementsByTagName("IRON-COLLAPSE")[0];
-        if (collapse && collapse.nodeName == "IRON-COLLAPSE") {
-          collapse.toggle();
-          let icons = e.target.getElementsByTagName("IRON-ICON");
-          icons[icons.length-1].icon = collapse.opened ? "expand-less" : "expand-more";
-        }
-          */
-      }
+    if (e.model.item.path) {
+      this.set('path',e.model.item.path);
+    } else if (e.model.item.action) {
+      e.model.item.action(e);
+    } else if (this.menu.action) {
+      this.menu.action(e);
     }
+  }
 
-    customElements.define(MGMenu.is, MGMenu);
+  _computeOpenedIcon(opened) {
+    return opened ? "expand-less" : "expand-more";
+  }
+
+  _onSubmenu(e) {
+    e.model.item.opened = e.model.item.opened || false;
+    e.model.set('item.opened', !e.model.item.opened);
+      /*
+    let collapse = e.target.getElementsByTagName("IRON-COLLAPSE")[0];
+    if (collapse && collapse.nodeName == "IRON-COLLAPSE") {
+      collapse.toggle();
+      let icons = e.target.getElementsByTagName("IRON-ICON");
+      icons[icons.length-1].icon = collapse.opened ? "expand-less" : "expand-more";
+    }
+      */
+  }
+}
+
+customElements.define(MGMenu.is, MGMenu);
   </script>
-</dom-module>
+    </dom-module>

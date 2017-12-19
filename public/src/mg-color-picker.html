@@ -16,41 +16,39 @@
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="mg-common-styles.html">
 
-<dom-module id="mg-color-picker">
-<template strip-whitespace>
-    <custom-style>
-  <style is="custom-style" include="mg-common-styles iron-flex iron-flex-alignment">
+    <dom-module id="mg-color-picker">
+  <template strip-whitespace>
+<style include="mg-common-styles iron-flex iron-flex-alignment">
 
-  :host {
-    display: block;
-    position: relative;
-    @apply --layout-vertical;
-    @apply --layout-center;
-    @apply --layout-center-justified;
-    overflow: visible;
-    background-color: hsl(180,50%,50%);
-  }
+:host {
+  display: block;
+  position: relative;
+  @apply --layout-vertical;
+  @apply --layout-center;
+  @apply --layout-center-justified;
+  overflow: visible;
+  background-color: hsl(180,50%,50%);
+}
 
-  iron-icon {
-    color: rgba(0,0,0,0.3);
-    pointer-events: none;
-    position:absolute;
-    transition: opacity 0.25s, top 0.25s, color 0.5s;
-    top: calc(50% - 11px);
-    --iron-icon-width: 22px;
-    --iron-icon-height: 22px;
-  }
+iron-icon {
+  color: rgba(0,0,0,0.3);
+  pointer-events: none;
+  position:absolute;
+  transition: opacity 0.25s, top 0.25s, color 0.5s;
+  top: calc(50% - 11px);
+  --iron-icon-width: 22px;
+  --iron-icon-height: 22px;
+}
 
-  </style>
-    </custom-style>
+</style>
 
-    <template is="dom-repeat" items="[[c]]">
-      <iron-icon style$="[[_formatIconStyleForC(c,mouseIn,tracking,iconMode,index)]]" icon="[[_formatIconForMode(index)]]"></iron-icon>
-    </template>
-
+<template is="dom-repeat" items="[[c]]">
+  <iron-icon style$="[[_formatIconStyleForC(c,mouseIn,tracking,iconMode,index)]]" icon="[[_formatIconForMode(index)]]"></iron-icon>
 </template>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-color/1.0.3/d3-color.min.js"></script>
-<script>
+
+  </template>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-color/1.0.3/d3-color.min.js"></script>
+  <script>
 class MGColorPicker extends Polymer.GestureEventListeners(
   Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)
 ) {
@@ -272,5 +270,5 @@ class MGColorPicker extends Polymer.GestureEventListeners(
 
 customElements.define(MGColorPicker.is, MGColorPicker);
 
-</script>
-</dom-module>
+  </script>
+    </dom-module>
