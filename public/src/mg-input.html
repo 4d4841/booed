@@ -74,7 +74,6 @@ class MGInput extends Polymer.Element {
       type: String,
       value: '',
       notify: true,
-      observer: '_valueChanged',
     },
     computedFloatLabel: {
       type: Boolean,
@@ -98,19 +97,13 @@ class MGInput extends Polymer.Element {
   }}
 
   static get observers() { return [
+    '_resetSize(value,label)',
   ]}
-
-  _computeFloatLabel(focused,always) {
-    if (typeof always === 'undefined') {
-      return focused;
-    }
-    return always;
-  }
 
   connectedCallback() {
     super.connectedCallback();
     this.$.input.addEventListener('iron-input-ready',e => {
-      this._valueChanged(this.value);
+      this._resetSize(this.value, this.label);
     });
 
     if (!MeasureContext) {
@@ -124,6 +117,13 @@ class MGInput extends Polymer.Element {
     }
   }
 
+  _computeFloatLabel(focused,always) {
+    if (typeof always === 'undefined') {
+      return focused;
+    }
+    return always;
+  }
+
   /*
   _focusedChanged(focus) {
   }
@@ -133,13 +133,16 @@ class MGInput extends Polymer.Element {
     this.$.input.focus();
   }
 
-  _valueChanged(newValue, oldValue) {
+  _resetSize(value,label) {
+    value = value || '';
+    label = label || '';
+
     let elm = this.$.input.inputElement.inputElement;
     if (elm) {
-      let width = MeasureContext.measureText(newValue).width; /* + 10 Add an impression space */
-      let labelWidth = MeasureContext.measureText(this.label).width;
-      let floatLabelWidth = MeasureContext2.measureText(this.label).width;
-      if (newValue == "") {
+      let width = MeasureContext.measureText(value).width; /* + 10 Add an impression space */
+      let labelWidth = MeasureContext.measureText(label).width;
+      let floatLabelWidth = MeasureContext2.measureText(label).width;
+      if (value == '') {
         width = labelWidth;
       }
       if (width < floatLabelWidth) {
@@ -147,6 +150,9 @@ class MGInput extends Polymer.Element {
       }
       elm.style.width = (width < this.minWidth ? this.minWidth: width) + 'px';
     }
+  }
+
+  _valueChanged(newValue, oldValue) {
   }
 
   minWidthChanged(w) {

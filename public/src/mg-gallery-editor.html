@@ -253,12 +253,6 @@
         computed: '_computeCopyIcon(selectedImages.length)'
       },
 
-      defaultName: {
-        type: String,
-        value: 'แกลเลอรี่ใหม่',
-        readOnly: true,
-      },
-
       dropenter: {
         type: Boolean,
         reflectToAttribute: true,
@@ -769,7 +763,6 @@
           item: this.itemKey,
           role: this.itemRole,
           name: this.itemName,
-          //thumbnail: MHA.get(['items',this.itemKey,'images',this.itemCover,'thumbnail']),
           thumbnail: MHA.getItem({[this.itemKey]:{images:{[this.itemCover]:{thumbnail:null}}}}),
         }
 
