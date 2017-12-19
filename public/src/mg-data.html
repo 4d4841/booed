@@ -203,7 +203,7 @@ var MHA = {
         return;
       };
 
-      this.utils.deepSet(MHA.data, 'items.'+itemKey, itemData, syncFunc('items.'+itemKey, itemData));
+      this.utils.deepSet(MHA.data, 'items.'+itemKey, itemData, syncFunc);
 
       if (this.AU.currentUser && registerData) {
         this.DB.ref('home').child(this.AU.currentUser.uid).update(registerData, error => {
