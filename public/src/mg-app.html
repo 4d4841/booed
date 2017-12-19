@@ -885,7 +885,7 @@ class MGApp extends Polymer.Element {
   _openModelSubmenu(model,expand) {
     for(let i = 0, sub; sub = this.menu.entries[i]; ++i) {
       if (sub.name == model.item.name && sub.submenu) {
-        if (this.submenu === sub.submenu) {
+        if (this.submenu === sub.submenu && this.$.balloon.visible) {
           this._closeSubmenu();
 
         } else if (expand || this.menu.selected == model.item.name) {
