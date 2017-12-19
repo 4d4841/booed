@@ -561,7 +561,7 @@
     <iron-icon style="--iron-icon-width:15px;padding-right: 3px;--iron-icon-fill-color: tomato" icon="favorite"></iron-icon>
     <font style="font-family: 'Henny Penny', cursive;color:purple">Moon HyunA</font>
     <iron-icon style="--iron-icon-width:15px;padding-left: 3px;--iron-icon-fill-color: orange" icon="booed:moon"></iron-icon>
-    <iron-icon style="--iron-icon-width:20px;padding-right: 3px;--iron-icon-fill-color: olivedrab" icon="cricket"></iron-icon>
+    <iron-icon style="--iron-icon-width:20px;padding-right: 3px;--iron-icon-fill-color: olivedrab" icon="booed:cricket"></iron-icon>
   </a>
 </div>
   </div>
@@ -590,6 +590,12 @@ function MGIconForRole(role) {
     case "gallery": return "image:photo-library";
     case "photo": return "image:photo";
     case "sales": return "booed:sales-baht";
+    case "best-sellers": return "favorite";
+    case "new-releases": return "av:new-releases";
+    case "swimwears": return "booed:swimwears";
+    case "dresses": return "booed:dresses";
+    case "lingeries": return "booed:lingeries";
+    case "night-dresses": return "booed:night-dresses";
     default: return role;
   }
 }
