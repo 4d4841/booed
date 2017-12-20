@@ -27,7 +27,7 @@
   @apply --layout-center;
   @apply --layout-center-justified;
   overflow: visible;
-  background-color: hsl(180,50%,50%);
+  background-color: black;
 }
 
 iron-icon {
@@ -72,14 +72,14 @@ class MGColorPicker extends Polymer.GestureEventListeners(
     },
     mode: {
       type: Number,
-      value: 0,
+      value: 2,
       observer: '_modeChanged'
     },
     componentType: {
       type: String,
       observer: '_componentTypeChanged',
       notify: true,
-      value: 'hsl',
+      value: 'hcl',
     },
     c: {
       type: Array,
@@ -121,8 +121,8 @@ class MGColorPicker extends Polymer.GestureEventListeners(
 
   _componentTypeChanged(type) {
     switch(type) {
-      case 'hsl': {
-        this.set('c',[0.5,0.5,0.5]);
+      case 'hcl': {
+        this.set('c',[0,1,0]);
       }
     }
   }
@@ -136,13 +136,15 @@ class MGColorPicker extends Polymer.GestureEventListeners(
 
   _formatIconStyleForC(c,mouseIn,tracking,mode,match) {
     if (mode !== match) return 'color:transparent;top:50%';
-    c = c || [0.5,0.5,0.5];
+    c = c || [0,1,0];
     switch(this.componentType) {
-      case 'hsl': {
-        let col = d3.lab(d3.hsl(c[0]*360, c[1], c[2]));
-        let l = d3.lab(d3.hsl(c[0]*360, c[1], c[2])).l;
+      case 'hcl': {
+        let l = c[2];
+        l = (l < 0 ? 0 : l > 1 ? 1 : l) * 150;
+        if (l > 140) l = 140;
+        let col = d3.hcl(0, 0, l);
         let k = 3;
-        col = l > 50 ? col.darker(k) : col.brighter(k);
+        col = col.l > 50 ? col.darker(k) : col.brighter(k);
         return `color:${d3.rgb(col).toString()};opacity:${(mouseIn || tracking)?1:0.4}`;
       }
     }
@@ -155,26 +157,35 @@ class MGColorPicker extends Polymer.GestureEventListeners(
     }
     let cc = [];
     switch(this.componentType) {
-      case 'hsl':
-        cc[0] = (Math.round(c[0]*360)%360 + 360)%360;
+      case 'hcl': {
+        let hcl_h = (Math.round(c[0]*360)%360 + 360)%360;
         c[1] = c[1] < 0 ? 0 : c[1] > 1 ? 1 : c[1];
-        cc[1] = c[1] * 100;
+        let hcl_c = c[1] * 100;
         c[2] = c[2] < 0 ? 0 : c[2] > 1 ? 1 : c[2];
-        cc[2] = c[2] * 100;
-        this.set('activeValue',`hsl(${Math.round(cc[0])},${Math.round(cc[1])}%,${Math.round(cc[2])}%)`);
-        break;
+        let hcl_l = c[2] * 150;
+
+        let col = d3.hcl(hcl_h, hcl_c, hcl_l);
+
+        this.set('activeValue', d3.rgb(col).toString());
+      } break;
     }
   }
 
   _activeValueChanged(v) {
     if (!v) {
-      v = 'rgba(0.5,0.5,0.5,1)';
+      v = 'rgba(0,0,0,1)';
     }
     this.style.backgroundColor = v;
   }
 
   _valueChanged(v) {
     this.set('activeValue', v);
+    switch(this.componentType) {
+      case 'hcl': {
+        let col = d3.hcl(v);
+        this.set('c',[col.h/360, col.c/100, col.l/150]);
+      } break;
+    };
   }
 
   _onTrack(e) {
@@ -190,7 +201,7 @@ class MGColorPicker extends Polymer.GestureEventListeners(
     switch (e.detail.state) {
       case 'start':
         if(!this.c) {
-          this.set('c',[0.5,0.5,0.5]);
+          this.set('c',[0,1,0]);
         }
         /* Hack to prevent tracking locked into some kind of drag mode with a double-clicking */
 
