@@ -562,12 +562,14 @@
     <font style="font-family: 'Henny Penny', cursive;color:purple">Moon</font>
     <iron-icon style="--iron-icon-width:15px;--iron-icon-fill-color: orange" icon="booed:moon"></iron-icon>
     <font style="font-family: 'Henny Penny', cursive;color:purple">HyunA</font>
-    <iron-icon style="--iron-icon-width:20px;padding-right: 3px;--iron-icon-fill-color: olivedrab" icon="booed:cricket"></iron-icon>
+    <iron-icon style="--iron-icon-width:20px;padding-right: 3px;--iron-icon-fill-color: olivedrab" icon="booed:cricket-wings"></iron-icon>
   </a>
 </div>
   </div>
 
 </footer>
+
+<mg-data configurations="{{configurations}}"></mg-data>
 
 <!-- a11y announcer -->
 <!--
@@ -591,12 +593,12 @@ function MGIconForRole(role) {
     case "gallery": return "image:photo-library";
     case "photo": return "image:photo";
     case "sales": return "booed:sales-baht";
-    case "best-sellers": return "favorite";
+    case "recommendations": return "favorite";
     case "new-releases": return "av:new-releases";
-    case "swimwears": return "booed:swimwears";
-    case "dresses": return "booed:dresses";
-    case "lingeries": return "booed:lingeries";
-    case "night-dresses": return "booed:night-dresses";
+    case "swimwear": return "booed:swimwear";
+    case "dress": return "booed:dress";
+    case "lingerie": return "booed:lingerie";
+    case "nightwear": return "booed:nightwear";
     default: return role;
   }
 }

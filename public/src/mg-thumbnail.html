@@ -26,7 +26,7 @@
 :host {
 }
 
-:host([deleted]) paper-button{
+:host([deleted]) paper-button {
   opacity: 0.3;
 }
 
@@ -202,10 +202,10 @@ class MGThumbnail extends Polymer.GestureEventListeners(Polymer.Element) {
     /* XXX Temp */
     if (icon == "av:new-releases") return "color:gold";
     if (icon == "booed:sales-baht") return "color:red";
-    if (icon == "booed:swimwears") return "color:dodgerblue";
-    if (icon == "booed:night-dresses") return "color:deeppink";
-    if (icon == "booed:dresses") return "color:green";
-    if (icon == "booed:lingeries") return "color:black";
+    if (icon == "booed:swimwear") return "color:dodgerblue";
+    if (icon == "booed:nightwear") return "color:deeppink";
+    if (icon == "booed:dress") return "color:green";
+    if (icon == "booed:lingerie") return "color:black";
     if (this.icons[icon] === true) {
       return "color:tomato";
     }  else if (this.icons[icon] === false) {
