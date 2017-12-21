@@ -107,18 +107,10 @@ a {
 }
 */
 
-#new-item-button::before {
-  content: "สร้างไอเท็ม";
-}
-
 @media (max-width: 767px) {
   #new-item-button {
     margin-left: 25px;
     width: 100px;
-  }
-
-  #new-item-button::before {
-    content: "สร้าง";
   }
 
   .item {
@@ -154,11 +146,24 @@ mg-thumbnail iron-icon {
 
 </style>
 
-<mg-data items="{{items}}"></mg-data>
+<iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
+
+<mg-data
+  items="{{items}}"
+  configurations="{{configurations}}"
+></mg-data>
 
   <div class="side-bar">
-<paper-button id="new-item-button" on-click="_openNewItemMenu">
-  <iron-icon icon="add"></iron-icon>
+<paper-button
+  id="new-item-button"
+  on-click="_openNewItemMenu"
+> <iron-icon icon="add"></iron-icon>
+  <template is="dom-if" if="{{!smallScreen}}">
+    {{localize('create item')}}
+  </template>
+  <template is="dom-if" if="{{smallScreen}}">
+    {{localize('create')}}
+  </template>
 </paper-button>
 
 <!--<div id="top-smooth-edge"></div>-->
@@ -208,9 +213,13 @@ mg-thumbnail iron-icon {
 
   </template>
   <script>
-class MGItems extends Polymer.Element {
+class MGItems extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element) {
   static get is() { return 'mg-items'; }
   static get properties() { return {
+    configurations: Object,
+    language: String,
+    resources: { value: MHA.translations, },
+
     me: Object,
 
     items: Object,
@@ -271,6 +280,7 @@ class MGItems extends Polymer.Element {
 
   static get observers() { return [
     '_itemsChanged(items.*)',
+    '_languageChanged(configurations.language)',
     '_routeDataItemKeyChanged(routeData.itemKey)',
     '_uidItemKeyChanged(me.user.uid, itemKey)',
     '_userChanged(me.user.uid)',
@@ -320,6 +330,10 @@ class MGItems extends Polymer.Element {
       });
     }
 
+  }
+
+  _languageChanged(language) {
+    this.set('language',language);
   }
 
   _routeDataItemKeyChanged(key) {

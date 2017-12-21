@@ -108,7 +108,7 @@ paper-button {
   margin: 0;
   @apply --mg-menu-button;
   --paper-button: {
-    text-transform: none;
+    text-transform: capitalize;
     color: var(--booed-primary-color);
     @apply --layout-horizontal;
     @apply --layout-start-justified;
@@ -131,6 +131,7 @@ div.filler {
 }
 
 </style>
+<mg-data configurations="{{configurations}}"></mg-data>
 
     <paper-listbox selected-item="{{selectedItem}}">
   <dom-repeat items="[[menu.entries]]">
@@ -180,7 +181,7 @@ div.filler {
 <paper-item tabindex="-1" class="menu-item horizontal layout center start-justified">
   <paper-button style="min-height:var(--mg-menu-height)" class="horizontal layout center" on-click="_onMenuButtonClick">
     <iron-icon class="menu-item-icon" icon="[[item.icon]]" style$="[[_computeIconColorStyle(item)]]"></iron-icon>
-      [[item.title]]
+      [[localize(item.name)]]
   </paper-button>
 </paper-item>
   </template>
@@ -191,10 +192,14 @@ div.filler {
     </paper-listbox>
   </template>
   <script>
-class MGMenu extends Polymer.Element {
+class MGMenu extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element) {
   static get is() { return 'mg-menu'; }
 
   static get properties() { return {
+    configurations: Object,
+    language: String,
+    resources: { value: MHA.translations, },
+
     selectedItem: {
       type: Object,
       notify: true
@@ -214,8 +219,13 @@ class MGMenu extends Polymer.Element {
   }}
 
   static get observers() { return [
+    '_languageChanged(configurations.language)',
     '_transitioningChanged(trans)'
   ]}
+
+  _languageChanged(language) {
+    this.set('language',language);
+  }
 
   _computeIconColorStyle(item) {
     if (item.color) return "color:"+item.color;
