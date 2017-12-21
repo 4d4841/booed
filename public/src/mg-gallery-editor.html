@@ -75,47 +75,47 @@
 
   <div id="control-panel" class="horizontal layout wrap end" >
     <div style="display:inline-block">
-  <paper-icon-button icon="booed:add-photo" on-tap="_onAddButtonTap"></paper-icon-button>
+  <paper-icon-button icon="booed:add-photo" on-click="_onAddButtonClick"></paper-icon-button>
   <paper-tooltip>เพิ่มรูป</paper-tooltip>
     </div>
 
     <div style="display:inline-block">
-  <paper-icon-button icon="[[copyIcon]]" on-click="_onCopyButtonTap"></paper-icon-button>
+  <paper-icon-button icon="[[copyIcon]]" on-click="_onCopyButtonClick"></paper-icon-button>
   <paper-tooltip>[[copyMethod]]</paper-tooltip>
     </div>
 
     <div style="display:inline-block">
-  <paper-icon-button disabled="[[!clipboardList.length]]" icon="content-paste" on-click="_onPasteButtonTap"></paper-icon-button>
+  <paper-icon-button disabled="[[!clipboardList.length]]" icon="content-paste" on-click="_onPasteButtonClick"></paper-icon-button>
   <paper-tooltip>แปะ</paper-tooltip>
     </div>
 
     <div style="display:inline-block">
-  <paper-icon-button disabled="[[!clipboardList.length]]" icon="booed:content-clear" on-click="_onClearButtonTap"></paper-icon-button>
+  <paper-icon-button disabled="[[!clipboardList.length]]" icon="booed:content-clear" on-click="_onClearButtonClick"></paper-icon-button>
   <paper-tooltip>ล้าง</paper-tooltip>
     </div>
 
     <div style="display:inline-block">
-  <paper-icon-button disabled="[[!iconList.length]]" icon="select-all" on-click="_onSelectAllButtonTap"></paper-icon-button>
+  <paper-icon-button disabled="[[!iconList.length]]" icon="select-all" on-click="_onSelectAllButtonClick"></paper-icon-button>
   <paper-tooltip>เลือกหมด</paper-tooltip>
     </div>
 
     <div style="display:inline-block">
-  <paper-icon-button disabled="[[!selectedImages.length]]" icon="delete" on-click="_onDeleteButtonTap"></paper-icon-button>
+  <paper-icon-button disabled="[[!selectedImages.length]]" icon="delete" on-click="_onDeleteButtonClick"></paper-icon-button>
   <paper-tooltip>ลบรูป</paper-tooltip>
     </div>
 
     <div style="display:inline-block">
-  <paper-icon-button disabled="[[!selectedImages.length]]" icon="editor:mode-edit" on-click="_onEditButtonTap"></paper-icon-button>
+  <paper-icon-button disabled="[[!selectedImages.length]]" icon="editor:mode-edit" on-click="_onEditButtonClick"></paper-icon-button>
   <paper-tooltip>แก้ไข</paper-tooltip>
     </div>
 
     <div style="display:inline-block">
-  <paper-icon-button disabled="[[!selectedImages.length]]" icon="reorder" on-click="_onReorderButtonTap"></paper-icon-button>
+  <paper-icon-button disabled="[[!selectedImages.length]]" icon="reorder" on-click="_onReorderButtonClick"></paper-icon-button>
   <paper-tooltip>เรียง</paper-tooltip>
     </div>
 
     <div style="display:inline-block">
-  <paper-icon-button disabled="[[!selectedImages.length]]" icon="cancel" on-click="_onCancelButtonTap"></paper-icon-button>
+  <paper-icon-button disabled="[[!selectedImages.length]]" icon="cancel" on-click="_onCancelButtonClick"></paper-icon-button>
   <paper-tooltip>ยกเลือกที่เลือก</paper-tooltip>
     </div>
 
@@ -140,11 +140,11 @@
   label="[[item.name]]"
   selection-order="[[item._selectionOrder]]"
   deleted="[[item.deleted]]"
-  on-tap="_onItemTap"
+  on-click="_onItemClick"
 >
 <!--
   <template is="dom-if" if="{{_isEditable(item._progress,item.rep)}}">
-    <paper-icon-button icon="mode-edit" class="image-edit-button-icon" on-tap="_onEditImage">
+    <paper-icon-button icon="mode-edit" class="image-edit-button-icon" on-click="_onEditImage">
     </paper-icon-button>
   </template>
 -->
@@ -352,20 +352,20 @@ class MGGalleryEditor extends MGItemEditor {
     }
   }
 
-  _onItemTap(e) {
+  _onItemClick(e) {
 
     if (e.detail.sourceEvent.shiftKey) {
-      if (typeof(this._LastTapIndex) == "undefined") {
-        this._LastTapIndex = -1;
+      if (typeof(this._LastClickIndex) == "undefined") {
+        this._LastClickIndex = -1;
       }
 
-      let inc = this._LastTapIndex < e.model.index ? 1 : -1;
+      let inc = this._LastClickIndex < e.model.index ? 1 : -1;
 
-      for (let i = this._LastTapIndex + inc; inc > 0 ? i < e.model.index : i > e.model.index; i+=inc) {
+      for (let i = this._LastClickIndex + inc; inc > 0 ? i < e.model.index : i > e.model.index; i+=inc) {
         this.$['image-selector'].selectIndex(i);
       }
     }
-    this._LastTapIndex = e.model.index;
+    this._LastClickIndex = e.model.index;
   }
 
   _indexImage(imageKey,cb,nacb) {
@@ -565,7 +565,7 @@ class MGGalleryEditor extends MGItemEditor {
    */
   _itemKeyChanged(itemKey) {
 
-    delete this._LastTapIndex;
+    delete this._LastClickIndex;
 
     this.iconList.forEach((icon,index) => {
       this.set(['iconList',index,'thumbnail'],null);
@@ -661,12 +661,12 @@ class MGGalleryEditor extends MGItemEditor {
     console.log(e);
   }
 
-  _onAddButtonTap(e) {
+  _onAddButtonClick(e) {
     this.$.fileInput.value = '';
     this.$.fileInput.click();
   }
 
-  _onReorderButtonTap(e) {
+  _onReorderButtonClick(e) {
     let registerData = {};
     let autoNumber = this.selectedImages.length;
 
@@ -689,7 +689,7 @@ class MGGalleryEditor extends MGItemEditor {
     this.splice('selectedImages',0,this.selectedImages.length);
   }
 
-  _onDeleteButtonTap(e) {
+  _onDeleteButtonClick(e) {
     let registerData = {};
     let selectedImages = this.selectedImages;
 
@@ -706,13 +706,13 @@ class MGGalleryEditor extends MGItemEditor {
     });
   }
 
-  _onSelectAllButtonTap(e) {
+  _onSelectAllButtonClick(e) {
     for (let i = 0; i < this.iconList.length; i++) {
       this.$['image-selector'].selectIndex(i);
     }
   }
 
-  _onCancelButtonTap(e) {
+  _onCancelButtonClick(e) {
       this.splice('selectedImages',0,this.selectedImages.length);
   }
 
@@ -745,7 +745,7 @@ class MGGalleryEditor extends MGItemEditor {
   }
 
 
-  _onEditButtonTap(e) {
+  _onEditButtonClick(e) {
     this._EditingSelection = [].concat(this.selectedImages);
     this._indexImage(this._EditingSelection[0], idx => {
       this.set('editingData',this.iconList[idx]);
@@ -753,7 +753,7 @@ class MGGalleryEditor extends MGItemEditor {
     this.splice('selectedImages',0,this.selectedImages.length);
   }
 
-  _onCopyButtonTap(e) {
+  _onCopyButtonClick(e) {
     if (this.selectedImages.length == 0) {
       /* Copy as gallery  */
 
@@ -786,11 +786,11 @@ class MGGalleryEditor extends MGItemEditor {
     this.splice('selectedImages',0,this.selectedImages.length);
   }
 
-  _onClearButtonTap(e) {
+  _onClearButtonClick(e) {
     this.splice('clipboardList', 0, this.clipboardList.length);
   }
 
-  _onPasteButtonTap(e) {
+  _onPasteButtonClick(e) {
     let paste = this.clipboardList.filter(item => { return item.deleted ? false : true; });
     console.assert(paste.length, "Empty pasted data");
 

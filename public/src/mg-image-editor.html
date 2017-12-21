@@ -143,9 +143,9 @@
   <div style="width:120px"></div>
 
   <div class="navigator-buttons" hidden$="{{_hidesNavigator(before,data)}}">
-<paper-icon-button id="skip-previous" icon="av:skip-previous" on-tap="_setPreviousData" hidden$="[[!before]]">
+<paper-icon-button id="skip-previous" icon="av:skip-previous" on-click="_setPreviousData" hidden$="[[!before]]">
 </paper-icon-button>
-<paper-icon-button id="skip-next" icon="av:skip-next" on-tap="_setNextData" hidden$="[[!after]]">
+<paper-icon-button id="skip-next" icon="av:skip-next" on-click="_setNextData" hidden$="[[!after]]">
 </paper-icon-button>
   </div>
 
@@ -154,18 +154,18 @@
   style="overflow:visible"
   id="update-thumbnail-button"
   icon="image:photo-size-select-large"
-  on-tap="_openThumbnailDialog"
+  on-click="_openThumbnailDialog"
 ></paper-icon-button>
 <paper-icon-button
   id="save-button"
   icon="done"
-  on-tap="_deactivateSave"
+  on-click="_deactivateSave"
   edited$="{{edited}}"
 ></paper-icon-button>
 <paper-icon-button
   id="close-button"
   icon="close"
-  on-tap="_deactivateClose"
+  on-click="_deactivateClose"
   edited$="{{edited}}"
 ></paper-icon-button>
 <paper-tooltip for="update-thumbnail-button">Update thumbnail</paper-tooltip>
@@ -195,7 +195,7 @@
   >
   </mg-image>
   <div class="horizontal layout end-justified thumbnail-panel-buttons" style="width:100%">
-    <paper-icon-button id="save-thumbnail-button" icon="done" on-tap="_setThumbnail">
+    <paper-icon-button id="save-thumbnail-button" icon="done" on-click="_setThumbnail">
     </paper-icon-button>
   </div>
 </mg-balloon>

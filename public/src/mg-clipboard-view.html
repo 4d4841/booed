@@ -84,8 +84,8 @@
     roi="[[item.roiThumbnail]]"
     label="[[_formatLabel(item.item,item.name,item.role)]]"
     deleted="[[item.deleted]]"
-    on-tap="_onItemTap"
-  > <paper-icon-button icon="editor:mode-edit" class="image-edit-button-icon" on-tap="_onEditImage">
+    on-click="_onItemClick"
+  > <paper-icon-button icon="editor:mode-edit" class="image-edit-button-icon" on-click="_onEditImage">
     </paper-icon-button>
   </mg-item-image>
     </template>
@@ -126,7 +126,7 @@ class MGClipboardView extends MGClipboard {
     return name;
   }
 
-  _onItemTap(e) {
+  _onItemClick(e) {
     //Toggles deleted true and it won't be pasted.
     let idx = this.clipboardList.indexOf(e.model.item);
     this.set(['clipboardList',idx,'deleted'], this.clipboardList[idx].deleted ? false : true);

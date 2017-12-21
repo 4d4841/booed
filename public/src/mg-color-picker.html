@@ -94,7 +94,7 @@ class MGColorPicker extends Polymer.GestureEventListeners(
   connectedCallback() {
     super.connectedCallback();
     Polymer.Gestures.addListener(this, 'track', e => this._onTrack(e));
-    Polymer.Gestures.addListener(this, 'tap', e => {
+    Polymer.Gestures.addListener(this, 'click', e => {
       let l = this.c.length;
       this.set('mode', ((this.mode+1)%l + l)%l);
     });
@@ -203,7 +203,6 @@ class MGColorPicker extends Polymer.GestureEventListeners(
         if(!this.c) {
           this.set('c',[0,1,0]);
         }
-        /* Hack to prevent tracking locked into some kind of drag mode with a double-clicking */
 
         this.set('tracking', {
           ox: ax,

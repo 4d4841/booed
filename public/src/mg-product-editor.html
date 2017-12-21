@@ -45,12 +45,12 @@
   <div id="control-panel" class="horizontal layout wrap end" >
 
       <div style="display:inline-block">
-    <paper-icon-button icon="booed:add-gallery" on-tap="_onAddGalleryTap"></paper-icon-button>
+    <paper-icon-button icon="booed:add-gallery" on-click="_onAddGalleryClick"></paper-icon-button>
     <paper-tooltip>เพิ่มแกลเลอรี่</paper-tooltip>
       </div>
 
       <div style="display:inline-block">
-    <paper-icon-button disabled="[[!clipboardList.length]]" icon="content-paste" on-click="_onPasteButtonTap"></paper-icon-button>
+    <paper-icon-button disabled="[[!clipboardList.length]]" icon="content-paste" on-click="_onPasteButtonClick"></paper-icon-button>
     <paper-tooltip>แปะ</paper-tooltip>
       </div>
 
@@ -186,11 +186,11 @@ class MGProductEditor extends MGItemEditor {
     }
   }
 
-  _onAddGalleryTap(e) {
+  _onAddGalleryClick(e) {
     this.$['gallery-editor'].newItem('แกลเลอรี่'+this.itemName);
   }
 
-  _onPasteButtonTap(e) {
+  _onPasteButtonClick(e) {
 
   }
 

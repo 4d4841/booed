@@ -146,7 +146,7 @@ div.filler {
     <paper-button
       style="min-height:var(--mg-menu-height)"
       class="horizontal layout center"
-      on-tap="_onMenuButtonTap"
+      on-click="_onMenuButtonClick"
     > <iron-icon
         class="menu-item-icon"
         icon="[[item.icon]]"
@@ -162,7 +162,7 @@ div.filler {
     <paper-icon-button
       class="expand-button"
       icon="[[_computeOpenedIcon(item.opened)]]"
-      on-tap="_onSubmenu" noink>
+      on-click="_onSubmenu" noink>
     </paper-icon-button>
   </div>
 
@@ -178,7 +178,7 @@ div.filler {
     <dom-if if="[[!item.submenu]]">
   <template>
 <paper-item tabindex="-1" class="menu-item horizontal layout center start-justified">
-  <paper-button style="min-height:var(--mg-menu-height)" class="horizontal layout center" on-tap="_onMenuButtonTap">
+  <paper-button style="min-height:var(--mg-menu-height)" class="horizontal layout center" on-click="_onMenuButtonClick">
     <iron-icon class="menu-item-icon" icon="[[item.icon]]" style$="[[_computeIconColorStyle(item)]]"></iron-icon>
       [[item.title]]
   </paper-button>
@@ -227,7 +227,7 @@ class MGMenu extends Polymer.Element {
       bubbles: true, composed: true, detail:{sender:this}}));
   }
 
-  _onMenuButtonTap(e) {
+  _onMenuButtonClick(e) {
     this.dispatchEvent(new CustomEvent('close-contextual-menu', {
       bubbles: true, composed: true, detail:{sender:null}}));
 
