@@ -27,7 +27,6 @@
   @apply --layout-center;
   @apply --layout-center-justified;
   overflow: visible;
-  background-color: black;
 }
 
 iron-icon {
@@ -94,7 +93,7 @@ class MGColorPicker extends Polymer.GestureEventListeners(
   connectedCallback() {
     super.connectedCallback();
     Polymer.Gestures.addListener(this, 'track', e => this._onTrack(e));
-    Polymer.Gestures.addListener(this, 'click', e => {
+    Polymer.Gestures.addListener(this, 'tap', e => {
       let l = this.c.length;
       this.set('mode', ((this.mode+1)%l + l)%l);
     });
@@ -151,17 +150,29 @@ class MGColorPicker extends Polymer.GestureEventListeners(
     return "";
   }
 
-  _colorChanged(c) {
-    if (c[0] === null) {
-      return;
-    }
-    let cc = [];
+  _adjustC(c) {
     switch(this.componentType) {
       case 'hcl': {
         let hcl_h = (Math.round(c[0]*360)%360 + 360)%360;
         c[1] = c[1] < 0 ? 0 : c[1] > 1 ? 1 : c[1];
         let hcl_c = c[1] * 100;
         c[2] = c[2] < 0 ? 0 : c[2] > 1 ? 1 : c[2];
+        let hcl_l = c[2] * 150;
+
+      } break;
+    }
+
+    this.set('c', c);
+  }
+
+  _colorChanged(c) {
+    if (c[0] === null) {
+      return;
+    }
+    switch(this.componentType) {
+      case 'hcl': {
+        let hcl_h = (Math.round(c[0]*360)%360 + 360)%360;
+        let hcl_c = c[1] * 100;
         let hcl_l = c[2] * 150;
 
         let col = d3.hcl(hcl_h, hcl_c, hcl_l);
@@ -209,7 +220,6 @@ class MGColorPicker extends Polymer.GestureEventListeners(
           oy: ay,
           ax: ax,
           ay: ay,
-          c:[this.c[0],this.c[1],this.c[2]],
           axis: '',
           mode: this.mode,
           threshold: 0.1,
@@ -263,7 +273,7 @@ class MGColorPicker extends Polymer.GestureEventListeners(
         } else /* x */ {
           let cc = [].concat(this.c);
           cc[this.mode] += ddx/2;
-          this.set('c',cc);
+          this._adjustC(cc);
 
         }
 
