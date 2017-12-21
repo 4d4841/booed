@@ -28,6 +28,7 @@
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-styles/typography.html">
@@ -447,15 +448,58 @@
   </div>
 
     <div class="header-filler"></div>
-  <paper-button class="head-logo" on-tap='_openHome'></paper-button>
+  <paper-button class="head-logo" on-click='_openHome'></paper-button>
     <div class="header-filler"></div>
 
-  <div class="layout horizontal" style="position:fixed;right:10px">
-  <mg-badge-button id="fmPicker" icon="wc" path-style="fill:lightpink" ></mg-badge-button>
-  <mg-badge-button id="languae-button" icon="language" path-style="fill:blue" on-click="_languageTest"></mg-badge-button>
-  <mg-cart-button id="cart-button" cart="{{cart}}" ></mg-cart-button>
-  <mg-profile-button id="profile-button" route="{{route}}" me="[[me]]" menu="[[profileMenu]]"></mg-profile-button>
-  </div>
+    <div class="layout horizontal" style="position:fixed;right:10px">
+  <mg-badge-button
+    id="fm-picker"
+    icon="wc" path-style="fill:lightpink"
+  ></mg-badge-button>
+  <mg-badge-button
+    id="language-button"
+    icon="language"
+    path-style="fill:blue"
+    on-click="_openL10nMenu"
+  >
+  </mg-badge-button>
+  <mg-cart-button
+    id="cart-button"
+    cart="{{cart}}"
+  ></mg-cart-button>
+  <mg-profile-button
+    id="profile-button"
+    route="{{route}}"
+    me="[[me]]"
+    menu="[[profileMenu]]"
+  ></mg-profile-button>
+    </div>
+
+<mg-balloon
+  id="l10n-menu"
+  no-overlap
+  dynamic-align
+  vertical-align="top"
+  horizontal-align="auto"
+> <paper-radio-group class="vertical layout" selected="{{configurations.language}}">
+<paper-radio-button name="en">English</paper-radio-button>
+<paper-radio-button name="jp">日本語</paper-radio-button>
+<paper-radio-button name="ko">한국어</paper-radio-button>
+<paper-radio-button name="th">ไทย</paper-radio-button>
+<paper-radio-button name="zh">中文</paper-radio-button>
+  </paper-radio-group>
+  <paper-button><iron-icon  icon="maps:add-location"></iron-icon> Location Settings</paper-button>
+</mg-balloon>
+
+<mg-balloon
+  id="balloon"
+  no-overlap
+  dynamic-align
+  vertical-align="top"
+  horizontal-align="auto"
+  hidden$="[[smallScreen]]"
+> <mg-menu path="{{route.path}}" style="min-width:200px; padding:0" menu="[[submenu]]"></mg-menu>
+</mg-balloon>
 
 </div>
 <div class="menu-bar" hidden$="[[!_shouldShowTabs]]">
@@ -1047,9 +1091,11 @@ class MGApp extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polyme
     return "key";
   }
 
-  _languageTest(e) {
-    this.set('configurations.language', this.configurations.language == 'th' ? 'en' : 'th');
+  _openL10nMenu(e) {
+    this.$['l10n-menu'].positionTarget = this.$['language-button'];
+    this.$['l10n-menu'].toggle();
   }
+
 }
 
 customElements.define(MGApp.is, MGApp);

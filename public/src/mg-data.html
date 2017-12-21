@@ -30,21 +30,55 @@ var MHA = {
   representations: new Map(),
 
   translations: (function(){
-    let required_words = { 'en': {
-      'new-releases': 'new-releases',
-      'recommendations': 'recommendations',
-      'dress': 'dresses',
-      'nightwear': 'nightwears',
-      'lingerie': 'lingeries',
-      'swimwear': 'swimwears',
+    let required_words = {
+      'en': {
+        'new-releases': 'new-releases',
+        'recommendations': 'recommendations',
+        'dress': 'dresses',
+        'nightwear': 'nightwears',
+        'lingerie': 'lingeries',
+        'swimwear': 'swimwears',
+        'sales': 'sales',
+        'profile': 'profile',
+        'orders': 'orders',
+        'items': 'items',
+        'store': 'store',
+        'inbox': 'inbox',
+        'help': 'help',
+      }
+    };
+
+    required_words.jp = Object.assign({}, required_words.en, {
+      'new-releases': 'リアタイ่',
+      'recommendations': 'おすすめ商品',
+      'dress': 'ドレス',
+      'nightwear': 'ナイトウェア',
+      'lingerie': 'ランジェリー',
+      'swimwear': '水着',
       'sales': 'sales',
-      'profile': 'profile',
-      'order': 'order',
-      'items': 'items',
-      'store': 'store',
-      'inbox': 'inbox',
-      'help': 'help',
-    }};
+      'profile': '個人情報',
+      'orders': '注文確認',
+      'items': '項目',
+      'store': '店舗',
+      'inbox': 'プライベート メッセージ',
+      'help': 'ヘルプ',
+    });
+
+    required_words.ko = Object.assign({}, required_words.en, {
+      'new-releases': 'リアタイ่',
+      'recommendations': '추천',
+      'dress': '드레스',
+      'nightwear': '나이트가운',
+      'lingerie': '란제리',
+      'swimwear': '수영복',
+      'sales': 'sale',
+      'profile': '프로필',
+      'orders': '주문내역',
+      'items': '아이템',
+      'store': '가게',
+      'inbox': '메시지',
+      'help': '도움말',
+    });
 
     required_words.th = Object.assign({}, required_words.en, {
       'new-releases': 'มาใหม่',
@@ -54,6 +88,15 @@ var MHA = {
       'lingerie': 'ชุดชั้นใน',
       'swimwear': 'ชุดว่ายน้ำ',
       'sales': 'เซล',
+      'profile': 'โพรไฟล์',
+      'orders': 'รายการสั่งซื้อ',
+      'items': 'ไอเท็ม',
+    'store': 'ร้าน',
+      'inbox': 'กล่องข้อความ',
+      'help': 'ความช่วยเหลือ',
+    });
+
+    required_words.zh = Object.assign({}, required_words.en, {
     });
 
     return required_words;
@@ -213,6 +256,12 @@ var MHA = {
     };
 
   },
+
+  /* setItem : Set an item for current user
+   * itemKey : Item key of the item.
+   * itemData : Data tree of objects & arrays to be set for the item.
+   * sync : Should sync database server. Paths end with $ will be excluded.
+   */
 
   setItem: function(itemKey, itemData, sync) {
     if (sync) {
