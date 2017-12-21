@@ -546,13 +546,8 @@ class MGItems extends Polymer.Element {
       bubbles: true, composed: true, detail:{sender:this}
     }));
 
-    if (this.$['new-item-balloon'].visible) {
-      this.$['new-item-balloon'].close();
-      return;
-    }
-
     this.$['new-item-balloon'].positionTarget = this.$['new-item-button'];
-    this.$['new-item-balloon'].open();
+    this.$['new-item-balloon'].toggle();
   }
 }
 customElements.define(MGItems.is, MGItems);

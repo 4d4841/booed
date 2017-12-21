@@ -22,6 +22,7 @@
 <style include="iron-flex iron-flex-alignment">
   :host {
     transition: opacity 0.2s;
+    display: none;
   }
 
   .hidden {
@@ -173,6 +174,14 @@ class MGBalloon extends Polymer.mixinBehaviors([Polymer.IronFitBehavior], Polyme
     */
     super.refit();
     this.$.content.refit();
+  }
+
+  toggle() {
+    if (this.style.display == 'block') {
+      this.close();
+    } else {
+      this.open();
+    }
   }
 
   open() {
