@@ -310,10 +310,6 @@ class MGItems extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Poly
     if (path.length < 2) return;
     let itemKey = path[1];
 
-    if (this.editor && itemKey == this.editor.itemKey) {
-      this.editor.updateChanges(path.slice(2),change.value);
-    }
-
     if (path.length == 3 && path[2] == 'cover') {
       this.itemList.every((item,index) => {
         if (itemKey == item.key) {

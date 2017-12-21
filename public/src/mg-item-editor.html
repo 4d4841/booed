@@ -14,6 +14,7 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="mg-data.html">
 <link rel="import" href="mg-input.html">
 <link rel="import" href="mg-clipboard-view.html">
 
@@ -44,6 +45,12 @@
 
 </style>
 
+<mg-data
+  items="{{items}}"
+  configurations="{{configurations}}"
+></mg-data>
+
+
   <div class="horizontal layout">
 <mg-input
   id="name-editor"
@@ -59,11 +66,15 @@
 var MGItemEditor
 (function() {
 
-MGItemEditor = class __MGItemEditor extends Polymer.Element {
+MGItemEditor = class __MGItemEditor extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element) {
 
   static get is() { return 'mg-item-editor'; }
 
   static get properties() { return {
+    configurations: Object,
+    language: String,
+    resources: { value: MHA.translations, },
+
     empty: {
       type: Boolean,
       notify: true,
@@ -100,7 +111,9 @@ MGItemEditor = class __MGItemEditor extends Polymer.Element {
   }}
 
   static get observers() { return [
+    '_itemsChanged(items.*)',
     '_itemNameChanged(me.user, itemRole, itemName)',
+    '_languageChanged(configurations.language)',
   ]}
 
   updateChanges(path,value) {
@@ -130,6 +143,12 @@ MGItemEditor = class __MGItemEditor extends Polymer.Element {
     this.set('itemName', null);
   }
 
+  _itemsChanged(change) {
+    if (!this.itemKey || !change.path.startsWith('items.'+this.itemKey)) return;
+    /* 27 = itemKey.length + 'items.'.length + '.' */
+    this.updateChanges(change.path.slice(27).split('.'), change.value);
+  }
+
   _itemNameChanged(user, itemRole, itemName) {
 
     if (!user || !itemRole || (!this.focusedName)) {
@@ -153,6 +172,11 @@ MGItemEditor = class __MGItemEditor extends Polymer.Element {
       });
     }
   }
+
+  _languageChanged(language) {
+    this.set('language',language);
+  }
+
 
   _formatLabelDescription(role) {
     return role.charAt(0).toUpperCase() + role.slice(1)+' Name';
