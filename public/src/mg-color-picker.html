@@ -141,7 +141,7 @@ class MGColorPicker extends Polymer.GestureEventListeners(
       case 'hcl': {
         let l = c[2];
         l = (l < 0 ? 0 : l > 1 ? 1 : l) * 150;
-        if (l > 140) l = 140;
+        if (l > 130) l = 130;
         let col = d3.hcl(0, 0, l);
         let k = 3;
         col = col.l > 50 ? col.darker(k) : col.brighter(k);

@@ -353,8 +353,7 @@ class MGGalleryEditor extends MGItemEditor {
   }
 
   _onItemClick(e) {
-
-    if (e.detail.sourceEvent.shiftKey) {
+    if (e.shiftKey) {
       if (typeof(this._LastClickIndex) == "undefined") {
         this._LastClickIndex = -1;
       }
