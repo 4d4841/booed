@@ -371,7 +371,10 @@ var MHA = {
      * or undefined for observation purpose.
      */
     deepSet(polymerElement, path, value, replacer) {
-      /* XXX Why does it need this? */
+      /* values may be set to undefined to dissociate itself from
+       * any previously updated key while null will be used to delete values.
+       * So undefined values will simply be ignored.
+       */
       if (typeof value === 'undefined') {
         return;
       }
@@ -407,9 +410,8 @@ var MHA = {
       }
 
     },
-    deepStruct(path,value) {
+    deepStruct(tree,path,value) {
       let paths = Polymer.Path.split(path);
-      let tree = {};
       let miner = tree;
       while (paths.length > 1) {
         miner[paths[0]] = {};

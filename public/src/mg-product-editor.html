@@ -67,7 +67,7 @@
   id="gallery-editor"
   class="flex"
   me="[[me]]"
-  item-key="{{galleryKey}}"
+  item-key="{{gallery}}"
   clipboard-list="{{clipboardList}}"
 ></mg-gallery-editor>
 
@@ -107,9 +107,9 @@ class MGProductEditor extends MGItemEditor {
       type: Object,
     },
 
-    galleryKey: {
+    gallery: {
       type: String,
-      observer: '_galleryKeyChanged',
+      observer: '_galleryChanged',
     },
 
     itemRole: {
@@ -121,23 +121,22 @@ class MGProductEditor extends MGItemEditor {
   }}
 
   static get observers() { return [
-    '_variantChanges(variant.*)',
+    '_variantChanged(variant.*)',
   ]}
 
-  _variantChanges(changes) {
-    if (this.variant) {
-
-      let itemData = MHA.utils.deepStruct(changes.path,changes.value);
-      itemData.role = 'product';
-      MHA.setItem(this.itemKey, itemData, true);
+  _variantChanged(change) {
+    if (this.itemKey) {
+      MHA.setItem( this.itemKey,
+        MHA.utils.deepStruct({role: 'product'}, change.path,change.value),
+        true);
     }
   }
 
-  _itemKeyChanged(itemKey) {
-
-    super._itemKeyChanged(itemKey);
-
+  _itemKeyChanged(itemKey,oldKey) {
     this.set('variant',undefined);
+    this.set('gallery',undefined);
+
+    super._itemKeyChanged(itemKey,oldKey);
 
     if (!itemKey) {
       return;
@@ -154,6 +153,9 @@ class MGProductEditor extends MGItemEditor {
         case 'name':
           this.set('itemName', item.name);
           break;
+        case 'gallery':
+          this.set('gallery', item.gallery);
+          break;
         case 'role':
           console.assert('product' == item.role, "XXX");
           break;
@@ -162,11 +164,18 @@ class MGProductEditor extends MGItemEditor {
         } break;
       }
     }
+
+    if (!this.variant) {
+      this.set('variant',null);
+    }
+    if (!this.gallery) {
+      this.set('gallery',null);
+    }
   }
 
-  _galleryKeyChanged(galleryKey) {
-    if (galleryKey) {
-      MHA.setItem(this.itemKey, {gallery: galleryKey, role: 'product'}, true);
+  _galleryChanged(gallery) {
+    if (gallery) {
+      MHA.setItem(this.itemKey, {gallery: gallery, role: 'product'}, true);
     }
   }
 
@@ -176,7 +185,7 @@ class MGProductEditor extends MGItemEditor {
         this.set('itemCover',value);
       } break;
       case 'gallery': {
-        this.set('galleryKey',value);
+        this.set('gallery',value);
       } break;
       case 'name': {
         this.set('itemName', value);
