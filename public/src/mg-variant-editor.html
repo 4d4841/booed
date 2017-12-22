@@ -47,11 +47,14 @@
 
 #value-container {
   @apply --paper-font-caption;
-  border-bottom: 1px dotted var(--booed-shadow-color);
 }
 
 #value-container iron-icon {
   --iron-icon-height: 14px;
+}
+
+.visibility-button:active {
+  color: tomato;
 }
 
 </style>
@@ -59,15 +62,21 @@
   <div class="vertical layout">
 <div id="variants-container" class="paper-material vertical layout start-justified" elevation="1">
   <!-- Editor title -->
+      <div id="value-container" class="horizontal layout center">
+    <template is="dom-if" if="{{opened}}">
   <template is="dom-if" if="{{variant.value}}">
-    <div id="value-container" class="horizontal layout center">
-      [[variant.value]]
-      <template is="dom-if" if="{{variant.variants}}">
-        <iron-icon icon="chevron-right"></iron-icon>
-        [[variant.type]]
-      </template>
-    </div>
+    [[variant.value]]
+    <template is="dom-if" if="{{variant.variants}}">
+      <iron-icon icon="chevron-right"></iron-icon>
+      [[variant.type]]
+    </template>
   </template>
+  <div class="flex"></div>
+    </template>
+    <iron-icon class="visibility-button" on-click="_onToggleOpened" icon="{{_formatIconOpened(opened)}}"></iron-icon>
+      </div>
+
+  <template is="dom-if" if="{{opened}}">
 
     <!-- Type Selector -->
     <template is="dom-if" if="{{variantsDataList.length}}">
@@ -176,6 +185,7 @@
 ></paper-icon-button>
   </div>
 
+  </template>
 </div>
   </div>
 
@@ -238,6 +248,11 @@ class MGVariantsEditor extends Polymer.Element {
     selectedKey: {
       type: String,
       observer: '_selectedKeyChanged',
+    },
+
+    opened: {
+      type: Boolean,
+      value: true,
     },
 
     /* debugging */
@@ -311,7 +326,7 @@ class MGVariantsEditor extends Polymer.Element {
       this.unlinkPaths(this.__dataLinkedPaths['variant.variants.'+oldKey]);
     }
 
-    this.set('selectedSubvariant',null);
+    this.set('selectedSubvariant',undefined);
 
     if (key) {
       this.set('selectedSubvariant', this.variant.variants[key]);
@@ -332,7 +347,7 @@ class MGVariantsEditor extends Polymer.Element {
           if (v === this.selectedSubvariant) {
             console.assert(this.__dataLinkedPaths[this.__dataLinkedPaths['variant.variants.'+v.key$]] == 'selectedSubvariant', 'XXX');
             this.unlinkPaths(this.__dataLinkedPaths['variant.variants.'+v.key$]);
-            this.set('selectedSubvariant', null);
+            this.set('selectedSubvariant', undefined);
           }
 
           this.unlinkPaths('variant.variants.'+v.key$);
@@ -400,6 +415,14 @@ class MGVariantsEditor extends Polymer.Element {
     for (let key in variants) {
       this._addVariantData(key, this.variant.variants[key]);
     }
+  }
+
+  _onToggleOpened(e) {
+    this.set('opened',!this.opened);
+  }
+
+  _formatIconOpened(opened) {
+    return opened ? 'visibility' : 'visibility-off';
   }
 
   _formatIconComment(comment) {
