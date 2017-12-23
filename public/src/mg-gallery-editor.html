@@ -360,11 +360,32 @@ class MGGalleryEditor extends MGItemEditor {
 
       let inc = this._LastClickIndex < e.model.index ? 1 : -1;
 
-      for (let i = this._LastClickIndex + inc; inc > 0 ? i < e.model.index : i > e.model.index; i+=inc) {
-        this.$['image-selector'].selectIndex(i);
+      /* Finds if the last click was de/selection. */
+      let selecting = true;
+      if (this.selectedImages.length && this._LastClickIndex > -1
+        && this.selectedImages.indexOf(this._CachedIndexImage[this._LastClickIndex])
+           == -1) {
+        selecting = false;
+      }
+
+      for (let i = this._LastClickIndex + inc;
+        inc > 0 ? i <= e.model.index : i >= e.model.index; i += inc) {
+
+        let ikey = this._CachedIndexImage[i];
+        let oldIndex = this.selectedImages.indexOf(ikey);
+        if (oldIndex > -1) {
+          this.splice('selectedImages',oldIndex,1);
+        }
+        if (selecting) {
+          this.push('selectedImages',ikey);
+        }
       }
     }
-    this._LastClickIndex = e.model.index;
+    if (this.selectedImages.length) {
+      this._LastClickIndex = e.model.index;
+    } else {
+      this._LastClickIndex = -1;
+    }
   }
 
   _indexImage(imageKey,cb,nacb) {
@@ -704,14 +725,26 @@ class MGGalleryEditor extends MGItemEditor {
     });
   }
 
+  _cacheIndexImage(index,key) {
+    let _CachedIndexImage = (this._CachedIndexImage || (this._CachedIndexImage = []));
+    _CachedIndexImage[index] = key;
+  }
+
   _onSelectAllButtonClick(e) {
     for (let i = 0; i < this.iconList.length; i++) {
-      this.$['image-selector'].selectIndex(i);
+      let ikey = this._CachedIndexImage[i];
+      let oldIndex = this.selectedImages.indexOf(ikey);
+      if (oldIndex > -1) {
+        this.splice('selectedImages',oldIndex,1);
+      } else {
+        this.push('selectedImages',ikey);
+      }
     }
   }
 
   _onCancelButtonClick(e) {
-      this.splice('selectedImages',0,this.selectedImages.length);
+    this.splice('selectedImages',0,this.selectedImages.length);
+    this._LastClickIndex = -1;
   }
 
   _editingDataChanged(data,oldData) {
