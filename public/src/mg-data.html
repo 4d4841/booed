@@ -336,7 +336,7 @@ var MHA = {
   },
 
   get: function(path) {
-    return this.data ? this.data.get(path) : null;
+    return this.data ? this.data.get(path) : undefined;
   },
 
   /* TODO make a behavior of this */
@@ -358,7 +358,7 @@ var MHA = {
         }
       }
 
-      return null;
+      return undefined;
     },
     /* deepSet is used to set a deep property of a Polymer Object.
      * It only supports object in a path and scalar array.

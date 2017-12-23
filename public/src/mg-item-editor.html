@@ -162,6 +162,7 @@ MGItemEditor = class __MGItemEditor extends Polymer.mixinBehaviors([Polymer.AppL
   }
 
   _keyChanged(key) {
+    this.set('role',undefined);
     this.set('nokey',key ? false : true);
     this.set('name', undefined);
   }

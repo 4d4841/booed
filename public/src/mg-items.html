@@ -175,7 +175,7 @@ mg-thumbnail iron-icon {
 </paper-button>
 
 <!--<div id="top-smooth-edge"></div>-->
-<iron-selector class="items-container" attr-for-selected="key" selected="[[itemKey]]">
+<iron-selector class="items-container" attr-for-selected="key" selected="{{routeData.itemKey}}">
     <template is="dom-repeat" items="[[itemList]]" mutable-data>
   <mg-thumbnail
     key="[[item.key]]"
@@ -183,7 +183,6 @@ mg-thumbnail iron-icon {
     icon="[[_formatRoleIcon(item.role)]]"
     src="[[item._src]]"
     class="item"
-    on-click="_onThumbnailClick"
   ></mg-thumbnail>
     </template>
 </iron-selector>
@@ -216,6 +215,7 @@ mg-thumbnail iron-icon {
   </div>
 
 <app-route
+  active="{{routeActive}}"
   route="{{route}}"
   pattern="/:itemKey"
   data="{{routeData}}"
@@ -271,6 +271,7 @@ class MGItems extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Poly
     visible: {
       type: Boolean,
       value: false,
+      observer: '_visibleChanged',
     },
 
     route: {
@@ -278,9 +279,8 @@ class MGItems extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Poly
       notify: true,
       observer: '_routeChanged',
     },
-    routeData: {
-      type: Object,
-    },
+    routeActive: Boolean,
+    routeData: Object,
     subroute: Object,
 
   }}
@@ -291,7 +291,6 @@ class MGItems extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Poly
     '_routeDataItemKeyChanged(routeData.itemKey)',
     '_uidItemKeyChanged(me.user.uid, itemKey)',
     '_userChanged(me.user.uid)',
-    '_visibleChanged(visible)',
   ]}
 
   connectedCallback() {
@@ -339,11 +338,19 @@ class MGItems extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Poly
     this.set('language',language);
   }
 
-  _routeDataItemKeyChanged(key) {
-    this.set('itemKey', key);
+  _routeDataItemKeyChanged(itemKey) {
+    if (itemKey) {
+      if (this.routeActive) {
+        this.set('itemKey', itemKey);
+      } else {
+        this.set('route.path',itemKey);
+      }
+    }
   }
 
   _uidItemKeyChanged(uid, itemKey) {
+    this.set('itemRole', itemKey ? MHA.getItem({[itemKey]:{role:null}}) : undefined );
+
     if (this._Unsubscribe) {
       this._Unsubscribe();
     }
@@ -364,7 +371,7 @@ class MGItems extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Poly
           return;
         }
 
-        if (v.role) {
+        if (v.role && this.itemKey == itemKey) {
           this.set('itemRole',v.role);
         }
         //this.editor.set('itemKey',itemKey);
@@ -397,22 +404,19 @@ class MGItems extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Poly
 
         MHA.setItem(itemSS.key,item);
 
-      } else if (!this.itemRole) {
-        /* editorRole isn't defined. This is not creating a new item. */
-        this.set('itemKey', null);
-        if (this.route) {
-          this.set('route.path', '');
-        }
-      }
+      } else {
 
+        /* Auto delayed-reset path if no role was immediately set. */
+        Polymer.Async.timeOut.run(() => {
+          if (!this.itemRole) {
+            this.set('route.path', '');
+          }
+        }, 0);
+      }
     }, error => {
       console.error("ERR", error);
       this._Unsubscribe();
     });
-
-    if (this.route) {
-      this.set('route.path', itemKey);
-    }
   }
 
   _userChanged(uid) {
@@ -467,12 +471,6 @@ class MGItems extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Poly
   }
 
   _visibleChanged(visible) {
-    if (visible) {
-      this.set('itemKey', this.itemKey || this._CurrentItemKey);
-    } else {
-      this._CurrentItemKey = this.itemKey;
-      this.set('itemKey', null);
-    }
   }
 
   _setCover(itemKey,imageKey) {
@@ -520,23 +518,28 @@ class MGItems extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Poly
     }
   }
 
-  _onThumbnailClick(e) {
-    this.set('itemKey',e.model.item.key);
-  }
-
   _onSelectedItemType(e) {
     console.log("Not yet implemented. Should display only ->", e.model.item.name);
   }
 
   _onNewItem(e) {
     this._closeSubmenu(e);
-    this.set('itemRole',e.model.item.name);
+
+    let newKey = MHA.DB.ref('items').push().key;
+    if (!this.routeActive) {
+      this.set('route.path','/');
+    }
+    this.set('routeData.itemKey', newKey);
+    this.set('itemRole', e.model.item.name);
+    /*
     this.set('itemKey', MHA.DB.ref('items').push().key);
+    this.set('itemRole',e.model.item.name);
+    */
   }
 
   _routeChanged(route) {
+    return;
     if (route.prefix == '/user/items') {
-      /* Checks if it was editing an item, set the URL back to the item */
       let key = this.itemKey || this._CurrentItemKey;
       if (key && !route.path) {
         delete this._CurrentItemKey; /* Delete or it will keep bouncing back trying */
