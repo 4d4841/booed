@@ -31,7 +31,7 @@
   border-radius: 5px;
 }
 
-:host([empty]){
+:host([nokey]) #name-editor {
   display: none;
 }
 
@@ -51,14 +51,17 @@
 ></mg-data>
 
 
-  <div class="horizontal layout">
+  <div class="horizontal layout end">
 <mg-input
   id="name-editor"
-  label="[[_formatLabelDescription(itemRole)]]"
-  icon="[[iconForRole(itemRole)]]"
+  label="[[_formatLabelDescription(role)]]"
+  icon="[[iconForRole(editorRole)]]"
   focused="{{focusedName}}"
-  value="{{itemName}}"
-></mg-input>
+  value="{{name}}"
+> <paper-icon-button slot="suffix" icon="editor:insert-link"
+    on-click="_onOpenItemBrowser"
+  ></paper-icon-button>
+</mg-input>
   </div>
 
   </template>
@@ -75,24 +78,35 @@ MGItemEditor = class __MGItemEditor extends Polymer.mixinBehaviors([Polymer.AppL
     language: String,
     resources: { value: MHA.translations, },
 
-    empty: {
+    focusedName: {type: Boolean, value: false,},
+
+    nokey: {
       type: Boolean,
       notify: true,
       reflectToAttribute: true,
+      value: true,
     },
 
-    itemKey: {
+    norole: {
+      type: Boolean,
+      notify: true,
+      reflectToAttribute: true,
+      value: true,
+    },
+
+    key: {
       type: String,
       notify: true,
-      value: null,
-      observer: '_itemKeyChanged',
+      observer: '_keyChanged',
     },
 
-    itemRole: {
+    /* Role of the current key (not editor's) */
+    role: {
       type: String,
+      observer: '_roleChanged',
     },
 
-    itemName: {
+    name: {
       type: String,
       notify: true,
     },
@@ -112,7 +126,7 @@ MGItemEditor = class __MGItemEditor extends Polymer.mixinBehaviors([Polymer.AppL
 
   static get observers() { return [
     '_itemsChanged(items.*)',
-    '_itemNameChanged(me.user, itemRole, itemName)',
+    '_nameChanged(me.user, role, name)',
     '_languageChanged(configurations.language)',
   ]}
 
@@ -138,31 +152,40 @@ MGItemEditor = class __MGItemEditor extends Polymer.mixinBehaviors([Polymer.AppL
   }
   */
 
-  _itemKeyChanged(itemKey) {
-    this.set('empty',itemKey ? false : true);
-    this.set('itemName', null);
+  _roleChanged(role) {
+    console.assert(this.editorRole, 'Subclass must define editorRole property');
+    if (role && role != this.editorRole) {
+      this.role = undefined;
+      this.set('key',undefined);
+    }
+    this.set('norole', this.role ? false : true);
+  }
+
+  _keyChanged(key) {
+    this.set('nokey',key ? false : true);
+    this.set('name', undefined);
   }
 
   _itemsChanged(change) {
-    if (!this.itemKey || !change.path.startsWith('items.'+this.itemKey)) return;
-    /* 27 = itemKey.length + 'items.'.length + '.' */
+    if (!this.key || !change.path.startsWith('items.'+this.key)) return;
+    /* 27 = key.length + 'items.'.length + '.' */
     this.updateChanges(change.path.slice(27).split('.'), change.value);
   }
 
-  _itemNameChanged(user, itemRole, itemName) {
+  _nameChanged(user, role, name) {
 
-    if (!user || !itemRole || (!this.focusedName)) {
+    if (!user || !role || (!this.focusedName)) {
       return;
     }
 
-    if (itemName || itemName === "") {
+    if (name || name === "") {
       var registerData = {
-        ['items/'+this.itemKey+'/uid']: user.uid,
-        ['items/'+this.itemKey+'/name']: itemName,
-        ['items/'+this.itemKey+'/role']: this.itemRole,
-        ['home/'+user.uid+'/items/'+this.itemKey+'/name']: itemName,
-        ['home/'+user.uid+'/items/'+this.itemKey+'/role']: itemRole,
-        ['home/'+user.uid+'/items/'+this.itemKey+'/time']: firebase.database.ServerValue.TIMESTAMP,
+        ['items/'+this.key+'/uid']: user.uid,
+        ['items/'+this.key+'/name']: name,
+        ['items/'+this.key+'/role']: this.role,
+        ['home/'+user.uid+'/items/'+this.key+'/name']: name,
+        ['home/'+user.uid+'/items/'+this.key+'/role']: role,
+        ['home/'+user.uid+'/items/'+this.key+'/time']: firebase.database.ServerValue.TIMESTAMP,
       };
 
       MHA.DB.ref().update(registerData, function(error){
@@ -179,6 +202,9 @@ MGItemEditor = class __MGItemEditor extends Polymer.mixinBehaviors([Polymer.AppL
 
 
   _formatLabelDescription(role) {
+    if (!role) {
+      return '';
+    }
     return role.charAt(0).toUpperCase() + role.slice(1)+' Name';
   }
 
@@ -186,10 +212,15 @@ MGItemEditor = class __MGItemEditor extends Polymer.mixinBehaviors([Polymer.AppL
     return MGIconForRole(role);
   }
 
+  /*
   newItem(name) {
-    this.set('itemKey', MHA.DB.ref('items').push().key);
-    this.set('itemName', name);
-    return this.itemKey;
+    this.set('key', MHA.DB.ref('items').push().key);
+    this.set('name', name);
+    return this.key;
+  }
+  */
+
+  _onOpenItemBrowser(e) {
   }
 }
 

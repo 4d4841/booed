@@ -84,15 +84,18 @@ mg-clipboard-view {
 
 .editor-container {
   margin-left: 20px;
-  width: 100%;
   @apply --layout-vertical;
+  width: calc(100vw - 250px);
   height: calc(100vh - 100px);
 }
 
-#editor {
+.editor {
   margin: 0 20px 20px 20px;
-  width: 100%;
   @apply --layout-flex;
+}
+
+.editor[norole] {
+  display: none;
 }
 
 a {
@@ -140,6 +143,7 @@ a {
 
   .editor-container {
     height: calc(100vh - 70px);
+  width: calc(100vw - 150px);
   }
 
 }
@@ -196,16 +200,17 @@ mg-thumbnail iron-icon {
 
   <div class="editor-container">
 <mg-clipboard-view></mg-clipboard-view>
-
 <mg-product-editor
-  id="product-editor"
-  class="flex"
+  key="[[itemKey]]"
+  role="[[itemRole]]"
+  class="editor"
   me="[[me]]"
 ></mg-product-editor>
 
 <mg-gallery-editor
-  id="gallery-editor"
-  class="flex"
+  key="[[itemKey]]"
+  role="[[itemRole]]"
+  class="editor"
   me="[[me]]"
 ></mg-gallery-editor>
   </div>
@@ -238,13 +243,9 @@ class MGItems extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Poly
     itemKey: {
       type: String,
     },
+
     itemRole: {
       type: String,
-    },
-
-    editor: {
-      type: Object,
-      computed: '_computeSelectEditor(itemRole)'
     },
 
     menu: {
@@ -363,13 +364,17 @@ class MGItems extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Poly
           return;
         }
 
-        this.set('itemRole',v.role);
-        this.editor.set('itemKey',itemKey);
+        if (v.role) {
+          this.set('itemRole',v.role);
+        }
+        //this.editor.set('itemKey',itemKey);
 
+        /*
         if (v.role != 'gallery') { this.set('galleryKey', null); }
         if (v.role != 'article') { this.set('articleKey', null); }
         if (v.role != 'product') { this.set('productKey', null); }
         if (v.role != 'collection') { this.set('collectionKey', null); }
+        */
 
         let item = {
           _uid: uid,
@@ -523,20 +528,10 @@ class MGItems extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Poly
     console.log("Not yet implemented. Should display only ->", e.model.item.name);
   }
 
-  _computeSelectEditor(newRole) {
-    let newEditor = this.$[newRole+'-editor'];
-
-    if (this.editor && this.editor !== newEditor) {
-      this.editor.set('itemKey',null);
-    }
-
-    return newEditor;
-  }
-
   _onNewItem(e) {
     this._closeSubmenu(e);
     this.set('itemRole',e.model.item.name);
-    this.set('itemKey',this.editor.newItem());
+    this.set('itemKey', MHA.DB.ref('items').push().key);
   }
 
   _routeChanged(route) {

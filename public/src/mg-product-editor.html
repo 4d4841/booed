@@ -36,11 +36,14 @@
   margin: 0;
 }
 
+#gallery-editor[nokey] {
+}
+
 </style>
 
 <mg-clipboard clipboard-list="{{clipboardList}}"></mg-clipboard>
 
-<div id="product-editor" class="vertical layout" hidden$="[[!itemKey]]">
+<div id="product-editor" class="vertical layout" hidden$="[[!key]]">
 
   <div id="control-panel" class="horizontal layout wrap end" >
 
@@ -65,9 +68,8 @@
 </div>
 <mg-gallery-editor
   id="gallery-editor"
-  class="flex"
   me="[[me]]"
-  item-key="{{gallery}}"
+  key="{{gallery}}"
   clipboard-list="{{clipboardList}}"
 ></mg-gallery-editor>
 
@@ -91,6 +93,11 @@ class MGProductEditor extends MGItemEditor {
   }
 
   static get properties() { return {
+    editorRole: {
+      type: String,
+      value: 'product',
+    },
+
     variantMenu: {
       type: Object,
       value: {
@@ -112,52 +119,38 @@ class MGProductEditor extends MGItemEditor {
       observer: '_galleryChanged',
     },
 
-    itemRole: {
-      type: String,
-      value: "product",
-      readOnly: true,
-    },
-
   }}
 
   static get observers() { return [
     '_variantChanged(variant.*)',
   ]}
 
-  _variantChanged(change) {
-    if (this.itemKey) {
-      MHA.setItem( this.itemKey,
-        MHA.utils.deepStruct({role: 'product'}, change.path,change.value),
-        true);
-    }
-  }
-
-  _itemKeyChanged(itemKey,oldKey) {
+  _keyChanged(key,oldKey) {
     this.set('variant',undefined);
     this.set('gallery',undefined);
 
-    super._itemKeyChanged(itemKey,oldKey);
+    super._keyChanged(key,oldKey);
 
-    if (!itemKey) {
+    if (!key) {
       return;
     }
 
-    let item = MHA.getItem({[itemKey]:null});
+    let item = MHA.getItem({[key]:null});
     for(let prop in item) {
       switch(prop) {
         case '_uid':
           break;
         case 'cover':
-          this.set('itemCover',item.cover);
+          this.set('cover',item.cover);
           break;
         case 'name':
-          this.set('itemName', item.name);
+          this.set('name', item.name);
           break;
         case 'gallery':
           this.set('gallery', item.gallery);
           break;
         case 'role':
-          console.assert('product' == item.role, "XXX");
+          this.set('role', item.role);
           break;
         case 'variant': {
           MHA.utils.deepSet(this,'variant',item.variant);
@@ -167,21 +160,32 @@ class MGProductEditor extends MGItemEditor {
   }
 
   _galleryChanged(gallery) {
-    if (gallery) {
-      MHA.setItem(this.itemKey, {gallery: gallery, role: 'product'}, true);
+    if (gallery && this.role == 'product') {
+      MHA.setItem(this.key, {gallery: gallery, role: 'product'}, true);
+    }
+  }
+
+  _variantChanged(change) {
+    if (typeof change.value != 'undefined' && this.key && this.role == 'product') {
+      MHA.setItem( this.key,
+        MHA.utils.deepStruct({role: 'product'}, change.path,change.value),
+        true);
     }
   }
 
   updateChanges(path,value) {
     switch(path[0]) {
+      case 'role': {
+        this.set('role',value);
+      } break;
       case 'cover': {
-        this.set('itemCover',value);
+        this.set('cover',value);
       } break;
       case 'gallery': {
         this.set('gallery',value);
       } break;
       case 'name': {
-        this.set('itemName', value);
+        this.set('name', value);
       } break;
       case 'variant': {
         /* XXX Try to bind mg-data maybe */
@@ -203,7 +207,7 @@ class MGProductEditor extends MGItemEditor {
   }
 
   _onAddGalleryClick(e) {
-    this.$['gallery-editor'].newItem('แกลเลอรี่'+this.itemName);
+    this.$['gallery-editor'].newItem('แกลเลอรี่'+this.name);
   }
 
   _onPasteButtonClick(e) {
