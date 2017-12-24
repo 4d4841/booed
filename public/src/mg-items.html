@@ -156,10 +156,12 @@ mg-thumbnail iron-icon {
 
 <iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
 
+<!--
 <mg-data
   items="{{items}}"
   configurations="{{configurations}}"
 ></mg-data>
+-->
 
   <div class="side-bar">
 <paper-button
@@ -224,16 +226,14 @@ mg-thumbnail iron-icon {
 
   </template>
   <script>
-class MGItems extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element) {
+class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
   static get is() { return 'mg-items'; }
   static get properties() { return {
-    configurations: Object,
-    language: String,
-    resources: { value: MHA.translations, },
-
     me: Object,
 
+    /*
     items: Object,
+    */
 
     itemList: {
       type: Array,
@@ -268,11 +268,6 @@ class MGItems extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Poly
         ],
       }
     },
-    visible: {
-      type: Boolean,
-      value: false,
-      observer: '_visibleChanged',
-    },
 
     route: {
       type: Object,
@@ -287,10 +282,10 @@ class MGItems extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Poly
 
   static get observers() { return [
     '_itemsChanged(items.*)',
-    '_languageChanged(configurations.language)',
     '_routeDataItemKeyChanged(routeData.itemKey)',
     '_uidItemKeyChanged(me.user.uid, itemKey)',
     '_userChanged(me.user.uid)',
+    '_visibleChanged(visible)',
   ]}
 
   connectedCallback() {
@@ -334,10 +329,6 @@ class MGItems extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Poly
 
   }
 
-  _languageChanged(language) {
-    this.set('language',language);
-  }
-
   _routeDataItemKeyChanged(itemKey) {
     if (itemKey) {
       if (this.routeActive) {
@@ -349,6 +340,7 @@ class MGItems extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Poly
   }
 
   _uidItemKeyChanged(uid, itemKey) {
+
     this.set('itemRole', itemKey ? MHA.getItem({[itemKey]:{role:null}}) : undefined );
 
     if (this._Unsubscribe) {
@@ -363,7 +355,6 @@ class MGItems extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Poly
     this._Unsubscribe = () => {ref.off('value', callback); delete this._Unsubscribe};
     ref = MHA.DB.ref('home').child(uid).child('items').child(itemKey);
     callback = ref.on('value', itemSS => {
-
       let v = itemSS.val();
       if (v) {
         if (!v.role) {
@@ -409,7 +400,7 @@ class MGItems extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Poly
         /* Auto delayed-reset path if no role was immediately set. */
         Polymer.Async.timeOut.run(() => {
           if (!this.itemRole) {
-            this.set('route.path', '');
+            this.set('route.path', '/');
           }
         }, 0);
       }

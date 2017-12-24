@@ -12,6 +12,7 @@
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/app-localize-behavior/app-localize-behavior.html">
 
     <dom-module id="mg-data">
   <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase-app.js"></script>
@@ -28,6 +29,22 @@ var MHA = {
   },
 
   representations: new Map(),
+  dataInstances: new Map(),
+  dataNotifierStates: new Map(),
+
+  addInstance: function(path, instance) {
+    let instances = this.dataInstances.get(path);
+    if (!instances) {
+      instances = new Set();
+      this.dataInstances.set(path, instances);
+    }
+    instances.add(instance);
+  },
+
+  removeInstance: function(path, instance) {
+    let instances = MHA.dataInstances.get(path);
+    instances.delete(instance);
+  },
 
   translations: (function(){
     let required_words = {
@@ -45,6 +62,7 @@ var MHA = {
         'store': 'store',
         'inbox': 'inbox',
         'help': 'help',
+        'signin': 'sign in',
         'signout': 'sign out',
         'create item': 'create item',
         'create': 'create',
@@ -108,6 +126,7 @@ var MHA = {
       'store': 'ร้าน',
       'inbox': 'กล่องข้อความ',
       'help': 'ความช่วยเหลือ',
+      'signin': 'เข้าสู่ระบบ',
       'signout': 'ออกจากระบบ',
       'create item': 'สร้างไอเท็ม',
       'create': 'สร้าง',
@@ -129,6 +148,8 @@ var MHA = {
 
     return required_words;
   })(),
+
+
 
   registerRepresentation: function( keyOrBlob, srcCallback, contentType ) {
      /*XXX UID of other user */
@@ -326,8 +347,32 @@ var MHA = {
     }
   },
 
+  notifyInstances: function(instance, change) {
+    let notifyState = this.dataNotifierStates.get(change.path);
+    if (!notifyState /* No state exists. Takes the lead. */
+      || (notifyState.target != instance && change.value !== notifyState.value)) {
+      /* Or got a reentrance with an update to an active path. */
+      this.dataNotifierStates.set(change.path, {value: change.value, target: instance});
+      this.dataInstances.forEach((instances, path) => {
+        if (change.path.startsWith(path)) {
+          instances.forEach(sibling => {
+            if (sibling != instance) {
+              sibling.notifyPath(change.path);
+            }
+          });
+        }
+      });
+
+      this.dataNotifierStates.delete(change.path);
+    }
+  },
+
   getItem: function(target,fillTarget) {
-    if (fillTarget) {
+    if (typeof target == 'string') {
+      target = this.utils.deepStruct({}, target, null);
+    } else if (Array.isArray(target)) {
+      target = this.utils.deepStruct({}, target.join('.'), null);
+    } else if (fillTarget) {
       this.utils.deepGet(target, this.items, fill);
       return target;
     }
@@ -422,7 +467,9 @@ var MHA = {
       return tree;
     },
   },
+
 };
+
 
 
 if (!MHA.APP) {
@@ -443,8 +490,6 @@ if (!MHA.APP) {
 }
 
 (function() {
-let __MGDataInstances = [];
-let __MGDataNotifierStates = new Map();
 
 class MGData extends Polymer.Element {
 
@@ -480,31 +525,94 @@ class MGData extends Polymer.Element {
 
   connectedCallback() {
     super.connectedCallback();
-    __MGDataInstances.push(this);
+    MHA.addInstance('items.',this);
+    MHA.addInstance('configurations.',this);
     if (!MHA.data) MHA.data = this;
   }
 
   disconnectedCallback() {
-    __MGDataInstances.splice(__MGDataInstances.indexOf(this),1);
+    MHA.removeInstance('items.',this);
+    MHA.removeInstance('configurations.',this);
     super.disconnectedCallback();
   }
 
   /* Didn't test, it should work :-P */
   _dataChanged(change) {
-    let notifyState = __MGDataNotifierStates.get(change.path);
-    if (!notifyState /* No state exists. Takes the lead. */
-      || (notifyState.target != this && change.value !== notifyState.value)) {
-      /* Or got a reentrance with an update to an active path. */
-      __MGDataNotifierStates.set(change.path, {value: change.value, target: this});
-      __MGDataInstances.forEach(data => {
-        if (data != this) {
-          data.notifyPath(change.path);
-        }
-      });
-      __MGDataNotifierStates.delete(change.path);
-    }
+    MHA.notifyInstances( this, change );
   }
 
+}
+
+MHA.Configurations = (superClass) => {
+  return class extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior],superClass) {
+    static get properties() { return {
+      configurations: {
+        value: MHA.configurations,
+      },
+      language: String,
+      resources: Object,
+    }}
+
+    static get observers() { return [
+      '_languageChanged(configurations.language)',
+      '_configurationsChanged(configurations.*)',
+    ]}
+
+    constructor() {
+      super();
+      this.resources = MHA.translations;
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      MHA.addInstance('configurations.', this);
+    }
+
+    disconnectedCallback() {
+      MHA.removeInstance('configurations.', this);
+      super.disconnectedCallback();
+    }
+
+    _languageChanged(language) {
+      this.set('language',language);
+    }
+    _configurationsChanged(change) {
+      MHA.notifyInstances(this, change);
+    }
+  }
+}
+
+MHA.Items = (superClass) => {
+  return class extends superClass {
+    static get properties() { return {
+      items: {
+        value: MHA.items,
+      },
+    }}
+
+    static get observers() { return [
+      '_itemsChanged(items.*)',
+    ]}
+
+    constructor() {
+      super();
+      this.resources = MHA.translations;
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      MHA.addInstance('items.', this);
+    }
+
+    disconnectedCallback() {
+      MHA.removeInstance('items.', this);
+      super.disconnectedCallback();
+    }
+
+    _itemsChanged(change) {
+      MHA.notifyInstances(this, change);
+    }
+  }
 }
 
 customElements.define(MGData.is, MGData);

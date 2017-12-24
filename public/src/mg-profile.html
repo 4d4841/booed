@@ -20,6 +20,7 @@
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="mg-data.html">
 <link rel="import" href="mg-input.html">
 
     <dom-module id="mg-profile">
@@ -245,6 +246,9 @@ h3 iron-icon {
 }
 
 </style>
+<mg-data
+  configurations="{{configurations}}"
+></mg-data>
 
 <paper-card id="id-card" state$="[[state]]">
   <!--
@@ -295,7 +299,7 @@ h3 iron-icon {
       ><paper-button
         id="loginBB"
         on-click="_signIn"
-      > เข้าระบบ
+      > [[localize('signin')]]
       </paper-button>
 
       <paper-button
@@ -326,7 +330,7 @@ h3 iron-icon {
             on-click="_signOut"
             class="layout horizontal center-justified"
           > <iron-icon icon="maps:local-cafe" style="color:tomato"></iron-icon>
-            ออกจากระบบ
+            [[localize('signout')]]
           </paper-button>
         <!-- End: user panel -->
       </template>
@@ -392,10 +396,13 @@ h3 iron-icon {
 </div>
   </template>
   <script>
-class MGProfile extends Polymer.Element {
+class MGProfile extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element) {
   static get is() { return 'mg-profile'; }
 
   static get properties() { return {
+    configurations: Object,
+    language: String,
+    resources: { value: MHA.translations, },
 
     state: {
       type: String,
@@ -423,6 +430,7 @@ class MGProfile extends Polymer.Element {
   }}
 
   static get observers() { return [
+    '_languageChanged(configurations.language)',
     '_visibleChanged(visible)',
     '_waitingChanged(me.waiting)',
   ]}
@@ -434,7 +442,6 @@ class MGProfile extends Polymer.Element {
   }
 
   _visibleChanged(visible) {
-    console.log("visible");
     if (this.visible) {
       this.dispatchEvent(new CustomEvent('change-section', {
         bubbles: true, composed: true, detail: {title: 'Profile'}}));
@@ -443,6 +450,11 @@ class MGProfile extends Polymer.Element {
       }
     }
   }
+
+  _languageChanged(language) {
+    this.set('language',language);
+  }
+
 
   _waitingChanged(waiting) {
     if (waiting == true) {

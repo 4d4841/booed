@@ -615,8 +615,6 @@
 
 </footer>
 
-<mg-data configurations="{{configurations}}"></mg-data>
-
 <!-- a11y announcer -->
 <!--
 <div class="announcer" aria-live="assertive">[[_a11yLabel]]</div>
@@ -674,15 +672,11 @@ window.performance && performance.mark && performance.mark('mg-app - before regi
 
 /* MG stands for MoonGom as in moongom119 AKA. Moon HyunA */
 
-class MGApp extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element) {
+class MGApp extends MHA.Configurations(Polymer.Element) {
 
   static get is() { return 'mg-app'; }
 
   static get properties() { return {
-    configurations: Object,
-    language: String,
-    resources: { value: MHA.translations, },
-
     me: {
       type: Object,
     },
@@ -728,7 +722,6 @@ class MGApp extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polyme
   }}
 
   static get observers() { return [
-    '_languageChanged(configurations.language)',
     '_routePageChanged(routeData.page)',
   ]}
 
@@ -804,10 +797,6 @@ class MGApp extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polyme
   disconnectedCallback() {
     console.log('disconnect?');
     super.disconnectedCallback();
-  }
-
-  _languageChanged(language) {
-    this.set('language',language);
   }
 
   _openHome(e) {
