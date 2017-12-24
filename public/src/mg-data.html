@@ -46,6 +46,26 @@ var MHA = {
     instances.delete(instance);
   },
 
+  notifyInstances: function(instance, change) {
+    let notifyState = this.dataNotifierStates.get(change.path);
+    if (!notifyState /* No state exists. Takes the lead. */
+      || (notifyState.target != instance && change.value !== notifyState.value)) {
+      /* Or got a reentrance with an update to an active path. */
+      this.dataNotifierStates.set(change.path, {value: change.value, target: instance});
+      this.dataInstances.forEach((instances, path) => {
+        if (change.path.startsWith(path)) {
+          instances.forEach(sibling => {
+            if (sibling != instance) {
+              sibling.notifyPath(change.path);
+            }
+          });
+        }
+      });
+
+      this.dataNotifierStates.delete(change.path);
+    }
+  },
+
   translations: (function(){
     let required_words = {
       'en': {
@@ -148,8 +168,6 @@ var MHA = {
 
     return required_words;
   })(),
-
-
 
   registerRepresentation: function( keyOrBlob, srcCallback, contentType ) {
      /*XXX UID of other user */
@@ -347,26 +365,6 @@ var MHA = {
     }
   },
 
-  notifyInstances: function(instance, change) {
-    let notifyState = this.dataNotifierStates.get(change.path);
-    if (!notifyState /* No state exists. Takes the lead. */
-      || (notifyState.target != instance && change.value !== notifyState.value)) {
-      /* Or got a reentrance with an update to an active path. */
-      this.dataNotifierStates.set(change.path, {value: change.value, target: instance});
-      this.dataInstances.forEach((instances, path) => {
-        if (change.path.startsWith(path)) {
-          instances.forEach(sibling => {
-            if (sibling != instance) {
-              sibling.notifyPath(change.path);
-            }
-          });
-        }
-      });
-
-      this.dataNotifierStates.delete(change.path);
-    }
-  },
-
   getItem: function(target,fillTarget) {
     if (typeof target == 'string') {
       target = this.utils.deepStruct({}, target, null);
@@ -470,8 +468,6 @@ var MHA = {
 
 };
 
-
-
 if (!MHA.APP) {
 
   let config = {
@@ -490,7 +486,6 @@ if (!MHA.APP) {
 }
 
 (function() {
-
 class MGData extends Polymer.Element {
 
   static get is() { return 'mg-data'; }
@@ -543,77 +538,73 @@ class MGData extends Polymer.Element {
 
 }
 
-MHA.Configurations = (superClass) => {
-  return class extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior],superClass) {
-    static get properties() { return {
-      configurations: {
-        value: MHA.configurations,
-      },
-      language: String,
-      resources: Object,
-    }}
+MHA.Configurations = (superClass) => { returnclass extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior],superClass) {
+  static get properties() { return {
+    configurations: {
+      value: MHA.configurations,
+    },
+    language: String,
+    resources: Object,
+  }}
 
-    static get observers() { return [
-      '_languageChanged(configurations.language)',
-      '_configurationsChanged(configurations.*)',
-    ]}
+  static get observers() { return [
+    '_languageChanged(configurations.language)',
+    '_configurationsChanged(configurations.*)',
+  ]}
 
-    constructor() {
-      super();
-      this.resources = MHA.translations;
-    }
-
-    connectedCallback() {
-      super.connectedCallback();
-      MHA.addInstance('configurations.', this);
-    }
-
-    disconnectedCallback() {
-      MHA.removeInstance('configurations.', this);
-      super.disconnectedCallback();
-    }
-
-    _languageChanged(language) {
-      this.set('language',language);
-    }
-    _configurationsChanged(change) {
-      MHA.notifyInstances(this, change);
-    }
+  constructor() {
+    super();
+    this.resources = MHA.translations;
   }
-}
 
-MHA.Items = (superClass) => {
-  return class extends superClass {
-    static get properties() { return {
-      items: {
-        value: MHA.items,
-      },
-    }}
-
-    static get observers() { return [
-      '_itemsChanged(items.*)',
-    ]}
-
-    constructor() {
-      super();
-      this.resources = MHA.translations;
-    }
-
-    connectedCallback() {
-      super.connectedCallback();
-      MHA.addInstance('items.', this);
-    }
-
-    disconnectedCallback() {
-      MHA.removeInstance('items.', this);
-      super.disconnectedCallback();
-    }
-
-    _itemsChanged(change) {
-      MHA.notifyInstances(this, change);
-    }
+  connectedCallback() {
+    super.connectedCallback();
+    MHA.addInstance('configurations.', this);
   }
-}
+
+  disconnectedCallback() {
+    MHA.removeInstance('configurations.', this);
+    super.disconnectedCallback();
+  }
+
+  _languageChanged(language) {
+    this.set('language',language);
+  }
+  _configurationsChanged(change) {
+    MHA.notifyInstances(this, change);
+  }
+}}
+
+MHA.Items = (superClass) => { return class extends superClass {
+  static get properties() { return {
+    items: {
+      value: MHA.items,
+    },
+  }}
+
+  static get observers() { return [
+    '_itemsChanged(items.*)',
+  ]}
+
+  constructor() {
+    super();
+    this.resources = MHA.translations;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    MHA.addInstance('items.', this);
+  }
+
+  disconnectedCallback() {
+    MHA.removeInstance('items.', this);
+    super.disconnectedCallback();
+  }
+
+  _itemsChanged(change) {
+    MHA.notifyInstances(this, change);
+  }
+}}
 
 customElements.define(MGData.is, MGData);
 })();
