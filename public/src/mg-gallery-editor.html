@@ -133,28 +133,28 @@
   selected-values="{{selectedImages}}"
   multi
   hidden$="[[nokey]]"
-  > <template is="dom-repeat" items="{{iconList}}" observe="order deleted" sort="{{_reorderPhoto}}">
+  > <template is="dom-repeat" items="{{iconList}}" as="image" observe="order deleted" sort="{{_reorderPhoto}}">
 
 <mg-item-image
-  key="[[item.key]]"
+  key="[[image.key]]"
   class="image-icon"
-  thumbnail="[[item.thumbnail]]"
+  thumbnail="[[image.thumbnail]]"
   icon='image:photo'
-  rep="[[item.rep]]"
-  progress="[[item._progress]]"
-  label="[[item.name]]"
-  selection-order="[[item._selectionOrder]]"
-  deleted="[[item.deleted]]"
+  rep="[[image.rep]]"
+  progress="[[image.progress$]]"
+  label="[[image.name]]"
+  selection-order="[[image.selectionOrder$]]"
+  deleted="[[image.deleted]]"
   on-click="_onItemClick"
 >
 <!--
-  <template is="dom-if" if="{{_isEditable(item._progress,item.rep)}}">
+  <template is="dom-if" if="{{_isEditable(image.progress$,image.rep)}}">
     <paper-icon-button icon="mode-edit" class="image-edit-button-icon" on-click="_onEditImage">
     </paper-icon-button>
   </template>
 -->
 </mg-item-image>
-[[_cacheIndexImage(index,item.key)]]
+[[_cacheIndexImage(index,image.key)]]
 
   </template>
 </iron-selector>
@@ -196,7 +196,7 @@ class MGGalleryEditor extends MGItemEditor {
     /* iconList collects item data to be displayed, copied and pasted.
        Each array-item may contains..
 
-      [key] : Data ID.
+      [key] : Image ID.
 
       <role> : The role of this entry, can only be 'photo' in iconList but
         could be any kind of data in clipboard, eg. gallery, product, etc.
@@ -346,13 +346,13 @@ class MGGalleryEditor extends MGItemEditor {
       /* Remove number from deselected photo */
       changes.indexSplices.forEach(splice => {
         splice.removed.forEach(removedKey => {
-          this._setPhotoKeyProperty(removedKey,'_selectionOrder',null);
+          this._setPhotoKeyProperty(removedKey,'selectionOrder$',null);
         })
       });
 
       let orderNumber = 0;
-      this.selectedImages.forEach(key => {
-        this._setPhotoKeyProperty(key,'_selectionOrder',++orderNumber);
+      this.selectedImages.forEach(imageKey => {
+        this._setPhotoKeyProperty(imageKey,'selectionOrder$',++orderNumber);
       });
     }
   }
@@ -419,8 +419,8 @@ class MGGalleryEditor extends MGItemEditor {
     return -1;
   }
 
-  _setPhotoKeyProperty(key,prop,val) {
-    let idx = this._indexImage(key);
+  _setPhotoKeyProperty(imageKey,prop,val) {
+    let idx = this._indexImage(imageKey);
     if (idx !== -1) {
       if (this.iconList[idx][prop] != val) {
         this.set(['iconList',idx,prop],val);
@@ -428,13 +428,12 @@ class MGGalleryEditor extends MGItemEditor {
     }
   }
 
-  _uploadReps(uid,key,files) {
+  _uploadReps(uid,itemKey,files) {
     Array.from(files).forEach(imgFile => {
-      let imageKey =  MHA.DB.ref('home').child(uid).child(key).child('images').push().key;
+      let imageKey =  MHA.DB.ref('home').child(uid).child(itemKey).child('images').push().key;
       let imageName = imgFile.name.split('.')[0];
-      //let coverImageKey = MHA.get(['items',key,'cover']) || imageKey;
-      let coverImageKey = MHA.getItem({[key]:{cover:null}}) || imageKey;
-      MHA.setItem(key,{ cover: coverImageKey });
+      let coverImageKey = MHA.getItem({[itemKey]:{cover:null}}) || imageKey;
+      MHA.setItem(itemKey,{ cover: coverImageKey });
 
       let registerInfo = {};
       function registerImageReps() {
@@ -444,10 +443,10 @@ class MGGalleryEditor extends MGItemEditor {
           let registerData = {
             ['representations/'+registerInfo.rep+'/uid']: uid,
             ['representations/'+registerInfo.thumbnail+'/uid']: uid,
-            ['home/'+uid+'/items/'+key+'/cover']: coverImageKey,
-            ['home/'+uid+'/items/'+key+'/images/'+imageKey+'/thumbnail']: registerInfo.thumbnail,
-            ['home/'+uid+'/items/'+key+'/images/'+imageKey+'/rep']: registerInfo.rep,
-            ['home/'+uid+'/items/'+key+'/images/'+imageKey+'/name']: registerInfo.name,
+            ['home/'+uid+'/items/'+itemKey+'/cover']: coverImageKey,
+            ['home/'+uid+'/items/'+itemKey+'/images/'+imageKey+'/thumbnail']: registerInfo.thumbnail,
+            ['home/'+uid+'/items/'+itemKey+'/images/'+imageKey+'/rep']: registerInfo.rep,
+            ['home/'+uid+'/items/'+itemKey+'/images/'+imageKey+'/name']: registerInfo.name,
           }
           MHA.DB.ref().update(registerData, error => {
             if (error) {
@@ -459,10 +458,10 @@ class MGGalleryEditor extends MGItemEditor {
 
       MHA.registerRepresentation(imgFile, {
         progress: (repKey,progress) => {
-            this._setPhotoKeyProperty(imageKey, '_progress', (progress.bytesTransferred / progress.totalBytes * 100).toFixed(2));
+            this._setPhotoKeyProperty(imageKey, 'progress$', (progress.bytesTransferred / progress.totalBytes * 100).toFixed(2));
         },
         complete: (repKey,complete) => {
-          MHA.setItem(key,{
+          MHA.setItem(itemKey,{
             images: {
               [imageKey]: {
                 rep: repKey,
@@ -498,32 +497,32 @@ class MGGalleryEditor extends MGItemEditor {
 
               /* Thumbnail's actual upload should start after finishing image upload */
               MHA.registerRepresentation(blob, {
-                key: key => {
+                key: thumbnail => {
 
                   this.push('iconList',{
-                    item: key,
+                    item: itemKey,
                     role: 'photo',
                     key: imageKey,
-                    thumbnail: key,
+                    thumbnail: thumbnail,
                     name: imageName,
                     rep: repKey,
-                    _progress: 0,
+                    progress$: 0,
                   });
 
                 },
-                src: (key,src) => {
-                  MHA.setItem(key,{
+                src: (thumbnail,src) => {
+                  MHA.setItem(itemKey,{
                     images: {
                       [imageKey]: {
                         name: imageName,
-                        thumbnail: key,
+                        thumbnail: thumbnail,
                       }
                     },
                   });
                 },
-                complete: key => {
+                complete: thumbnail => {
                   /* This will contain customizations like ROIs, thumbnail, custom name */
-                  registerInfo.thumbnail = key;
+                  registerInfo.thumbnail = thumbnail;
                   /* Published item, Will also contain tags */
                   registerImageReps();
                 },
@@ -552,14 +551,14 @@ class MGGalleryEditor extends MGItemEditor {
       return;
     }
 
-    let key = this.key;
+    let itemKey = this.key;
     let uid = MHA.AU.currentUser.uid;
     let role = this.role;
     let name = this.name;
 
     console.assert(role, "Role is missing");
 
-    MHA.setItem(key,{
+    MHA.setItem(itemKey,{
         _uid: uid,
         name: name,
         role: role,
@@ -567,17 +566,17 @@ class MGGalleryEditor extends MGItemEditor {
     });
 
     var registerData = {
-      ['home/'+uid+'/items/'+key+'/role']: role,
-      ['home/'+uid+'/items/'+key+'/name']: name,
-      ['items/'+key+'/uid']: uid,
-      ['items/'+key+'/role']: role,
-      ['items/'+key+'/name']: name,
-      ['items/'+key+'/public']: false,
+      ['home/'+uid+'/items/'+itemKey+'/role']: role,
+      ['home/'+uid+'/items/'+itemKey+'/name']: name,
+      ['items/'+itemKey+'/uid']: uid,
+      ['items/'+itemKey+'/role']: role,
+      ['items/'+itemKey+'/name']: name,
+      ['items/'+itemKey+'/public']: false,
     };
 
     MHA.DB.ref().update(registerData, error => { if (!error) {} });
 
-    this._uploadReps(uid,key,files);
+    this._uploadReps(uid,itemKey,files);
   }
 
   _getDataError(error) {
@@ -591,7 +590,7 @@ class MGGalleryEditor extends MGItemEditor {
    *   Could start by turning mg-data into a wrapper arond
    *   a global class data.
    */
-  _keyChanged(key) {
+  _keyChanged(itemKey) {
     delete this._LastClickIndex;
 
     this.iconList.forEach((icon,index) => {
@@ -602,11 +601,11 @@ class MGGalleryEditor extends MGItemEditor {
 
     this.splice('selectedImages',0,this.selectedImages.length);
 
-    super._keyChanged(key);
+    super._keyChanged(itemKey);
 
-    if (!key) return;
+    if (!itemKey) return;
 
-    let item = MHA.getItem({[key]:null});
+    let item = MHA.getItem({[itemKey]:null});
     for(let prop in item) {
       switch(prop) {
         case '_uid':
@@ -625,7 +624,7 @@ class MGGalleryEditor extends MGItemEditor {
           for (let imageKey in allImages) {
             let image = allImages[imageKey];
             let icon = {
-              item: key,
+              item: itemKey,
               role: 'photo',
               key: imageKey,
               thumbnail: image.thumbnail,
@@ -706,10 +705,10 @@ class MGGalleryEditor extends MGItemEditor {
     .sort((a,b) => a.order - b.order)
     .map(item => this.iconList[item.index])
     .forEach(icon => {
-        if (icon._selectionOrder == 1) {
+        if (icon.selectionOrder$ == 1) {
           registerData['home/'+MHA.AU.currentUser.uid+'/items/'+this.key+'/cover'] = icon.key;
         }
-        registerData['home/'+MHA.AU.currentUser.uid+'/items/'+this.key+'/images/'+icon.key+'/order'] = icon._selectionOrder || ++autoNumber;
+        registerData['home/'+MHA.AU.currentUser.uid+'/items/'+this.key+'/images/'+icon.key+'/order'] = icon.selectionOrder$ || ++autoNumber;
     });
 
 
@@ -724,8 +723,7 @@ class MGGalleryEditor extends MGItemEditor {
     let selectedImages = this.selectedImages;
 
     this.selectedImages.forEach(selectedKey => {
-      //let del = MHA.get(['items',this.key,'images',selectedKey,'deleted']) ? null:true;
-      let del = MHA.getItem({[key]:{images:{[selectedKey]:{deleted:null}}}}) ? null:true;
+      let del = MHA.getItem({[this.key]:{images:{[selectedKey]:{deleted:null}}}}) ? null:true;
       MHA.setItem(this.key, {images:{[selectedKey]:{deleted:del}}});
       registerData['home/'+MHA.AU.currentUser.uid+'/items/'+this.key+'/images/'+selectedKey+'/deleted'] = del;
     });
@@ -736,19 +734,19 @@ class MGGalleryEditor extends MGItemEditor {
     });
   }
 
-  _cacheIndexImage(index,key) {
+  _cacheIndexImage(index,imageKey) {
     let _CachedIndexImage = (this._CachedIndexImage || (this._CachedIndexImage = []));
-    _CachedIndexImage[index] = key;
+    _CachedIndexImage[index] = imageKey;
   }
 
   _onSelectAllButtonClick(e) {
     for (let i = 0; i < this.iconList.length; i++) {
-      let ikey = this._CachedIndexImage[i];
-      let oldIndex = this.selectedImages.indexOf(ikey);
+      let imageKey = this._CachedIndexImage[i];
+      let oldIndex = this.selectedImages.indexOf(imageKey);
       if (oldIndex > -1) {
         this.splice('selectedImages',oldIndex,1);
       } else {
-        this.push('selectedImages',ikey);
+        this.push('selectedImages',imageKey);
       }
     }
   }
@@ -785,7 +783,6 @@ class MGGalleryEditor extends MGItemEditor {
       this._EditingSelection.splice(0,this._EditingSelection.length);
     }
   }
-
 
   _onEditButtonClick(e) {
     this._EditingSelection = [].concat(this.selectedImages);
@@ -837,21 +834,20 @@ class MGGalleryEditor extends MGItemEditor {
     console.assert(paste.length, "Empty pasted data");
 
     let uid = MHA.AU.currentUser.uid;
-    let key = this.key;
-    let path = 'home/'+uid+'/items/'+key;
-    let ref = MHA.DB.ref('home').child(uid).child(key).child('images');
+    let itemKey = this.key;
+    let path = 'home/'+uid+'/items/'+itemKey;
+    let ref = MHA.DB.ref('home').child(uid).child(itemKey).child('images');
     let registerData = {
-      ['items/'+key+'/public']: false,
-      ['items/'+key+'/uid']: uid,
-      ['items/'+key+'/role']: this.role,
-      ['items/'+key+'/name']: this.name,
+      ['items/'+itemKey+'/public']: false,
+      ['items/'+itemKey+'/uid']: uid,
+      ['items/'+itemKey+'/role']: this.role,
+      ['items/'+itemKey+'/name']: this.name,
       [path+'/role']: this.role,
       [path+'/name']: this.name,
     };
 
     path+='/images/';
-    //let coverKey = MHA.get(['items',key,'cover']);
-    let coverKey = MHA.getItem({[key]:{cover:null}});
+    let cover = MHA.getItem({[itemKey]:{cover:null}});
     let area = (250*250); /* Pixel area for creating thumbnail */
     let waitThumbnails = 0; /* waiting counter for all completions */
 
@@ -861,14 +857,14 @@ class MGGalleryEditor extends MGItemEditor {
 
 
       let imageKey = ref.push().key;
-      coverKey = coverKey || imageKey;
+      cover = cover || imageKey;
       registerData[path+imageKey+'/name'] = data.name || null;
       registerData[path+imageKey+'/rep'] = data.rep || null;
 
       /* If thumbnails were virtually defined with ROIs, it bakes them first */
       if (data.roiThumbnail) {
         waitThumbnails++;
-        MHA.registerRepresentation(data.rep,{src: (key,src) => {
+        MHA.registerRepresentation(data.rep,{src: (repKey,src) => {
 
           let imageLoader = new Image();
           imageLoader.crossOrigin="anonymous";
@@ -891,19 +887,19 @@ class MGGalleryEditor extends MGItemEditor {
             canvas.getContext('2d').drawImage(imageLoader, tl, tt, tw, th, 0, 0, w, h);
             canvas.toBlob( thumbnailBlob => {
               MHA.registerRepresentation( thumbnailBlob, {
-                key: thumbnailKey => {
+                key: thumbnail => {
                   /* Rather waits until upload complete, announces the
                    * instances immediately to catch up with user actions.
                    * Doing this will show empty loading thumbnails.
                    * Since it will use a returned locally stored dataURI generated
                    * from Blob it doesn't need the uploading process to complete.
                    */
-                  MHA.setItem(key, {
-                    images: {[imageKey]: {thumbnail: thumbnailKey, roiThumbnail: null}},
+                  MHA.setItem(itemKey, {
+                    images: {[imageKey]: {thumbnail: thumbnail, roiThumbnail: null}},
                   });
                 },
-                complete: (thumbnailKey,complete) => {
-                  registerData[path+imageKey+'/thumbnail'] = thumbnailKey;
+                complete: (thumbnail,complete) => {
+                  registerData[path+imageKey+'/thumbnail'] = thumbnail;
 
                   waitThumbnails--;
                   if (waitThumbnails == 0) {
@@ -930,7 +926,7 @@ class MGGalleryEditor extends MGItemEditor {
       }
     });
 
-    registerData['home/'+uid+'/items/'+key+'/cover'] = coverKey;
+    registerData['home/'+uid+'/items/'+itemKey+'/cover'] = cover;
 
     /* XXX Should it also update local? Or should it rely only on query events? */
     /* XXX Need to try off-line. */
