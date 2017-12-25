@@ -69,15 +69,11 @@
 var MGItemEditor
 (function() {
 
-MGItemEditor = class __MGItemEditor extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element) {
+MGItemEditor = class __MGItemEditor extends MHA.Configurations(MHA.Items(Polymer.Element)) {
 
   static get is() { return 'mg-item-editor'; }
 
   static get properties() { return {
-    configurations: Object,
-    language: String,
-    resources: { value: MHA.translations, },
-
     focusedName: { type: Boolean, value: false, },
 
     nokey: {
@@ -127,7 +123,6 @@ MGItemEditor = class __MGItemEditor extends Polymer.mixinBehaviors([Polymer.AppL
   static get observers() { return [
     '_itemsChanged(items.*)',
     '_nameChanged(me.user, role, name)',
-    '_languageChanged(configurations.language)',
   ]}
 
   updateChanges(path,value) {
@@ -174,7 +169,6 @@ MGItemEditor = class __MGItemEditor extends Polymer.mixinBehaviors([Polymer.AppL
   }
 
   _nameChanged(user, role, name) {
-
     if (!user || !role || (!this.focusedName)) {
       return;
     }
@@ -196,11 +190,6 @@ MGItemEditor = class __MGItemEditor extends Polymer.mixinBehaviors([Polymer.AppL
       });
     }
   }
-
-  _languageChanged(language) {
-    this.set('language',language);
-  }
-
 
   _formatLabelDescription(role) {
     if (!role) {

@@ -153,7 +153,7 @@ class MGProductEditor extends MGItemEditor {
           this.set('role', item.role);
           break;
         case 'variant': {
-          MHA.utils.deepSet(this,'variant',item.variant);
+          MHA.Path.deepSet(this,'variant',item.variant);
         } break;
       }
     }
@@ -168,7 +168,7 @@ class MGProductEditor extends MGItemEditor {
   _variantChanged(change) {
     if (typeof change.value != 'undefined' && this.key && this.role == 'product') {
       MHA.setItem( this.key,
-        MHA.utils.deepStruct({role: 'product'}, change.path,change.value),
+        MHA.Path.deepStruct({role: 'product'}, change.path,change.value),
         true);
     }
   }
@@ -191,7 +191,7 @@ class MGProductEditor extends MGItemEditor {
         /* XXX Try to bind mg-data maybe */
         /* Call deepSet to generate a different copy of data from MHA.data
         so it can track changes by comparing old-new value */
-        MHA.utils.deepSet(this,path.join('.'),value);
+        MHA.Path.deepSet(this,path.join('.'),value);
         /* XXX Can't easily track by values if the data was changed and need to be synced.
         switch(path.length) {
           case 1: {

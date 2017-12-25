@@ -156,13 +156,6 @@ mg-thumbnail iron-icon {
 
 <iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
 
-<!--
-<mg-data
-  items="{{items}}"
-  configurations="{{configurations}}"
-></mg-data>
--->
-
   <div class="side-bar">
 <paper-button
   id="new-item-button"
@@ -317,7 +310,6 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
       let imageKey = path[3];
       this.itemList.every((item,index) => {
         if (itemKey == item.key &&
-          //imageKey == MHA.get(['items',itemKey,'cover'])) {
           imageKey == MHA.getItem({[itemKey]:{cover:null}})) {
 
           this._setCover(itemKey,imageKey);
@@ -470,7 +462,6 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
       return;
     }
 
-    //let thumbnail = MHA.get(['items',itemKey,'images',imageKey,'thumbnail']);
     /* Oh dear */
     let thumbnail = MHA.getItem({[itemKey]:{images:{[imageKey]:{thumbnail:null}}}});
     if (thumbnail) {

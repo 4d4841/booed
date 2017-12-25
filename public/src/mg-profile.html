@@ -246,9 +246,6 @@ h3 iron-icon {
 }
 
 </style>
-<mg-data
-  configurations="{{configurations}}"
-></mg-data>
 
 <paper-card id="id-card" state$="[[state]]">
   <!--
@@ -396,14 +393,10 @@ h3 iron-icon {
 </div>
   </template>
   <script>
-class MGProfile extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element) {
+class MGProfile extends MHA.Configurations(Polymer.Element) {
   static get is() { return 'mg-profile'; }
 
   static get properties() { return {
-    configurations: Object,
-    language: String,
-    resources: { value: MHA.translations, },
-
     state: {
       type: String,
       reflectToAttribute: true,
@@ -430,7 +423,6 @@ class MGProfile extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Po
   }}
 
   static get observers() { return [
-    '_languageChanged(configurations.language)',
     '_visibleChanged(visible)',
     '_waitingChanged(me.waiting)',
   ]}
@@ -450,11 +442,6 @@ class MGProfile extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Po
       }
     }
   }
-
-  _languageChanged(language) {
-    this.set('language',language);
-  }
-
 
   _waitingChanged(waiting) {
     if (waiting == true) {

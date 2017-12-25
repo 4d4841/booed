@@ -131,7 +131,6 @@ div.filler {
 }
 
 </style>
-<mg-data configurations="{{configurations}}"></mg-data>
 
     <paper-listbox selected-item="{{selectedItem}}">
   <dom-repeat items="[[menu.entries]]">
@@ -192,14 +191,10 @@ div.filler {
     </paper-listbox>
   </template>
   <script>
-class MGMenu extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element) {
+class MGMenu extends MHA.Configurations(Polymer.Element) {
   static get is() { return 'mg-menu'; }
 
   static get properties() { return {
-    configurations: Object,
-    language: String,
-    resources: { value: MHA.translations, },
-
     selectedItem: {
       type: Object,
       notify: true
@@ -219,13 +214,8 @@ class MGMenu extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polym
   }}
 
   static get observers() { return [
-    '_languageChanged(configurations.language)',
     '_transitioningChanged(trans)'
   ]}
-
-  _languageChanged(language) {
-    this.set('language',language);
-  }
 
   _computeIconColorStyle(item) {
     if (item.color) return "color:"+item.color;

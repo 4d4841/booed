@@ -46,27 +46,31 @@ var MHA = {
     instances.delete(instance);
   },
 
-  notifyInstances: function(instance, change) {
-    let notifyState = this.dataNotifierStates.get(change.path);
+  notifyInstances: function(instance, path, value) {
+    let notifyState = this.dataNotifierStates.get(path);
     if (!notifyState /* No state exists. Takes the lead. */
-      || (notifyState.target != instance && change.value !== notifyState.value)) {
+      || (notifyState.target != instance && value !== notifyState.value)) {
       /* Or got a reentrance with an update to an active path. */
-      this.dataNotifierStates.set(change.path, {value: change.value, target: instance});
-      this.dataInstances.forEach((instances, path) => {
-        if (change.path.startsWith(path)) {
+      this.dataNotifierStates.set(path, {value: value, target: instance});
+      this.dataInstances.forEach((instances, activePath) => {
+        if (path.startsWith(activePath)) {
           instances.forEach(sibling => {
             if (sibling != instance) {
-              sibling.notifyPath(change.path);
+              sibling.notifyPath(path);
             }
           });
         }
       });
 
-      this.dataNotifierStates.delete(change.path);
+      /* Only delete if state was not updated by other instances. */
+      notifyState = this.dataNotifierStates.get(path);
+      if (notifyState.target == instance && notifyState.value == value) {
+        this.dataNotifierStates.delete(path);
+      }
     }
   },
 
-  translations: (function(){
+  translations: (function() {
     let required_words = {
       'en': {
         'new-releases': 'new-releases',
@@ -340,7 +344,7 @@ var MHA = {
         }
 
         if (value === null || Array.isArray(value) || typeof value !== 'object') {
-          if (MHA.data.get(path) !== value) {
+          if (this.get(path) !== value) {
             if (!registerData) {
               registerData = {[path.split('.').join('/')]: value};
             } else {
@@ -352,7 +356,7 @@ var MHA = {
         return;
       };
 
-      this.Path.deepSet(MHA.data, 'items.'+itemKey, itemData, syncFunc);
+      this.Path.deepSet(this, 'items.'+itemKey, itemData, syncFunc);
 
       if (this.AU.currentUser && registerData) {
         this.DB.ref('home').child(this.AU.currentUser.uid).update(registerData, error => {
@@ -361,25 +365,32 @@ var MHA = {
       }
 
     } else {
-      this.Path.deepSet(MHA.data, 'items.'+itemKey, itemData);
+      this.Path.deepSet(this, 'items.'+itemKey, itemData);
     }
   },
 
-  getItem: function(target,fillTarget) {
-    if (typeof target == 'string') {
-      target = this.Path.deepStruct({}, target, null);
-    } else if (Array.isArray(target)) {
-      target = this.Path.deepStruct({}, target.join('.'), null);
-    } else if (fillTarget) {
-      this.Path.deepGet(target, this.items, fill);
+  getItem: function(target, fillTarget) {
+    if (fillTarget) {
+      this.Path.deepGet(target, this.items, true);
       return target;
     }
 
     return this.Path.deepGet(target, this.items);
   },
 
+  set: function(path, value) {
+    let v = this.get(path);
+    if (v !== value) {
+      /* XXX Filter ...$ ? */
+      this.Path.deepStruct(this, path, value);
+      if (!path.endsWith('$')) { /* Struct$ will leak, but better forbid them */
+        this.notifyInstances(this, path, value);
+      }
+    }
+  },
+
   get: function(path) {
-    return this.data ? this.data.get(path) : undefined;
+    return this.Path.deepGet(this.Path.deepStruct({}, path, null), this);
   },
 
   /* TODO make a behavior of this */
@@ -409,11 +420,13 @@ var MHA = {
      * To delete a deep property, set null as the counter-value
      * in the structure of the object argument.
      *
+     * data : must implement set(path,value) that will trigger bindings.
+     *
      * replacer : A callback that can be optionally specified to override
      * the given path/values. It returns an array for new path,value,replacer
      * or undefined for observation purpose.
      */
-    deepSet(polymerElement, path, value, replacer) {
+    deepSet(data, path, value, replacer) {
       /* values may be set to undefined to dissociate itself from
        * any previously updated key while null will be used to delete values.
        * So undefined values will simply be ignored.
@@ -432,34 +445,37 @@ var MHA = {
       if (Array.isArray(value)) {
 
         /* Handle scalar array */
-        let old = polymerElement.get(path);
+        let old = data.get(path);
         if (!Array.isArray(old)
         || old.length != value.length
         || !old.every((v,i) => v === value[i])) {
           /* Only set if not equal */
-          polymerElement.set(path, value);
+          data.set(path, value);
         }
       } else if (typeof value !== 'object' || value === null) {
-          polymerElement.set(path, value);
+          data.set(path, value);
       } else {
-        oldValue = polymerElement.get(path);
+        oldValue = data.get(path);
         if (typeof oldValue !== 'object' || oldValue === null || Array.isArray(oldValue)) {
           /* Overwrite non-object and to create a readable placeholder */
-          polymerElement.set(path, {});
+          data.set(path, {});
         }
         Object.keys(value).forEach(key => {
-          this.deepSet(polymerElement, path+'.'+key, value[key], replacer);
+          this.deepSet(data, path+'.'+key, value[key], replacer);
         });
       }
 
     },
+
+    /* deepStruct sets tree's missing path with value.
+     */
     deepStruct(tree,path,value) {
       let paths = Polymer.Path.split(path);
       let miner = tree;
       let pval = paths.pop();
       let p;
       while ((p = paths.shift()) !== undefined) {
-        miner[p] = {};
+        miner[p] = miner[p] || {};
         miner = miner[p];
       }
       miner[pval] = value;
@@ -523,9 +539,6 @@ class MGData extends Polymer.Element {
     super.connectedCallback();
     MHA.addInstance('items.',this);
     MHA.addInstance('configurations.',this);
-    if (!MHA.data) {
-      MHA.data = this;
-    }
   }
 
   disconnectedCallback() {
@@ -536,7 +549,7 @@ class MGData extends Polymer.Element {
 
   /* Didn't test, it should work :-P */
   _dataChanged(change) {
-    MHA.notifyInstances( this, change );
+    MHA.notifyInstances( this, change.path, change.value );
   }
 
 }
@@ -551,8 +564,8 @@ MHA.Configurations = (superClass) => { return class extends Polymer.mixinBehavio
   }}
 
   static get observers() { return [
-    '_languageChanged(configurations.language)',
-    '_configurationsChanged(configurations.*)',
+    '__languageChanged(configurations.language)',
+    '__configurationsChanged(configurations.*)',
   ]}
 
   constructor() {
@@ -570,11 +583,11 @@ MHA.Configurations = (superClass) => { return class extends Polymer.mixinBehavio
     super.disconnectedCallback();
   }
 
-  _languageChanged(language) {
+  __languageChanged(language) {
     this.set('language',language);
   }
-  _configurationsChanged(change) {
-    MHA.notifyInstances(this, change);
+  __configurationsChanged(change) {
+    MHA.notifyInstances(this, change.path, change.value);
   }
 }}
 
@@ -586,7 +599,7 @@ MHA.Items = (superClass) => { return class extends superClass {
   }}
 
   static get observers() { return [
-    '_itemsChanged(items.*)',
+    '__itemsChanged(items.*)',
   ]}
 
   constructor() {
@@ -604,8 +617,8 @@ MHA.Items = (superClass) => { return class extends superClass {
     super.disconnectedCallback();
   }
 
-  _itemsChanged(change) {
-    MHA.notifyInstances(this, change);
+  __itemsChanged(change) {
+    MHA.notifyInstances(this, change.path, change.value);
   }
 }}
 

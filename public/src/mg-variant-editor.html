@@ -484,7 +484,7 @@ class MGVariantsEditor extends Polymer.Element {
 
       return;
     }
-    MHA.utils.deepSet(this, 'variant.variants.< 20 chars new key >', this.variant.variants[this.selectedKey], cloneFunc);
+    MHA.Path.deepSet(this, 'variant.variants.< 20 chars new key >', this.variant.variants[this.selectedKey], cloneFunc);
   }
 
   testEqual(a,b) {

@@ -69,7 +69,7 @@
      height="[[_computePixel(item.h,unitWidth,2)]]"
      style$="[[_computeLocation(item.x,item.y,unitWidth,index,2)]]"
      icons="[[_formatIconsForTags(item.tags)]]"
-     label="[[_formatLabel(item.tags)]]"
+     label="[[_formatLabel(item.tags,language)]]"
     ></mg-thumbnail>
   </template>
 </template>
@@ -88,8 +88,6 @@
   lower-triggered="{{lowerTriggered}}"
   on-lower-threshold="_load">
 </iron-scroll-threshold>
-
-<mg-data configurations="{{configurations}}"></mg-data>
 
   </template>
   <script>
@@ -112,14 +110,10 @@ function getSeededRandomInt(min, max) {
   return Math.floor(mg_random() * (max - min)) + min;
 }
 
-class MGQuilt extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior,Polymer.AppLocalizeBehavior], Polymer.Element) {
+class MGQuilt extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)) {
   static get is() { return 'mg-quilt'; }
 
   static get properties() { return {
-    configurations: Object,
-    language: String,
-    resources: { value: MHA.translations, },
-
     unitWidth: {
       type: Number,
     },
@@ -178,7 +172,6 @@ class MGQuilt extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior,Poly
   }}
 
   static get observers() { return [
-    '_languageChanged(configurations.language)',
   ]}
 
   connectedCallback() {
@@ -190,11 +183,6 @@ class MGQuilt extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior,Poly
   disconnectedCallback() {
     this.removeEventListener('iron-resize', this._onResizeEvent);
     super.disconnectedCallback();
-  }
-
-  _languageChanged(language) {
-    this.set('language',language);
-    this.set('quiltItems',[].concat(this.quiltItems));
   }
 
   _formatLabel(tags) {
