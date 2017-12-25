@@ -352,7 +352,7 @@ var MHA = {
         return;
       };
 
-      this.utils.deepSet(MHA.data, 'items.'+itemKey, itemData, syncFunc);
+      this.Path.deepSet(MHA.data, 'items.'+itemKey, itemData, syncFunc);
 
       if (this.AU.currentUser && registerData) {
         this.DB.ref('home').child(this.AU.currentUser.uid).update(registerData, error => {
@@ -361,21 +361,21 @@ var MHA = {
       }
 
     } else {
-      this.utils.deepSet(MHA.data, 'items.'+itemKey, itemData);
+      this.Path.deepSet(MHA.data, 'items.'+itemKey, itemData);
     }
   },
 
   getItem: function(target,fillTarget) {
     if (typeof target == 'string') {
-      target = this.utils.deepStruct({}, target, null);
+      target = this.Path.deepStruct({}, target, null);
     } else if (Array.isArray(target)) {
-      target = this.utils.deepStruct({}, target.join('.'), null);
+      target = this.Path.deepStruct({}, target.join('.'), null);
     } else if (fillTarget) {
-      this.utils.deepGet(target, this.items, fill);
+      this.Path.deepGet(target, this.items, fill);
       return target;
     }
 
-    return this.utils.deepGet(target, this.items);
+    return this.Path.deepGet(target, this.items);
   },
 
   get: function(path) {
@@ -383,7 +383,7 @@ var MHA = {
   },
 
   /* TODO make a behavior of this */
-  utils: {
+  Path: {
     deepGet(target, source, fill) {
       for (let p in target) {
         if (source[p] && target[p] === null) {
@@ -456,12 +456,13 @@ var MHA = {
     deepStruct(tree,path,value) {
       let paths = Polymer.Path.split(path);
       let miner = tree;
-      while (paths.length > 1) {
-        miner[paths[0]] = {};
-        miner = miner[paths[0]];
-        paths.shift();
+      let pval = paths.pop();
+      let p;
+      while ((p = paths.shift()) !== undefined) {
+        miner[p] = {};
+        miner = miner[p];
       }
-      miner[paths[0]] = value;
+      miner[pval] = value;
       return tree;
     },
   },
@@ -522,7 +523,9 @@ class MGData extends Polymer.Element {
     super.connectedCallback();
     MHA.addInstance('items.',this);
     MHA.addInstance('configurations.',this);
-    if (!MHA.data) MHA.data = this;
+    if (!MHA.data) {
+      MHA.data = this;
+    }
   }
 
   disconnectedCallback() {
