@@ -755,7 +755,17 @@ class MGApp extends MHA.Configurations(Polymer.Element) {
     } else {
       console.log('NO MHA NO LIFE');
     }
-    console.log('Application got initialized with lo❤e for', {"Moon HyunA's":{cats:['Moya','Hoya','Spikey'],husband:'Steve',songs:['Cricket Song','Remedy','Doong Doong']}});
+    console.log('Application got initialized with lo❤e for', {
+      "Moon HyunA's": {
+        hangul: "문현아",
+        wikipedia: "https://ko.wikipedia.org/wiki/%EB%AC%B8%ED%98%84%EC%95%84",
+        birthday: "1/19/1987",
+        age: 1 + (new Date(Date.now() - new Date('1987-1-19').getTime()).getUTCFullYear() - 1970),
+        cats:['Moya','Hoya','Spikey'],
+        husband:'Steve Kim',
+        songs:['Cricket Song','Remedy','Doong Doong'],
+      }
+    });
 
     window.performance && performance.mark && performance.mark('mg-app.created');
 
