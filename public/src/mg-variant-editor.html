@@ -380,28 +380,27 @@ class MGVariantsEditor extends Polymer.Element {
     }
   }
 
-  _variantsItemsChanged(changes) {
-
-    if (changes) {
-      /* changes.path : 'variant.variants.${key}.selected$'
+  _variantsItemsChanged(change) {
+    if (change) {
+      /* change.path : 'variant.variants.${key}.selected$'
        *
        * "variant.variants." : 17
        * ${key} : 20
        * ".selected$" : 10
        */
 
-      if (changes.path.length == 47 && changes.path.endsWith('.selected$')) {
+      if (change.path.length == 47 && change.path.endsWith('.selected$')) {
         /* variant.variants.${key}.selected$ */
         /* Selected status set by cells */
-        if (changes.value) {
-          this.set('selectedKey', changes.path.slice(17,37));
+        if (change.value) {
+          this.set('selectedKey', change.path.slice(17,37));
         }
-      } else if (changes.path.length == 37) {
+      } else if (change.path.length == 37) {
         /* variant.variants.${key} */
-        if (changes.value === null) {
-          this.splice('variantsDataList',this.__dataLinkedPaths[changes.path].split('.').pop(),1);
-        } else if (!this.__dataLinkedPaths || !this.__dataLinkedPaths[changes.path]) {
-          let key = changes.path.slice(17);
+        if (change.value === null) {
+          this.splice('variantsDataList',this.__dataLinkedPaths[change.path].split('.').pop(),1);
+        } else if (!this.__dataLinkedPaths || !this.__dataLinkedPaths[change.path]) {
+          let key = change.path.slice(17);
           let variant = this.variant.variants[key];
           variant.key$ = key;
           this.push('variantsDataList', variant);
