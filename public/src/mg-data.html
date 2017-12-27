@@ -42,7 +42,7 @@ var MHA = {
   },
 
   removeInstance: function(path, instance) {
-    let instances = MHA.dataInstances.get(path);
+    let instances = this.dataInstances.get(path);
     instances.delete(instance);
   },
 
@@ -64,7 +64,7 @@ var MHA = {
 
       /* Only delete if state was not updated by other instances. */
       notifyState = this.dataNotifierStates.get(path);
-      if (notifyState.target == instance && notifyState.value == value) {
+      if (notifyState && notifyState.target == instance && notifyState.value == value) {
         this.dataNotifierStates.delete(path);
       }
     }
