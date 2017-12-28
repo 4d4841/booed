@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<!--
+ .................................................................................................
+:::BSDB'::BSDB'::BSDB':::::BSDB':::BSDBS'::BSDBS'::BSDB'::::BSD'::BSDBS'::BSDBS'::BSDB'::::::BSD'::
+::BSDBSD BSDBSD :.BSDBS':BSDBS .:BSD ..BSD  ...BSD 'BSDBS':BSD .BSD ..BSD  ...BSD :BSDBS'::BSDB .::
+::COPYRIGHT2017 ::.BS BSDB .BS :BSD .::.BSD :::.BSD :BS .BSDB .BSD .:::BSD ::::BSD :BS BSDB BS .:::
+:::BSDSTYLEBSD .:::BS  BS .:BS :BSD ::::BSD ::::BSD :BS ::BSD :BSD :::::...::::BSD :BS :BS  BS ::::
+::::.LICENSE .::::BSD .:..::BS 'BSD ::::BSD ::::BSD :BS :::BS :BSD ::BSDBS'::::BSD :BS ::..:BS ':::
+:::::::BSD .::::BSDB .::::::BSD 'BSD'::BSD .:::BSD .BSD :::BSD':BSD'::.BSD :::BSD .BSD :::::BSDB'::
+::::::::B .::::::BS .:::::::.BSD ::BSDBS .:BSDBS  :BSD .::::BSD :.BSDBS BS BSDB .:BSD .:::::.BS .::
+`::::::::.::::::::..::::::::::...:::.....:::.....:::...::::::...:::.............:::...::::::::..::'
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="mg-data.html">
+<link rel="import" href="mg-common-styles.html">
+<link rel="import" href="mg-icons.html">
+<link rel="import" href="mg-item-image.html">
+
+
+    <dom-module id="mg-item-browser">
+  <template strip-whitespace>
+<style include="mg-common-styles iron-flex iron-flex-alignment">
+:host {
+  @apply --layout-horizontal;
+  @apply --layout-wrap;
+}
+
+.item {
+  margin-bottom: 10px;
+  --mg-image: {
+    width: 180px;
+    height: 150px;
+  }
+}
+
+@media (max-width: 767px) {
+
+}
+</style>
+
+<iron-selector attr-for-selected="key" selected="{{selectedKey}}">
+    <template is="dom-repeat" items="{{itemList}}" mutable-data>
+  <mg-item-image key="[[item.key$]]" class="item" item="{{item}}">
+  </mg-item-image>
+    </template>
+</iron-selector>
+
+  </template>
+  <script>
+class MGItemBrowser extends MHA.Configurations(MHA.Items(Polymer.Element)) {
+  static get is() { return 'mg-item-browser'; }
+  static get properties() { return {
+
+    itemList: {
+      type: Array,
+      value: function(){return [];},
+    },
+
+    selectedKey: {
+      type: String,
+      notify: true,
+      observer: '_selectedKeyChanged',
+    },
+
+    selectedItem: {
+      type: Object,
+      notify: true,
+    },
+  }}
+
+  static get observers() { return [
+    '_itemsChanged(items.*)',
+    '_itemListChanged(itemList.splices)',
+  ]}
+
+  _selectedKeyChanged(key, oldKey) {
+    if (oldKey) {
+      /* Unlink old selectedKey -> itemList */
+      this.unlinkPaths(this.__dataLinkedPaths['items.'+oldKey]);
+    }
+
+    this.set('selectedItem', undefined);
+
+    /* Ignore if the key was not set to an existing item */
+    if (key && this.__dataLinkedPaths['items.'+key]) {
+      this.set('selectedItem', this.items[key]);
+      this.linkPaths(this.__dataLinkedPaths['items.'+key], 'selectedItem');
+    }
+  }
+
+  _itemsChanged(change) {
+    /* XXX items may changed on user sign-out */
+
+    switch(change.path.length) {
+      case 5: { /* items */
+        /* XXX This happens multile times, may be mg-data can check/didn't
+        check if the first old-value to see if it was not neccessary to notify */
+        this.set('selectedKey', null);
+        this.splice('itemList', 0, this.itemList.length);
+      } break;
+      case 26: {
+        /* items.<20-char item key> */
+        /* setting an item */
+
+        if (change.value === null) {
+          /*delete item*/
+        } else if (!this.__dataLinkedPaths || !this.__dataLinkedPaths[change.path]) {
+          /* New item, create a thumbnail */
+          change.value.key$ = change.path.slice(6);
+          this.unshift('itemList', change.value);
+        }
+      } break;
+    }
+    /*
+    let path = change.path.split('.');
+    let itemKey = path[1];
+    switch(path.length) {
+      case 1: {
+        for (let itemKey in change.value) {
+          this.unshift('itemList',{
+            key: itemKey,
+            images: change.value[itemKey].images,
+            name: change.value[itemKey].name,
+            role: change.value[itemKey].role,
+          });
+          this._setCover(itemKey,change.value[itemKey].cover);
+        }
+      } break;
+      case 2: {
+        this.unshift('itemList',{
+          key: itemKey,
+        });
+      } break;
+      case 3: if (path[2] == 'cover') {
+        this.itemList.every((item,index) => {
+          if (itemKey == item.key) {
+            this._setCover(itemKey,change.value);
+            return false;
+          }
+          return true;
+        });
+      } break;
+      case 5: if (path[4] == 'thumbnail') {
+        let imageKey = path[3];
+        this.itemList.every((item,index) => {
+          if (itemKey == item.key &&
+            imageKey == MHA.getItem({[itemKey]:{cover:null}})) {
+
+            this._setCover(itemKey,imageKey);
+            return false;
+          }
+          return true;
+        });
+      } break;
+    }
+    */
+  }
+
+  _itemListChanged(splices) { if (splices) {
+    splices.indexSplices.forEach(s => {
+      s.removed.forEach(v => {
+        if (v === this.selectedItem) {
+          this.unlinkPaths(this.__dataLinkedPaths['items.'+v.key$]);
+          this.set('selectedItem', undefined);
+        }
+        this.unlinkPaths('items'+v.key$);
+      });
+      for (let i = s.index,so; so = s.object[i]; ++i) {
+        this.linkPaths('items.'+so.key$, 'itemList.'+i)
+        if (so === this.selectedItem) {
+          this.linkPaths('items.'+i, 'selectedItem');
+        } else {
+          this.unlinkPaths('itemList.'+i);
+        }
+      }
+    });
+  }}
+
+  _formatLabel(images,str,role) {
+    str = str || "(ไม่มีชื่อ)";
+    return role == 'gallery'
+      ? (images ? "×" + Object.entries(images).length : '') +" "+ str
+      : str;
+  }
+
+  _formatRoleIcon(role) {
+    return MGIconForRole(role);
+  }
+
+  _indexItem(itemKey) {
+    for (let i = 0, data; data = this.itemList[i]; ++i) {
+      if (data.key == itemKey) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  _setPhotoKeyProperty(key,prop,val) {
+    let idx = this._indexItem(key);
+    if (idx > -1) {
+      this.itemList[idx][prop] = val;
+      this.notifyPath(['itemList',idx,prop]);
+    }
+  }
+
+}
+customElements.define(MGItemBrowser.is, MGItemBrowser);
+  </script>
+    </dom-module>
