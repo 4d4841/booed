@@ -339,7 +339,7 @@ var MHA = {
       let registerData;
       let syncFunc = (path,value) => {
 
-        if(path.slice(-1) == '$' || typeof value === 'undefined') {
+        if(path.endsWith('$') || typeof value === 'undefined') {
           return [path,value]; /* Resign the replacer for any path end with $ */
         }
 
@@ -427,13 +427,6 @@ var MHA = {
      * or undefined for observation purpose.
      */
     deepSet(data, path, value, replacer) {
-      /* values may be set to undefined to dissociate itself from
-       * any previously updated key while null will be used to delete values.
-       * So undefined values will simply be ignored.
-       */
-      if (typeof value === 'undefined') {
-        return;
-      }
 
       if (replacer) {
         let replacing = replacer(path,value);
@@ -442,8 +435,16 @@ var MHA = {
         }
       }
 
-      if (Array.isArray(value)) {
+      /* values may be set to undefined to dissociate itself from
+       * any previously updated key while null will be used to delete values.
+       * So undefined values will simply be ignored.
+       */
+      if (typeof value === 'undefined' || typeof path === 'undefined') {
+        return;
+      }
 
+
+      if (Array.isArray(value)) {
         /* Handle scalar array */
         let old = data.get(path);
         if (!Array.isArray(old)
@@ -557,6 +558,7 @@ class MGData extends Polymer.Element {
 MHA.Configurations = (superClass) => { return class extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior],superClass) {
   static get properties() { return {
     configurations: {
+      type: Object,
       value: MHA.configurations,
     },
     language: String,
@@ -594,6 +596,7 @@ MHA.Configurations = (superClass) => { return class extends Polymer.mixinBehavio
 MHA.Items = (superClass) => { return class extends superClass {
   static get properties() { return {
     items: {
+      type: Object,
       value: MHA.items,
     },
   }}
