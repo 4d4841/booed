@@ -54,8 +54,8 @@ paper-progress {
 <mg-thumbnail
   src="[[src]]"
   roi="[[roi]]"
-  icon="[[icon]]"
-  label="[[label]]"
+  icon="[[_formatRoleIcon(item.role)]]"
+  label="[[_formatLabel(item.images, item.name, item.role)]]"
   deleted$="[[deleted]]"
   placeholder='images/logo-pumpkin-outline-grayout.svg'
   transition="1.5s"
@@ -81,6 +81,11 @@ class MGItemImage extends Polymer.Element {
   static get is() { return 'mg-item-image'; }
 
   static get properties() { return {
+    item: {
+      type: Object,
+      observer: '_itemChanged',
+    },
+
     thumbnail: {
       type: String,
       value: '',
@@ -110,11 +115,34 @@ class MGItemImage extends Polymer.Element {
   }}
 
   static get observers() { return [
+    '_coverChanged(item.cover)',
+    '_thumbnailChanged(item.thumbnail)',
   ]}
+
+  /* Item is an mg-item */
+  _coverChanged(cover) {
+    if (cover && this.item.images[cover].thumbnail) {
+      MHA.registerRepresentation(this.item.images[cover].thumbnail, { src: (key,src) => {
+        this.set('src', src);
+      }});
+    }
+  }
+
+  /* Item is an mg-image */
+  _thumbnailChanged(thumbnail) {
+    if (thumbnail) {
+      MHA.registerRepresentation(thumbnail, { src: (key,src) => {
+        this.set('src', src);
+      }});
+    }
+  }
+
+  _itemChanged(item,oldItem) {
+    //this.set('src','images/logo-pumpkin-outline-grayout.svg');
+  }
 
   _thumbnailChanged(repKey) {
     if (repKey) {
-      let uid = MHA.AU.currentUser.uid;
       this.set('src',null);
       MHA.registerRepresentation(repKey, { src: (key,src) => {
         if (key == this.thumbnail) this.set('src',src);
@@ -134,6 +162,17 @@ class MGItemImage extends Polymer.Element {
   _computeShowSelectionOrder(selectionOrder) {
     if (selectionOrder) return true;
     return false;
+  }
+
+  _formatRoleIcon(role) {
+    return MGIconForRole(role);
+  }
+
+  _formatLabel(images, str, role) {
+    str = str || '(ไม่มีชื่อ)';
+    return role == 'gallery'
+      ? (images ? "×" + Object.entries(images).length : '') +" "+ str
+      : str;
   }
 }
 

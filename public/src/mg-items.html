@@ -24,7 +24,7 @@
 <link rel="import" href="mg-menu.html">
 <link rel="import" href="mg-product-editor.html">
 <link rel="import" href="mg-gallery-editor.html">
-<link rel="import" href="mg-thumbnail.html">
+<link rel="import" href="mg-item-image.html">
 
 
     <dom-module id="mg-items">
@@ -57,7 +57,7 @@
 .side-bar {
   position:relative;
   @apply --layout-vertical;
-  min-width: 250px;
+  width: 250px;
   height: calc(100vh - 100px);
   /*border-right:1px dashed tomato;*/
 }
@@ -131,26 +131,25 @@ a {
 
   .side-bar {
     min-width: 150px;
+    height: calc(100vh - 70px);
   }
 
   .items-container {
     height: calc(100vh - 140px);
   }
 
-  .side-bar {
-    height: calc(100vh - 70px);
-  }
-
   .editor-container {
     height: calc(100vh - 70px);
-  width: calc(100vw - 150px);
+    width: calc(100vw - 150px);
   }
 
 }
 
-mg-thumbnail iron-icon {
+/*
+mg-item-image iron-icon {
   margin-left: 10px;
 }
+*/
 
 </style>
 
@@ -170,17 +169,12 @@ mg-thumbnail iron-icon {
 </paper-button>
 
 <!--<div id="top-smooth-edge"></div>-->
-<iron-selector class="items-container" attr-for-selected="key" selected="{{routeData.itemKey}}">
-    <template is="dom-repeat" items="[[itemList]]" mutable-data>
-  <mg-thumbnail
-    key="[[item.key]]"
-    label="[[_formatLabel(item.images,item.name,item.role)]]"
-    icon="[[_formatRoleIcon(item.role)]]"
-    src="[[item._src]]"
-    class="item"
-  ></mg-thumbnail>
-    </template>
-</iron-selector>
+debug: [[itemKey]] [[selectedItem.role]]
+<mg-item-browser
+  selected-key="{{routeData.itemKey}}"
+  selected-item="{{selectedItem}}"
+  class="items-container"
+></mg-item-browser>
   </div>
 
 <mg-balloon
@@ -195,18 +189,22 @@ mg-thumbnail iron-icon {
   <div class="editor-container">
 <mg-clipboard-view></mg-clipboard-view>
 <mg-product-editor
-  key="[[itemKey]]"
-  role="[[itemRole]]"
+  item="{{selectedItem}}"
   class="editor"
-  me="[[me]]"
 ></mg-product-editor>
 
+<mg-gallery-editor
+  item="{{selectedItem}}"
+  class="editor"
+></mg-gallery-editor>
+<!--
 <mg-gallery-editor
   key="[[itemKey]]"
   role="[[itemRole]]"
   class="editor"
   me="[[me]]"
 ></mg-gallery-editor>
+-->
   </div>
 
 <app-route
@@ -224,11 +222,13 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
   static get properties() { return {
     me: Object,
 
-    /*
-    items: Object,
-    */
+    /* Tracking server side data */
+    dbitems: {
+      type: Object,
+      value: function(){return {};},
+    },
 
-    itemList: {
+    itemListOld: {
       type: Array,
       value: function(){return [];},
     },
@@ -237,9 +237,15 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
       type: String,
     },
 
+    selectedItem: {
+      type: Object,
+    },
+
+    /*
     itemRole: {
       type: String,
     },
+    */
 
     menu: {
       type: Object,
@@ -293,34 +299,6 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     super.disconnectedCallback();
   }
 
-  _itemsChanged(change) {
-    let path = change.path.split('.');
-    if (path.length < 2) return;
-    let itemKey = path[1];
-
-    if (path.length == 3 && path[2] == 'cover') {
-      this.itemList.every((item,index) => {
-        if (itemKey == item.key) {
-          this._setCover(itemKey,change.value);
-          return false;
-        }
-        return true;
-      });
-    } else if (path.length == 5 && path[4] == 'thumbnail') {
-      let imageKey = path[3];
-      this.itemList.every((item,index) => {
-        if (itemKey == item.key &&
-          imageKey == MHA.getItem({[itemKey]:{cover:null}})) {
-
-          this._setCover(itemKey,imageKey);
-          return false;
-        }
-        return true;
-      });
-    }
-
-  }
-
   _routeDataItemKeyChanged(itemKey) {
     if (itemKey) {
       if (this.routeActive) {
@@ -333,7 +311,7 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
 
   _uidItemKeyChanged(uid, itemKey) {
 
-    this.set('itemRole', itemKey ? MHA.getItem({[itemKey]:{role:null}}) : undefined );
+    //this.set('itemRole', itemKey ? MHA.getItem({[itemKey]:{role:null}}) : undefined );
 
     if (this._Unsubscribe) {
       this._Unsubscribe();
@@ -343,6 +321,7 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
       return;
     }
 
+    /*
     let ref,callback;
     this._Unsubscribe = () => {ref.off('value', callback); delete this._Unsubscribe};
     ref = MHA.DB.ref('home').child(uid).child('items').child(itemKey);
@@ -350,24 +329,15 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
       let v = itemSS.val();
       if (v) {
         if (!v.role) {
-          /* If files got uploaded beforehand */
           return;
         }
 
         if (v.role && this.itemKey == itemKey) {
           this.set('itemRole',v.role);
         }
-        //this.editor.set('itemKey',itemKey);
-
-        /*
-        if (v.role != 'gallery') { this.set('galleryKey', null); }
-        if (v.role != 'article') { this.set('articleKey', null); }
-        if (v.role != 'product') { this.set('productKey', null); }
-        if (v.role != 'collection') { this.set('collectionKey', null); }
-        */
 
         let item = {
-          _uid: uid,
+          uid$: uid,
           name: v.name,
           role: v.role,
           time: v.time,
@@ -389,7 +359,7 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
 
       } else {
 
-        /* Auto delayed-reset path if no role was immediately set. */
+        // Auto delayed-reset path if no role was immediately set.
         Polymer.Async.timeOut.run(() => {
           if (!this.itemRole) {
             this.set('route.path', '/');
@@ -400,29 +370,77 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
       console.error("ERR", error);
       this._Unsubscribe();
     });
+    */
+  }
+
+  _itemsChanged(change) {
+    let updates;
+    MHA.Path.deepSet(this,'db'+change.path, change.value, (path,value) => {
+      /* Don't update dbitems with UI properties (those with names end with '$') */
+      if (path.endsWith('$')) {
+        return [];
+      }
+
+      let dirty = false;
+      if (Array.isArray(value)) {
+        let dbarray = this.get(path);
+        if (!Array.isArray(dbarray)
+        || dbarray.length != value.length
+        || !dbarray.every((v,i) => v === value[i])) {
+          /* Only set if not equal */
+          dirty = true;
+        }
+      } else if (typeof value !== 'object' || value === null) {
+        if (this.get(path) != value) {
+          dirty = true;
+        }
+      }
+
+      if (dirty) {
+        path = path.slice(8); /* slice 'dbitems.' off */
+        if (!updates) {
+          updates = {[path.split('.').join('/')]: value};
+        } else {
+          updates[path.split('.').join('/')] = value;
+        }
+      }
+      return;
+    });
+
+    if (updates && MHA.AU.currentUser) {
+      MHA.DB.ref('home').child(MHA.AU.currentUser.uid).child('items').update(updates, error => {
+        console.log('Synced.',updates);
+      });
+    }
   }
 
   _userChanged(uid) {
-    this.set('itemList',[]);
+    this.set('itemListOld',[]);
     if (this._UidChangedCallback) {
-      this._UidChangedCallback.ref.off('child_added', this._UidChangedCallback.cb, this);
+      this._UidChangedCallback.ref.off('child_added', this._UidChangedCallback.child_added, this);
+      this._UidChangedCallback.ref.off('child_changed', this._UidChangedCallback.child_changed, this);
       delete this._UidChangedCallback;
     }
     if (uid) {
-      this._UidChangedCallback = {ref:MHA.DB.ref('home').child(uid).child('items')};
-      this._UidChangedCallback.cb
-       = this._UidChangedCallback.ref.on('child_added', function(snapshot) {
+      this._UidChangedCallback = {
+        ref: MHA.DB.ref('home').child(uid).child('items'),
+      };
+      this._UidChangedCallback.child_changed = this._UidChangedCallback.ref.on('child_changed', function(snapshot) {
+        /* Store a different copy of items data for testing the needs for syncing */
+        this.set('dbitems.'+snapshot.key, snapshot.val());
+        this.set('items.'+snapshot.key, snapshot.val());
+      }, function(error){}, this);
+      this._UidChangedCallback.child_added = this._UidChangedCallback.ref.on('child_added', function(snapshot) {
+        this.set('dbitems.'+snapshot.key, snapshot.val());
+        this.set('items.'+snapshot.key, snapshot.val());
+
+        /*
         let val = snapshot.val();
 
-        if( this.itemList.every(function(item){
-          /* Check if item exists */
+        if( this.itemListOld.every(function(item){
           return item.key != snapshot.key;
         })) {
-          /* New item found in snapshot, insert into item list.
-           * In expected case it may already add placeholders for keeping
-           * items that are being constructed.
-           */
-          this.unshift('itemList',{
+          this.unshift('itemListOld',{
             key: snapshot.key,
             role: val.role,
             name: val.name,
@@ -430,74 +448,27 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
           }) - 1;
         }
 
-        val._uid = uid;
+        val.uid$ = uid;
         MHA.setItem(snapshot.key,val);
+        */
 
+        /*
         let itemRef = MHA.DB.ref('home')
                             .child(uid)
                             .child('items')
                             .child(snapshot.key);
 
-        /* Listen to name changes */
         itemRef.child('name').on('value', nameSnapshot => {
           this._setPhotoKeyProperty(snapshot.key, 'name', nameSnapshot.val());
         });
 
-        /* Listen to images changes */
-        itemRef.child('cover').on('value', coverSnapshot => {
-            MHA.setItem(snapshot.key,{cover:coverSnapshot.val()});
-            this._setCover(snapshot.key, coverSnapshot.val());
-        });
+        */
 
-      },function(error){},this);
+      }, function(error){}, this);
     }
   }
 
   _visibleChanged(visible) {
-  }
-
-  _setCover(itemKey,imageKey) {
-    if (!imageKey) {
-      this._setPhotoKeyProperty(itemKey, '_src', 'images/logo-pumpkin-face-grayout.svg');
-      return;
-    }
-
-    /* Oh dear */
-    let thumbnail = MHA.getItem({[itemKey]:{images:{[imageKey]:{thumbnail:null}}}});
-    if (thumbnail) {
-      let uid = MHA.AU.currentUser.uid;
-      MHA.registerRepresentation(thumbnail, { src: (key,src) => {
-        this._setPhotoKeyProperty(itemKey, '_src', src);
-      }});
-    }
-  }
-
-  _formatLabel(images,str,role) {
-    str = str || "(ไม่มีชื่อ)";
-    return role == 'gallery'
-      ? (images ? "×" + Object.entries(images).length : '') +" "+ str
-      : str;
-  }
-
-  _formatRoleIcon(role) {
-    return MGIconForRole(role);
-  }
-
-  _indexItem(itemKey) {
-    for (let i = 0, data; data = this.itemList[i]; ++i) {
-      if (data.key == itemKey) {
-        return i;
-      }
-    }
-    return -1;
-  }
-
-  _setPhotoKeyProperty(key,prop,val) {
-    let idx = this._indexItem(key);
-    if (idx > -1) {
-      this.itemList[idx][prop] = val;
-      this.notifyPath(['itemList',idx,prop]);
-    }
   }
 
   _onSelectedItemType(e) {
@@ -512,7 +483,7 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
       this.set('route.path','/');
     }
     this.set('routeData.itemKey', newKey);
-    this.set('itemRole', e.model.item.name);
+    //this.set('itemRole', e.model.item.name);
     /*
     this.set('itemKey', MHA.DB.ref('items').push().key);
     this.set('itemRole',e.model.item.name);

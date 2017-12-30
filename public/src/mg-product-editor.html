@@ -32,11 +32,7 @@
 #variant-editor {
   padding: 20px 0 30px 10px;
   overflow: auto;
-  width: calc(100vw - 300px);
   margin: 0;
-}
-
-#gallery-editor[nokey] {
 }
 
 </style>
@@ -62,16 +58,17 @@
   <mg-variant-editor
     id="variant-editor"
     menu="[[variantMenu]]"
-    variant="{{variant}}"
+    variant="{{item.variant}}"
   ></mg-variant-editor>
 
 </div>
+<!--
 <mg-gallery-editor
   id="gallery-editor"
-  me="[[me]]"
   key="{{gallery}}"
   clipboard-list="{{clipboardList}}"
 ></mg-gallery-editor>
+-->
 
   </template>
   <script>
@@ -93,6 +90,7 @@ class MGProductEditor extends MGItemEditor {
   }
 
   static get properties() { return {
+
     editorRole: {
       type: String,
       value: 'product',
@@ -118,91 +116,14 @@ class MGProductEditor extends MGItemEditor {
       type: String,
       observer: '_galleryChanged',
     },
-
   }}
 
   static get observers() { return [
-    '_variantChanged(variant.*)',
   ]}
-
-  _keyChanged(key,oldKey) {
-    this.set('variant',undefined);
-    this.set('gallery',undefined);
-
-    super._keyChanged(key,oldKey);
-
-    if (!key) {
-      return;
-    }
-
-    let item = MHA.getItem({[key]:null});
-    for(let prop in item) {
-      switch(prop) {
-        case '_uid':
-          break;
-        case 'cover':
-          this.set('cover',item.cover);
-          break;
-        case 'name':
-          this.set('name', item.name);
-          break;
-        case 'gallery':
-          this.set('gallery', item.gallery);
-          break;
-        case 'role':
-          this.set('role', item.role);
-          break;
-        case 'variant': {
-          MHA.Path.deepSet(this,'variant',item.variant);
-        } break;
-      }
-    }
-  }
 
   _galleryChanged(gallery) {
     if (gallery && this.role == 'product') {
-      MHA.setItem(this.key, {gallery: gallery, role: 'product'}, true);
-    }
-  }
-
-  _variantChanged(change) {
-    if (typeof change.value != 'undefined' && this.key && this.role == 'product') {
-      MHA.setItem( this.key,
-        MHA.Path.deepStruct({role: 'product'}, change.path,change.value),
-        true);
-    }
-  }
-
-  updateChanges(path,value) {
-    switch(path[0]) {
-      case 'role': {
-        this.set('role',value);
-      } break;
-      case 'cover': {
-        this.set('cover',value);
-      } break;
-      case 'gallery': {
-        this.set('gallery',value);
-      } break;
-      case 'name': {
-        this.set('name', value);
-      } break;
-      case 'variant': {
-        /* XXX Try to bind mg-data maybe */
-        /* Call deepSet to generate a different copy of data from MHA.data
-        so it can track changes by comparing old-new value */
-        MHA.Path.deepSet(this,path.join('.'),value);
-        /* XXX Can't easily track by values if the data was changed and need to be synced.
-        switch(path.length) {
-          case 1: {
-            this.set(path,value);
-          } break;
-          default: {
-            this.notifyPath(path,value);
-          } break;
-        }
-        */
-      }
+      //MHA.setItem(this.key, {gallery: gallery, role: 'product'}, true);
     }
   }
 

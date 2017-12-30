@@ -87,7 +87,7 @@ class MGItemBrowser extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     this.set('selectedItem', undefined);
 
     /* Ignore if the key was not set to an existing item */
-    if (key && this.__dataLinkedPaths['items.'+key]) {
+    if (key && this.items[key] && this.__dataLinkedPaths['items.'+key]) {
       this.set('selectedItem', this.items[key]);
       this.linkPaths(this.__dataLinkedPaths['items.'+key], 'selectedItem');
     }
@@ -111,54 +111,24 @@ class MGItemBrowser extends MHA.Configurations(MHA.Items(Polymer.Element)) {
           /*delete item*/
         } else if (!this.__dataLinkedPaths || !this.__dataLinkedPaths[change.path]) {
           /* New item, create a thumbnail */
-          change.value.key$ = change.path.slice(6);
+          let key = change.path.slice(-20);
+          change.value.key$ = key;
           this.unshift('itemList', change.value);
+          if (key == this.selectedKey) {
+            this.set('selectedItem', this.items[key]);
+            this.linkPaths(this.__dataLinkedPaths['items.'+key], 'selectedItem');
+          }
+        } else {
+          /* Update existing item to new data. */
+          let key = change.path.slice(6);
+          change.value.key$ = key;
+          this.set(this.__dataLinkedPaths[change.path], change.value);
+          if (key == this.selectedKey) {
+            this.set('selectedItem', change.value);
+          }
         }
       } break;
     }
-    /*
-    let path = change.path.split('.');
-    let itemKey = path[1];
-    switch(path.length) {
-      case 1: {
-        for (let itemKey in change.value) {
-          this.unshift('itemList',{
-            key: itemKey,
-            images: change.value[itemKey].images,
-            name: change.value[itemKey].name,
-            role: change.value[itemKey].role,
-          });
-          this._setCover(itemKey,change.value[itemKey].cover);
-        }
-      } break;
-      case 2: {
-        this.unshift('itemList',{
-          key: itemKey,
-        });
-      } break;
-      case 3: if (path[2] == 'cover') {
-        this.itemList.every((item,index) => {
-          if (itemKey == item.key) {
-            this._setCover(itemKey,change.value);
-            return false;
-          }
-          return true;
-        });
-      } break;
-      case 5: if (path[4] == 'thumbnail') {
-        let imageKey = path[3];
-        this.itemList.every((item,index) => {
-          if (itemKey == item.key &&
-            imageKey == MHA.getItem({[itemKey]:{cover:null}})) {
-
-            this._setCover(itemKey,imageKey);
-            return false;
-          }
-          return true;
-        });
-      } break;
-    }
-    */
   }
 
   _itemListChanged(splices) { if (splices) {
@@ -171,9 +141,9 @@ class MGItemBrowser extends MHA.Configurations(MHA.Items(Polymer.Element)) {
         this.unlinkPaths('items'+v.key$);
       });
       for (let i = s.index,so; so = s.object[i]; ++i) {
-        this.linkPaths('items.'+so.key$, 'itemList.'+i)
+        this.linkPaths('items.'+so.key$, 'itemList.'+i);
         if (so === this.selectedItem) {
-          this.linkPaths('items.'+i, 'selectedItem');
+          this.linkPaths('itemList.'+i, 'selectedItem');
         } else {
           this.unlinkPaths('itemList.'+i);
         }
