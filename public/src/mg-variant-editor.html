@@ -32,6 +32,9 @@
   @apply --layout-horizontal;
   @apply --layout-start-justified;
   box-sizing: content-box;
+  --paper-icon-item: {
+    text-transform: capitalize;
+  };
 }
 
 #variant-selector {
@@ -47,6 +50,12 @@
 
 #value-container {
   @apply --paper-font-caption;
+  height: 20px;
+  border-bottom: 1px dotted gainsboro;
+}
+
+:host(:not([opened])) #value-container {
+  border: none;
 }
 
 #value-container iron-icon {
@@ -69,12 +78,16 @@
 </style>
 
   <div class="vertical layout">
-<div id="variants-container" class="paper-material vertical layout start-justified" elevation="1">
+<div
+  id="variants-container"
+  class="paper-material vertical layout start-justified"
+  elevation="1"
+>
   <!-- Editor title -->
       <div id="value-container" class="horizontal layout center">
     <template is="dom-if" if="{{opened}}">
+  [[label]]
   <template is="dom-if" if="{{variant.value}}">
-    [[variant.value]]
     <template is="dom-if" if="{{variant.variants}}">
       <iron-icon icon="chevron-right"></iron-icon>
       [[variant.type]]
@@ -82,26 +95,28 @@
   </template>
   <div class="flex"></div>
     </template>
-    <iron-icon class="visibility-button" on-click="_onToggleOpened" icon="{{_formatIconOpened(opened)}}"></iron-icon>
+    <iron-icon
+      class="visibility-button"
+      on-click="_onToggleOpened"
+      icon="{{_formatIconOpened(opened)}}"
+    ></iron-icon>
       </div>
-
-  <template is="dom-if" if="{{opened}}">
 
     <!-- Type Selector -->
     <template is="dom-if" if="{{subvariantList.length}}">
-  <div class="horizontal layout">
+  <div class="horizontal layout" hidden$="[[!opened]]">
     <paper-dropdown-menu
       id="type-name"
-      label="ตัวเลือก"
+      label="{{localize('options')}}"
     > <paper-listbox
         attr-for-selected="name"
-        slot="dropdown-content"
         class="dropdown-content layout start"
         selected="{{selectedTypeDef.name}}"
-      > <template is="dom-repeat" items="[[menu.entries]]">
-          <paper-icon-item label="[[item.title]]" name="[[item.name]]">
-            <iron-icon icon="[[item.icon]]" slot="item-icon"></iron-icon>
-            [[item.title]]
+        slot="dropdown-content"
+      > <template is="dom-repeat" items="[[menu.entries]]" as="entry">
+          <paper-icon-item label="{{localize(entry.name)}}" name="[[entry.name]]">
+            <iron-icon icon="[[entry.icon]]" slot="item-icon"></iron-icon>
+            {{localize(entry.name)}}
           </paper-icon-item>
         </template>
       </paper-listbox>
@@ -110,7 +125,7 @@
     <template is="dom-if" if="[[testEqual(selectedTypeDef.name,'custom')]]">
 
       <mg-input
-        label="ชื่อ"
+        label="{{localize('name')}}"
         value="{{selectedTypeDef.custom}}"
         min-width="70"
       > <iron-icon icon="editor:mode-edit" slot="prefix"></iron-icon>
@@ -121,24 +136,17 @@
       <template is="dom-if" if="[[testEqual(selectedTypeDef.name,'price')]]">
     <paper-dropdown-menu
       id="type-custom"
-      label="สกุลเงิน"
+      label="{{localize('currency')}}"
     > <paper-listbox
-        slot="dropdown-content"
-        class="dropdown-content"
         attr-for-selected="currency"
+        class="dropdown-content"
         selected="{{selectedTypeDef.custom}}"
-      > <paper-icon-item label="บาท" currency="thb">
-      <iron-icon icon="booed:attach-money-thb" slot="item-icon"></iron-icon> บาท
-        </paper-icon-item>
-        <paper-icon-item label="เยน" currency="jpy">
-      <iron-icon icon="booed:attach-money-jpy" slot="item-icon"></iron-icon> เยน
-        </paper-icon-item>
-        <paper-icon-item label="วอน" currency="krw">
-      <iron-icon icon="booed:attach-money-krw" slot="item-icon"></iron-icon> วอน
-        </paper-icon-item>
-        <paper-icon-item label="ยูเอสดอลล่าร์" currency="usd">
-      <iron-icon icon="editor:attach-money" slot="item-icon"></iron-icon> ยูเอสดอลล่าร์
-        </paper-icon-item>
+        slot="dropdown-content"
+      > <template is="dom-repeat" items="[[menu.entries.1.currencies]]" as="currency">
+      <paper-icon-item label="{{localize(currency)}}" currency="[[currency]]">
+        <iron-icon icon="[[_formatCurrencyIcon(currency)]]" slot="item-icon"></iron-icon> {{localize(currency)}}
+      </paper-icon-item>
+        </template>
       </paper-listbox>
     </paper-dropdown-menu>
       </template>
@@ -153,6 +161,7 @@
     attr-for-selected="name"
     selected-attribute="selected"
     selected="{{selectedKey}}"
+    hidden$="[[!opened]]"
     > <template is="dom-repeat" items="{{subvariantList}}" as="subvariant">
       <!--XXX remove name here-->
     <mg-variant-cell
@@ -169,12 +178,13 @@
     label="คอมเม้นท์"
     value="{{variant.comment}}"
     min-width="150"
+    hidden$="[[!opened]]"
   > <iron-icon icon="editor:mode-edit" slot="prefix"></iron-icon>
   </mg-input>
     </template>
 
   <!-- Foot Buttons -->
-  <div class="horizontal layout center-justified">
+  <div class="horizontal layout center-justified" hidden$="[[!opened]]">
 <paper-icon-button
   icon="add"
   on-click="_onAddVariant"
@@ -195,13 +205,13 @@
 ></paper-icon-button>
   </div>
 
-  </template>
 </div>
   </div>
 
   <!-- Child editor -->
   <template is="dom-if" if="[[selectedSubvariant]]">
 <mg-variant-editor
+  label="[[_formatSubvariantHeader(variant.type, selectedSubvariant.value)]]"
   menu="[[menu]]"
   variant="{{selectedSubvariant}}"
   depth="[[_deeper(depth)]]"
@@ -210,7 +220,7 @@
 
   </template>
   <script>
-class MGVariantsEditor extends Polymer.Element {
+class MGVariantsEditor extends MHA.Configurations(MHA.Items(Polymer.Element)) {
   static get is() { return 'mg-variant-editor'; }
 
   static get properties() { return {
@@ -260,9 +270,12 @@ class MGVariantsEditor extends Polymer.Element {
       observer: '_selectedKeyChanged',
     },
 
+    label: String,
+
     opened: {
       type: Boolean,
       value: true,
+      reflectToAttribute: true,
     },
 
     /* debugging */
@@ -280,7 +293,28 @@ class MGVariantsEditor extends Polymer.Element {
     '_variantDataListChanged(subvariantList.splices)',
     '_variantTypeChanged(variant.type)',
     '_subvariantsChanged(variant.variants.*)',
+    '_languageChanged(language, variant.type)',
   ]}
+
+  _languageChanged() {
+    /* Hack to update paper-dropdown-menu labels on language changed.
+     * https://github.com/PolymerElements/paper-dropdown-menu/issues/159
+     */
+    if (this.variant && this.variant.type) {
+      let nameDD = this.$$('#type-name');
+      let customDD = this.$$('#type-custom');
+      let [name,custom] = this.variant.type.split(':');
+
+      function toTitleCase(str) {
+        return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+      }
+
+      if (nameDD)
+      nameDD.setProperties({selectedItemLabel: toTitleCase(this.localize(name))}, true);
+      if (customDD)
+      customDD.setProperties({selectedItemLabel: toTitleCase(this.localize(custom))}, true);
+    }
+  }
 
   _computeType(name,custom) {
     if (name == 'color' || name =='size') {
@@ -293,6 +327,8 @@ class MGVariantsEditor extends Polymer.Element {
     if (newType) {
       let nc = newType.split(':');
       this.set('selectedTypeDef', {name:nc[0], custom:nc[1]});
+    } else {
+      this.set('selectedTypeDef', {name:undefined, custom:undefined});
     }
   }
 
@@ -405,7 +441,10 @@ class MGVariantsEditor extends Polymer.Element {
         this.splice('subvariantList',this.__dataLinkedPaths[change.path].split('.').pop(),1);
       } else if (!this.__dataLinkedPaths || !this.__dataLinkedPaths[change.path]) {
         this._addVariantData(change.path.slice(-20), change.value);
-      } else { /* XXX Wouldn't be here since all subvariants in the list were spliced out */
+      } else {
+        /* XXX Wouldn't be here as all subvariants were spliced out in case 16.
+         * Just to keep the pattern in consistency.
+         */
         let key = change.path.slice(-20);
         change.value.key$ = key;
         this.set(this.__dataLinkedPaths[change.path], change.value);
@@ -436,6 +475,29 @@ class MGVariantsEditor extends Polymer.Element {
       return "booed:comment-disabled";
     } else {
       return "editor:mode-edit";
+    }
+  }
+
+  _formatCurrencyIcon(currency) {
+    switch(currency) {
+    case 'jpy': return "booed:attach-money-jpy";
+    case 'krw': return "booed:attach-money-krw";
+    case 'thb': return "booed:attach-money-thb";
+    case 'usd':
+    default: return "editor:attach-money";
+    }
+  }
+
+  _formatSubvariantHeader(type, value) {
+    if (!type) return value;
+    let subtype;
+    [type,subtype] = type.split(':');
+    switch(type) {
+      case 'price': {
+        return this.localize(`value${subtype}`,'value',value);
+      } break;
+      default:
+        return value;
     }
   }
 

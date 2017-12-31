@@ -126,7 +126,7 @@ class MGVariantCell extends Polymer.Element {
     if (name.startsWith('color')) {
       return 120;
     }
-    else if (name.startsWith('price')) {
+    if (name.startsWith('price')) {
       return 150;
     }
     return 176;

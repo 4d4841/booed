@@ -55,7 +55,7 @@ paper-progress {
   src="[[src]]"
   roi="[[roi]]"
   icon="[[_formatRoleIcon(item.role)]]"
-  label="[[_formatLabel(item.images, item.name, item.role)]]"
+  label="[[_formatLabel(item.images, item.name, item.role, language)]]"
   deleted$="[[deleted]]"
   placeholder='images/logo-pumpkin-outline-grayout.svg'
   transition="1.5s"
@@ -77,7 +77,7 @@ paper-progress {
 
   </template>
   <script>
-class MGItemImage extends Polymer.Element {
+class MGItemImage extends MHA.Configurations(MHA.Items(Polymer.Element)) {
   static get is() { return 'mg-item-image'; }
 
   static get properties() { return {
@@ -169,7 +169,7 @@ class MGItemImage extends Polymer.Element {
   }
 
   _formatLabel(images, str, role) {
-    str = str || '(ไม่มีชื่อ)';
+    str = str || this.localize('noname');
     return role == 'gallery'
       ? (images ? "×" + Object.entries(images).length : '') +" "+ str
       : str;
