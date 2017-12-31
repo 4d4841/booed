@@ -70,109 +70,6 @@ var MHA = {
     }
   },
 
-  translations: (function() {
-    let required_words = {
-      'en': {
-        'new-releases': 'new-releases',
-        'recommendations': 'recommendations',
-        'dress': 'dresses',
-        'nightwear': 'nightwears',
-        'lingerie': 'lingeries',
-        'swimwear': 'swimwears',
-        'sales': 'sales',
-        'profile': 'profile',
-        'orders': 'orders',
-        'items': 'items',
-        'store': 'store',
-        'inbox': 'inbox',
-        'help': 'help',
-        'signin': 'sign in',
-        'signout': 'sign out',
-        'create item': 'create item',
-        'create': 'create',
-        'product': 'product',
-        'products': 'products',
-        'article': 'article',
-        'articles': 'articles',
-        'collection': 'collection',
-        'collections': 'collections',
-        'gallery': 'gallery',
-        'galleries': 'galleries',
-        'tos': 'TOS',
-        'policy': 'policy',
-        'icons': 'icons',
-      }
-    };
-
-    required_words.jp = Object.assign({}, required_words.en, {
-      'new-releases': 'リアタイ่',
-      'recommendations': 'おすすめ商品',
-      'dress': 'ドレス',
-      'nightwear': 'ナイトウェア',
-      'lingerie': 'ランジェリー',
-      'swimwear': '水着',
-      'sales': 'sales',
-      'profile': '個人情報',
-      'orders': '注文確認',
-      'items': '項目',
-      'store': '店舗',
-      'inbox': 'プライベート メッセージ',
-      'help': 'ヘルプ',
-    });
-
-    required_words.ko = Object.assign({}, required_words.en, {
-      'new-releases': 'リアタイ่',
-      'recommendations': '추천',
-      'dress': '드레스',
-      'nightwear': '나이트가운',
-      'lingerie': '란제리',
-      'swimwear': '수영복',
-      'sales': 'sale',
-      'profile': '프로필',
-      'orders': '주문내역',
-      'items': '아이템',
-      'store': '가게',
-      'inbox': '메시지',
-      'help': '도움말',
-    });
-
-    required_words.th = Object.assign({}, required_words.en, {
-      'new-releases': 'มาใหม่',
-      'recommendations': 'แนะนำ',
-      'dress': 'ชุดทั่วไป',
-      'nightwear': 'ชุดนอน',
-      'lingerie': 'ชุดชั้นใน',
-      'swimwear': 'ชุดว่ายน้ำ',
-      'sales': 'เซล',
-      'profile': 'โพรไฟล์',
-      'orders': 'รายการสั่งซื้อ',
-      'items': 'ไอเท็ม',
-      'store': 'ร้าน',
-      'inbox': 'กล่องข้อความ',
-      'help': 'ความช่วยเหลือ',
-      'signin': 'เข้าสู่ระบบ',
-      'signout': 'ออกจากระบบ',
-      'create item': 'สร้างไอเท็ม',
-      'create': 'สร้าง',
-      'product': 'สินค้า',
-      'products': 'สินค้า',
-      'article': 'บทความ',
-      'articles': 'บทความ',
-      'collection': 'คอลเล็กชั่น',
-      'collections': 'คอลเล็กชั่น',
-      'gallery': 'แกลเลอรี่',
-      'galleries': 'แกลเลอรี่',
-      'tos': 'เงื่อนไขการให้บริการ',
-      'policy': 'นโยบายความเป็นส่วนตัว',
-      'icons': 'ไอค่อน',
-    });
-
-    required_words.zh = Object.assign({}, required_words.en, {
-    });
-
-    return required_words;
-  })(),
-
   registerRepresentation: function( keyOrBlob, srcCallback, contentType ) {
      /*XXX UID of other user */
     console.assert(keyOrBlob,"XXX");
@@ -562,7 +459,159 @@ MHA.Configurations = (superClass) => { return class extends Polymer.mixinBehavio
       value: MHA.configurations,
     },
     language: String,
-    resources: Object,
+    resources: {
+      type: Object,
+      value: function() {
+
+        if (MHA.translations) {
+          return MHA.translations
+        }
+
+        MHA.translations = {
+          'en': {
+            'new-releases': 'new-releases',
+            'recommendations': 'recommendations',
+            'dress': 'dresses',
+            'nightwear': 'nightwears',
+            'lingerie': 'lingeries',
+            'swimwear': 'swimwears',
+            'sales': 'sales',
+            'profile': 'profile',
+            'orders': 'orders',
+            'items': 'items',
+            'store': 'store',
+            'inbox': 'inbox',
+            'help': 'help',
+            'signin': 'sign in',
+            'signout': 'sign out',
+            'create item': 'create item',
+            'create': 'create',
+            'product': 'product',
+            'products': 'products',
+            'article': 'article',
+            'articles': 'articles',
+            'collection': 'collection',
+            'collections': 'collections',
+            'gallery': 'gallery',
+            'galleries': 'galleries',
+            'tos': 'TOS',
+            'policy': 'policy',
+            'icons': 'icons',
+
+            'noname': '(No Name)',
+
+            'options': 'options',
+            'currency': 'currency',
+            'name': 'name',
+            'jpy': 'Japanese Yen',
+            'krw': 'South Korean Won',
+            'thb': 'Thai Baht',
+            'usd': 'US Dollar',
+            'custom': 'custom',
+            'price': 'price',
+            'color': 'color',
+            'size': 'size',
+
+            'valuejpy': '{value,number,jpy}',
+            'valuekrw': '{value,number,krw}',
+            'valuethb': '฿{value,number}',
+            'valueusd': '{value,number,usd}',
+          }
+        };
+
+        MHA.translations.jp = Object.assign({}, MHA.translations.en, {
+          'new-releases': 'リアタイ่',
+          'recommendations': 'おすすめ商品',
+          'dress': 'ドレス',
+          'nightwear': 'ナイトウェア',
+          'lingerie': 'ランジェリー',
+          'swimwear': '水着',
+          'sales': 'sales',
+          'profile': '個人情報',
+          'orders': '注文確認',
+          'items': '項目',
+          'store': '店舗',
+          'inbox': 'プライベート メッセージ',
+          'help': 'ヘルプ',
+        });
+
+        MHA.translations.ko = Object.assign({}, MHA.translations.en, {
+          'new-releases': 'リアタイ่',
+          'recommendations': '추천',
+          'dress': '드레스',
+          'nightwear': '나이트가운',
+          'lingerie': '란제리',
+          'swimwear': '수영복',
+          'sales': 'sale',
+          'profile': '프로필',
+          'orders': '주문내역',
+          'items': '아이템',
+          'store': '가게',
+          'inbox': '메시지',
+          'help': '도움말',
+        });
+
+        MHA.translations.th = Object.assign({}, MHA.translations.en, {
+          'new-releases': 'มาใหม่',
+          'recommendations': 'แนะนำ',
+          'dress': 'ชุดทั่วไป',
+          'nightwear': 'ชุดนอน',
+          'lingerie': 'ชุดชั้นใน',
+          'swimwear': 'ชุดว่ายน้ำ',
+          'sales': 'เซล',
+          'profile': 'โพรไฟล์',
+          'orders': 'รายการสั่งซื้อ',
+          'items': 'ไอเท็ม',
+          'store': 'ร้าน',
+          'inbox': 'กล่องข้อความ',
+          'help': 'ความช่วยเหลือ',
+          'signin': 'เข้าสู่ระบบ',
+          'signout': 'ออกจากระบบ',
+          'create item': 'สร้างไอเท็ม',
+          'create': 'สร้าง',
+          'product': 'สินค้า',
+          'products': 'สินค้า',
+          'article': 'บทความ',
+          'articles': 'บทความ',
+          'collection': 'คอลเล็กชั่น',
+          'collections': 'คอลเล็กชั่น',
+          'gallery': 'แกลเลอรี่',
+          'galleries': 'แกลเลอรี่',
+          'tos': 'เงื่อนไขการให้บริการ',
+          'policy': 'นโยบายความเป็นส่วนตัว',
+          'options': 'ตัวเลือก',
+          'noname': '(ไม่มีชื่อ)',
+          'currency': 'สกุลเงิน',
+          'name': 'ชื่อ',
+          'jpy': 'เยน',
+          'krw': 'วอน',
+          'thb': 'บาท',
+          'usd': 'ยูเอสดอลล่าร์',
+          'icons': 'ไอค่อน',
+          'custom': 'ตั้งค่า',
+          'price': 'ราคา',
+          'color': 'สี',
+          'size': 'ขนาด',
+        });
+
+        MHA.translations.zh = Object.assign({}, MHA.translations.en, {
+        });
+
+        return MHA.translations;
+      },
+    },
+    formats: {
+      type: Object,
+      value: function() {
+        return {
+          number: {
+            jpy: { style: 'currency', currency: 'JPY' },
+            usd: { style: 'currency', currency: 'USD' },
+            krw: { style: 'currency', currency: 'KRW' },
+          },
+        };
+      },
+    },
   }}
 
   static get observers() { return [
@@ -572,7 +621,6 @@ MHA.Configurations = (superClass) => { return class extends Polymer.mixinBehavio
 
   constructor() {
     super();
-    this.resources = MHA.translations;
   }
 
   connectedCallback() {
