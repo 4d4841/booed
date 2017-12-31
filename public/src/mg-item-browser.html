@@ -151,13 +151,6 @@ class MGItemBrowser extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     });
   }}
 
-  _formatLabel(images,str,role) {
-    str = str || "(ไม่มีชื่อ)";
-    return role == 'gallery'
-      ? (images ? "×" + Object.entries(images).length : '') +" "+ str
-      : str;
-  }
-
   _formatRoleIcon(role) {
     return MGIconForRole(role);
   }
