@@ -27,7 +27,7 @@ iron-icon {
 
 <paper-input
   id="input"
-  value={{value}}
+  value="{{value}}"
   label="{{label}}"
   focused="{{focused}}"
   readonly="{{readonly}}"
@@ -71,10 +71,11 @@ class MGInput extends Polymer.Element {
       type: String,
       value: '',
       notify: true,
+      observer: '_valueChanged',
     },
     computedFloatLabel: {
       type: Boolean,
-      computed: '_computeFloatLabel(focused,alwaysFloatLabel)'
+      computed: '_computeFloatLabel(focused,alwaysFloatLabel,value)'
     },
     alwaysFloatLabel: {
       type: Boolean,
@@ -83,24 +84,22 @@ class MGInput extends Polymer.Element {
     focused: {
       type: Boolean,
       notify: true,
-      //value: false,
-      /*observer: '_focusedChanged',*/
     },
     minWidth: {
       type: Number,
       value: 50,
-      observer: 'minWidthChanged'
+      notify: true,
     },
   }}
 
   static get observers() { return [
-    '_resetSize(value,label)',
+    '_resetSize(value,label,minWidth)',
   ]}
 
   connectedCallback() {
     super.connectedCallback();
     this.$.input.addEventListener('iron-input-ready',e => {
-      this._resetSize(this.value, this.label);
+      this._resetSize(this.value, this.label, this.minWidth);
     });
 
     if (!MeasureContext) {
@@ -114,23 +113,18 @@ class MGInput extends Polymer.Element {
     }
   }
 
-  _computeFloatLabel(focused,always) {
-    if (typeof always === 'undefined') {
-      return focused;
+  _computeFloatLabel(focused,always,value) {
+    if (always || focused || value) {
+      return true;
     }
-    return always;
+    return false;
   }
-
-  /*
-  _focusedChanged(focus) {
-  }
-  */
 
   focus() {
     this.$.input.focus();
   }
 
-  _resetSize(value,label) {
+  _resetSize(value,label,minWidth) {
     value = value || '';
     label = label || '';
 
@@ -145,15 +139,14 @@ class MGInput extends Polymer.Element {
       if (width < floatLabelWidth) {
         width = floatLabelWidth;
       }
-      elm.style.width = (width < this.minWidth ? this.minWidth: width) + 'px';
+      elm.style.width = (width < minWidth ? minWidth: width) + 'px';
     }
   }
 
   _valueChanged(newValue, oldValue) {
-  }
-
-  minWidthChanged(w) {
-    this._valueChanged(this.value);
+    if (typeof newValue === 'undefined') {
+      this.set('value', '');
+    }
   }
 
 }
