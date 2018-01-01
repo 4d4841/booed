@@ -379,7 +379,7 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     MHA.Path.deepSet(this,'db'+change.path, change.value, (path,value) => {
       /* Don't update dbitems with UI properties (those with names end with '$') */
       if (path.endsWith('$')) {
-        return [];
+        return {path:null, replacer:null};
       }
 
       let dirty = false;

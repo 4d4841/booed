@@ -306,7 +306,10 @@ class MGVariantsEditor extends MHA.Configurations(MHA.Items(Polymer.Element)) {
       let [name,custom] = this.variant.type.split(':');
 
       function toTitleCase(str) {
-        return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+        if (str) {
+          return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+        }
+        return '';
       }
 
       if (nameDD)
@@ -539,20 +542,21 @@ class MGVariantsEditor extends MHA.Configurations(MHA.Items(Polymer.Element)) {
   }
 
   _onDuplicateSelection(e) {
-    var newKey;
-    function cloneFunc(path, value) {
-
-      if (path.slice(-30).startsWith('.variants.')) {
-        let replacingKey = MHA.DB.ref().push().key;
-        let newpath = path.slice(0, path.length-20) + replacingKey;
-        let newval = Object.assign({}, value, {key$: replacingKey});
-        if (!newKey) newKey = replacingKey;
-        return [newpath,newval,cloneFunc];
+    MHA.Path.deepSet( this,
+        'variant.variants.< 20 chars new key >',
+        this.variant.variants[this.selectedKey], (path, value) => {
+      if (path.endsWith('$')) {
+        /* Don't copy any UI definitions */
+        return {path:null, replacer:null};
+      } else if (path.slice(-30).startsWith('.variants.')) {
+        return {
+          /* Replace old key with a new one. */
+          path: path.slice(0, path.length-20) + MHA.DB.ref().push().key,
+        };
       }
 
       return;
-    }
-    MHA.Path.deepSet(this, 'variant.variants.< 20 chars new key >', this.variant.variants[this.selectedKey], cloneFunc);
+    });
   }
 
   testEqual(a,b) {
