@@ -54,7 +54,7 @@ paper-progress {
 <mg-thumbnail
   src="[[src]]"
   roi="[[roi]]"
-  icon="[[_formatRoleIcon(item.role)]]"
+  icon="[[_formatIcon(item)]]"
   label="[[_formatLabel(item.images, item.name, item.role, language)]]"
   deleted$="[[deleted]]"
   placeholder='images/logo-pumpkin-outline-grayout.svg'
@@ -84,12 +84,6 @@ class MGItemImage extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     item: {
       type: Object,
       observer: '_itemChanged',
-    },
-
-    thumbnail: {
-      type: String,
-      value: '',
-      observer: '_thumbnailChanged',
     },
 
     label: String,
@@ -122,18 +116,28 @@ class MGItemImage extends MHA.Configurations(MHA.Items(Polymer.Element)) {
   /* Item is an mg-item */
   _coverChanged(cover) {
     if (cover && this.item.images[cover].thumbnail) {
+      let cachedSrc = false;
       MHA.registerRepresentation(this.item.images[cover].thumbnail, { src: (key,src) => {
+        cachedSrc = true;
         this.set('src', src);
       }});
+      if (!cachedSrc) {
+        this.set('src',undefined);
+      }
     }
   }
 
   /* Item is an mg-image */
   _thumbnailChanged(thumbnail) {
     if (thumbnail) {
+      let cachedSrc = false;
       MHA.registerRepresentation(thumbnail, { src: (key,src) => {
+        cachedSrc = true;
         this.set('src', src);
       }});
+      if (!cachedSrc) {
+        this.set('src',undefined);
+      }
     }
   }
 
@@ -141,6 +145,7 @@ class MGItemImage extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     //this.set('src','images/logo-pumpkin-outline-grayout.svg');
   }
 
+  /*
   _thumbnailChanged(repKey) {
     if (repKey) {
       this.set('src',null);
@@ -152,6 +157,7 @@ class MGItemImage extends MHA.Configurations(MHA.Items(Polymer.Element)) {
       this.set('src','images/logo-pumpkin-outline-grayout.svg');
     }
   }
+  */
 
   _computeShowProgress(progress) {
     if (typeof(progress) == "undefined") return false;
@@ -164,8 +170,12 @@ class MGItemImage extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     return false;
   }
 
-  _formatRoleIcon(role) {
-    return MGIconForRole(role);
+  _formatIcon(item) {
+    if (item.role) {
+      return MGIconForRole(item.role);
+    } else if (item.rep) {
+      return MGIconForRole('photo');
+    }
   }
 
   _formatLabel(images, str, role) {

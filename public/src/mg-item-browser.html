@@ -39,7 +39,14 @@
 }
 
 @media (max-width: 767px) {
-
+  .item {
+    width: 100px;
+    height: 100px;
+    --mg-image: {
+      width: 100px;
+      height: 100px;
+    }
+  }
 }
 </style>
 
@@ -97,38 +104,37 @@ class MGItemBrowser extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     /* XXX items may changed on user sign-out */
 
     switch(change.path.length) {
-      case 5: { /* items */
-        /* XXX This happens multile times, may be mg-data can check/didn't
-        check if the first old-value to see if it was not neccessary to notify */
-        this.set('selectedKey', null);
-        this.splice('itemList', 0, this.itemList.length);
-      } break;
-      case 26: {
-        /* items.<20-char item key> */
-        /* setting an item */
+    case 5: { /* items */
+      /* XXX This happens multile times, may be mg-data can check/didn't
+      check if the first old-value to see if it was not neccessary to notify */
+      this.set('selectedKey', null);
+      this.splice('itemList', 0, this.itemList.length);
+    } break;
+    case 26: {
+      /* items.<20-char item key> */
+      /* setting an item */
 
-        if (change.value === null) {
-          /*delete item*/
-        } else if (!this.__dataLinkedPaths || !this.__dataLinkedPaths[change.path]) {
-          /* New item, create a thumbnail */
-          let key = change.path.slice(-20);
-          change.value.key$ = key;
-          this.unshift('itemList', change.value);
-          if (key == this.selectedKey) {
-            this.set('selectedItem', this.items[key]);
-            this.linkPaths(this.__dataLinkedPaths['items.'+key], 'selectedItem');
-          }
-        } else {
-          /* Update existing item to new data. */
-          let key = change.path.slice(6);
-          change.value.key$ = key;
-          this.set(this.__dataLinkedPaths[change.path], change.value);
-          if (key == this.selectedKey) {
-            this.set('selectedItem', change.value);
-          }
+      if (change.value === null) {
+        /*delete item*/
+      } else if (!this.__dataLinkedPaths || !this.__dataLinkedPaths[change.path]) {
+        /* New item, create a thumbnail */
+        let key = change.path.slice(-20);
+        change.value.key$ = key;
+        this.unshift('itemList', change.value);
+        if (key == this.selectedKey) {
+          this.set('selectedItem', this.items[key]);
+          this.linkPaths(this.__dataLinkedPaths['items.'+key], 'selectedItem');
         }
-      } break;
-    }
+      } else {
+        /* Update existing item to new data. */
+        let key = change.path.slice(6);
+        change.value.key$ = key;
+        this.set(this.__dataLinkedPaths[change.path], change.value);
+        if (key == this.selectedKey) {
+          this.set('selectedItem', change.value);
+        }
+      }
+    } break; }
   }
 
   _itemListChanged(splices) { if (splices) {
