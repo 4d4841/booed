@@ -38,7 +38,6 @@
 }
 
 #variant-selector {
-  max-height: 20vh;
   overflow-y: auto;
 }
 
@@ -214,7 +213,6 @@
   label="[[_formatSubvariantHeader(variant.type, selectedSubvariant.value)]]"
   menu="[[menu]]"
   variant="{{selectedSubvariant}}"
-  depth="[[_deeper(depth)]]"
 ></mg-variant-editor>
   </template>
 
@@ -278,28 +276,20 @@ class MGVariantsEditor extends MHA.Configurations(MHA.Items(Polymer.Element)) {
       reflectToAttribute: true,
     },
 
-    /* debugging */
-    depth: {
-      value: 0,
-    },
   }}
-
-  _deeper(depth) {
-    return depth + 1;
-  }
 
   static get observers() { return [
     '_selectedTypeDefChanged(selectedTypeDef.name,selectedTypeDef.custom)',
-    '_variantDataListChanged(subvariantList.splices)',
+    '_subvariantListChanged(subvariantList.splices)',
     '_variantTypeChanged(variant.type)',
     '_subvariantsChanged(variant.variants.*)',
     '_languageChanged(language, variant.type)',
   ]}
 
+  /* Hack to update paper-dropdown-menu labels on language changed.
+   * https://github.com/PolymerElements/paper-dropdown-menu/issues/159
+   */
   _languageChanged() {
-    /* Hack to update paper-dropdown-menu labels on language changed.
-     * https://github.com/PolymerElements/paper-dropdown-menu/issues/159
-     */
     if (this.variant && this.variant.type) {
       let nameDD = this.$$('#type-name');
       let customDD = this.$$('#type-custom');
@@ -369,7 +359,7 @@ class MGVariantsEditor extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     }
   }
 
-  _variantDataListChanged(splices) {
+  _subvariantListChanged(splices) {
     if (splices) {
       splices.indexSplices.forEach(s => {
         s.removed.forEach(v => {
@@ -400,14 +390,12 @@ class MGVariantsEditor extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     }
   }
 
-  _addVariantData(key,variant) {
-    if (!variant || !key) {
-      return;
-    }
-
+  _addSubvariant(key,variant) {
     if(!this.__dataLinkedPaths || !this.__dataLinkedPaths['variant.variants.'+key]) {
       variant.key$ = key;
       this.push('subvariantList', variant);
+    } else {
+      console.log('DEBUG');
     }
   }
 
@@ -431,7 +419,7 @@ class MGVariantsEditor extends MHA.Configurations(MHA.Items(Polymer.Element)) {
       this.splice('subvariantList',0,this.subvariantList.length);
       if (change.value) {
         for (let key in change.value) {
-          this._addVariantData(key, change.value[key]);
+          this._addSubvariant(key, change.value[key]);
           if (key == nowKey) {
             this.set('selectedKey', nowKey);
           }
@@ -443,7 +431,7 @@ class MGVariantsEditor extends MHA.Configurations(MHA.Items(Polymer.Element)) {
       if (change.value === null) {
         this.splice('subvariantList',this.__dataLinkedPaths[change.path].split('.').pop(),1);
       } else if (!this.__dataLinkedPaths || !this.__dataLinkedPaths[change.path]) {
-        this._addVariantData(change.path.slice(-20), change.value);
+        this._addSubvariant(change.path.slice(-20), change.value);
       } else {
         /* XXX Wouldn't be here as all subvariants were spliced out in case 16.
          * Just to keep the pattern in consistency.
@@ -462,6 +450,9 @@ class MGVariantsEditor extends MHA.Configurations(MHA.Items(Polymer.Element)) {
       if (change.value) {
         this.set('selectedKey', change.path.slice(17,37));
       }
+    } break;
+    default: {
+      console.log('DEBUG', change);
     }}
   }
 

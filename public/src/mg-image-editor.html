@@ -126,10 +126,10 @@
 </style>
 
     <div class="image-info" hidden$="[[loading]]">
-  <template is="dom-if" if="[[!data.item]]">
-<span>clipboard data<iron-icon style="--iron-icon-height:15px" icon="help"></iron-icon>
+  <template is="dom-if" if="[[!image.item]]">
+<span>clipboard image<iron-icon style="--iron-icon-height:15px" icon="help"></iron-icon>
   <paper-tooltip>
-    editing clipboard data is not associated with an item until
+    editing clipboard image is not associated with an item until
     pasting into an item triggers the server syncing.
     until then all the modifications have hitherto been kept
     locally within the clipboard.
@@ -142,10 +142,10 @@
 
   <div style="width:120px"></div>
 
-  <div class="navigator-buttons" hidden$="{{_hidesNavigator(before,data)}}">
-<paper-icon-button id="skip-previous" icon="av:skip-previous" on-click="_setPreviousData" hidden$="[[!before]]">
+  <div class="navigator-buttons" hidden$="[[singleKey]]">
+<paper-icon-button id="skip-previous" icon="av:skip-previous" on-click="_setPreviousKey">
 </paper-icon-button>
-<paper-icon-button id="skip-next" icon="av:skip-next" on-click="_setNextData" hidden$="[[!after]]">
+<paper-icon-button id="skip-next" icon="av:skip-next" on-click="_setNextKey">
 </paper-icon-button>
   </div>
 
@@ -191,7 +191,7 @@
     src="/images/logo-pumpkin-bouncing.svg"
     class="self-center"
     loaded="{{thumbnailLoaded}}"
-    roi="[[data.roiThumbnail]]"
+    roi="[[image.roiThumbnail]]"
   >
   </mg-image>
   <div class="horizontal layout end-justified thumbnail-panel-buttons" style="width:100%">
@@ -220,15 +220,15 @@
     <path id="chevron" d="M -2.6,4.6 -7.2,0 -2.6,-4.6 -4,-6 -10,0 -4,6 Z" style$="[[_styleArrow(tracking)]]"/>
     <path id="lock" d="M16 10h-2v2h2v-2zm0 4h-2v2h2v-2zm-8-4H6v2h2v-2zm4 0h-2v2h2v-2zm8-6H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12z"></path>
   </defs>
-  <use xlink:href="#lock" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataLeft,dataTop,0,0.8)]]" style$="[[_styleLock(scaleFactor,tracking,keepAspect)]]"/>
+  <use xlink:href="#lock" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,roiLeft,roiTop,0,0.8)]]" style$="[[_styleLock(scaleFactor,tracking,keepAspect)]]"/>
 
   <path d$="[[rPath]]" style$="[[_styleBorder(scaleFactor,tracking)]]"/>
   <path d$="[[rPathInner]]" style$="[[_styleBorder(scaleFactor,tracking,keepAspect,1)]]"/>
 
-  <use id="chevrontop" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataMidW,dataTop,'top')]]" />
-  <use id="chevronleft" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataLeft,dataMidH,'left')]]" />
-  <use id="chevronbottom" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataMidW,dataBottom,'bottom')]]" />
-  <use id="chevronright" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,dataRight,dataMidH,'right')]]" />
+  <use id="chevrontop" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,roiMidW,roiTop,'top')]]" />
+  <use id="chevronleft" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,roiLeft,roiMidH,'left')]]" />
+  <use id="chevronbottom" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,roiMidW,roiBottom,'bottom')]]" />
+  <use id="chevronright" xlink:href="#chevron" transform$="[[_translateArrows(scaleFactor,tracking,imageWidth,imageHeight,roiRight,roiMidH,'right')]]" />
 
 </svg>
   </template>
@@ -289,15 +289,15 @@ class MGImageEditor extends Polymer.GestureEventListeners(
     viewWidth: { type:Number, value: 0 },
     viewHeight: { type:Number, value: 0 },
 
-    dataTop: {type:Number, value: 0},
-    dataLeft: {type:Number, value: 0},
-    dataWidth: {type:Number, value: 1},
-    dataHeight: {type:Number, value: 1},
-    dataMidH: {type:Number, value: 0.5},
-    dataMidW: {type:Number, value: 0.5},
+    roiTop: {type:Number, value: 0},
+    roiLeft: {type:Number, value: 0},
+    roiWidth: {type:Number, value: 1},
+    roiHeight: {type:Number, value: 1},
+    roiMidH: {type:Number, value: 0.5},
+    roiMidW: {type:Number, value: 0.5},
 
-    dataRight: Number,
-    dataBottom: Number,
+    roiRight: Number,
+    roiBottom: Number,
 
     scaleFactor: { type: Number, value: 1 },
     keepAspect: Number,
@@ -319,10 +319,10 @@ class MGImageEditor extends Polymer.GestureEventListeners(
   }}
 
   static get observers() { return [
-    '_dataRectChanged(data.roi)',
-    '_dataThumbnailChanged(data.thumbnail)',
-    '_editorRectChanged(dataLeft, dataTop, dataWidth, dataHeight, imageWidth, imageHeight)',
-    '_updateTitle(active, data.name, imageWidth, imageHeight)',
+    '_roiRectChanged(image.roi)',
+    '_roiThumbnailChanged(image.thumbnail)',
+    '_editorRectChanged(roiLeft, roiTop, roiWidth, roiHeight, imageWidth, imageHeight)',
+    '_updateTitle(active, image.name, imageWidth, imageHeight)',
   ]}
 
   connectedCallback() {
@@ -340,13 +340,13 @@ class MGImageEditor extends Polymer.GestureEventListeners(
 
         switch(e.key) {
           case 'ArrowLeft':
-            this.set('data',this.before);
+            this.set('keys',this.keys.slice(-1).concat(this.keys.slice(0,-1)));
             break;
           case 'ArrowRight':
-            this.set('data',this.after);
+            this.set('keys',this.keys.slice(1).concat(this.keys.slice(0,1)));
             break;
           case 'Control':
-            this.set('keepAspect', this.dataWidth/this.dataHeight);
+            this.set('keepAspect', this.roiWidth/this.roiHeight);
             break;
         }
       }
@@ -372,27 +372,27 @@ class MGImageEditor extends Polymer.GestureEventListeners(
 
   }
 
-  _dataRectChanged(roi) {
+  _roiRectChanged(roi) {
     if (roi) {
       this.setProperties({
-        dataLeft: roi[0],
-        dataTop: roi[1],
-        dataWidth: roi[2],
-        dataHeight: roi[3],
+        roiLeft: roi[0],
+        roiTop: roi[1],
+        roiWidth: roi[2],
+        roiHeight: roi[3],
       });
     } else {
       this.setProperties({
-        dataLeft: 0,
-        dataTop: 0,
-        dataWidth: 1,
-        dataHeight: 1,
+        roiLeft: 0,
+        roiTop: 0,
+        roiWidth: 1,
+        roiHeight: 1,
       });
     }
   }
 
-  _dataThumbnailChanged(thumbnail) {
+  _roiThumbnailChanged(thumbnail) {
     thumbnail && MHA.registerRepresentation(thumbnail, {
-      src: (key,src) => { if (key == this.data.thumbnail) {
+      src: (key,src) => { if (key == this.image.thumbnail) {
         this.$.thumbnail.src = src;
         /* XXX balloon should wrap refit() to have this automatic */
         Polymer.Async.timeOut.run(() => {
@@ -403,15 +403,15 @@ class MGImageEditor extends Polymer.GestureEventListeners(
   }
 
   _editorRectChanged(l,t,w,h,iw,ih) {
-    if (!this.data) {
+    if (!this.image) {
       return;
     }
 
     this.setProperties({
-      dataRight: l + w,
-      dataBottom: t + h,
-      dataMidW: l + w/2,
-      dataMidH: t + h/2,
+      roiRight: l + w,
+      roiBottom: t + h,
+      roiMidW: l + w/2,
+      roiMidH: t + h/2,
       rPath: `M 0 0 v ${ih} h ${iw} v -${ih} Z M ${l*iw} ${t*ih} h ${w*iw} v ${h*ih} h -${w*iw} Z`,
       rPathInner: `M ${l*iw} ${t*ih} h ${w*iw} v ${h*ih} h -${w*iw} Z`,
     });
@@ -430,11 +430,6 @@ class MGImageEditor extends Polymer.GestureEventListeners(
     if (w && h && this._OldTitle) {
       document.title = `${n} (${w}×${h}) - Booed`;
     }
-  }
-
-  _hidesNavigator(before, data) {
-    if (before == data) return true;
-    return false;
   }
 
   _styleLock(lw,tracking,lock) {
@@ -549,28 +544,28 @@ class MGImageEditor extends Polymer.GestureEventListeners(
 
         this.tracking = {
           ax: ax, ay: ay,
-          ll:this.dataLeft, tt: this.dataTop,
-          ww: this.dataWidth, hh: this.dataHeight,
+          ll:this.roiLeft, tt: this.roiTop,
+          ww: this.roiWidth, hh: this.roiHeight,
           l: 0, t: 0, w: 0, h: 0,
         };
 
-        if (ax >= this.dataLeft + ew && ax < this.dataRight - ew
-          && ay >= this.dataTop + eh && ay < this.dataBottom - eh) {
+        if (ax >= this.roiLeft + ew && ax < this.roiRight - ew
+          && ay >= this.roiTop + eh && ay < this.roiBottom - eh) {
           /* Mousedown in the middle */
           this.tracking.l = 1;
           this.tracking.t = 1;
         } else {
-          if (ax < this.dataLeft + ew) {
+          if (ax < this.roiLeft + ew) {
             this.tracking.l = 1;
             this.tracking.w = -1;
-          } else if (ax >= this.dataRight - ew) {
+          } else if (ax >= this.roiRight - ew) {
             this.tracking.w = 1;
           }
 
-          if (ay < this.dataTop + eh) {
+          if (ay < this.roiTop + eh) {
             this.tracking.t = 1;
             this.tracking.h = -1;
-          } else if (ay >= this.dataBottom - eh) {
+          } else if (ay >= this.roiBottom - eh) {
             this.tracking.h = 1;
           }
         }
@@ -579,7 +574,7 @@ class MGImageEditor extends Polymer.GestureEventListeners(
       case 'end': {
         this.set('tracking', null);
         this.set('edited',true);
-        //this.set('data.roi',[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight]);
+        //this.set('roi.roi',[this.roiLeft,this.roiTop,this.roiWidth,this.roiHeight]);
 
       } break;
       case 'track': {
@@ -695,10 +690,10 @@ class MGImageEditor extends Polymer.GestureEventListeners(
         if (tt + hh > 1) {tt = 1 - hh;}
 
         this.setProperties({
-          dataLeft: ll,
-          dataTop: tt,
-          dataWidth: ww,
-          dataHeight: hh,
+          roiLeft: ll,
+          roiTop: tt,
+          roiWidth: ww,
+          roiHeight: hh,
         });
 
       } break;
@@ -711,9 +706,9 @@ class MGImageEditor extends Polymer.GestureEventListeners(
       let tw = this.$.thumbnail.naturalWidth;
       let th = this.$.thumbnail.naturalHeight;
 
-      if (this.data && this.data.roiThumbnail) {
-        tw *= this.data.roiThumbnail[2];
-        th *= this.data.roiThumbnail[3];
+      if (this.image && this.image.roiThumbnail) {
+        tw *= this.image.roiThumbnail[2];
+        th *= this.image.roiThumbnail[3];
       }
 
       let w = Math.ceil(Math.sqrt(area * tw/th));
@@ -826,30 +821,30 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
   }
 
   _setThumbnail(e) {
-    let itemKey = this.data.item;
+    let itemKey = this.image.item;
     if (!itemKey) {
-      /* Does not generate icon if editing clipboard data (no itemKey).
+      /* Does not generate icon if editing clipboard image (no itemKey).
        * Stores roiThumbnail which will be used to generate the thumbnail
        * when pasting and replaces thumbnail rep with the image rep so it
        * will regenerate thumbnail from the original image.
        */
 
-      this.set('data.roiThumbnail',[this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight]);
-      this.set('data.thumbnail',this.data.rep);
+      this.set('image.roiThumbnail',[this.roiLeft,this.roiTop,this.roiWidth,this.roiHeight]);
+      this.set('image.thumbnail',this.image.rep);
 
       return;
     }
 
-    let imageKey = this.data.key;
+    let imageKey = this.image.key;
     console.assert(imageKey, "No image key?!?");
 
     /* Generating thumbnail with canvas */
     let area = (250*250);
 
-    let tl = this.imageWidth * this.dataLeft;
-    let tt = this.imageHeight * this.dataTop;
-    let tw = this.imageWidth * this.dataWidth;
-    let th = this.imageHeight * this.dataHeight;
+    let tl = this.imageWidth * this.roiLeft;
+    let tt = this.imageHeight * this.roiTop;
+    let tw = this.imageWidth * this.roiWidth;
+    let th = this.imageHeight * this.roiHeight;
 
     let w = Math.ceil(Math.sqrt(area * tw/th));
     let h = Math.ceil(area / w);
