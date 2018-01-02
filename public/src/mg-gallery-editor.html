@@ -53,7 +53,7 @@
 #gallery-container {
 }
 
-.image-icon {
+.image-thumbnail {
   margin: 0 5px 5px 0;
   --mg-image: {
     width: 120px;
@@ -99,27 +99,27 @@
     </div>
 
     <div style="display:inline-block">
-  <paper-icon-button disabled="[[!iconList.length]]" icon="select-all" on-click="_onSelectAllButtonClick"></paper-icon-button>
+  <paper-icon-button disabled="[[!imageList.length]]" icon="select-all" on-click="_onSelectAllButtonClick"></paper-icon-button>
   <paper-tooltip>เลือกหมด</paper-tooltip>
     </div>
 
     <div style="display:inline-block">
-  <paper-icon-button disabled="[[!selectedImages.length]]" icon="delete" on-click="_onDeleteButtonClick"></paper-icon-button>
+  <paper-icon-button disabled="[[!selectedImageKeys.length]]" icon="delete" on-click="_onDeleteButtonClick"></paper-icon-button>
   <paper-tooltip>ลบรูป</paper-tooltip>
     </div>
 
     <div style="display:inline-block">
-  <paper-icon-button disabled="[[!selectedImages.length]]" icon="editor:mode-edit" on-click="_onEditButtonClick"></paper-icon-button>
+  <paper-icon-button disabled="[[!selectedImageKeys.length]]" icon="editor:mode-edit" on-click="_onEditButtonClick"></paper-icon-button>
   <paper-tooltip>แก้ไข</paper-tooltip>
     </div>
 
     <div style="display:inline-block">
-  <paper-icon-button disabled="[[!selectedImages.length]]" icon="reorder" on-click="_onReorderButtonClick"></paper-icon-button>
+  <paper-icon-button disabled="[[!selectedImageKeys.length]]" icon="reorder" on-click="_onReorderButtonClick"></paper-icon-button>
   <paper-tooltip>เรียง</paper-tooltip>
     </div>
 
     <div style="display:inline-block">
-  <paper-icon-button disabled="[[!selectedImages.length]]" icon="cancel" on-click="_onCancelButtonClick"></paper-icon-button>
+  <paper-icon-button disabled="[[!selectedImageKeys.length]]" icon="cancel" on-click="_onCancelButtonClick"></paper-icon-button>
   <paper-tooltip>ยกเลือกที่เลือก</paper-tooltip>
     </div>
 
@@ -130,11 +130,20 @@
 <iron-selector
   id="image-selector"
   attr-for-selected="key"
-  selected-values="{{selectedImages}}"
+  selected-values="{{selectedImageKeys}}"
   multi
   hidden$="[[nokey]]"
-  > <template is="dom-repeat" items="{{iconList}}" as="image" observe="order deleted" sort="{{_reorderPhoto}}">
+  > <template is="dom-repeat" items="{{imageList}}" as="image" observe="order deleted" sort="{{_sortedImages}}">
 
+<mg-item-image
+  key="[[image.key$]]"
+  class="image-thumbnail"
+  item="[[image]]"
+  selection-order="[[_computeSelectionOrder(image.key$, selectedImageKeys.*)]]"
+  on-click="_onItemClick"
+></mg-item-image>
+[[_cacheListedImage(index,image.key$)]]
+    <!--
 <mg-item-image
   key="[[image.key]]"
   class="image-icon"
@@ -145,25 +154,22 @@
   label="[[image.name]]"
   selection-order="[[image.selectionOrder$]]"
   deleted="[[image.deleted]]"
-  on-click="_onItemClick"
 >
+-->
 <!--
   <template is="dom-if" if="{{_isEditable(image.progress$,image.rep)}}">
     <paper-icon-button icon="mode-edit" class="image-edit-button-icon" on-click="_onEditImage">
     </paper-icon-button>
   </template>
--->
-</mg-item-image>
 [[_cacheIndexImage(index,image.key)]]
+-->
 
   </template>
 </iron-selector>
 
 <mg-image-editor
-  id="image-editor"
-  data="{{editingData}}"
-  after="[[afterEditingData]]"
-  before="[[beforeEditingData]]"
+  images="{{item.images}}"
+  keys="{{editorImageKeys}}"
 ></mg-image-editor>
 
   </template>
@@ -191,14 +197,15 @@ class MGGalleryEditor extends MGItemEditor {
       value: 'gallery',
     },
 
+    /* For uploading images */
     files: Object,
 
-    /* iconList collects item data to be displayed, copied and pasted.
+    /* imageList collects item data to be displayed, copied and pasted.
        Each array-item may contains..
 
       [key] : Image ID.
 
-      <role> : The role of this entry, can only be 'photo' in iconList but
+      <role> : The role of this entry, can only be 'photo' in imageList but
         could be any kind of data in clipboard, eg. gallery, product, etc.
 
       [item] : The key of owner of this data.
@@ -223,12 +230,12 @@ class MGGalleryEditor extends MGItemEditor {
       TODO
       - Type this object somewhere.
     */
-    iconList: {
+    imageList: {
       type: Array,
       value: function(){return [];},
     },
 
-    selectedImages: {
+    selectedImageKeys: {
       type: Array,
       value: function(){return [];},
     },
@@ -243,17 +250,15 @@ class MGGalleryEditor extends MGItemEditor {
       type: Object,
       observer: '_editingDataChanged',
     },
-    afterEditingData: Object,
-    beforeEditingData: Object,
 
     copyMethod: {
       type: String,
-      computed: '_computeCopyMethod(selectedImages.length)'
+      computed: '_computeCopyMethod(selectedImageKeys.length)'
     },
 
     copyIcon: {
       type: String,
-      computed: '_computeCopyIcon(selectedImages.length)'
+      computed: '_computeCopyIcon(selectedImageKeys.length)'
     },
 
     dropenter: {
@@ -261,6 +266,12 @@ class MGGalleryEditor extends MGItemEditor {
       reflectToAttribute: true,
     },
   }}
+
+  static get observers() { return [
+    '_checkIdle(imageList.length)',
+    '_imagesChanged(item.images.*)',
+    '_imageListChanged(imageList.splices)',
+  ]}
 
   connectedCallback() {
     super.connectedCallback();
@@ -296,16 +307,15 @@ class MGGalleryEditor extends MGItemEditor {
     return selectedLen ? 'ก๊อปปี้ที่เลือก' : 'ก๊อปปี้แกลเลอรี่';
   }
 
-  static get observers() { return [
-    '_selectedImagesChanged(selectedImages.splices)',
-    '_checkIdle(iconList.length)',
-  ]}
+  _computeSelectionOrder(key) {
+    return 1 + this.selectedImageKeys.indexOf(key);
+  }
 
   _checkIdle(len) {
     this.set('idle', len?false:true);
   }
 
-  _reorderPhoto(a,b) {
+  _sortedImages(a,b) {
     if (a.deleted) {
       if (b.deleted) {
         if (a.key < b.key) {
@@ -318,6 +328,7 @@ class MGGalleryEditor extends MGItemEditor {
       return -1;
     }
 
+    /*
     if (a.order) {
       if (b.order) {
         return a.order - b.order;
@@ -326,6 +337,7 @@ class MGGalleryEditor extends MGItemEditor {
     } else if (b.order) {
       return 1;
     }
+    */
 
     if (a.key < b.key) {
       return -1;
@@ -341,22 +353,6 @@ class MGGalleryEditor extends MGItemEditor {
     return true;
   }
 
-  _selectedImagesChanged(changes) {
-    if (changes) {
-      /* Remove number from deselected photo */
-      changes.indexSplices.forEach(splice => {
-        splice.removed.forEach(removedKey => {
-          this._setPhotoKeyProperty(removedKey,'selectionOrder$',null);
-        })
-      });
-
-      let orderNumber = 0;
-      this.selectedImages.forEach(imageKey => {
-        this._setPhotoKeyProperty(imageKey,'selectionOrder$',++orderNumber);
-      });
-    }
-  }
-
   _onItemClick(e) {
     if (e.shiftKey) {
       if (typeof(this._LastClickIndex) == "undefined") {
@@ -367,8 +363,8 @@ class MGGalleryEditor extends MGItemEditor {
 
       /* Finds if the last click was de/selection. */
       let selecting = true;
-      if (this.selectedImages.length && this._LastClickIndex > -1
-        && this.selectedImages.indexOf(this._CachedIndexImage[this._LastClickIndex])
+      if (this.selectedImageKeys.length && this._LastClickIndex > -1
+        && this.selectedImageKeys.indexOf(this.IndexImageCache[this._LastClickIndex])
            == -1) {
         selecting = false;
       }
@@ -376,17 +372,17 @@ class MGGalleryEditor extends MGItemEditor {
       for (let i = this._LastClickIndex + inc;
         inc > 0 ? i <= e.model.index : i >= e.model.index; i += inc) {
 
-        let ikey = this._CachedIndexImage[i];
-        let oldIndex = this.selectedImages.indexOf(ikey);
+        let ikey = this.IndexImageCache[i];
+        let oldIndex = this.selectedImageKeys.indexOf(ikey);
         if (oldIndex > -1) {
-          this.splice('selectedImages',oldIndex,1);
+          this.splice('selectedImageKeys',oldIndex,1);
         }
         if (selecting) {
-          this.push('selectedImages',ikey);
+          this.push('selectedImageKeys',ikey);
         }
       }
     }
-    if (this.selectedImages.length) {
+    if (this.selectedImageKeys.length) {
       this._LastClickIndex = e.model.index;
     } else {
       this._LastClickIndex = -1;
@@ -400,13 +396,13 @@ class MGGalleryEditor extends MGItemEditor {
     }
 
     let idx = this._ImageMap.get(imageKey);
-    if (this.iconList.length > idx &&  this.iconList[idx].key == imageKey) {
+    if (this.imageList.length > idx &&  this.imageList[idx].key == imageKey) {
       return idx;
     }
     */
 
     let i, data;
-    for (i = 0; data = this.iconList[i]; ++i) {
+    for (i = 0; data = this.imageList[i]; ++i) {
       //this._ImageMap.set(data.key, i);
       if (data.key == imageKey) {
         if (cb) { cb(i,data); }
@@ -422,8 +418,8 @@ class MGGalleryEditor extends MGItemEditor {
   _setPhotoKeyProperty(imageKey,prop,val) {
     let idx = this._indexImage(imageKey);
     if (idx !== -1) {
-      if (this.iconList[idx][prop] != val) {
-        this.set(['iconList',idx,prop],val);
+      if (this.imageList[idx][prop] != val) {
+        this.set(['imageList',idx,prop],val);
       }
     }
   }
@@ -499,7 +495,7 @@ class MGGalleryEditor extends MGItemEditor {
               MHA.registerRepresentation(blob, {
                 key: thumbnail => {
 
-                  this.push('iconList',{
+                  this.push('imageList',{
                     item: itemKey,
                     role: 'photo',
                     key: imageKey,
@@ -559,7 +555,7 @@ class MGGalleryEditor extends MGItemEditor {
     console.assert(role, "Role is missing");
 
     MHA.setItem(itemKey,{
-        _uid: uid,
+        uid$: uid,
         name: name,
         role: role,
         time: firebase.database.ServerValue.TIMESTAMP,
@@ -579,27 +575,22 @@ class MGGalleryEditor extends MGItemEditor {
     this._uploadReps(uid,itemKey,files);
   }
 
-  _getDataError(error) {
-    console.error("ERR", error);
-    this._ItemReference.off('value', this._onItemSnapshot, this);
-    delete this._ItemReference;
-  }
-
   /* TODO
    * - Unify data updating function, this and updateChanges.
    *   Could start by turning mg-data into a wrapper arond
    *   a global class data.
    */
+   /*
   _keyChanged(itemKey) {
     delete this._LastClickIndex;
 
-    this.iconList.forEach((icon,index) => {
-      this.set(['iconList',index,'thumbnail'],null);
+    this.imageList.forEach((icon,index) => {
+      this.set(['imageList',index,'thumbnail'],null);
     });
 
-    this.splice('iconList',0,this.iconList.length);
+    this.splice('imageList',0,this.imageList.length);
 
-    this.splice('selectedImages',0,this.selectedImages.length);
+    this.splice('selectedImageKeys',0,this.selectedImageKeys.length);
 
     super._keyChanged(itemKey);
 
@@ -634,49 +625,48 @@ class MGGalleryEditor extends MGItemEditor {
               deleted: image.deleted,
               roi: image.roi,
             };
-            this.push('iconList', icon);
+            this.push('imageList', icon);
           }
         } break;
         default:
       }
     }
   }
+  */
 
-  /* Set image thumbnails from global notification */
-  updateChanges(path,value) {
-    switch(path[0]) {
-      case 'cover': {
-        this.set('cover',value);
-      } break;
-      case 'name': {
-        this.set('name', value);
-      } break;
-      case 'role': {
-        this.set('role',value);
-      } break;
-      case 'images': {
-        let imageKey = path[1];
+  _imagesChanged(change) {
+    switch(change.path.length) {
+    case 11: { /* item.images */
+      this.splice('selectedImageKeys',0,this.selectedImageKeys.length);
+      this.splice('imageList',0,this.imageList.length);
+      for (let key in change.value) {
+        this._addImage(key, change.value[key]);
+      }
+    } break;
+    default: {
+      console.log('DEBUG', change);
+    }}
+  }
 
-        switch(path.length) {
-          case 2: {
-            this._indexImage(imageKey,null,cb => {
-              this.push('iconList', {item:this.key, key:imageKey, role:'photo'});
-            });
-          } break;
-          case 3: {
-            let imageProperty = path[2];
-            this._indexImage(imageKey,idx => {
-              this.set(['iconList',idx,imageProperty], value);
-            });
-          } break;
-          default:
-            break;
-        }
-
-      } break;
+  _addImage(key, image) {
+    image.key$ = key;
+    if (!this.__dataLinkedPaths || !this.__dataLinkedPaths['item.images.'+key]) {
+      this.push('imageList', image);
+    } else {
+      this.set(this.__dataLinkedPaths['item.images.'+key], image);
     }
   }
 
+  _imageListChanged(splices) { if (splices) {
+    splices.indexSplices.forEach(s => {
+      s.removed.forEach(v => {
+        this.unlinkPaths('item.images.'+v.key$);
+      });
+      for (let i = s.index,so; so = s.object[i]; ++i) {
+        this.linkPaths('item.images.'+so.key$, 'imageList.'+i);
+      }
+    });
+  }}
 
   _formatSize(bytes) {
     const base = 1024;
@@ -697,13 +687,13 @@ class MGGalleryEditor extends MGItemEditor {
 
   _onReorderButtonClick(e) {
     let registerData = {};
-    let autoNumber = this.selectedImages.length;
+    let autoNumber = this.selectedImageKeys.length;
 
-    this.iconList.map((item, idx) => {
+    this.imageList.map((item, idx) => {
       return {index: idx, order:item.order|| Number.MAX_SAFE_INTEGER};
     })
     .sort((a,b) => a.order - b.order)
-    .map(item => this.iconList[item.index])
+    .map(item => this.imageList[item.index])
     .forEach(icon => {
         if (icon.selectionOrder$ == 1) {
           registerData['home/'+MHA.AU.currentUser.uid+'/items/'+this.key+'/cover'] = icon.key;
@@ -715,54 +705,57 @@ class MGGalleryEditor extends MGItemEditor {
     MHA.DB.ref().update(registerData, error => {
       console.assert(!error,"ERR updating order");
     });
-    this.splice('selectedImages',0,this.selectedImages.length);
+    this.splice('selectedImageKeys',0,this.selectedImageKeys.length);
   }
 
   _onDeleteButtonClick(e) {
     let registerData = {};
-    let selectedImages = this.selectedImages;
+    let selectedImageKeys = this.selectedImageKeys;
 
-    this.selectedImages.forEach(selectedKey => {
+    this.selectedImageKeys.forEach(selectedKey => {
       let del = MHA.getItem({[this.key]:{images:{[selectedKey]:{deleted:null}}}}) ? null:true;
       MHA.setItem(this.key, {images:{[selectedKey]:{deleted:del}}});
       registerData['home/'+MHA.AU.currentUser.uid+'/items/'+this.key+'/images/'+selectedKey+'/deleted'] = del;
     });
-    this.splice('selectedImages',0,this.selectedImages.length);
+    this.splice('selectedImageKeys',0,this.selectedImageKeys.length);
 
     MHA.DB.ref().update(registerData, error => {
         console.assert(!error,"ERR updating deletion");
     });
   }
 
-  _cacheIndexImage(index,imageKey) {
-    let _CachedIndexImage = (this._CachedIndexImage || (this._CachedIndexImage = []));
-    _CachedIndexImage[index] = imageKey;
+  /* This will update a cache that match the actual listed result of
+   * dom-repeat to avoid dealing with sorted/filtered results.
+   */
+  _cacheListedImage(index,imageKey) {
+    let IndexImageCache = (this.IndexImageCache || (this.IndexImageCache = []));
+    IndexImageCache[index] = imageKey;
   }
 
   _onSelectAllButtonClick(e) {
-    for (let i = 0; i < this.iconList.length; i++) {
-      let imageKey = this._CachedIndexImage[i];
-      let oldIndex = this.selectedImages.indexOf(imageKey);
+    for (let i = 0; i < this.imageList.length; i++) {
+      let imageKey = this.IndexImageCache[i];
+      let oldIndex = this.selectedImageKeys.indexOf(imageKey);
       if (oldIndex > -1) {
-        this.splice('selectedImages',oldIndex,1);
+        this.splice('selectedImageKeys',oldIndex,1);
       } else {
-        this.push('selectedImages',imageKey);
+        this.push('selectedImageKeys',imageKey);
       }
     }
   }
 
   _onCancelButtonClick(e) {
-    this.splice('selectedImages',0,this.selectedImages.length);
+    this.splice('selectedImageKeys',0,this.selectedImageKeys.length);
     this._LastClickIndex = -1;
   }
 
+  /*
   _editingDataChanged(data,oldData) {
 
     this.unlinkPaths('editingData');
-    let idx = this.iconList.indexOf(data);
+    let idx = this.imageList.indexOf(data);
     if (idx != -1) {
-      /* Receiving server update */
-      this.linkPaths('editingData',['iconList',idx]);
+      this.linkPaths('editingData',['imageList',idx]);
     }
 
     this._EditingSelection = this._EditingSelection || [];
@@ -775,25 +768,33 @@ class MGGalleryEditor extends MGItemEditor {
         let currentIdx = this._EditingSelection.indexOf(data.key);
 
         if (currentIdx != -1) {
-          this.set('beforeEditingData',this.iconList[this._indexImage(this._EditingSelection[(currentIdx-1+slen) % slen])]);
-          this.set('afterEditingData',this.iconList[this._indexImage(this._EditingSelection[(currentIdx+1) % slen])]);
+          this.set('beforeEditingData',this.imageList[this._indexImage(this._EditingSelection[(currentIdx-1+slen) % slen])]);
+          this.set('afterEditingData',this.imageList[this._indexImage(this._EditingSelection[(currentIdx+1) % slen])]);
         }
       }
     } else {
       this._EditingSelection.splice(0,this._EditingSelection.length);
     }
   }
+  */
+
+  /*
+  _onEditButtonClick(e) {
+    this._EditingSelection = [].concat(this.selectedImageKeys);
+    this._indexImage(this._EditingSelection[0], idx => {
+      this.set('editingData',this.imageList[idx]);
+    });
+    this.splice('selectedImageKeys',0,this.selectedImageKeys.length);
+  }
+  */
 
   _onEditButtonClick(e) {
-    this._EditingSelection = [].concat(this.selectedImages);
-    this._indexImage(this._EditingSelection[0], idx => {
-      this.set('editingData',this.iconList[idx]);
-    });
-    this.splice('selectedImages',0,this.selectedImages.length);
+    this.set('editorImageKeys', [].concat(this.selectedImageKeys));
+    this.splice('selectedImageKeys',0,this.selectedImageKeys.length);
   }
 
   _onCopyButtonClick(e) {
-    if (this.selectedImages.length == 0) {
+    if (this.selectedImageKeys.length == 0) {
       /* Copy as gallery  */
 
       let copy = {
@@ -809,20 +810,20 @@ class MGGalleryEditor extends MGItemEditor {
     }
 
     /* Copy as image(s) */
-    this.selectedImages.forEach(imageKey => {
+    this.selectedImageKeys.forEach(imageKey => {
       this._indexImage(imageKey, idx => {
         let copy = {
           role: 'photo',
-          name: this.iconList[idx].name,
-          thumbnail: this.iconList[idx].thumbnail,
-          rep: this.iconList[idx].rep,
-          roi: this.iconList[idx].roi,
+          name: this.imageList[idx].name,
+          thumbnail: this.imageList[idx].thumbnail,
+          rep: this.imageList[idx].rep,
+          roi: this.imageList[idx].roi,
         };
         this.push('clipboardList',copy);
       });
     });
 
-    this.splice('selectedImages',0,this.selectedImages.length);
+    this.splice('selectedImageKeys',0,this.selectedImageKeys.length);
   }
 
   _onClearButtonClick(e) {

@@ -247,13 +247,22 @@ class MGImageEditor extends Polymer.GestureEventListeners(
   static get is() { return 'mg-image-editor'; }
 
   static get properties() { return {
-    data: {
+    images: {
       type: Object,
       notify: true,
-      observer: '_dataChanged',
     },
-    after: Object,
-    before: Object,
+
+    keys: {
+      type: Array,
+      observer: '_keysChanged',
+    },
+    singleKey: Boolean,
+
+    image: {
+      type: Object,
+      notify: true,
+      observer: '_imageChanged',
+    },
 
     rep: {
       type: String,
@@ -721,20 +730,33 @@ class MGImageEditor extends Polymer.GestureEventListeners(
     }
   }
 
-  _dataChanged(data) {
+  _keysChanged(keys,oldKeys) {
+    if (oldKeys && oldKeys.length) {
+      this.unlinkPaths('images.'+oldKeys[0]);
+    }
+    if (keys && keys.length) {
+      this.set('image',this.images[keys[0]]);
+      this.linkPaths('images.'+keys[0], 'image');
+      this.set('singleKey', keys.length == 1 ? true : false);
+    } else {
+      this.set('image', undefined);
+    }
+  }
+
+  _imageChanged(image) {
     this.set('edited',false);
-    if (data) {
+    if (image) {
       this.set('active',true);
       this.style.opacity = 1;
       this.set('loading', true);
 
-      data.roi || this.set('data.roi', [0,0,1,1] );
+      image.roi || this.set('image.roi', [0,0,1,1] );
       this.setProperties({
-        rep: data.rep,
-        dataLeft: data.roi[0],
-        dataTop: data.roi[1],
-        dataWidth: data.roi[2],
-        dataHeight: data.roi[3],
+        rep: image.rep,
+        roiLeft: image.roi[0],
+        roiTop: image.roi[1],
+        roiWidth: image.roi[2],
+        roiHeight: image.roi[3],
       });
 
     } else {
@@ -781,26 +803,17 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
   _deactivateClose(e) {
     this.style.opacity = 0;
     Polymer.Async.timeOut.run(() => {
-      this.set('data',null);
+      this.set('keys',null);
     }, 250);
   }
 
   _deactivateSave(e) {
-    let roi = (this.dataLeft == 0 && this.dataTop == 0 && this.dataWidth == 1 && this.dataHeight == 1)
+    let roi = (this.roiLeft == 0 && this.roiTop == 0 && this.roiWidth == 1 && this.roiHeight == 1)
       ? null
-      : [this.dataLeft,this.dataTop,this.dataWidth,this.dataHeight];
-    this.set('data.roi', roi);
-    /* Update database */
-    let itemKey = this.data.item;
-    if (itemKey) {
-
-        MHA.DB.ref().update({['home/'+MHA.AU.currentUser.uid+'/items/'+itemKey+'/images/'+this.data.key+'/roi']: roi}, error => {
-          error && console.error("ERR",error);
-        });
-    }
-
+      : [this.roiLeft,this.roiTop,this.roiWidth,this.roiHeight];
+    this.set('image.roi', roi);
     this.set('edited',false);
-    if (!this.after)
+    if (this.singleKey)
       this._deactivateClose(e)
   }
 
@@ -882,12 +895,12 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
 
   }
 
-  _setPreviousData(e) {
-    this.set('data',this.before);
+  _setPreviousKey(e) {
+    this.set('keys',this.keys.slice(-1).concat(this.keys.slice(0,-1)));
   }
 
-  _setNextData(e) {
-    this.set('data',this.after);
+  _setNextKey(e) {
+    this.set('keys',this.keys.slice(1).concat(this.keys.slice(0,1)));
   }
 }
 
