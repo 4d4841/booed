@@ -280,7 +280,7 @@ class MGVariantsEditor extends MHA.Configurations(MHA.Items(Polymer.Element)) {
 
   static get observers() { return [
     '_selectedTypeDefChanged(selectedTypeDef.name,selectedTypeDef.custom)',
-    '_subvariantListChanged(subvariantList.splices)',
+    '_subvariantListSpliced(subvariantList.splices)',
     '_variantTypeChanged(variant.type)',
     '_subvariantsChanged(variant.variants.*)',
     '_languageChanged(language, variant.type)',
@@ -359,7 +359,7 @@ class MGVariantsEditor extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     }
   }
 
-  _subvariantListChanged(splices) {
+  _subvariantListSpliced(splices) {
     if (splices) {
       splices.indexSplices.forEach(s => {
         s.removed.forEach(v => {

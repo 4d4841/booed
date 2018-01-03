@@ -22,17 +22,8 @@
   <script>
 /* MHA stands for Moon HyunA */
 var MHA = {
-  representations: new Map(),
   dataInstances: new Map(),
   dataNotifierStates: new Map(),
-
-  clipboardList: [],
-
-  items: {},
-
-  configurations: {
-    language: 'th',
-  },
 
   addInstance: function(path, instance) {
     let instances = this.dataInstances.get(path);
@@ -71,6 +62,16 @@ var MHA = {
       }
     }
   },
+
+  clipboardList: [],
+
+  items: {},
+
+  configurations: {
+    language: 'th',
+  },
+
+  representations: new Map(),
 
   registerRepresentation: function( keyOrBlob, srcCallback, contentType ) {
      /*XXX UID of other user */

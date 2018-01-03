@@ -54,7 +54,9 @@
 }
 
 .image-thumbnail {
-  margin: 0 5px 5px 0;
+  margin: 2px;
+  width: 124px;
+  height: 124px;
   --mg-image: {
     width: 120px;
     height: 120px;
@@ -270,7 +272,7 @@ class MGGalleryEditor extends MGItemEditor {
   static get observers() { return [
     '_checkIdle(imageList.length)',
     '_imagesChanged(item.images.*)',
-    '_imageListChanged(imageList.splices)',
+    '_imageListSpliced(imageList.splices)',
   ]}
 
   connectedCallback() {
@@ -657,7 +659,7 @@ class MGGalleryEditor extends MGItemEditor {
     }
   }
 
-  _imageListChanged(splices) { if (splices) {
+  _imageListSpliced(splices) { if (splices) {
     splices.indexSplices.forEach(s => {
       s.removed.forEach(v => {
         this.unlinkPaths('item.images.'+v.key$);

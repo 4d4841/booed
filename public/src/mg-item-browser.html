@@ -82,7 +82,7 @@ class MGItemBrowser extends MHA.Configurations(MHA.Items(Polymer.Element)) {
 
   static get observers() { return [
     '_itemsChanged(items.*)',
-    '_itemListChanged(itemList.splices)',
+    '_itemListSpliced(itemList.splices)',
   ]}
 
   _selectedKeyChanged(key, oldKey) {
@@ -137,7 +137,7 @@ class MGItemBrowser extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     } break; }
   }
 
-  _itemListChanged(splices) { if (splices) {
+  _itemListSpliced(splices) { if (splices) {
     splices.indexSplices.forEach(s => {
       s.removed.forEach(v => {
         if (v === this.selectedItem) {
