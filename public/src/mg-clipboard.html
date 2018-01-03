@@ -11,21 +11,19 @@
 `::::::::.::::::::..::::::::::...:::.....:::.....:::...::::::...:::.............:::...::::::::..::'
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="mg-data.html">
 
     <dom-module id="mg-clipboard">
   <template strip-whitespace>
   </template>
   <script>
 
+  /* TODO
+   * - Store clipboard data in local storage.
+   */
 var MGClipboard;
 
 (function() {
-
-let __MGClipboardData = [];
-
-let __MGClipboardInstances = [];
-let __MGClipboardNotifying = false;
 
 MGClipboard = class __MGClipboard extends Polymer.Element {
   static get is() { return 'mg-clipboard'; }
@@ -33,37 +31,28 @@ MGClipboard = class __MGClipboard extends Polymer.Element {
   static get properties() { return {
     clipboardList: {
       type: Array,
-      value: __MGClipboardData,
+      value: MHA.clipboardList,
       notify: true,
     },
   }}
 
   static get observers() { return [
-    '_clipboardChanged(clipboardList.splices)'
+    '_clipboardListChanged(clipboardList.*)',
   ]}
 
   connectedCallback() {
     super.connectedCallback();
-    __MGClipboardInstances.push(this);
+    MHA.addInstance('clipboardList',this)
   }
 
   disconnectedCallback() {
-    __MGClipboardInstances.splice(__MGClipboardInstances.indexOf(this),1);
+    MHA.removeInstance('clipboardList', this)
     super.disconnectedCallback();
   }
 
-  _clipboardChanged(splices) {
-    if (!__MGClipboardNotifying && splices) {
-      __MGClipboardNotifying = true;
-      __MGClipboardInstances.forEach(instance => {
-        if (instance != this) {
-          instance.notifySplices('clipboardList', splices);
-        }
-      });
-      __MGClipboardNotifying = false;
-    }
+  _clipboardListChanged(change) {
+    MHA.notifyPath(this, 'clipboardList', change.path, change.value);
   }
-
 }
 
 customElements.define(MGClipboard.is, MGClipboard);

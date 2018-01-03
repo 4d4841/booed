@@ -22,15 +22,17 @@
   <script>
 /* MHA stands for Moon HyunA */
 var MHA = {
+  representations: new Map(),
+  dataInstances: new Map(),
+  dataNotifierStates: new Map(),
+
+  clipboardList: [],
+
   items: {},
 
   configurations: {
     language: 'th',
   },
-
-  representations: new Map(),
-  dataInstances: new Map(),
-  dataNotifierStates: new Map(),
 
   addInstance: function(path, instance) {
     let instances = this.dataInstances.get(path);
@@ -46,15 +48,15 @@ var MHA = {
     instances.delete(instance);
   },
 
-  notifyInstances: function(instance, path, value) {
+  notifyPath: function(instance, path, value) {
     let notifyState = this.dataNotifierStates.get(path);
     if (!notifyState /* No state exists. Takes the lead. */
       || (notifyState.target != instance && value !== notifyState.value)) {
       /* Or got a reentrance with an update to an active path. */
       this.dataNotifierStates.set(path, {value: value, target: instance});
-      this.dataInstances.forEach((instances, activePath) => {
-        if (path.startsWith(activePath)) {
-          instances.forEach(sibling => {
+      this.dataInstances.forEach((allInstances, activePath) => {
+        if (path.startsWith(activePath+'.') || path === activePath) {
+          allInstances.forEach(sibling => {
             if (sibling != instance) {
               sibling.notifyPath(path);
             }
@@ -275,32 +277,34 @@ var MHA = {
   },
 
   set: function(path, value) {
+    path = Polymer.Path.normalize(path);
     let v = this.get(path);
     if (v !== value) {
       /* XXX Filter ...$ ? */
       this.Path.deepStruct(this, path, value);
       if (!path.endsWith('$')) { /* Struct$ will leak, but better forbid them */
-        this.notifyInstances(this, path, value);
+        this.notifyPath(this, path, value);
       }
     }
   },
 
   get: function(path) {
+    path = Polymer.Path.normalize(path);
     return this.Path.deepGet(this.Path.deepStruct({}, path, null), this);
   },
 
   /* TODO make a behavior of this */
   Path: {
-    deepGet(target, source, fill) {
+    deepGet(target, source, shouldFill) {
       for (let p in target) {
         if (source[p] && target[p] === null) {
-          if (fill) {
+          if (shouldFill) {
             target[p] = source[p];
           } else {
             return source[p];
           }
         } else if (typeof source[p] !== 'undefined') {
-          if (fill) {
+          if (shouldFill) {
             _(target[p], source[p], true);
           } else {
             return this.deepGet(target[p], source[p]);
@@ -436,25 +440,21 @@ class MGData extends Polymer.Element {
     '_dataChanged(configurations.*)',
   ]}
 
-  constructor() {
-    super();
-  }
-
   connectedCallback() {
     super.connectedCallback();
-    MHA.addInstance('items.',this);
-    MHA.addInstance('configurations.',this);
+    MHA.addInstance('items',this);
+    MHA.addInstance('configurations',this);
   }
 
   disconnectedCallback() {
-    MHA.removeInstance('items.',this);
-    MHA.removeInstance('configurations.',this);
+    MHA.removeInstance('items',this);
+    MHA.removeInstance('configurations',this);
     super.disconnectedCallback();
   }
 
   /* Didn't test, it should work :-P */
   _dataChanged(change) {
-    MHA.notifyInstances( this, change.path, change.value );
+    MHA.notifyPath( this, change.path, change.value );
   }
 
 }
@@ -632,11 +632,11 @@ MHA.Configurations = (superClass) => { return class extends Polymer.mixinBehavio
 
   connectedCallback() {
     super.connectedCallback();
-    MHA.addInstance('configurations.', this);
+    MHA.addInstance('configurations', this);
   }
 
   disconnectedCallback() {
-    MHA.removeInstance('configurations.', this);
+    MHA.removeInstance('configurations', this);
     super.disconnectedCallback();
   }
 
@@ -644,7 +644,7 @@ MHA.Configurations = (superClass) => { return class extends Polymer.mixinBehavio
     this.set('language',language);
   }
   __configurationsChanged(change) {
-    MHA.notifyInstances(this, change.path, change.value);
+    MHA.notifyPath(this, change.path, change.value);
   }
 }}
 
@@ -667,16 +667,16 @@ MHA.Items = (superClass) => { return class extends superClass {
 
   connectedCallback() {
     super.connectedCallback();
-    MHA.addInstance('items.', this);
+    MHA.addInstance('items', this);
   }
 
   disconnectedCallback() {
-    MHA.removeInstance('items.', this);
+    MHA.removeInstance('items', this);
     super.disconnectedCallback();
   }
 
   __itemsChanged(change) {
-    MHA.notifyInstances(this, change.path, change.value);
+    MHA.notifyPath(this, change.path, change.value);
   }
 }}
 
