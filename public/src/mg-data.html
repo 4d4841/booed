@@ -58,7 +58,7 @@ var MHA = {
         if (path.startsWith(activePath+'.') || path === activePath) {
           allInstances.forEach(sibling => {
             if (sibling != instance) {
-              sibling.notifyPath(path);
+              sibling.notifyPath(path,value);
             }
           });
         }
