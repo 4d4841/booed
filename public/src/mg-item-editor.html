@@ -60,7 +60,7 @@
 var MGItemEditor
 (function() {
 
-MGItemEditor = class __MGItemEditor extends MHA.Configurations(Polymer.Element) {
+MGItemEditor = class __MGItemEditor extends MHA.Configurations(Moongom119) {
 
   static get is() { return 'mg-item-editor'; }
 
@@ -84,10 +84,12 @@ MGItemEditor = class __MGItemEditor extends MHA.Configurations(Polymer.Element) 
       value: true,
     },
 
+    /*
     name: {
       type: String,
       notify: true,
     },
+    */
 
     clipboardList: {
       type: Array,

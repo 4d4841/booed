@@ -223,7 +223,9 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
   static get properties() { return {
     me: Object,
 
-    /* Tracking server side data */
+    /* Tracking server side data, used for dirty checking values if they
+     * are needed to be updated on the server side or not.
+     */
     dbitems: {
       type: Object,
       value: function(){return {};},
@@ -420,14 +422,20 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
       this._UidChangedCallback = {
         ref: MHA.DB.ref('home').child(uid).child('items'),
       };
+
+      /* Update key$ on retriving server data, key$ are for identifying the object
+       * so they can back-link themselves from an array entry or elements.
+       * The data tree ends properties with '$' to indicate that the values are
+       * local to the application and may not be stored on the server.
+       */
       this._UidChangedCallback.child_changed = this._UidChangedCallback.ref.on('child_changed', function(snapshot) {
         /* Store a different copy of items data for testing the needs for syncing */
         this.set('dbitems.'+snapshot.key, snapshot.val());
-        this.set('items.'+snapshot.key, snapshot.val());
+        this.set('items.'+snapshot.key, Object.assign(snapshot.val(), {key$:snapshot.key}));
       }, function(error){}, this);
       this._UidChangedCallback.child_added = this._UidChangedCallback.ref.on('child_added', function(snapshot) {
         this.set('dbitems.'+snapshot.key, snapshot.val());
-        this.set('items.'+snapshot.key, snapshot.val());
+        this.set('items.'+snapshot.key, Object.assign(snapshot.val(), {key$:snapshot.key}));
 
         /*
         let val = snapshot.val();

@@ -218,7 +218,7 @@
 
   </template>
   <script>
-class MGVariantsEditor extends MHA.Configurations(MHA.Items(Polymer.Element)) {
+class MGVariantsEditor extends MHA.Configurations(MHA.Items(Moongom119)) {
   static get is() { return 'mg-variant-editor'; }
 
   static get properties() { return {
@@ -280,7 +280,7 @@ class MGVariantsEditor extends MHA.Configurations(MHA.Items(Polymer.Element)) {
 
   static get observers() { return [
     '_selectedTypeDefChanged(selectedTypeDef.name,selectedTypeDef.custom)',
-    '_subvariantListSpliced(subvariantList.splices)',
+    '_linkSplicedKeyedArraySelectionPaths(subvariantList.splices,"variant.variants","subvariantList","selectedSubvariant")',
     '_variantTypeChanged(variant.type)',
     '_subvariantsChanged(variant.variants.*)',
     '_languageChanged(language, variant.type)',
@@ -359,37 +359,6 @@ class MGVariantsEditor extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     }
   }
 
-  _subvariantListSpliced(splices) {
-    if (splices) {
-      splices.indexSplices.forEach(s => {
-        s.removed.forEach(v => {
-          //this.variantsDataMap.delete(v);
-
-          if (v === this.selectedSubvariant) {
-            console.assert(this.__dataLinkedPaths[this.__dataLinkedPaths['variant.variants.'+v.key$]] == 'selectedSubvariant', 'XXX');
-            this.unlinkPaths(this.__dataLinkedPaths['variant.variants.'+v.key$]);
-            this.set('selectedSubvariant', undefined);
-          }
-
-          this.unlinkPaths('variant.variants.'+v.key$);
-
-        });
-        /* Re-link all from the changed index */
-        for(let i = s.index,so; so = s.object[i]; ++i) {
-          //this.variantsDataMap.set(so,i);
-          this.linkPaths('variant.variants.'+so.key$,'subvariantList.'+i);
-          if (so === this.selectedSubvariant) {
-            this.linkPaths('subvariantList.'+i,'selectedSubvariant');
-          } else {
-            /* Clear any possible selectedSubvariant's linked path */
-            this.unlinkPaths('subvariantList.'+i);
-          }
-        }
-
-      });
-    }
-  }
-
   _addSubvariant(key,variant) {
     if(!this.__dataLinkedPaths || !this.__dataLinkedPaths['variant.variants.'+key]) {
       variant.key$ = key;
@@ -412,8 +381,7 @@ class MGVariantsEditor extends MHA.Configurations(MHA.Items(Polymer.Element)) {
      */
 
     switch(change.path.length) {
-    case 16: {
-      /* variant.variants */
+    case 16: { /* variant.variants */
       let nowKey = this.selectedKey;
       this.set('selectedKey',null);
       this.splice('subvariantList',0,this.subvariantList.length);
@@ -426,23 +394,19 @@ class MGVariantsEditor extends MHA.Configurations(MHA.Items(Polymer.Element)) {
         }
       }
     } break;
-    case 37: {
-      /* variant.variants.${key} */
-      if (change.value === null) {
-        this.splice('subvariantList',this.__dataLinkedPaths[change.path].split('.').pop(),1);
+    case 37: { /* variant.variants.< 20 chars new key > */
+      if (!change.value) {
+        if (this.variant.variants && !Object.values(this.variant.variants).some(value => value)) {
+          this.set('variant.variants', null);
+        }
       } else if (!this.__dataLinkedPaths || !this.__dataLinkedPaths[change.path]) {
         this._addSubvariant(change.path.slice(-20), change.value);
       } else {
-        /* XXX Wouldn't be here as all subvariants were spliced out in case 16.
-         * Just to keep the pattern in consistency.
-         */
-        let key = change.path.slice(-20);
-        change.value.key$ = key;
-        this.set(this.__dataLinkedPaths[change.path], change.value);
-        if (key == this.selectedKey) {
-          this.set('selectedSubvariant', change.value);
-        }
+        console.log('DEBUG', change);
       }
+      /* XXX Shouldn't be anything else as all subvariants were spliced out in case 16.
+       * There will be no update.
+       */
     } break;
     case 47: if (change.path.endsWith('.selected$')) {
       /* variant.variants.${key}.selected$ */
@@ -526,10 +490,8 @@ class MGVariantsEditor extends MHA.Configurations(MHA.Items(Polymer.Element)) {
   _onRemoveVariant(e) {
     let deletingKey = this.selectedKey;
     this.set('selectedKey',null);
+    this.splice('subvariantList',/\d+$/.exec(this.__dataLinkedPaths['variant.variants.'+deletingKey])[0],1);
     this.set('variant.variants.'+deletingKey, null);
-    if (this.variant.variants && !Object.values(this.variant.variants).some(value => value)) {
-      this.set('variant.variants', null);
-    }
   }
 
   _onDuplicateSelection(e) {

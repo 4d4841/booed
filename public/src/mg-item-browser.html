@@ -59,7 +59,7 @@
 
   </template>
   <script>
-class MGItemBrowser extends MHA.Configurations(MHA.Items(Polymer.Element)) {
+class MGItemBrowser extends MHA.Configurations(MHA.Items(Moongom119)) {
   static get is() { return 'mg-item-browser'; }
   static get properties() { return {
 
@@ -78,11 +78,12 @@ class MGItemBrowser extends MHA.Configurations(MHA.Items(Polymer.Element)) {
       type: Object,
       notify: true,
     },
+
   }}
 
   static get observers() { return [
     '_itemsChanged(items.*)',
-    '_itemListSpliced(itemList.splices)',
+    '_linkSplicedKeyedArraySelectionPaths(itemList.splices,"items","itemList","selectedItem")',
   ]}
 
   _selectedKeyChanged(key, oldKey) {
@@ -118,44 +119,16 @@ class MGItemBrowser extends MHA.Configurations(MHA.Items(Polymer.Element)) {
         /*delete item*/
       } else if (!this.__dataLinkedPaths || !this.__dataLinkedPaths[change.path]) {
         /* New item, create a thumbnail */
-        let key = change.path.slice(-20);
-        change.value.key$ = key;
+        let key = change.value.key$;
+        console.assert(key, 'no key');
         this.unshift('itemList', change.value);
         if (key == this.selectedKey) {
           this.set('selectedItem', this.items[key]);
           this.linkPaths(this.__dataLinkedPaths['items.'+key], 'selectedItem');
         }
-      } else {
-        /* Update existing item to new data. */
-        let key = change.path.slice(6);
-        change.value.key$ = key;
-        this.set(this.__dataLinkedPaths[change.path], change.value);
-        if (key == this.selectedKey) {
-          this.set('selectedItem', change.value);
-        }
       }
     } break; }
   }
-
-  _itemListSpliced(splices) { if (splices) {
-    splices.indexSplices.forEach(s => {
-      s.removed.forEach(v => {
-        if (v === this.selectedItem) {
-          this.unlinkPaths(this.__dataLinkedPaths['items.'+v.key$]);
-          this.set('selectedItem', undefined);
-        }
-        this.unlinkPaths('items'+v.key$);
-      });
-      for (let i = s.index,so; so = s.object[i]; ++i) {
-        this.linkPaths('items.'+so.key$, 'itemList.'+i);
-        if (so === this.selectedItem) {
-          this.linkPaths('itemList.'+i, 'selectedItem');
-        } else {
-          this.unlinkPaths('itemList.'+i);
-        }
-      }
-    });
-  }}
 
   _formatRoleIcon(role) {
     return MGIconForRole(role);

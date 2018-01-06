@@ -126,13 +126,11 @@
 </style>
 
     <div class="image-info" hidden$="[[loading]]">
-  <template is="dom-if" if="[[!image.item]]">
+  <template is="dom-if" if="[[!image.key$]]">
 <span>clipboard image<iron-icon style="--iron-icon-height:15px" icon="help"></iron-icon>
   <paper-tooltip>
-    editing clipboard image is not associated with an item until
-    pasting into an item triggers the server syncing.
-    until then all the modifications have hitherto been kept
-    locally within the clipboard.
+    Clipboard modifications are not synchronized onto the database server.
+    All modifications should be pasted into an item or they will disappear on a refresh.
   </paper-tooltip>
 </span><br>
   </template>
@@ -242,7 +240,7 @@
  */
 
 class MGImageEditor extends Polymer.GestureEventListeners(
-  Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Polymer.Element)
+  Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Moongom119)
 ) {
   static get is() { return 'mg-image-editor'; }
 

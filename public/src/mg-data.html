@@ -26,17 +26,19 @@ var MHA = {
   dataNotifierStates: new Map(),
 
   addInstance: function(path, instance) {
-    let instances = this.dataInstances.get(path);
-    if (!instances) {
-      instances = new Set();
-      this.dataInstances.set(path, instances);
+    let allInstances = this.dataInstances.get(path);
+    if (!allInstances) {
+      allInstances = new Set();
+      this.dataInstances.set(path, allInstances);
     }
-    instances.add(instance);
+    path = path.split('.');
+    allInstances.add(instance);
+    instance[path] = MHA[path];
   },
 
   removeInstance: function(path, instance) {
-    let instances = this.dataInstances.get(path);
-    instances.delete(instance);
+    let allInstances = this.dataInstances.get(path);
+    allInstances.delete(instance);
   },
 
   notifyPath: function(instance, path, value) {
@@ -55,13 +57,60 @@ var MHA = {
         }
       });
 
-      /* Only delete if state was not updated by other instances. */
+      /* Only delete if state was not updated by other instances.
+       * May be already deleted by another updates by a reentrancy.
+       */
       notifyState = this.dataNotifierStates.get(path);
       if (notifyState && notifyState.target == instance && notifyState.value == value) {
         this.dataNotifierStates.delete(path);
       }
     }
   },
+
+  set: function(path, value) {
+    for (let [allInstances, activePath] of this.dataInstances) {
+      if (path.startsWith(activePath+'.') || path === activePath) {
+        /* Passing set to the first instance */
+        allInstances.values().next().value.set(path, value);
+        return;
+      }
+    }
+
+    /*
+    path = Polymer.Path.normalize(path);
+    let v = this.get(path);
+    if (v !== value) {
+      this.Path.deepStruct(this, path, value);
+      if (!path.endsWith('$')) {
+        this.notifyPath(this, path, value);
+      }
+    }
+    */
+  },
+
+  get: function(path) {
+    path = Polymer.Path.normalize(path);
+    return this.Path.deepGet(this.Path.deepStruct({}, path, null), this);
+  },
+
+  /* Generate temp key */
+  tmp(ref) {
+    this._TempKeyMap = this._TempKeyMap || new Map();
+
+    if (typeof ref === 'string' && ref.startsWith('MGTMP') &&  ref.endsWith('$')) {
+        let mappedKey = this._TempKeyMap.get(ref);
+        this._TempKeyMap.delete(ref);
+
+        return mappedKey;
+    }
+
+    ref = this.DB.ref(ref).push();
+    let tmpKey = 'MGTMP'+'0'.repeat(14-idxStr.length) + idxStr + '$';
+    this._TempKeyMap.set(tmpKey, ref.key);
+
+    return tmpKey;
+  },
+
 
   clipboardList: [],
 
@@ -277,25 +326,9 @@ var MHA = {
     return this.Path.deepGet(target, this.items);
   },
 
-  set: function(path, value) {
-    path = Polymer.Path.normalize(path);
-    let v = this.get(path);
-    if (v !== value) {
-      /* XXX Filter ...$ ? */
-      this.Path.deepStruct(this, path, value);
-      if (!path.endsWith('$')) { /* Struct$ will leak, but better forbid them */
-        this.notifyPath(this, path, value);
-      }
-    }
-  },
-
-  get: function(path) {
-    path = Polymer.Path.normalize(path);
-    return this.Path.deepGet(this.Path.deepStruct({}, path, null), this);
-  },
-
   /* TODO make a behavior of this */
   Path: {
+
     deepGet(target, source, shouldFill) {
       for (let p in target) {
         if (source[p] && target[p] === null) {
@@ -412,6 +445,98 @@ if (!MHA.APP) {
   MHA.AU = MHA.APP.auth();
 }
 
+class Moongom119 extends Polymer.Element {
+
+    /* This test case is to demonstrate why this is defining its own
+    linked paths updating mechanism. Since computeLinkPaths will only
+    test path with isDescendant(), it will never match itself, thus it
+    wouldn't allow updating the value at the paths but only subproperties.
+    This overrides by testing with a/b === path to recieve notifications
+    over the linked counter-part if the value at the paired path has changed.
+
+      this.myArray = [{value:10}];
+      this.inMyArray = this.myArray[0];
+      this.linkPaths('myArray.0','inMyArray');
+      this.set('myArray.0',{value:5});
+      console.log(this.inMyArray); //10
+
+    The second case is that the value of the counter-part won't be set if
+    the modification was done in an unobservable way. This implementation
+    directly assign the paired value then propagating further effects.
+
+      this.myArray[0] = {value:15};
+      this.notifyPath('myArray.0');
+      console.log(this.inMyArray); //10
+
+    */
+
+  _setPendingPropertyOrPath(path, value, shouldNotify, isPathNotification) {
+    if (isPathNotification ||
+        Polymer.Path.root(Array.isArray(path) ? path[0] : path) !== path) {
+      if (!isPathNotification) {
+        let old = Polymer.Path.get(this, path);
+        path = /** @type {string} */ (Polymer.Path.set(this, path, value));
+        if (!path || !super._shouldPropertyChange(path, value, old)) {
+          return false;
+        }
+      }
+      this.__dataHasPaths = true;
+      if (this._setPendingProperty(/**@type{string}*/(path), value, shouldNotify)) {
+        let links = this.__dataLinkedPaths;
+        if (links) {
+          let link;
+          for (let a in links) {
+            let b = links[a];
+            if (a === path || Polymer.Path.isDescendant(a, path)) {
+              link = Polymer.Path.translate(a, b, path);
+              Polymer.Path.set(this, link, value);
+              this._setPendingPropertyOrPath(link, value, true, true);
+            } else if (b === path || Polymer.Path.isDescendant(b, path)) {
+              link = Polymer.Path.translate(b, a, path);
+              Polymer.Path.set(this, link, value);
+              this._setPendingPropertyOrPath(link, value, true, true);
+            }
+          }
+        }
+        return true;
+      }
+    } else {
+      if (this.__dataHasAccessor && this.__dataHasAccessor[path]) {
+        return this._setPendingProperty(/**@type{string}*/(path), value, shouldNotify);
+      } else {
+        this[path] = value;
+      }
+    }
+    return false;
+  }
+
+  _linkSplicedKeyedArraySelectionPaths(splices,keyPrefix,arrayPrefix,selectedPath) { if (splices) {
+    keyPrefix += '.';
+    arrayPrefix += '.';
+    splices.indexSplices.forEach(s => {
+      s.removed.forEach(v => {
+        if (v === this[selectedPath]) {
+          console.assert(v.key$,"XXX");
+          this.unlinkPaths(this.__dataLinkedPaths[keyPrefix+v.key$]);
+          this.set(selectedPath, undefined);
+        }
+        console.log(v);
+        this.unlinkPaths(keyPrefix+v.key$);
+      });
+      for (let i = s.index,so; so = s.object[i]; ++i) {
+        console.assert(so.key$,"XXX");
+        this.linkPaths(keyPrefix+so.key$, arrayPrefix+i);
+        if (so === this[selectedPath]) {
+          this.linkPaths(arrayPrefix+i, selectedPath);
+        } else {
+          this.unlinkPaths(arrayPrefix+i);
+        }
+      }
+    });
+  }}
+
+}
+
 (function() {
 class MGData extends Polymer.Element {
 
@@ -423,13 +548,13 @@ class MGData extends Polymer.Element {
     specific items currently on display */
     items: {
       type: Object,
-      value: MHA.items,
+      /*value: MHA.items,*/
       notify: true,
     },
 
     configurations: {
       type: Object,
-      value: MHA.configurations,
+      /*value: MHA.configurations,*/
       notify: true,
     },
 
@@ -464,9 +589,13 @@ MHA.Configurations = (superClass) => { return class extends Polymer.mixinBehavio
   static get properties() { return {
     configurations: {
       type: Object,
-      value: MHA.configurations,
+      /*value: MHA.configurations,*/
+      notify: true,
     },
-    language: String,
+    language: {
+      type: String,
+      notify: true,
+    },
     resources: {
       type: Object,
       value: function() {
@@ -653,7 +782,8 @@ MHA.Items = (superClass) => { return class extends superClass {
   static get properties() { return {
     items: {
       type: Object,
-      value: MHA.items,
+      /*value: MHA.items,*/
+      notify: true,
     },
   }}
 
