@@ -51,7 +51,7 @@ MGClipboard = class __MGClipboard extends Polymer.Element {
   }
 
   _clipboardListChanged(change) {
-    MHA.notifyPath(this, 'clipboardList', change.path, change.value);
+    MHA.notifyPath(this, change.path, change.value);
   }
 }
 
