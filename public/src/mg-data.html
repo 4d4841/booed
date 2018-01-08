@@ -68,24 +68,14 @@ var MHA = {
   },
 
   set: function(path, value) {
-    for (let [allInstances, activePath] of this.dataInstances) {
+    path = Polymer.Path.normalize(path);
+    for (let [activePath,allInstances] of this.dataInstances) {
       if (path.startsWith(activePath+'.') || path === activePath) {
         /* Passing set to the first instance */
         allInstances.values().next().value.set(path, value);
         return;
       }
     }
-
-    /*
-    path = Polymer.Path.normalize(path);
-    let v = this.get(path);
-    if (v !== value) {
-      this.Path.deepStruct(this, path, value);
-      if (!path.endsWith('$')) {
-        this.notifyPath(this, path, value);
-      }
-    }
-    */
   },
 
   get: function(path) {
@@ -95,6 +85,7 @@ var MHA = {
 
   /* Generate temp key */
   tmp(ref) {
+    console.log('deprecated');
     this._TempKeyMap = this._TempKeyMap || new Map();
 
     if (typeof ref === 'string' && ref.startsWith('MGTMP') &&  ref.endsWith('$')) {
@@ -277,43 +268,15 @@ var MHA = {
 
   },
 
-  /* setItem : Set an item for current user
-   * itemKey : Item key of the item.
-   * itemData : Data tree of objects & arrays to be set for the item.
-   * sync : Should sync database server. Paths end with $ will be excluded.
-   */
+  setPath: function(path, value, replacer) {
+    path = Polymer.Path.normalize(path);
 
-  setItem: function(itemKey, itemData, sync) {
-    if (sync) {
-      let registerData;
-
-      this.Path.deepSet(this, 'items.'+itemKey, itemData, (path,value) => {
-
-        if(path.endsWith('$') || typeof value === 'undefined') {
-          return {path:path, value:value, replacer:null}; /* Resign the replacer for any path end with $ */
-        }
-
-        if (value === null || Array.isArray(value) || typeof value !== 'object') {
-          if (this.get(path) !== value) {
-            if (!registerData) {
-              registerData = {[path.split('.').join('/')]: value};
-            } else {
-              registerData[path.split('.').join('/')] = value;
-            }
-          }
-        }
-
+    for (let [activePath,allInstances] of this.dataInstances) {
+      if (path.startsWith(activePath+'.') || path === activePath) {
+        /* Passing set to the first instance */
+        this.deepAssign(allInstances.values().next().value, path, value, replacer);
         return;
-      });
-
-      if (this.AU.currentUser && registerData) {
-        this.DB.ref('home').child(this.AU.currentUser.uid).update(registerData, error => {
-          console.log('Synced.',registerData);
-        });
       }
-
-    } else {
-      this.Path.deepSet(this, 'items.'+itemKey, itemData);
     }
   },
 
@@ -348,7 +311,7 @@ var MHA = {
 
       return undefined;
     },
-    /* deepSet is used to set a deep property of a Polymer Object.
+    /* deepAssign is used to set a deep property of a Polymer Object.
      * It only supports object in a path and scalar array.
      * It can not be used to set a particular array item.
      * To delete a deep property, set null as the counter-value
@@ -361,7 +324,7 @@ var MHA = {
      * or undefined for observation-only purpose.
      */
     /* TODO Supports Async setting */
-    deepSet(data, path, value, replacer) {
+    deepAssign(data, path, value, replacer) {
 
       let checkPAth = path;
 
@@ -369,9 +332,9 @@ var MHA = {
         let newReplacer;
         let r = replacer(path, value, replacer);
         if (r) {
-          if (typeof r.path !== 'undefined') { path = r.path; }
-          if (typeof r.value !== 'undefined') { value = r.value; }
-          if (typeof r.replacer !== 'undefined') { replacer = r.replacer; }
+          path = r.path;
+          value = r.value;
+          replacer = r.replacer;
         }
       }
 
@@ -404,7 +367,7 @@ var MHA = {
           data.set(path, {});
         }
         Object.keys(value).forEach(key => {
-          this.deepSet(data, path+'.'+key, value[key], replacer);
+          this.deepAssign(data, path+'.'+key, value[key], replacer);
         });
       }
 
@@ -515,21 +478,22 @@ class Moongom119 extends Polymer.Element {
     arrayPrefix += '.';
     splices.indexSplices.forEach(s => {
       s.removed.forEach(v => {
-        if (v === this[selectedPath]) {
+        if (selectedPath && v === this[selectedPath]) {
           console.assert(v.key$,"XXX");
           this.unlinkPaths(this.__dataLinkedPaths[keyPrefix+v.key$]);
           this.set(selectedPath, undefined);
         }
-        console.log(v);
         this.unlinkPaths(keyPrefix+v.key$);
       });
       for (let i = s.index,so; so = s.object[i]; ++i) {
         console.assert(so.key$,"XXX");
         this.linkPaths(keyPrefix+so.key$, arrayPrefix+i);
-        if (so === this[selectedPath]) {
-          this.linkPaths(arrayPrefix+i, selectedPath);
-        } else {
-          this.unlinkPaths(arrayPrefix+i);
+        if (selectedPath) {
+          if (so === this[selectedPath]) {
+            this.linkPaths(arrayPrefix+i, selectedPath);
+          } else {
+            this.unlinkPaths(arrayPrefix+i);
+          }
         }
       }
     });
