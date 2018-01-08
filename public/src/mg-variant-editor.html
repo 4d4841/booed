@@ -495,7 +495,7 @@ class MGVariantsEditor extends MHA.Configurations(MHA.Items(Moongom119)) {
   }
 
   _onDuplicateSelection(e) {
-    MHA.Path.deepSet( this,
+    MHA.Path.deepAssign( this,
         'variant.variants.< 20 chars new key >',
         this.variant.variants[this.selectedKey], (path, value) => {
       if (path.endsWith('$')) {

@@ -274,7 +274,7 @@ var MHA = {
     for (let [activePath,allInstances] of this.dataInstances) {
       if (path.startsWith(activePath+'.') || path === activePath) {
         /* Passing set to the first instance */
-        this.deepAssign(allInstances.values().next().value, path, value, replacer);
+        this.Path.deepAssign(allInstances.values().next().value, path, value, replacer);
         return;
       }
     }

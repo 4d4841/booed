@@ -279,7 +279,6 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
   static get observers() { return [
     '_itemsChanged(items.*)',
     '_routeDataItemKeyChanged(routeData.itemKey)',
-    '_uidItemKeyChanged(me.user.uid, itemKey)',
     '_userChanged(me.user.uid)',
     '_visibleChanged(visible)',
   ]}
@@ -306,76 +305,34 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     }
   }
 
-  _uidItemKeyChanged(uid, itemKey) {
-
-    //this.set('itemRole', itemKey ? MHA.getItem({[itemKey]:{role:null}}) : undefined );
-
-    if (this._Unsubscribe) {
-      this._Unsubscribe();
-    }
-
-    if (!uid || !itemKey) {
-      return;
-    }
-
-    /*
-    let ref,callback;
-    this._Unsubscribe = () => {ref.off('value', callback); delete this._Unsubscribe};
-    ref = MHA.DB.ref('home').child(uid).child('items').child(itemKey);
-    callback = ref.on('value', itemSS => {
-      let v = itemSS.val();
-      if (v) {
-        if (!v.role) {
-          return;
-        }
-
-        if (v.role && this.itemKey == itemKey) {
-          this.set('itemRole',v.role);
-        }
-
-        let item = {
-          uid$: uid,
-          name: v.name,
-          role: v.role,
-          time: v.time,
-          cover: v.cover,
-          variant: v.variant,
-        }
-
-        itemSS.child('images').forEach(imgRef => {
-          let val = imgRef.val();
-
-              item.images = item.images || {};
-            item.images[imgRef.key] = item.images[imgRef.key] || val;
-          item.images[imgRef.key].deleted = val.deleted || null;
-          item.images[imgRef.key].roi = val.roi || null;
-
-        });
-
-        MHA.setItem(itemSS.key,item);
-
-      } else {
-
-        // Auto delayed-reset path if no role was immediately set.
-        Polymer.Async.timeOut.run(() => {
-          if (!this.itemRole) {
-            this.set('route.path', '/');
-          }
-        }, 0);
-      }
-    }, error => {
-      console.error("ERR", error);
-      this._Unsubscribe();
-    });
-    */
-  }
-
   _itemsChanged(change) {
     let updates;
-    MHA.Path.deepSet(this,'db'+change.path, change.value, (path,value) => {
+    let path = change.path;
+    let value = change.value;
+
+    if (path.endsWith('.MGLOCALDATA$') && value === false) {
+      path = path.slice(0,-13); /* '.MGLOCALDATA$'.length */
+      value = this.get(path);
+      console.log('QQQ', path,value);
+    }
+
+    let allParts = path.split('.');
+    for (let i = 1, prop = this.items, part; part = allParts[i]; ++i) {
+      if (path.endsWith('$')) {
+        return;
+      }
+
+      prop = prop[part];
+      if (prop && prop.MGLOCALDATA$) {
+        console.log('reject',path,part)
+        return;
+      }
+    }
+
+    MHA.Path.deepAssign(this,'db'+path, value, (path,value) => {
       /* Don't update dbitems with UI properties (those with names end with '$') */
       if (path.endsWith('$')) {
-        return {path:null, replacer:null};
+        return {};
       }
 
       let dirty = false;
@@ -391,6 +348,8 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
         if (this.get(path) != value) {
           dirty = true;
         }
+      } else if (value.MGLOCALDATA$) {
+        return {};
       }
 
       if (dirty) {
@@ -431,7 +390,9 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
       this._UidChangedCallback.child_changed = this._UidChangedCallback.ref.on('child_changed', function(snapshot) {
         /* Store a different copy of items data for testing the needs for syncing */
         this.set('dbitems.'+snapshot.key, snapshot.val());
-        this.set('items.'+snapshot.key, Object.assign(snapshot.val(), {key$:snapshot.key}));
+        /* This only tries to copy new value without clobbering existing local objects or UI values */
+        /* XXX better only keep MGLOCALDATA$ and prop$ only if owning object exists */
+        MHA.Path.deepAssign(this,'items.'+snapshot.key, snapshot.val());
       }, function(error){}, this);
       this._UidChangedCallback.child_added = this._UidChangedCallback.ref.on('child_added', function(snapshot) {
         this.set('dbitems.'+snapshot.key, snapshot.val());

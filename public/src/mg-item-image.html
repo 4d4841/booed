@@ -66,9 +66,9 @@ paper-progress {
     </div>
   </template>
 
-  <template is="dom-if" if="{{showProgress}}">
+  <template is="dom-if" if="[[_computeShowProgress(item.progress$)]]">
     <paper-progress
-      value="[[progress]]"
+      value="[[item.progress$]]"
     ></paper-progress>
   </template>
 
@@ -94,10 +94,9 @@ class MGItemImage extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     roi: Array,
     deleted: Boolean,
 
-    progress: Number,
     showProgress: {
       type: Boolean,
-      computed: '_computeShowProgress(progress)',
+      computed: '_computeShowProgress(item.progress$)',
     },
 
     selectionOrder: String,
@@ -142,7 +141,8 @@ class MGItemImage extends MHA.Configurations(MHA.Items(Polymer.Element)) {
   }
 
   _itemChanged(item,oldItem) {
-    //this.set('src','images/logo-pumpkin-outline-grayout.svg');
+    //console.log('it', item);
+    this.set('src','images/logo-pumpkin-outline-grayout.svg');
   }
 
   /*
