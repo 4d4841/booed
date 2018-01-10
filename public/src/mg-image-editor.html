@@ -245,7 +245,7 @@ class MGImageEditor extends Polymer.GestureEventListeners(
   static get is() { return 'mg-image-editor'; }
 
   static get properties() { return {
-    images: {
+    item: {
       type: Object,
       notify: true,
     },
@@ -730,11 +730,11 @@ class MGImageEditor extends Polymer.GestureEventListeners(
 
   _keysChanged(keys,oldKeys) {
     if (oldKeys && oldKeys.length) {
-      this.unlinkPaths('images.'+oldKeys[0]);
+      this.unlinkPaths('item.images.'+oldKeys[0]);
     }
     if (keys && keys.length) {
-      this.set('image',this.images[keys[0]]);
-      this.linkPaths('images.'+keys[0], 'image');
+      this.set('image',this.item.images[keys[0]]);
+      this.linkPaths('item.images.'+keys[0], 'image');
       this.set('singleKey', keys.length == 1 ? true : false);
     } else {
       this.set('image', undefined);
@@ -832,10 +832,10 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
   }
 
   _setThumbnail(e) {
-    let itemKey = this.image.item;
+    let itemKey = this.item.key$;
     if (!itemKey) {
-      /* Does not generate icon if editing clipboard image (no itemKey).
-       * Stores roiThumbnail which will be used to generate the thumbnail
+      /* Does not generate icon if editing clipboard image (no image key$).
+       * XXX Stores roiThumbnail which will be used to generate the thumbnail
        * when pasting and replaces thumbnail rep with the image rep so it
        * will regenerate thumbnail from the original image.
        */
@@ -846,8 +846,7 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
       return;
     }
 
-    let imageKey = this.image.key;
-    console.assert(imageKey, "No image key?!?");
+    let imageKey = this.image.key$;
 
     /* Generating thumbnail with canvas */
     let area = (250*250);
@@ -872,20 +871,8 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
         complete: (thumbnailKey,complete) => {
           /* XXX verify current thumbnailKey */
 
-          MHA.setItem( itemKey, {
-            /* Reset roiThumbnail since it has been baked */
-            images: { [imageKey]: { thumbnail: thumbnailKey, roiThumbnail: null } },
-          });
-
-          let uid = MHA.AU.currentUser.uid;
-          let registerData = {
-            ['representations/'+thumbnailKey+'/uid']: uid,
-            ['home/'+uid+'/items/'+itemKey+'/images/'+imageKey+'/thumbnail']: thumbnailKey,
-          };
-
-          MHA.DB.ref().update(registerData, error => {
-            error && console.error("ERR",error);
-          });
+          MHA.set(['items',itemKey,'images',imageKey,'roiThumbnail'],null);
+          MHA.set(['items',itemKey,'images',imageKey,'thumbnail'],thumbnailKey);
 
         },
       });
