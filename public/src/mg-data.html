@@ -326,15 +326,18 @@ var MHA = {
     /* TODO Supports Async setting */
     deepAssign(data, path, value, replacer) {
 
-      let checkPAth = path;
-
       if (replacer) {
-        let newReplacer;
         let r = replacer(path, value, replacer);
         if (r) {
-          path = r.path;
-          value = r.value;
-          replacer = r.replacer;
+          if ('path' in r) {
+            path = r.path;
+          }
+          if ('value' in r) {
+            value = r.value;
+          }
+          if ('replacer' in r) {
+            replacer = r.replacer;
+          }
         }
       }
 
@@ -342,9 +345,7 @@ var MHA = {
        * any previously updated key while null will be used to delete values.
        * So undefined values will simply be ignored.
        */
-      if (typeof value === 'undefined'
-        || typeof path === 'undefined'
-        || path === null) {
+      if (typeof value === 'undefined' || !path) {
         return;
       }
 

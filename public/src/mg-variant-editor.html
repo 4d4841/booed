@@ -494,13 +494,14 @@ class MGVariantsEditor extends MHA.Configurations(MHA.Items(Moongom119)) {
     this.set('variant.variants.'+deletingKey, null);
   }
 
+  /* XXX: If duplicating while having other client opened, the top value will be reset */
   _onDuplicateSelection(e) {
     MHA.Path.deepAssign( this,
         'variant.variants.< 20 chars new key >',
         this.variant.variants[this.selectedKey], (path, value) => {
       if (path.endsWith('$')) {
         /* Don't copy any UI definitions */
-        return {path:null, replacer:null};
+        return {path:undefined};
       } else if (path.slice(-30).startsWith('.variants.')) {
         return {
           /* Replace old key with a new one. */
