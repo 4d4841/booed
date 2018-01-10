@@ -56,7 +56,7 @@ paper-progress {
   roi="[[roi]]"
   icon="[[_formatIcon(item)]]"
   label="[[_formatLabel(item.images, item.name, item.role, language)]]"
-  deleted$="[[deleted]]"
+  deleted$="[[item.deleted]]"
   placeholder='images/logo-pumpkin-outline-grayout.svg'
   transition="1.5s"
   spinner
@@ -92,7 +92,6 @@ class MGItemImage extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     icon: String,
     rep: String,
     roi: Array,
-    deleted: Boolean,
 
     showProgress: {
       type: Boolean,
