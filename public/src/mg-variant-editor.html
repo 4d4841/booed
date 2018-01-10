@@ -280,9 +280,8 @@ class MGVariantsEditor extends MHA.Configurations(Moongom119) {
 
   static get observers() { return [
     '_selectedTypeDefChanged(selectedTypeDef.name,selectedTypeDef.custom)',
-    '_linkKeysArraySelection(variant.variants.*,"variant.variants","subvariantList")',
+    '_linkKeysArraySelection(variant.variants.*)',
     '_variantTypeChanged(variant.type)',
-    '_subvariantsChanged(variant.variants.*)',
     '_languageChanged(language, variant.type)',
   ]}
 
@@ -365,7 +364,9 @@ class MGVariantsEditor extends MHA.Configurations(Moongom119) {
     }
   }
 
-  _subvariantsChanged(change) { if (change) {
+  _linkKeysArraySelection(change) { if (change) {
+    super._linkKeysArraySelection(change,"variant.variants","subvariantList");
+
     /* change.path : 'variant.variants.${key}.selected$'
      *
      * "variant.variants" : 16

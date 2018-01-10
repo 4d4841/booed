@@ -113,7 +113,6 @@ class MGItemBrowser extends MHA.Configurations(MHA.Items(Moongom119)) {
     case 26: {
       let key = change.path.slice(-20);
       if (key == this.selectedKey) {
-        console.log('ok',this.__dataLinkedPaths);
         this.set('selectedItem', this.items[key]);
         this.linkPaths(this.__dataLinkedPaths[change.path], 'selectedItem');
       }
