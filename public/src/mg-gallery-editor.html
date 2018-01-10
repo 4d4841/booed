@@ -135,7 +135,7 @@
   selected-values="{{selectedImageKeys}}"
   multi
   hidden$="[[nokey]]"
-  > <template is="dom-repeat" items="{{imageList}}" as="image" observe="order deleted" sort="_sortImages">
+  > <template is="dom-repeat" items="{{imageList}}" as="image" observe="order$ deleted" sort="_computeImageOrder">
 
 <mg-item-image
   key="[[image.key$]]"
@@ -170,7 +170,7 @@
 </iron-selector>
 
 <mg-image-editor
-  images="{{item.images}}"
+  item="{{item}}"
   keys="{{editorImageKeys}}"
 ></mg-image-editor>
 
@@ -272,6 +272,7 @@ class MGGalleryEditor extends MGItemEditor {
   static get observers() { return [
     '_checkIdle(imageList.length)',
     '_linkKeysArraySelection(item.images.*)',
+    '_orderChanged(item.order)',
   ]}
 
   connectedCallback() {
@@ -316,10 +317,10 @@ class MGGalleryEditor extends MGItemEditor {
     this.set('idle', len?false:true);
   }
 
-  _sortImages(a,b) {
+  _computeImageOrder(a,b) {
     if (a.deleted) {
       if (b.deleted) {
-        if (a.key < b.key) {
+        if (a.key$ < b.key$) {
           return -1;
         }
       }
@@ -329,18 +330,16 @@ class MGGalleryEditor extends MGItemEditor {
       return -1;
     }
 
-    /*
-    if (a.order) {
-      if (b.order) {
-        return a.order - b.order;
+    if ('order$' in a) {
+      if ('order$' in b) {
+        return a.order$ - b.order$;
       }
       return -1;
-    } else if (b.order) {
+    } else if ('order$' in b) {
       return 1;
     }
-    */
 
-    if (a.key < b.key) {
+    if (a.key$ < b.key$) {
       return -1;
     }
 
@@ -592,6 +591,12 @@ class MGGalleryEditor extends MGItemEditor {
     super._linkKeysArraySelection(change,"item.images","imageList");
   }
 
+  _orderChanged(order) { if (order) {
+    order.forEach((key,index) => {
+      this.set('item.images.'+key+'.order$', index);
+    });
+  }}
+
   _formatSize(bytes) {
     const base = 1024;
     const unit = ~~(Math.log(bytes) / Math.log(base));
@@ -610,25 +615,24 @@ class MGGalleryEditor extends MGItemEditor {
   }
 
   _onReorderButtonClick(e) {
-    let registerData = {};
     let autoNumber = this.selectedImageKeys.length;
+    let neworder = [...this.selectedImageKeys];
 
-    this.imageList.map((item, idx) => {
-      return {index: idx, order:item.order|| Number.MAX_SAFE_INTEGER};
-    })
-    .sort((a,b) => a.order - b.order)
-    .map(item => this.imageList[item.index])
-    .forEach(icon => {
-        if (icon.selectionOrder$ == 1) {
-          registerData['home/'+MHA.AU.currentUser.uid+'/items/'+this.key+'/cover'] = icon.key;
+    if (this.item.order) {
+      this.item.order.forEach(key => {
+        if (neworder.indexOf(key) == -1) {
+          neworder.push(key);
         }
-        registerData['home/'+MHA.AU.currentUser.uid+'/items/'+this.key+'/images/'+icon.key+'/order'] = icon.selectionOrder$ || ++autoNumber;
+      });
+    }
+
+    this.imageList.forEach(image => {
+      if (neworder.indexOf(image.key$) == -1) {
+        neworder.push(image.key$)
+      }
     });
 
-
-    MHA.DB.ref().update(registerData, error => {
-      console.assert(!error,"ERR updating order");
-    });
+    this.set('item.order', neworder);
     this.splice('selectedImageKeys',0,this.selectedImageKeys.length);
   }
 
