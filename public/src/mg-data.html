@@ -474,32 +474,52 @@ class Moongom119 extends Polymer.Element {
     return false;
   }
 
-  _linkSplicedKeyedArraySelectionPaths(splices,keyPrefix,arrayPrefix,selectedPath) { if (splices) {
-    keyPrefix += '.';
-    arrayPrefix += '.';
-    splices.indexSplices.forEach(s => {
-      s.removed.forEach(v => {
-        if (selectedPath && v === this[selectedPath]) {
-          console.assert(v.key$,"XXX");
-          this.unlinkPaths(this.__dataLinkedPaths[keyPrefix+v.key$]);
-          this.set(selectedPath, undefined);
+  /* TODO Managing selection. */
+  _linkKeysArraySelection(change,keyPrefix,arrayPrefix) {
+    if (change) {
+      if (change.path.length === keyPrefix.length) {
+        this.splice(arrayPrefix, 0, this[arrayPrefix].length);
+        for (let link in this.__dataLinkedPaths) {
+          if (link.startsWith(keyPrefix)) {
+            this.unlinkPaths(link);
+          }
         }
-        this.unlinkPaths(keyPrefix+v.key$);
-      });
-      for (let i = s.index,so; so = s.object[i]; ++i) {
-        console.assert(so.key$,"XXX");
-        this.linkPaths(keyPrefix+so.key$, arrayPrefix+i);
-        if (selectedPath) {
-          if (so === this[selectedPath]) {
-            this.linkPaths(arrayPrefix+i, selectedPath);
-          } else {
-            this.unlinkPaths(arrayPrefix+i);
+        for (let key in change.value) {
+          change.value[key].key$ = key;
+          this._orderArrayItem(arrayPrefix, change.value[key]);
+        }
+        for (let i = 0, v; v = this[arrayPrefix][i]; ++i) {
+          this.linkPaths(keyPrefix+'.'+v.key$, arrayPrefix+'.'+i);
+        }
+      } else if (change.path.length === keyPrefix.length + 21) {
+        let key = change.path.slice(-20);
+        if (!change.value) {
+          let i = /\d+$/.exec(this.__dataLinkedPaths[change.path])[0];
+          this.unlinkPaths(change.path);
+          this.splice(arrayPrefix,i,1);
+          while (i < this[arrayPrefix].length) {
+            this.linkPaths(keyPrefix+'.'+this[arrayPrefix][i].key$, arrayPrefix+'.'+i);
+            i++;
+          }
+          if (i === 0) {
+            this.set('keyPrefix', null);
+          }
+        } else if (!this.__dataLinkedPaths || !this.__dataLinkedPaths[change.path]) {
+          change.value.key$ = key;
+          let i = this._orderArrayItem(arrayPrefix, change.value);
+          while (i < this[arrayPrefix].length) {
+            this.linkPaths(keyPrefix+'.'+this[arrayPrefix][i].key$, arrayPrefix+'.'+i);
+            i++;
           }
         }
       }
-    });
-  }}
+    }
+  }
 
+  /* This should rely on sorting */
+  _orderArrayItem(arrayPrefix, value) {
+    return this.push(arrayPrefix, value) - 1;
+  }
 }
 
 (function() {

@@ -135,7 +135,7 @@
   selected-values="{{selectedImageKeys}}"
   multi
   hidden$="[[nokey]]"
-  > <template is="dom-repeat" items="{{imageList}}" as="image" observe="order deleted" sort="{{_sortedImages}}">
+  > <template is="dom-repeat" items="{{imageList}}" as="image" observe="order deleted" sort="_sortImages">
 
 <mg-item-image
   key="[[image.key$]]"
@@ -272,7 +272,7 @@ class MGGalleryEditor extends MGItemEditor {
   static get observers() { return [
     '_checkIdle(imageList.length)',
     '_imagesChanged(item.images.*)',
-    '_linkSplicedKeyedArraySelectionPaths(imageList.splices,"item.images","imageList")'
+    '_linkKeysArraySelection(item.images.*,"item.images","imageList")',
   ]}
 
   connectedCallback() {
@@ -317,7 +317,7 @@ class MGGalleryEditor extends MGItemEditor {
     this.set('idle', len?false:true);
   }
 
-  _sortedImages(a,b) {
+  _sortImages(a,b) {
     if (a.deleted) {
       if (b.deleted) {
         if (a.key < b.key) {
@@ -577,7 +577,6 @@ class MGGalleryEditor extends MGItemEditor {
   */
 
   _imagesChanged(change) {
-    console.log(change);
     switch(change.path.length) {
     case 11: { /* item.images */
       this.splice('selectedImageKeys',0,this.selectedImageKeys.length);

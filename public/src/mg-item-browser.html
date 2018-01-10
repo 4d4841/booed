@@ -51,7 +51,7 @@
 </style>
 
 <iron-selector attr-for-selected="key" selected="{{selectedKey}}">
-    <template is="dom-repeat" items="{{itemList}}" mutable-data>
+    <template is="dom-repeat" sort="{{_sortItem}}" items="{{itemList}}" mutable-data>
   <mg-item-image key="[[item.key$]]" class="item" item="{{item}}">
   </mg-item-image>
     </template>
@@ -82,8 +82,7 @@ class MGItemBrowser extends MHA.Configurations(MHA.Items(Moongom119)) {
   }}
 
   static get observers() { return [
-    '_itemsChanged(items.*)',
-    '_linkSplicedKeyedArraySelectionPaths(itemList.splices,"items","itemList","selectedItem")',
+    '_linkKeysArraySelection(items.*,"items","itemList")',
   ]}
 
   _selectedKeyChanged(key, oldKey) {
@@ -101,33 +100,31 @@ class MGItemBrowser extends MHA.Configurations(MHA.Items(Moongom119)) {
     }
   }
 
-  _itemsChanged(change) {
+  _linkKeysArraySelection(change,keyPrefix,arrayPrefix) { if (change) {
     /* XXX items may changed on user sign-out */
+    super._linkKeysArraySelection(change,keyPrefix,arrayPrefix);
 
     switch(change.path.length) {
     case 5: { /* items */
       /* XXX This happens multile times, may be mg-data can check/didn't
       check if the first old-value to see if it was not neccessary to notify */
       this.set('selectedKey', null);
-      this.splice('itemList', 0, this.itemList.length);
     } break;
     case 26: {
-      /* items.<20-char item key> */
-      /* setting an item */
-
-      if (change.value === null) {
-        /*delete item*/
-      } else if (!this.__dataLinkedPaths || !this.__dataLinkedPaths[change.path]) {
-        /* New item, create a thumbnail */
-        let key = change.value.key$;
-        console.assert(key, 'no key');
-        this.unshift('itemList', change.value);
-        if (key == this.selectedKey) {
-          this.set('selectedItem', this.items[key]);
-          this.linkPaths(this.__dataLinkedPaths['items.'+key], 'selectedItem');
-        }
+      let key = change.path.slice(-20);
+      if (key == this.selectedKey) {
+        console.log('ok',this.__dataLinkedPaths);
+        this.set('selectedItem', this.items[key]);
+        this.linkPaths(this.__dataLinkedPaths[change.path], 'selectedItem');
       }
     } break; }
+  }}
+
+  _sortItem(a,b) {
+    if (a.key < b.key) {
+      return -1;
+    }
+    return 1;
   }
 
   _formatRoleIcon(role) {

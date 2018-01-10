@@ -218,7 +218,7 @@
 
   </template>
   <script>
-class MGVariantsEditor extends MHA.Configurations(MHA.Items(Moongom119)) {
+class MGVariantsEditor extends MHA.Configurations(Moongom119) {
   static get is() { return 'mg-variant-editor'; }
 
   static get properties() { return {
@@ -280,7 +280,7 @@ class MGVariantsEditor extends MHA.Configurations(MHA.Items(Moongom119)) {
 
   static get observers() { return [
     '_selectedTypeDefChanged(selectedTypeDef.name,selectedTypeDef.custom)',
-    '_linkSplicedKeyedArraySelectionPaths(subvariantList.splices,"variant.variants","subvariantList","selectedSubvariant")',
+    '_linkKeysArraySelection(variant.variants.*,"variant.variants","subvariantList")',
     '_variantTypeChanged(variant.type)',
     '_subvariantsChanged(variant.variants.*)',
     '_languageChanged(language, variant.type)',
@@ -356,23 +356,16 @@ class MGVariantsEditor extends MHA.Configurations(MHA.Items(Moongom119)) {
 
       /* Link selectedSubvariant to the indexed subvariantList entry pointing to the new current key */
       this.linkPaths(this.__dataLinkedPaths['variant.variants.'+key],'selectedSubvariant');
+    } else if (key === null) {
+      /* close all subvariant menu */
+      let child = this.shadowRoot.querySelector('mg-variant-editor');
+      if (child) {
+        child.set('selectedKey',null);
+      }
     }
   }
 
-  _addSubvariant(key,variant) {
-    if(!this.__dataLinkedPaths || !this.__dataLinkedPaths['variant.variants.'+key]) {
-      variant.key$ = key;
-      this.push('subvariantList', variant);
-    } else {
-      console.log('DEBUG');
-    }
-  }
-
-  _subvariantsChanged(change) {
-    if (!change) {
-      return;
-    }
-
+  _subvariantsChanged(change) { if (change) {
     /* change.path : 'variant.variants.${key}.selected$'
      *
      * "variant.variants" : 16
@@ -381,32 +374,8 @@ class MGVariantsEditor extends MHA.Configurations(MHA.Items(Moongom119)) {
      */
 
     switch(change.path.length) {
-    case 16: { /* variant.variants */
-      let nowKey = this.selectedKey;
-      this.set('selectedKey',null);
-      this.splice('subvariantList',0,this.subvariantList.length);
-      if (change.value) {
-        for (let key in change.value) {
-          this._addSubvariant(key, change.value[key]);
-          if (key == nowKey) {
-            this.set('selectedKey', nowKey);
-          }
-        }
-      }
-    } break;
-    case 37: { /* variant.variants.< 20 chars new key > */
-      if (!change.value) {
-        if (this.variant.variants && !Object.values(this.variant.variants).some(value => value)) {
-          this.set('variant.variants', null);
-        }
-      } else if (!this.__dataLinkedPaths || !this.__dataLinkedPaths[change.path]) {
-        this._addSubvariant(change.path.slice(-20), change.value);
-      } else {
-        console.log('DEBUG', change);
-      }
-      /* XXX Shouldn't be anything else as all subvariants were spliced out in case 16.
-       * There will be no update.
-       */
+    case 16: {
+      this.set('selectedKey', null);
     } break;
     case 47: if (change.path.endsWith('.selected$')) {
       /* variant.variants.${key}.selected$ */
@@ -416,9 +385,9 @@ class MGVariantsEditor extends MHA.Configurations(MHA.Items(Moongom119)) {
       }
     } break;
     default: {
-      console.log('DEBUG', change);
+      //console.log('DEBUG', change);
     }}
-  }
+  }}
 
   _onToggleOpened(e) {
     this.set('opened',!this.opened);
@@ -490,7 +459,6 @@ class MGVariantsEditor extends MHA.Configurations(MHA.Items(Moongom119)) {
   _onRemoveVariant(e) {
     let deletingKey = this.selectedKey;
     this.set('selectedKey',null);
-    this.splice('subvariantList',/\d+$/.exec(this.__dataLinkedPaths['variant.variants.'+deletingKey])[0],1);
     this.set('variant.variants.'+deletingKey, null);
   }
 
