@@ -465,7 +465,7 @@ class MGGalleryEditor extends MGItemEditor {
         },
         progress: (repKey,progress) => {
           //this._setPhotoKeyProperty(imageKey, 'progress$', (progress.bytesTransferred / progress.totalBytes * 100).toFixed(2));
-          console.log((progress.bytesTransferred / progress.totalBytes * 100).toFixed(2));
+          //console.log((progress.bytesTransferred / progress.totalBytes * 100).toFixed(2));
           MHA.set(['items',itemKey,'images',imageKey,'progress$'], (progress.bytesTransferred / progress.totalBytes * 100).toFixed(2));
         },
         complete: (repKey,complete) => {
@@ -586,7 +586,7 @@ class MGGalleryEditor extends MGItemEditor {
       }
     } break;
     default: {
-      console.log('DEBUG', change);
+      //console.log('DEBUG', change);
     }}
 
     super._linkKeysArraySelection(change,"item.images","imageList");
