@@ -313,7 +313,6 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     if (path.endsWith('.MGLOCALDATA$') && value === false) {
       path = path.slice(0,-13); /* '.MGLOCALDATA$'.length */
       value = this.get(path);
-      console.log('QQQ', path,value);
     }
 
     let allParts = path.split('.');
@@ -324,7 +323,6 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
 
       prop = prop[part];
       if (prop && prop.MGLOCALDATA$) {
-        console.log('reject',path,part)
         return;
       }
     }
@@ -332,7 +330,7 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     MHA.Path.deepAssign(this,'db'+path, value, (path,value) => {
       /* Don't update dbitems with UI properties (those with names end with '$') */
       if (path.endsWith('$')) {
-        return {};
+        return {path:undefined};
       }
 
       let dirty = false;
@@ -341,15 +339,14 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
         if (!Array.isArray(dbarray)
         || dbarray.length != value.length
         || !dbarray.every((v,i) => v === value[i])) {
-          /* Only set if not equal */
           dirty = true;
         }
       } else if (typeof value !== 'object' || value === null) {
         if (this.get(path) != value) {
           dirty = true;
         }
-      } else if (value.MGLOCALDATA$) {
-        return {};
+      } else if (value && value.MGLOCALDATA$) {
+        return {path:undefined};
       }
 
       if (dirty) {
@@ -360,7 +357,6 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
           updates[path.split('.').join('/')] = value;
         }
       }
-      return;
     });
 
     if (updates && MHA.AU.currentUser) {
@@ -392,7 +388,19 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
         this.set('dbitems.'+snapshot.key, snapshot.val());
         /* This only tries to copy new value without clobbering existing local objects or UI values */
         /* XXX better only keep MGLOCALDATA$ and prop$ only if owning object exists */
+
+        /* Appply new values */
         MHA.Path.deepAssign(this,'items.'+snapshot.key, snapshot.val());
+
+        /* nullify deleted values */
+        MHA.Path.deepAssign(this,'items.'+snapshot.key, this.items[snapshot.key], (path,value) => {
+          let serverValue = this.get('db'+path);
+          if (!serverValue && value !== null && typeof value === 'object' && !value.MGLOCALDATA$) {
+            console.log('null',path);
+            return {value:null};
+          }
+        });
+
       }, function(error){}, this);
       this._UidChangedCallback.child_added = this._UidChangedCallback.ref.on('child_added', function(snapshot) {
         this.set('dbitems.'+snapshot.key, snapshot.val());
