@@ -520,6 +520,30 @@ class Moongom119 extends Polymer.Element {
   _orderArrayItem(arrayPrefix, value) {
     return this.push(arrayPrefix, value) - 1;
   }
+
+  unset(path, root) {
+    let old = Polymer.Path.get(this, path);
+    let prop = root || this;
+    let parts = Polymer.Path.split(path);
+    // Loop over path parts[0..n-1] and dereference
+    for (let i=0; i<parts.length - 1; i++) {
+      if (!prop) {
+        return;
+      }
+      let part = parts[i];
+      prop = prop[part];
+    }
+    let changed = this._shouldPropertyChange(path, undefined, old);
+    if (changed) {
+      this.__dataPending = this.__dataPending || {};
+      this.__dataPending[path] = undefined;
+      this.__dataHasPaths = true;
+      delete prop[parts[parts.length - 1]];
+      delete prop.selectedKey;
+      this._flushProperties();
+    }
+    return changed;
+  }
 }
 
 (function() {

@@ -202,36 +202,6 @@ class MGGalleryEditor extends MGItemEditor {
     /* For uploading images */
     files: Object,
 
-    /* imageList collects item data to be displayed, copied and pasted.
-       Each array-item may contains..
-
-      [key] : Image ID.
-
-      <role> : The role of this entry, can only be 'photo' in imageList but
-        could be any kind of data in clipboard, eg. gallery, product, etc.
-
-      [item] : The key of owner of this data.
-
-      [name] : Display name of the data.
-
-      <thumbnail> : The thumbnail image representing data, a thumbnail of a
-        photo or a cover image of a gallery.
-
-      [rep] : Optionally representing source of the thumbnail.
-      [roi] : Defiing the region of interest of rep.
-      [roiThumbnail] : Defining the part of rep that will be used as thumbnail.
-        This property only exist locally so it isn't neccessary to generate
-        the actual thumbnail data before the needs of syncing over the server.
-
-      [order] : In gallery, this will be used to sort photos. It doesn't get
-        copied along with other properties.
-
-      [deleted] : A deleted state of the data. By design user data will never
-        be deleted. Just turn into an obsolete state.
-
-      TODO
-      - Type this object somewhere.
-    */
     imageList: {
       type: Array,
       value: function(){return [];},
@@ -299,6 +269,7 @@ class MGGalleryEditor extends MGItemEditor {
       this.set('dropenter',false);
       this._uploadImageFiles(e.dataTransfer.files);
     });
+
   }
 
   _computeCopyIcon(selectedLen) {
@@ -637,19 +608,12 @@ class MGGalleryEditor extends MGItemEditor {
   }
 
   _onDeleteButtonClick(e) {
-    let registerData = {};
     let selectedImageKeys = this.selectedImageKeys;
 
     this.selectedImageKeys.forEach(selectedKey => {
-      let del = MHA.getItem({[this.key]:{images:{[selectedKey]:{deleted:null}}}}) ? null:true;
-      MHA.setItem(this.key, {images:{[selectedKey]:{deleted:del}}});
-      registerData['home/'+MHA.AU.currentUser.uid+'/items/'+this.key+'/images/'+selectedKey+'/deleted'] = del;
+      this.set('item.images.'+selectedKey+'.deleted',!this.item.images[selectedKey].deleted);
     });
     this.splice('selectedImageKeys',0,this.selectedImageKeys.length);
-
-    MHA.DB.ref().update(registerData, error => {
-        console.assert(!error,"ERR updating deletion");
-    });
   }
 
   /* This will update a cache that match the actual listed result of
