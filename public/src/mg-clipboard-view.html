@@ -74,10 +74,10 @@
 <iron-collapse class="copied-collapse vertical layout" opened="[[clipboardList.length]]">
   <div class="copied-container">
 
-    <template is="dom-repeat" items="{{clipboardList}}" as="image">
+    <template is="dom-repeat" items="{{clipboardList}}" as="itemOrImage">
       <mg-item-image
         class="copied-icon"
-        item="[[image]]"
+        item="[[itemOrImage]]"
         on-click="_onItemClick"
       ></mg-item-image>
       <!--

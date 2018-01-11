@@ -689,33 +689,44 @@ class MGGalleryEditor extends MGItemEditor {
     if (this.selectedImageKeys.length == 0) {
       /* Copy as gallery  */
 
-      let copy = {
-        item: this.key,
-        role: this.role,
-        name: this.name,
-        thumbnail: MHA.getItem({[this.key]:{images:{[this.cover]:{thumbnail:null}}}}),
+      let clipboardItem = {
+        role: this.item.role,
+        name: this.item.name,
+        images: {},
       }
 
-      this.push('clipboardList',copy);
+      if (this.item.order) {
+        clipboardItem.order = [...this.item.order];
+      }
+
+      if (clipboardItem.order && clipboardItem.order.length) {
+        clipboardItem.cover = clipboardItem.order[0];
+      }
+
+      for (let imageKey in this.item.images) {
+        let newImageKey = MHA.DB.ref('home').child(MHA.AU.currentUser.uid)
+          .child(this.item.key$).child('images').push().key;
+        clipboardItem.images[newImageKey] = this.item.images[imageKey];
+
+        if (!clipboardItem.cover || clipboardItem.cover === imageKey) {
+          clipboardItem.cover = newImageKey;
+        }
+      }
+
+      this.push('clipboardList',clipboardItem);
 
       return;
     }
 
     /* Copy as image(s) */
     this.selectedImageKeys.forEach(imageKey => {
-      this.push('clipboardList', Object.assign({}, this.item.images[imageKey]));
-      /*
-      this._indexImage(imageKey, idx => {
-        let copy = {
-          role: 'photo',
-          name: this.imageList[idx].name,
-          thumbnail: this.imageList[idx].thumbnail,
-          rep: this.imageList[idx].rep,
-          roi: this.imageList[idx].roi,
-        };
-        this.push('clipboardList',copy);
-      });
-      */
+      let clipboardImage = {
+        name: this.item.images[imageKey].name,
+        rep: this.item.images[imageKey].rep,
+        thumbnail: this.item.images[imageKey].thumbnail,
+      };
+
+      this.push('clipboardList', clipboardImage);
     });
 
     this.splice('selectedImageKeys',0,this.selectedImageKeys.length);

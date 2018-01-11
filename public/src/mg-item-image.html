@@ -113,14 +113,27 @@ class MGItemImage extends MHA.Configurations(MHA.Items(Polymer.Element)) {
 
   /* Item is an mg-item */
   _coverChanged(cover) {
-    if (cover && this.item.images[cover].thumbnail) {
-      let cachedSrc = false;
-      MHA.registerRepresentation(this.item.images[cover].thumbnail, { src: (key,src) => {
-        cachedSrc = true;
-        this.set('src', src);
-      }});
-      if (!cachedSrc) {
-        this.set('src',undefined);
+    if (cover) {
+      if (this.item.images[cover]) {
+        if (this.item.images[cover].thumbnail) {
+          let cachedSrc = false;
+          MHA.registerRepresentation(this.item.images[cover].thumbnail, { src: (key,src) => {
+            cachedSrc = true;
+            this.set('src', src);
+          }});
+          if (!cachedSrc) {
+            this.set('src',undefined);
+          }
+        }
+      } else { /* cover is a rep */
+        let cachedSrc = false;
+        MHA.registerRepresentation(cover, { src: (key,src) => {
+          cachedSrc = true;
+          this.set('src', src);
+        }});
+        if (!cachedSrc) {
+          this.set('src',undefined);
+        }
       }
     }
   }
