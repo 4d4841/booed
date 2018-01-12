@@ -71,10 +71,10 @@
 
 </style>
 
-<iron-collapse class="copied-collapse vertical layout" opened="[[clipboardList.length]]">
+<iron-collapse class="copied-collapse vertical layout" opened="[[clipboard.length]]">
   <div class="copied-container">
 
-    <template is="dom-repeat" items="{{clipboardList}}" as="itemOrImage">
+    <template is="dom-repeat" items="{{clipboard}}" as="itemOrImage">
       <mg-item-image
         class="copied-icon"
         item="[[itemOrImage]]"
@@ -135,8 +135,8 @@ class MGClipboardView extends MGClipboard {
 
   _onItemClick(e) {
     //Toggles deleted true and it won't be pasted.
-    let idx = this.clipboardList.indexOf(e.model.item);
-    this.set(['clipboardList',idx,'deleted'], this.clipboardList[idx].deleted ? false : true);
+    let idx = this.clipboard.indexOf(e.model.item);
+    this.set(['clipboard',idx,'deleted'], this.clipboard[idx].deleted ? false : true);
   }
 
   _onEditImage(e) {

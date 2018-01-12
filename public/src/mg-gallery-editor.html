@@ -75,7 +75,7 @@
 }
 </style>
 
-<mg-clipboard clipboard-list="{{clipboardList}}"></mg-clipboard>
+<mg-clipboard clipboard="{{clipboard}}"></mg-clipboard>
 
 <div id="gallery-container" ondrop="_onDrop" class="vertical layout">
 
@@ -91,12 +91,12 @@
     </div>
 
     <div style="display:inline-block">
-  <paper-icon-button disabled="[[!clipboardList.length]]" icon="content-paste" on-click="_onPasteButtonClick"></paper-icon-button>
+  <paper-icon-button disabled="[[!clipboard.length]]" icon="content-paste" on-click="_onPasteButtonClick"></paper-icon-button>
   <paper-tooltip>แปะ</paper-tooltip>
     </div>
 
     <div style="display:inline-block">
-  <paper-icon-button disabled="[[!clipboardList.length]]" icon="booed:content-clear" on-click="_onClearButtonClick"></paper-icon-button>
+  <paper-icon-button disabled="[[!clipboard.length]]" icon="booed:content-clear" on-click="_onClearButtonClick"></paper-icon-button>
   <paper-tooltip>ล้าง</paper-tooltip>
     </div>
 
@@ -713,7 +713,7 @@ class MGGalleryEditor extends MGItemEditor {
         }
       }
 
-      this.push('clipboardList',clipboardItem);
+      this.push('clipboard',clipboardItem);
 
       return;
     }
@@ -726,18 +726,18 @@ class MGGalleryEditor extends MGItemEditor {
         thumbnail: this.item.images[imageKey].thumbnail,
       };
 
-      this.push('clipboardList', clipboardImage);
+      this.push('clipboard', clipboardImage);
     });
 
     this.splice('selectedImageKeys',0,this.selectedImageKeys.length);
   }
 
   _onClearButtonClick(e) {
-    this.splice('clipboardList', 0, this.clipboardList.length);
+    this.splice('clipboard', 0, this.clipboard.length);
   }
 
   _onPasteButtonClick(e) {
-    let paste = this.clipboardList.filter(item => { return item.deleted ? false : true; });
+    let paste = this.clipboard.filter(item => { return item.deleted ? false : true; });
     console.assert(paste.length, "Empty pasted data");
 
     let uid = MHA.AU.currentUser.uid;

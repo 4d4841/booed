@@ -29,9 +29,12 @@ MGClipboard = class __MGClipboard extends Polymer.Element {
   static get is() { return 'mg-clipboard'; }
 
   static get properties() { return {
-    clipboardList: {
+    clipboard: {
       type: Array,
-      value: MHA.clipboardList,
+      notify: true,
+    },
+    configurations: {
+      type: Object,
       notify: true,
     },
   }}
@@ -41,11 +44,11 @@ MGClipboard = class __MGClipboard extends Polymer.Element {
 
   connectedCallback() {
     super.connectedCallback();
-    MHA.addInstance(this, 'clipboardList');
+    MHA.addInstanceObserver(this, 'clipboard');
   }
 
   disconnectedCallback() {
-    MHA.removeInstance(this, 'clipboardList');
+    MHA.removeInstance(this, 'clipboard');
     super.disconnectedCallback();
   }
 

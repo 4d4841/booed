@@ -37,7 +37,7 @@
 
 </style>
 
-<mg-clipboard clipboard-list="{{clipboardList}}"></mg-clipboard>
+<mg-clipboard clipboard="{{clipboard}}"></mg-clipboard>
 
 <div id="product-editor" class="vertical layout" hidden$="[[!key]]">
 
@@ -49,7 +49,7 @@
       </div>
 
       <div style="display:inline-block">
-    <paper-icon-button disabled="[[!clipboardList.length]]" icon="content-paste" on-click="_onPasteButtonClick"></paper-icon-button>
+    <paper-icon-button disabled="[[!clipboard.length]]" icon="content-paste" on-click="_onPasteButtonClick"></paper-icon-button>
     <paper-tooltip>แปะ</paper-tooltip>
       </div>
 
@@ -68,7 +68,7 @@
 <mg-gallery-editor
   id="gallery-editor"
   key="{{gallery}}"
-  clipboard-list="{{clipboardList}}"
+  clipboard="{{clipboard}}"
 ></mg-gallery-editor>
 -->
 
@@ -110,10 +110,6 @@ class MGProductEditor extends MGItemEditor {
       }
     },
 
-    variant: {
-      type: Object,
-    },
-
     gallery: {
       type: String,
       observer: '_galleryChanged',
@@ -121,7 +117,14 @@ class MGProductEditor extends MGItemEditor {
   }}
 
   static get observers() { return [
+    '_variantChanged(item.*)',
   ]}
+
+  _variantChanged(change) { if (change) {
+    if (change.path != 'item') {
+      /* Turn MGLOCALDATA$ off */
+    }
+  }}
 
   _formatVariantLabel(label) {
     return label ? label : this.localize('noname');

@@ -25,8 +25,20 @@ var MHA = {
   dataInstances: new Map(),
   dataNotifierStates: new Map(),
 
-  addInstance: function(instance, path) {
-    let root = path.split('.')[0];
+  /* Here are 2 methods to listen to changes of instances.
+   *
+   * addInstance: This will listen to -changed notifications on target element.
+     * Thus it only works if the element does notify about the property, not handling
+     * -changed notifications. ie. It cannot listen for changes on a bound property but
+     * the changing properties themselves, that must notify about the change.
+     * Use this with instances that are setting data directly.
+   *
+   * addInstanceObserver: This plug a dynamic observer to observe any change of
+     * the path to the instance. It will observe the changes both ways.
+     * Use this with instances that are setting properties or recieving effects.
+   */
+  addInstance: function(instance, path /* TODO, destination */) {
+    let root = Polymer.Path.root(path);
     instance[root] = MHA[root];
 
     let allInstances = this.dataInstances.get(root);
@@ -36,9 +48,26 @@ var MHA = {
     }
     allInstances.add(instance);
 
-    instance.addEventListener(path+'-changed', e => {
+    instance.addEventListener(Polymer.CaseMap.camelToDashCase(root) + '-changed', e => {
       this.notifyPath(instance, e.detail.path, e.detail.value);
     })
+  },
+
+  addInstanceObserver: function(instance, path) {
+    let root = Polymer.Path.root(path);
+    instance[root] = MHA[root];
+
+    let allInstances = this.dataInstances.get(root);
+    if (!allInstances) {
+      allInstances = new Set();
+      this.dataInstances.set(root, allInstances);
+    }
+    allInstances.add(instance);
+
+    instance.__MHAChangeObserver = change => { if (change) {
+      this.notifyPath(instance, change.path, change.value);
+    }};
+    instance._createMethodObserver(`__MHAChangeObserver(${root}.*)`, true);
   },
 
   removeInstance: function(instance, path) {
@@ -108,7 +137,7 @@ var MHA = {
   },
 
 
-  clipboardList: [],
+  clipboard: [],
 
   items: {},
 
