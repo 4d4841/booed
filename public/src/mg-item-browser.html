@@ -51,7 +51,7 @@
 </style>
 
 <iron-selector attr-for-selected="key" selected="{{selectedKey}}">
-    <template is="dom-repeat" sort="{{_sortItem}}" items="{{itemList}}" mutable-data>
+    <template is="dom-repeat" sort="{{_sortItem}}" items="{{itemList}}">
   <mg-item-image key="[[item.key$]]" class="item" item="{{item}}">
   </mg-item-image>
     </template>

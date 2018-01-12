@@ -37,22 +37,18 @@ MGClipboard = class __MGClipboard extends Polymer.Element {
   }}
 
   static get observers() { return [
-    '_clipboardListChanged(clipboardList.*)',
   ]}
 
   connectedCallback() {
     super.connectedCallback();
-    MHA.addInstance('clipboardList',this)
+    MHA.addInstance(this, 'clipboardList');
   }
 
   disconnectedCallback() {
-    MHA.removeInstance('clipboardList', this)
+    MHA.removeInstance(this, 'clipboardList');
     super.disconnectedCallback();
   }
 
-  _clipboardListChanged(change) {
-    MHA.notifyPath(this, change.path, change.value);
-  }
 }
 
 customElements.define(MGClipboard.is, MGClipboard);

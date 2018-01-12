@@ -25,18 +25,23 @@ var MHA = {
   dataInstances: new Map(),
   dataNotifierStates: new Map(),
 
-  addInstance: function(path, instance) {
-    let allInstances = this.dataInstances.get(path);
+  addInstance: function(instance, path) {
+    let root = path.split('.')[0];
+    instance[root] = MHA[root];
+
+    let allInstances = this.dataInstances.get(root);
     if (!allInstances) {
       allInstances = new Set();
-      this.dataInstances.set(path, allInstances);
+      this.dataInstances.set(root, allInstances);
     }
-    path = path.split('.');
     allInstances.add(instance);
-    instance[path] = MHA[path];
+
+    instance.addEventListener(path+'-changed', e => {
+      this.notifyPath(instance, e.detail.path, e.detail.value);
+    })
   },
 
-  removeInstance: function(path, instance) {
+  removeInstance: function(instance, path) {
     let allInstances = this.dataInstances.get(path);
     allInstances.delete(instance);
   },
@@ -571,25 +576,18 @@ class MGData extends Polymer.Element {
 
   /* should try to use linkPaths */
   static get observers() { return [
-    '_dataChanged(items.*)',
-    '_dataChanged(configurations.*)',
   ]}
 
   connectedCallback() {
     super.connectedCallback();
-    MHA.addInstance('items',this);
-    MHA.addInstance('configurations',this);
+    MHA.addInstance(this, 'items');
+    MHA.addInstance(this, 'configurations');
   }
 
   disconnectedCallback() {
-    MHA.removeInstance('items',this);
-    MHA.removeInstance('configurations',this);
+    MHA.removeInstance(this, 'items');
+    MHA.removeInstance(this, 'configurations');
     super.disconnectedCallback();
-  }
-
-  /* Didn't test, it should work :-P */
-  _dataChanged(change) {
-    MHA.notifyPath( this, change.path, change.value );
   }
 
 }
@@ -762,7 +760,6 @@ MHA.Configurations = (superClass) => { return class extends Polymer.mixinBehavio
 
   static get observers() { return [
     '__languageChanged(configurations.language)',
-    '__configurationsChanged(configurations.*)',
   ]}
 
   constructor() {
@@ -771,19 +768,16 @@ MHA.Configurations = (superClass) => { return class extends Polymer.mixinBehavio
 
   connectedCallback() {
     super.connectedCallback();
-    MHA.addInstance('configurations', this);
+    MHA.addInstance(this, 'configurations');
   }
 
   disconnectedCallback() {
-    MHA.removeInstance('configurations', this);
+    MHA.removeInstance(this, 'configurations');
     super.disconnectedCallback();
   }
 
   __languageChanged(language) {
     this.set('language',language);
-  }
-  __configurationsChanged(change) {
-    MHA.notifyPath(this, change.path, change.value);
   }
 }}
 
@@ -797,7 +791,6 @@ MHA.Items = (superClass) => { return class extends superClass {
   }}
 
   static get observers() { return [
-    '__itemsChanged(items.*)',
   ]}
 
   constructor() {
@@ -807,17 +800,14 @@ MHA.Items = (superClass) => { return class extends superClass {
 
   connectedCallback() {
     super.connectedCallback();
-    MHA.addInstance('items', this);
+    MHA.addInstance(this, 'items');
   }
 
   disconnectedCallback() {
-    MHA.removeInstance('items', this);
+    MHA.removeInstance(this, 'items');
     super.disconnectedCallback();
   }
 
-  __itemsChanged(change) {
-    MHA.notifyPath(this, change.path, change.value);
-  }
 }}
 
 customElements.define(MGData.is, MGData);
