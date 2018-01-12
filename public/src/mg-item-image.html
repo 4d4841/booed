@@ -22,10 +22,24 @@
 }
 
 :host(.iron-selected) {
-  --mg-thumbnail : {
+  --mg-thumbnail: {
     background-color: tomato;
   };
 }
+
+/*
+:host(.iron-selected[local]) {
+  --mg-thumbnail: {
+    border: 2px dotted tomato;
+  };
+}
+
+:host([local]) {
+  --mg-thumbnail: {
+    border: 2px dotted lightgray;
+  };
+}
+*/
 
 paper-progress {
   position: absolute;
@@ -66,6 +80,10 @@ paper-progress {
     </div>
   </template>
 
+  <template is="dom-if" if="[[item.MGLOCALDATA$]]">
+    <iron-icon style="position:absolute;left:5px;--iron-icon-width:15px" icon="cloud-off"></iron-icon>
+  </template>
+
   <template is="dom-if" if="[[_computeShowProgress(item.progress$)]]">
     <paper-progress
       value="[[item.progress$]]"
@@ -77,13 +95,19 @@ paper-progress {
 
   </template>
   <script>
-class MGItemImage extends MHA.Configurations(MHA.Items(Polymer.Element)) {
+class MGItemImage extends MHA.Configurations(Polymer.Element) {
   static get is() { return 'mg-item-image'; }
 
   static get properties() { return {
     item: {
       type: Object,
       observer: '_itemChanged',
+    },
+
+    local: {
+      type: Boolean,
+      reflectToAttribute: true,
+      computed: '_computeLocalData(item.MGLOCALDATA$)',
     },
 
     label: String,
@@ -170,6 +194,10 @@ class MGItemImage extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     }
   }
   */
+
+  _computeLocalData(isLocal) {
+    return isLocal ? true : false;
+  }
 
   _computeShowProgress(progress) {
     if (typeof(progress) == "undefined") return false;
