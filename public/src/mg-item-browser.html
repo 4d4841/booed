@@ -101,7 +101,6 @@ class MGItemBrowser extends MHA.Configurations(MHA.Items(Moongom119)) {
   }
 
   _linkKeysArraySelection(change,keyPrefix,arrayPrefix) { if (change) {
-    /* XXX items may changed on user sign-out */
     super._linkKeysArraySelection(change,keyPrefix,arrayPrefix);
 
     switch(change.path.length) {

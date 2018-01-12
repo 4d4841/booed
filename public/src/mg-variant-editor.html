@@ -160,6 +160,7 @@
     attr-for-selected="name"
     selected-attribute="selected"
     selected="{{selectedKey}}"
+    selected-item="{{childPositionTarget}}"
     hidden$="[[!opened]]"
     > <template is="dom-repeat" items="{{subvariantList}}" as="subvariant">
       <!--XXX remove name here-->
@@ -211,14 +212,19 @@
   <template is="dom-if" if="[[selectedSubvariant]]">
 <mg-variant-editor
   label="[[_formatSubvariantHeader(variant.type, selectedSubvariant.value)]]"
+  style="z-index:1"
   menu="[[menu]]"
   variant="{{selectedSubvariant}}"
+  xxx-position-target="[[childPositionTarget]]"
+  xxx-vertical-align="top"
+  xxx-horizontal-align="left"
 ></mg-variant-editor>
   </template>
 
   </template>
   <script>
-class MGVariantsEditor extends MHA.Configurations(Moongom119) {
+
+class MGVariantsEditor extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronFitBehavior], Moongom119)) {
   static get is() { return 'mg-variant-editor'; }
 
   static get properties() { return {
@@ -283,7 +289,20 @@ class MGVariantsEditor extends MHA.Configurations(Moongom119) {
     '_linkKeysArraySelection(variant.variants.*)',
     '_variantTypeChanged(variant.type)',
     '_languageChanged(language, variant.type)',
+    /*'_positionTargetChanged(positionTarget)',*/
   ]}
+
+  /*
+  _positionTargetChanged(positionTarget) {
+    if (positionTarget != 'root') {
+      console.log(positionTarget);
+      this.horizontalOffset = 200;
+      Polymer.RenderStatus.afterNextRender(this, function() {
+        this.refit();
+      });
+    }
+  }
+  */
 
   /* Hack to update paper-dropdown-menu labels on language changed.
    * https://github.com/PolymerElements/paper-dropdown-menu/issues/159
