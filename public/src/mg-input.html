@@ -148,7 +148,12 @@ class MGInput extends Polymer.Element {
 
   _inputValueChanged(newValue, oldValue) {
     if (newValue === '') {
-      this.set('value',undefined);
+      if (oldValue) {
+        /* If there was an oldValue, a new one would be a result of deletion */
+        this.set('value','');
+      } else {
+        this.set('value',undefined);
+      }
     } else {
       this.set('value',newValue);
     }
