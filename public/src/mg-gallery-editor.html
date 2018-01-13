@@ -141,6 +141,7 @@
   key="[[image.key$]]"
   class="image-thumbnail"
   item="[[image]]"
+  label="[[image.name]]"
   selection-order="[[_computeSelectionOrder(image.key$, selectedImageKeys.*)]]"
   on-click="_onItemClick"
 ></mg-item-image>
@@ -402,11 +403,14 @@ class MGGalleryEditor extends MGItemEditor {
     let uid = MHA.AU.currentUser.uid;
     let itemKey = this.item.key$;
 
+    if (!this.item.images) {
+      this.set('item.images', {});
+    }
+
     Array.from(files).forEach((imgFile,fileIndex) => {
       let imageKey =  MHA.DB.ref('items').push().key;
       let imageName = imgFile.name.split('.')[0];
 
-      console.log('will set',['items',itemKey,'images',imageKey]);
       MHA.set(['items',itemKey,'images',imageKey], {
         MGLOCALDATA$: true,
         key$: imageKey,

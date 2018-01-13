@@ -100,12 +100,14 @@ paper-progress {
   </template>
 
   <template is="dom-if" if="[[item.MGLOCALDATA$]]">
+  <template is="dom-if" if="[[!_computeShowProgress(item.progress$)]]">
     <div class="local-data">
       <iron-icon class="local-icon border" icon="cloud-off"></iron-icon>
     </div>
     <div class="local-data">
       <iron-icon class="local-icon" icon="cloud-off"></iron-icon>
     </div>
+  </template>
   </template>
 
   <template is="dom-if" if="[[_computeShowProgress(item.progress$)]]">
