@@ -142,10 +142,10 @@
   class="image-thumbnail"
   item="[[image]]"
   label="[[image.name]]"
-  selection-order="[[_computeSelectionOrder(image.key$, selectedImageKeys.*)]]"
+  selection-order="[[_computeSelectionOrder(image.key$, index, selectedImageKeys.*)]]"
   on-click="_onItemClick"
 ></mg-item-image>
-[[_cacheListedImage(index,image.key$)]]
+
     <!--
 <mg-item-image
   key="[[image.key]]"
@@ -281,8 +281,14 @@ class MGGalleryEditor extends MGItemEditor {
     return selectedLen ? 'ก๊อปปี้ที่เลือก' : 'ก๊อปปี้แกลเลอรี่';
   }
 
-  _computeSelectionOrder(key) {
-    return 1 + this.selectedImageKeys.indexOf(key);
+  _computeSelectionOrder(key, index, change) {
+  /* This will also update a cache that match the actual listed result of
+   * dom-repeat to avoid dealing with sorted/filtered results.
+   */
+    let IndexImageCache = (this.IndexImageCache || (this.IndexImageCache = []));
+    IndexImageCache[index] = key;
+
+    return 1 + this.selectedImageKeys.indexOf(key); /* Selection order starts at 1 */
   }
 
   _checkIdle(len) {
@@ -618,14 +624,6 @@ class MGGalleryEditor extends MGItemEditor {
       this.set('item.images.'+selectedKey+'.deleted',!this.item.images[selectedKey].deleted);
     });
     this.splice('selectedImageKeys',0,this.selectedImageKeys.length);
-  }
-
-  /* This will update a cache that match the actual listed result of
-   * dom-repeat to avoid dealing with sorted/filtered results.
-   */
-  _cacheListedImage(index,imageKey) {
-    let IndexImageCache = (this.IndexImageCache || (this.IndexImageCache = []));
-    IndexImageCache[index] = imageKey;
   }
 
   _onSelectAllButtonClick(e) {
