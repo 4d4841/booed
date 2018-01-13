@@ -105,9 +105,19 @@ MGItemEditor = class __MGItemEditor extends MHA.Configurations(Moongom119) {
   }}
 
   static get observers() { return [
+    '_itemChanged(item.*)',
     '_keyChanged(item.key$)',
     '_roleChanged(item.role)',
   ]}
+
+  _itemChanged(change) { if (change) {
+    if (change.path != 'item') {
+      /* Turn MGLOCALDATA$ off */
+      if (!change.path.endsWith('$')) {
+        this.set('item.MGLOCALDATA$', false);
+      }
+    }
+  }}
 
   _keyChanged(key) {
     this.set('nokey',key ? false : true);

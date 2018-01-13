@@ -117,18 +117,7 @@ class MGProductEditor extends MGItemEditor {
   }}
 
   static get observers() { return [
-    '_itemChanged(item.*)',
   ]}
-
-  _itemChanged(change) { if (change) {
-    console.log('pr ch', change);
-    if (change.path != 'item') {
-      /* Turn MGLOCALDATA$ off */
-      if (change.path != 'item.name' && !change.path.endsWith('$')) {
-        this.set('item.MGLOCALDATA$', false);
-      }
-    }
-  }}
 
   _formatVariantLabel(label) {
     return label ? label : this.localize('noname');
