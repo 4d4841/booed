@@ -396,7 +396,6 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
         MHA.Path.deepAssign(this,'items.'+snapshot.key, this.items[snapshot.key], (path,value) => {
           let serverValue = this.get('db'+path);
           if (!serverValue && value !== null && typeof value === 'object' && !value.MGLOCALDATA$) {
-            console.log('null',path);
             return {value:null};
           }
         });
