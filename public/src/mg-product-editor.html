@@ -117,12 +117,16 @@ class MGProductEditor extends MGItemEditor {
   }}
 
   static get observers() { return [
-    '_variantChanged(item.*)',
+    '_itemChanged(item.*)',
   ]}
 
-  _variantChanged(change) { if (change) {
+  _itemChanged(change) { if (change) {
+    console.log('pr ch', change);
     if (change.path != 'item') {
       /* Turn MGLOCALDATA$ off */
+      if (change.path != 'item.name' && !change.path.endsWith('$')) {
+        this.set('item.MGLOCALDATA$', false);
+      }
     }
   }}
 

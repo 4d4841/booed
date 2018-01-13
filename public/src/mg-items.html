@@ -392,7 +392,7 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
         /* Appply new values */
         MHA.Path.deepAssign(this,'items.'+snapshot.key, snapshot.val());
 
-        /* nullify deleted values */
+        /* Nullify deleted values, keeps local data */
         MHA.Path.deepAssign(this,'items.'+snapshot.key, this.items[snapshot.key], (path,value) => {
           let serverValue = this.get('db'+path);
           if (!serverValue && value !== null && typeof value === 'object' && !value.MGLOCALDATA$) {
@@ -451,10 +451,15 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     this._closeSubmenu(e);
 
     let newKey = MHA.DB.ref('items').push().key;
+
+    this.set('items.'+newKey, {MGLOCALDATA$:true, key$:newKey, role:e.model.item.name});
+
     if (!this.routeActive) {
       this.set('route.path','/');
     }
     this.set('routeData.itemKey', newKey);
+
+
     //this.set('itemRole', e.model.item.name);
     /*
     this.set('itemKey', MHA.DB.ref('items').push().key);
