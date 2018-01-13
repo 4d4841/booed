@@ -353,6 +353,7 @@ class MGAbout extends Polymer.Element {
 
   _search(search) {
     let regs = [];
+    search = search || '';
     search.split(' ').forEach(v => {
       if (v !== '') regs.push(new RegExp(v))
     });

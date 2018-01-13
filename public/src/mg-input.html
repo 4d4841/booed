@@ -27,7 +27,7 @@ iron-icon {
 
 <paper-input
   id="input"
-  value="{{value}}"
+  value="{{inputValue}}"
   label="{{label}}"
   focused="{{focused}}"
   readonly="{{readonly}}"
@@ -67,6 +67,10 @@ class MGInput extends Polymer.Element {
     label: String,
     invalid: Boolean,
     errorMessage: String,
+    inputValue: {
+      type: String,
+      observer: '_inputValueChanged',
+    },
     value: {
       type: String,
       notify: true,
@@ -142,9 +146,19 @@ class MGInput extends Polymer.Element {
     }
   }
 
+  _inputValueChanged(newValue, oldValue) {
+    if (newValue === '') {
+      this.set('value',undefined);
+    } else {
+      this.set('value',newValue);
+    }
+  }
+
   _valueChanged(newValue, oldValue) {
     if (typeof newValue === 'undefined') {
-      this.set('value', '');
+      this.set('inputValue', '');
+    } else {
+      this.set('inputValue', newValue);
     }
   }
 
