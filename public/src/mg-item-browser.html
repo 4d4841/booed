@@ -52,8 +52,12 @@
 
 <iron-selector attr-for-selected="key" selected="{{selectedKey}}">
     <template is="dom-repeat" sort="{{_sortItem}}" items="{{itemList}}">
-  <mg-item-image key="[[item.key$]]" class="item" item="{{item}}">
-  </mg-item-image>
+  <mg-item-image
+    key="[[item.key$]]"
+    class="item"
+    item="{{item}}"
+    label="{{_formatItemLabel(item.images, item.name, item.role, language)}}"
+  ></mg-item-image>
     </template>
 </iron-selector>
 
@@ -127,6 +131,13 @@ class MGItemBrowser extends MHA.Configurations(MHA.Items(Moongom119)) {
 
   _formatRoleIcon(role) {
     return MGIconForRole(role);
+  }
+
+  _formatItemLabel(images, str, role) {
+    str = str || this.localize('noname');
+    return role == 'gallery'
+      ? (images ? "×" + Object.entries(images).length : '') +" "+ str
+      : str;
   }
 
   _indexItem(itemKey) {

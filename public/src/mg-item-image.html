@@ -63,13 +63,32 @@ paper-progress {
   text-decoration: none;
 }
 
+.local-data {
+  position: absolute;
+  left: 0px;
+}
+
+.local-icon {
+  padding: 3px;
+  --iron-icon-width: 15px;
+  --iron-icon-height: 15px;
+  color:black;
+}
+
+.local-icon.border {
+  --iron-icon: {
+    stroke: rgba(255,255,255,0.5);
+    stroke-width: 4px;
+  }
+}
+
 </style>
 
 <mg-thumbnail
   src="[[src]]"
   roi="[[roi]]"
   icon="[[_formatIcon(item)]]"
-  label="[[_formatLabel(item.images, item.name, item.role, language)]]"
+  label="[[label]]"
   deleted$="[[item.deleted]]"
   placeholder='images/logo-pumpkin-outline-grayout.svg'
   transition="1.5s"
@@ -81,7 +100,12 @@ paper-progress {
   </template>
 
   <template is="dom-if" if="[[item.MGLOCALDATA$]]">
-    <iron-icon style="position:absolute;left:5px;--iron-icon-width:15px" icon="cloud-off"></iron-icon>
+    <div class="local-data">
+      <iron-icon class="local-icon border" icon="cloud-off"></iron-icon>
+    </div>
+    <div class="local-data">
+      <iron-icon class="local-icon" icon="cloud-off"></iron-icon>
+    </div>
   </template>
 
   <template is="dom-if" if="[[_computeShowProgress(item.progress$)]]">
@@ -95,7 +119,7 @@ paper-progress {
 
   </template>
   <script>
-class MGItemImage extends MHA.Configurations(Polymer.Element) {
+class MGItemImage extends Polymer.Element {
   static get is() { return 'mg-item-image'; }
 
   static get properties() { return {
@@ -216,13 +240,6 @@ class MGItemImage extends MHA.Configurations(Polymer.Element) {
     } else if (item.rep) {
       return MGIconForRole('photo');
     }
-  }
-
-  _formatLabel(images, str, role) {
-    str = str || this.localize('noname');
-    return role == 'gallery'
-      ? (images ? "×" + Object.entries(images).length : '') +" "+ str
-      : str;
   }
 }
 
