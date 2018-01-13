@@ -79,7 +79,10 @@
         class="copied-icon"
         item="[[itemOrImage]]"
         on-click="_onItemClick"
-      ></mg-item-image>
+        label="{{_formatItemLabel(itemOrImage.images, itemOrImage.name, itemOrImage.role, language)}}"
+      > <paper-icon-button icon="editor:mode-edit" class="image-edit-button-icon" on-click="_onEditImage">
+        </paper-icon-button>
+      </mg-item-image>
       <!--
   <mg-item-image
     key="[[item.key]]"
@@ -91,9 +94,6 @@
     label="[[_formatLabel(item.item,item.name,item.role)]]"
     deleted="[[item.deleted]]"
     on-click="_onItemClick"
-  > <paper-icon-button icon="editor:mode-edit" class="image-edit-button-icon" on-click="_onEditImage">
-    </paper-icon-button>
-  </mg-item-image>
 -->
     </template>
 
@@ -107,7 +107,7 @@
 
   </template>
   <script>
-class MGClipboardView extends MGClipboard {
+class MGClipboardView extends MHA.Configurations(MGClipboard) {
   static get is() { return 'mg-clipboard-view'; }
 
   static get properties() { return {
@@ -121,16 +121,11 @@ class MGClipboardView extends MGClipboard {
     return MGIconForRole(role);
   }
 
-  _formatLabel(itemKey,name,role) {
-    switch(role) {
-      case 'gallery': {
-        let images = MHA.getItem({[itemKey]:{images:null}});
-        return (images ? "×" + Object.entries(images).length : '') +" "+ name;
-      } break;
-      case 'product':
-        return name;
-    }
-    return name;
+  _formatItemLabel(images, str, role) {
+    str = str || this.localize('noname');
+    return role == 'gallery'
+      ? (images ? "×" + Object.entries(images).length : '') +" "+ str
+      : str;
   }
 
   _onItemClick(e) {
