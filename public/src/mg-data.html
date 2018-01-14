@@ -117,26 +117,6 @@ var MHA = {
     return this.Path.deepGet(this.Path.deepStruct({}, path, null), this);
   },
 
-  /* Generate temp key */
-  tmp(ref) {
-    console.log('deprecated');
-    this._TempKeyMap = this._TempKeyMap || new Map();
-
-    if (typeof ref === 'string' && ref.startsWith('MGTMP') &&  ref.endsWith('$')) {
-        let mappedKey = this._TempKeyMap.get(ref);
-        this._TempKeyMap.delete(ref);
-
-        return mappedKey;
-    }
-
-    ref = this.DB.ref(ref).push();
-    let tmpKey = 'MGTMP'+'0'.repeat(14-idxStr.length) + idxStr + '$';
-    this._TempKeyMap.set(tmpKey, ref.key);
-
-    return tmpKey;
-  },
-
-
   clipboard: [],
 
   items: {},
@@ -487,14 +467,20 @@ class Moongom119 extends Polymer.Element {
           let link;
           for (let a in links) {
             let b = links[a];
-            if (a === path || Polymer.Path.isDescendant(a, path)) {
+            if (Polymer.Path.isDescendant(a, path)) {
+              link = Polymer.Path.translate(a, b, path);
+              this._setPendingPropertyOrPath(link, value, true, true);
+            } else if (Polymer.Path.isDescendant(b, path)) {
+              link = Polymer.Path.translate(b, a, path);
+              this._setPendingPropertyOrPath(link, value, true, true);
+            } else if (a === path) {
               link = Polymer.Path.translate(a, b, path);
               let old = Polymer.Path.get(this, link);
               if (old !== value && (old === old || value === value)) {
                 Polymer.Path.set(this, link, value);
               }
               this._setPendingPropertyOrPath(link, value, true, true);
-            } else if (b === path || Polymer.Path.isDescendant(b, path)) {
+            } else if (b === path) {
               link = Polymer.Path.translate(b, a, path);
               let old = Polymer.Path.get(this, link);
               if (old !== value && (old === old || value === value)) {
