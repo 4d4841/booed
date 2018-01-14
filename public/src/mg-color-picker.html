@@ -95,12 +95,12 @@ class MGColorPicker extends Polymer.GestureEventListeners(
     Polymer.Gestures.addListener(this, 'track', e => this._onTrack(e));
     Polymer.Gestures.addListener(this, 'tap', e => {
       let l = this.c.length;
-      this.set('mode', ((this.mode+1)%l + l)%l);
+      this.mode = ((this.mode+1)%l + l)%l;
     });
 
     this.addEventListener('mouseenter', e => {
       if (!e.buttons) {
-        this.set('mouseIn',true);
+        this.mouseIn = true;
         if (this._delayFadeDebouncer) {
           this._delayFadeDebouncer.cancel();
           delete this._delayFadeDebouncer;
@@ -112,7 +112,7 @@ class MGColorPicker extends Polymer.GestureEventListeners(
       this._delayFadeDebouncer = Polymer.Debouncer.debounce(this._delayFadeDebouncer,
         Polymer.Async.timeOut.after(750), () => {
           if (!this.tracking)
-            this.set('mouseIn',false);
+            this.mouseIn = false;
         });
 
     },true);
@@ -121,7 +121,7 @@ class MGColorPicker extends Polymer.GestureEventListeners(
   _componentTypeChanged(type) {
     switch(type) {
       case 'hcl': {
-        this.set('c',[0,1,0]);
+        this.c = [0,1,0];
       }
     }
   }
@@ -129,7 +129,7 @@ class MGColorPicker extends Polymer.GestureEventListeners(
   _modeChanged(mode) {
     this._delayChangeDebouncer = Polymer.Debouncer.debounce(this._delayChangeDebouncer,
       Polymer.Async.timeOut.after(50), () => {
-        this.set('iconMode',mode);
+        this.iconMode = mode;
       });
   }
 
@@ -162,7 +162,7 @@ class MGColorPicker extends Polymer.GestureEventListeners(
       } break;
     }
 
-    this.set('c', c);
+    this.c = c;
   }
 
   _colorChanged(c) {
@@ -177,7 +177,7 @@ class MGColorPicker extends Polymer.GestureEventListeners(
 
         let col = d3.hcl(hcl_h, hcl_c, hcl_l);
 
-        this.set('activeValue', d3.rgb(col).toString());
+        this.activeValue = d3.rgb(col).toString();
       } break;
     }
   }
@@ -190,11 +190,11 @@ class MGColorPicker extends Polymer.GestureEventListeners(
   }
 
   _valueChanged(v) {
-    this.set('activeValue', v);
+    this.activeValue = v;
     switch(this.componentType) {
       case 'hcl': {
         let col = d3.hcl(v);
-        this.set('c',[col.h/360, col.c/100, col.l/150]);
+        this.c = [col.h/360, col.c/100, col.l/150];
       } break;
     };
   }
@@ -212,10 +212,10 @@ class MGColorPicker extends Polymer.GestureEventListeners(
     switch (e.detail.state) {
       case 'start':
         if(!this.c) {
-          this.set('c',[0,1,0]);
+          this.c = [0,1,0];
         }
 
-        this.set('tracking', {
+        this.tracking = {
           ox: ax,
           oy: ay,
           ax: ax,
@@ -223,21 +223,21 @@ class MGColorPicker extends Polymer.GestureEventListeners(
           axis: '',
           mode: this.mode,
           threshold: 0.1,
-        });
+        };
 
         break;
       case 'end': {
         /*
         if (Math.abs(ax - this.tracking.ox) < 5/cw && Math.abs(ay - this.tracking.oy) < 5/ch) {
           let l = this.c.length;
-          this.set('mode', ((this.mode+1)%l + l)%l);
+          this.mode = ((this.mode+1)%l + l)%l;
         }
         */
-        this.set('value',this.activeValue);
-        this.set('tracking',null);
+        this.value = this.activeValue;
+        this.tracking = null;
         this._delayFadeDebouncer = Polymer.Debouncer.debounce(this._delayFadeDebouncer,
           Polymer.Async.timeOut.after(1000), () => {
-            this.set('mouseIn',false);
+            this.mouseIn = false;
           });
 
       } break;
@@ -265,7 +265,7 @@ class MGColorPicker extends Polymer.GestureEventListeners(
           let m = (Math.round(this.tracking.mode+dy)%l + l)%l;
 
           if (m != this.tracking.mode) {
-            this.set('mode',m);
+            this.mode = m;
             this.tracking.mode = m;
             this.tracking.ay = ay;
           }

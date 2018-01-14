@@ -109,7 +109,7 @@ class MGImage extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Po
 
   /* XXX Add a property to prevent scaling of cover mode, just for keeping ROIs in frames */
   _roiChanged(roi, nw, nh, width, height) {
-    this.set('loaded',false);
+    this.loaded = false;
 
     if (width && width != 'auto') this.style.width = width+'px';
     if (height && height != 'auto') this.style.height = height+'px';
@@ -139,18 +139,18 @@ class MGImage extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Po
       let x = (width-vw)/2 - l*s;
       let y = (height-vh)/2 - t*s;
 
-      this.set('sizing', `${nw*s}px ${nh*s}px`);
-      this.set('positioning', `${x}px ${y}px`);
+      this.sizing = `${nw*s}px ${nh*s}px`;
+      this.positioning = `${x}px ${y}px`;
     } else {
-      this.set('sizing', 'cover');
-      this.set('positioning', 'center');
+      this.sizing = 'cover';
+      this.positioning = 'center';
     }
-    this.set('loaded',true);
+    this.loaded = true;
   }
 
   _srcChanged(src) {
     if (src) {
-      this.set('loaded',false);
+      this.loaded = false;
       let imgLoader = new Image();
       imgLoader.onload = e => {
         /* src has changed, discards updates */
@@ -163,14 +163,14 @@ class MGImage extends Polymer.mixinBehaviors([Polymer.IronResizableBehavior], Po
           naturalWidth: imgLoader.naturalWidth,
           naturalHeight: imgLoader.naturalHeight,
         });
-        this.set('loaded',true);
+        this.loaded = true;
       };
       imgLoader.src = src;
     } else {
       if (!this.placeholder) {
         this.style.backgroundImage = 'none';
       } else this.style.backgroundImage = 'url(\'' + this.placeholder + '\')';
-      this.set('loaded',false);
+      this.loaded = false;
     }
   }
 

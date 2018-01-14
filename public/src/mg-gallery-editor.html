@@ -253,21 +253,21 @@ class MGGalleryEditor extends MGItemEditor {
         return;
       }
       e.preventDefault();
-      this.set('dropenter',true);
+      this.dropenter = true;
     });
     this.addEventListener('dragleave', e => {
       if (!this.key) {
         return;
       }
       e.preventDefault();
-      this.set('dropenter',false);
+      this.dropenter = false;
     });
     this.addEventListener('drop', e => {
       if (!this.key) {
         return;
       }
       e.preventDefault();
-      this.set('dropenter',false);
+      this.dropenter = false;
       this._uploadImageFiles(e.dataTransfer.files);
     });
 
@@ -292,7 +292,7 @@ class MGGalleryEditor extends MGItemEditor {
   }
 
   _checkIdle(len) {
-    this.set('idle', len?false:true);
+    this.idle = len ? false:true;
   }
 
   _computeImageOrder(a,b) {
@@ -496,65 +496,6 @@ class MGGalleryEditor extends MGItemEditor {
     this._uploadImageFiles(e.target.files);
   }
 
-  /* TODO
-   * - Unify data updating function, this and updateChanges.
-   *   Could start by turning mg-data into a wrapper arond
-   *   a global class data.
-   */
-   /*
-  _keyChanged(itemKey) {
-    delete this._LastClickIndex;
-
-    this.imageList.forEach((icon,index) => {
-      this.set(['imageList',index,'thumbnail'],null);
-    });
-
-    this.splice('imageList',0,this.imageList.length);
-
-    this.splice('selectedImageKeys',0,this.selectedImageKeys.length);
-
-    super._keyChanged(itemKey);
-
-    if (!itemKey) return;
-
-    let item = MHA.getItem({[itemKey]:null});
-    for(let prop in item) {
-      switch(prop) {
-        case '_uid':
-          break;
-        case 'cover':
-          this.set('cover',item.cover);
-          break;
-        case 'name':
-          this.set('name', item.name);
-          break;
-        case 'role':
-          this.set('role', item.role);
-          break;
-        case 'images': {
-          let allImages = item.images;
-          for (let imageKey in allImages) {
-            let image = allImages[imageKey];
-            let icon = {
-              item: itemKey,
-              role: 'photo',
-              key: imageKey,
-              thumbnail: image.thumbnail,
-              rep: image.rep,
-              name: image.name,
-              order: image.order,
-              deleted: image.deleted,
-              roi: image.roi,
-            };
-            this.push('imageList', icon);
-          }
-        } break;
-        default:
-      }
-    }
-  }
-  */
-
   _linkKeysArraySelection(change) {
     switch(change.path.length) {
     case 11: { /* item.images */
@@ -643,47 +584,8 @@ class MGGalleryEditor extends MGItemEditor {
     this._LastClickIndex = -1;
   }
 
-  /*
-  _editingDataChanged(data,oldData) {
-
-    this.unlinkPaths('editingData');
-    let idx = this.imageList.indexOf(data);
-    if (idx != -1) {
-      this.linkPaths('editingData',['imageList',idx]);
-    }
-
-    this._EditingSelection = this._EditingSelection || [];
-    this.set('beforeEditingData',null);
-    this.set('afterEditingData',null);
-    if (data) {
-      let slen = this._EditingSelection.length;
-      if (slen) {
-
-        let currentIdx = this._EditingSelection.indexOf(data.key);
-
-        if (currentIdx != -1) {
-          this.set('beforeEditingData',this.imageList[this._indexImage(this._EditingSelection[(currentIdx-1+slen) % slen])]);
-          this.set('afterEditingData',this.imageList[this._indexImage(this._EditingSelection[(currentIdx+1) % slen])]);
-        }
-      }
-    } else {
-      this._EditingSelection.splice(0,this._EditingSelection.length);
-    }
-  }
-  */
-
-  /*
   _onEditButtonClick(e) {
-    this._EditingSelection = [].concat(this.selectedImageKeys);
-    this._indexImage(this._EditingSelection[0], idx => {
-      this.set('editingData',this.imageList[idx]);
-    });
-    this.splice('selectedImageKeys',0,this.selectedImageKeys.length);
-  }
-  */
-
-  _onEditButtonClick(e) {
-    this.set('editorImageKeys', [].concat(this.selectedImageKeys));
+    this.editorImageKeys = [...this.selectedImageKeys];
     this.splice('selectedImageKeys',0,this.selectedImageKeys.length);
   }
 
@@ -852,7 +754,7 @@ class MGGalleryEditor extends MGItemEditor {
 
   _onEditImage(e) {
     let data = e.model.item;
-    this.set('editingData',data);
+    this.editingData = data;
     e.stopImmediatePropagation();
   }
 

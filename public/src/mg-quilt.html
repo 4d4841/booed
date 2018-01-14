@@ -212,7 +212,7 @@ class MGQuilt extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronRes
     /* XXX Could use a pagination */
     if (this.collisionMap.length+this.collisionOffset > 1000) return;
 
-    this.set('loading',true);
+    this.loading = true;
     if (this._loading) this._loading.cancel();
     this._loading = Polymer.Debouncer.debounce(this._loading,
               Polymer.Async.timeOut.after(1000),
@@ -225,7 +225,7 @@ class MGQuilt extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronRes
   }
 
   _loadSome(rows) {
-    this.set('loading',false);
+    this.loading = false;
     if (this.visible === false) {return;}
     let originalOffset = this.collisionOffset;
     let u = this.unitWidth*0.75;
@@ -299,16 +299,16 @@ class MGQuilt extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronRes
     if (newNumColumns == this.numberOfColumns) return;
     this.sizeMap = {};
     this.collisionMap = [];
-    this.set('collisionOffset',0);
-    this.set('quiltItems',[]);
+    this.collisionOffset = 0;
+    this.quiltItems = [];
     this.visible && this._load();
   }
 
   _selectedChanged(selected) {
     this.sizeMap = {};
     this.collisionMap = [];
-    this.set('collisionOffset',0);
-    this.set('quiltItems',[]);
+    this.collisionOffset = 0;
+    this.quiltItems = [];
     this.loadLength = 0;
     this.visible && this._load();
   }
@@ -397,7 +397,7 @@ class MGQuilt extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronRes
               }
             }
             if (firstRowFilled) {
-              this.set('collisionOffset',this.collisionOffset+1);
+              this.collisionOffset = this.collisionOffset + 1;
               this.collisionMap.shift();
             }
           } while (firstRowFilled && this.collisionMap.length);

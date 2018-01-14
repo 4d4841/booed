@@ -347,13 +347,13 @@ class MGImageEditor extends Polymer.GestureEventListeners(
 
         switch(e.key) {
           case 'ArrowLeft':
-            this.set('keys',this.keys.slice(-1).concat(this.keys.slice(0,-1)));
+            this.keys = this.keys.slice(-1).concat(this.keys.slice(0,-1));
             break;
           case 'ArrowRight':
-            this.set('keys',this.keys.slice(1).concat(this.keys.slice(0,1)));
+            this.keys = this.keys.slice(1).concat(this.keys.slice(0,1));
             break;
           case 'Control':
-            this.set('keepAspect', this.roiWidth/this.roiHeight);
+            this.keepAspect = this.roiWidth/this.roiHeight;
             break;
         }
       }
@@ -371,7 +371,7 @@ class MGImageEditor extends Polymer.GestureEventListeners(
             this._deactivateClose(e);
           break;
           case 'Control':
-            this.set('keepAspect', null);
+            this.keepAspect = null;
             break;
         }
       }
@@ -579,8 +579,8 @@ class MGImageEditor extends Polymer.GestureEventListeners(
 
         break;
       case 'end': {
-        this.set('tracking', null);
-        this.set('edited',true);
+        this.tracking = null;
+        this.edited = true;
         //this.set('roi.roi',[this.roiLeft,this.roiTop,this.roiWidth,this.roiHeight]);
 
       } break;
@@ -733,20 +733,20 @@ class MGImageEditor extends Polymer.GestureEventListeners(
       this.unlinkPaths('item.images.'+oldKeys[0]);
     }
     if (keys && keys.length) {
-      this.set('image',this.item.images[keys[0]]);
+      this.image = this.item.images[keys[0]];
       this.linkPaths('item.images.'+keys[0], 'image');
-      this.set('singleKey', keys.length == 1 ? true : false);
+      this.singleKey = keys.length == 1 ? true : false;
     } else {
-      this.set('image', undefined);
+      this.image = undefined;
     }
   }
 
   _imageChanged(image) {
-    this.set('edited',false);
+    this.edited = false;
     if (image) {
-      this.set('active',true);
       this.style.opacity = 1;
-      this.set('loading', true);
+      this.active = true;
+      this.loading = true;
 
       image.roi || this.set('image.roi', [0,0,1,1] );
       this.setProperties({
@@ -758,8 +758,8 @@ class MGImageEditor extends Polymer.GestureEventListeners(
       });
 
     } else {
-      this.set('rep', null);
-      this.set('active',false);
+      this.rep = null;
+      this.active = false;
     }
   }
 
@@ -774,19 +774,19 @@ Storage Note: To allow pulling image back from storage, it needs to set CORS usi
 gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": ["https://be-booed.firebaseapp.com", "http://localhost:5000"], "responseHeader": ["Content-Type"]}]' ) gs://be-booed.appspot.com
 
 ***/
-          this.set('imageLoader', new Image());
+          this.imageLoader = new Image();
           this.imageLoader.crossOrigin="anonymous";
           this.imageLoader.onload = e => {
             this._setImageWH(this.imageLoader.naturalWidth,this.imageLoader.naturalHeight);
-            this.set('src',this.imageLoader.src);
-            this.set('loading', false);
+            this.src = this.imageLoader.src;
+            this.loading = false;
           };
           this.imageLoader.src = src;
         }}
       });
     } else {
-      this.set('src',null);
-      this.set('imageLoader', null);
+      this.src = null;
+      this.imageLoader = null;
 
       this.$.view.setAttribute('viewBox','0 0 200 200');
       this.$.view.setAttribute('width', 200);
@@ -801,7 +801,7 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
   _deactivateClose(e) {
     this.style.opacity = 0;
     Polymer.Async.timeOut.run(() => {
-      this.set('keys',null);
+      this.keys = null;
     }, 250);
   }
 
@@ -810,7 +810,7 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
       ? null
       : [this.roiLeft,this.roiTop,this.roiWidth,this.roiHeight];
     this.set('image.roi', roi);
-    this.set('edited',false);
+    this.edited = false;
     if (this.singleKey)
       this._deactivateClose(e)
   }
@@ -881,11 +881,11 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
   }
 
   _setPreviousKey(e) {
-    this.set('keys',this.keys.slice(-1).concat(this.keys.slice(0,-1)));
+    this.keys = this.keys.slice(-1).concat(this.keys.slice(0,-1));
   }
 
   _setNextKey(e) {
-    this.set('keys',this.keys.slice(1).concat(this.keys.slice(0,1)));
+    this.keys = this.keys.slice(1).concat(this.keys.slice(0,1));
   }
 }
 

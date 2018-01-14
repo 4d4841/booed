@@ -167,8 +167,9 @@ class MGBadgeButton extends Polymer.Element {
   }
 
   _onButtonClick(e) {
-    if (!this.permanent)
-    this.set('value',null);
+    if (!this.permanent) {
+      this.value = null;
+    }
   }
 }
 

@@ -120,11 +120,11 @@ MGItemEditor = class __MGItemEditor extends MHA.Configurations(Moongom119) {
   }}
 
   _keyChanged(key) {
-    this.set('nokey',key ? false : true);
+    this.nokey = key ? false : true;
   }
 
   _roleChanged(role) {
-    this.set('norole', role == this.editorRole ? false : true);
+    this.norole = role == this.editorRole ? false : true;
   }
 
   _pastedDataChanged(paste) {

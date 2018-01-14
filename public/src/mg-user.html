@@ -217,14 +217,14 @@ class MGUser extends Polymer.Element {
 
   _userMenuChanged(userMenu) {
     if (this.visible) {
-      this.set('menu',userMenu);
+      this.menu = userMenu;
       this.set('menu.selected', this.userMenuSelected);
     }
   }
 
   _visibleChanged( visible ) {
     if (visible) {
-      this.set('menu',this.userMenu);
+      this.menu = this.userMenu;
       this.set('menu.selected', this.userMenuSelected);
     }
   }
@@ -233,22 +233,22 @@ class MGUser extends Polymer.Element {
     if (this.menu && menu) {
       menu.selected = this.menu.selected;
     }
-    this.set('menu', menu);
+    this.menu = menu;
   }
 
   _userChanged(user) {
     if (user) {
-      this.set('userMenu', _MGUserAppMenu);
+      this.userMenu = _MGUserAppMenu;
 
       _MGProfileMenu.entries[0].title = this.me.user.email;
       _MGProfileMenu.entries[0].submenu.action = this._onProfileMenu.bind(this);
-      this.set('profileMenu', _MGProfileMenu);
+      this.profileMenu = _MGProfileMenu;
 
     } else {
-      this.set('userMenu', _MGSignInMenu);
-      this.set('profileMenu', { entries: [
+      this.userMenu = _MGSignInMenu;
+      this.profileMenu = { entries: [
         { action:this._signGoogle.bind(this), name: "profile", icon: "booed:google", title: "เข้าสู่ระบบด้วยบัญชีกูเกิ้ล"},
-      ]});
+      ]};
     }
   }
 
@@ -258,7 +258,7 @@ class MGUser extends Polymer.Element {
 
   _menuSelectedChanged(selected) {
     if (this.menu == this.userMenu) {
-      this.set('page', selected);
+      this.page = selected;
     }
   }
 
@@ -266,7 +266,7 @@ class MGUser extends Polymer.Element {
     if (this.menu == this.userMenu) {
       for(let i = 0; i < this.menu.entries.length; ++i) {
         if (this.menu.entries[i].name == selected) {
-          this.set('page', selected);
+          this.page, selected;
           return;
         }
       }
@@ -280,7 +280,7 @@ class MGUser extends Polymer.Element {
   _routeChanged( route) {
     if (route.prefix == '/user') {
       let page = this.routeData.page;
-      this.set('userMenuSelected', page);
+      this.userMenuSelected = page;
     }
   }
 

@@ -169,57 +169,40 @@ class MGItemImage extends Polymer.Element {
           let cachedSrc = false;
           MHA.registerRepresentation(this.item.images[cover].thumbnail, { src: (key,src) => {
             cachedSrc = true;
-            this.set('src', src);
+            this.src = src;
           }});
           if (!cachedSrc) {
-            this.set('src',undefined);
+            this.src = undefined;
           }
         }
       } else { /* cover is a rep */
         let cachedSrc = false;
         MHA.registerRepresentation(cover, { src: (key,src) => {
           cachedSrc = true;
-          this.set('src', src);
+          this.src = src;
         }});
         if (!cachedSrc) {
-          this.set('src',undefined);
+          this.src = undefined;
         }
       }
     }
   }
 
   /* Item is an mg-image */
-  _thumbnailChanged(thumbnail) {
-    if (thumbnail) {
-      let cachedSrc = false;
-      MHA.registerRepresentation(thumbnail, { src: (key,src) => {
-        cachedSrc = true;
-        this.set('src', src);
-      }});
-      if (!cachedSrc) {
-        this.set('src',undefined);
-      }
+  _thumbnailChanged(thumbnail) { if (thumbnail) {
+    let cachedSrc = false;
+    MHA.registerRepresentation(thumbnail, { src: (key,src) => {
+      cachedSrc = true;
+      this.src = src;
+    }});
+    if (!cachedSrc) {
+      this.src = undefined;
     }
-  }
+  }}
 
   _itemChanged(item,oldItem) {
-    //console.log('it', item);
-    this.set('src','images/logo-pumpkin-outline-grayout.svg');
+    this.src = 'images/logo-pumpkin-outline-grayout.svg';
   }
-
-  /*
-  _thumbnailChanged(repKey) {
-    if (repKey) {
-      this.set('src',null);
-      MHA.registerRepresentation(repKey, { src: (key,src) => {
-        if (key == this.thumbnail) this.set('src',src);
-      }});
-    }
-    else {
-      this.set('src','images/logo-pumpkin-outline-grayout.svg');
-    }
-  }
-  */
 
   _computeLocalData(isLocal) {
     return isLocal ? true : false;

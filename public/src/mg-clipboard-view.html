@@ -136,7 +136,7 @@ class MGClipboardView extends MHA.Configurations(MGClipboard) {
 
   _onEditImage(e) {
     let data = e.model.item;
-    this.set('editingData',data);
+    this.editingData = data;
     e.stopImmediatePropagation();
   }
 

@@ -337,9 +337,9 @@ class MGVariantsEditor extends MHA.Configurations(Polymer.mixinBehaviors([Polyme
   _variantTypeChanged(newType,oldType) {
     if (newType) {
       let nc = newType.split(':');
-      this.set('selectedTypeDef', {name:nc[0], custom:nc[1]});
+      this.selectedTypeDef = {name:nc[0], custom:nc[1]};
     } else {
-      this.set('selectedTypeDef', {name:undefined, custom:undefined});
+      this.selectedTypeDef = {name:undefined, custom:undefined};
     }
   }
 
@@ -365,10 +365,10 @@ class MGVariantsEditor extends MHA.Configurations(Polymer.mixinBehaviors([Polyme
       this.unlinkPaths(this.__dataLinkedPaths['variant.variants.'+oldKey]);
     }
 
-    this.set('selectedSubvariant',undefined);
+    this.selectedSubvariant = undefined;
 
     if (key) {
-      this.set('selectedSubvariant', this.variant.variants[key]);
+      this.selectedSubvariant = this.variant.variants[key];
 
       //this.linkPaths('subvariantList.'+this.variantsDataMap.get(this.variant.variants[key]), 'selectedSubvariant');
 
@@ -395,13 +395,13 @@ class MGVariantsEditor extends MHA.Configurations(Polymer.mixinBehaviors([Polyme
 
     switch(change.path.length) {
     case 16: {
-      this.set('selectedKey', null);
+      this.selectedKey = null;
     } break;
     case 47: if (change.path.endsWith('.selected$')) {
       /* variant.variants.${key}.selected$ */
       /* Selected status set by cells */
       if (change.value) {
-        this.set('selectedKey', change.path.slice(17,37));
+        this.selectedKey = change.path.slice(17,37);
       }
     } break;
     default: {
@@ -410,7 +410,7 @@ class MGVariantsEditor extends MHA.Configurations(Polymer.mixinBehaviors([Polyme
   }}
 
   _onToggleOpened(e) {
-    this.set('opened',!this.opened);
+    this.opened = !this.opened;
   }
 
   _formatIconOpened(opened) {
@@ -462,7 +462,7 @@ class MGVariantsEditor extends MHA.Configurations(Polymer.mixinBehaviors([Polyme
 
   _onAddVariant(e){
     if (!this.variant) {
-      this.set('variant',{type:'custom:'});
+      this.variant = {type:'custom:'};
     }
     /* XXX should get key from a better path */
     let vkey = MHA.DB.ref().push().key;
@@ -472,13 +472,13 @@ class MGVariantsEditor extends MHA.Configurations(Polymer.mixinBehaviors([Polyme
     }
 
     this.set(['variant.variants',vkey],{key$:vkey, type:'custom:'}); /* XXX custom: leaked into db even no use*/
-    this.set('selectedKey',vkey);
+    this.selectedKey = vkey;
     return vkey;
   }
 
   _onRemoveVariant(e) {
     let deletingKey = this.selectedKey;
-    this.set('selectedKey',null);
+    this.selectedKey = null;
     this.set('variant.variants.'+deletingKey, null);
   }
 

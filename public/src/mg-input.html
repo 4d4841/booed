@@ -150,20 +150,20 @@ class MGInput extends Polymer.Element {
     if (newValue === '') {
       if (oldValue) {
         /* If there was an oldValue, a new one would be a result of deletion */
-        this.set('value','');
+        this.value = '';
       } else {
-        this.set('value',undefined);
+        this.value = undefined;
       }
     } else {
-      this.set('value',newValue);
+      this.value = newValue;
     }
   }
 
   _valueChanged(newValue, oldValue) {
     if (typeof newValue === 'undefined') {
-      this.set('inputValue', '');
+      this.inputValue = '';
     } else {
-      this.set('inputValue', newValue);
+      this.inputValue = newValue;
     }
   }
 

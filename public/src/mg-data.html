@@ -545,7 +545,7 @@ class Moongom119 extends Polymer.Element {
             i++;
           }
           if (i === 0) {
-            this.set('keyPrefix', null);
+            this.keyPrefix = null;
           }
         } else if (!this.__dataLinkedPaths || !this.__dataLinkedPaths[change.path]) {
           change.value.key$ = key;
@@ -815,7 +815,7 @@ MHA.Configurations = (superClass) => { return class extends Polymer.mixinBehavio
   }
 
   __languageChanged(language) {
-    this.set('language',language);
+    this.language = language;
   }
 }}
 

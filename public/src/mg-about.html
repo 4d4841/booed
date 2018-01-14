@@ -292,7 +292,7 @@ class MGAbout extends Polymer.Element {
   connectedCallback() {
     super.connectedCallback();
 
-    this.set('iconList', []);
+    this.iconList = [];
 
     let sets = Polymer.IronMeta.types['iconset'];
     for (let setname in sets) {
@@ -317,7 +317,7 @@ class MGAbout extends Polymer.Element {
 
   _routeChanged( route) {
     if (route.prefix == '/about') {
-      this.set('page', this.routeData.page);
+      this.page = this.routeData.page;
     }
   }
 
@@ -343,12 +343,11 @@ class MGAbout extends Polymer.Element {
   }
 
   _onClickIcon(e) {
-    this.set('clickedIcon',e.model.item.set+':'+e.model.item.id);
-
+    this.clickedIcon = e.model.item.set+':'+e.model.item.id;
   }
 
   _closePath(e) {
-    this.set('clickedIcon',null);
+    this.clickedIcon = null;
   }
 
   _search(search) {

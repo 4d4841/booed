@@ -232,7 +232,7 @@ class MGMenu extends MHA.Configurations(Polymer.Element) {
       bubbles: true, composed: true, detail:{sender:null}}));
 
     if (e.model.item.path) {
-      this.set('path',e.model.item.path);
+      this.path = e.model.item.path;
     } else if (e.model.item.action) {
       e.model.item.action(e);
     } else if (this.menu.action) {

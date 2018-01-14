@@ -231,11 +231,6 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
       value: function(){return {};},
     },
 
-    itemListOld: {
-      type: Array,
-      value: function(){return [];},
-    },
-
     itemKey: {
       type: String,
     },
@@ -298,7 +293,7 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
   _routeDataItemKeyChanged(itemKey) {
     if (itemKey) {
       if (this.routeActive) {
-        this.set('itemKey', itemKey);
+        this.itemKey = itemKey;
       } else {
         this.set('route.path',itemKey);
       }
@@ -367,7 +362,6 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
   }
 
   _userChanged(uid) {
-    this.set('itemListOld',[]);
     if (this._UidChangedCallback) {
       this._UidChangedCallback.ref.off('child_added', this._UidChangedCallback.child_added, this);
       this._UidChangedCallback.ref.off('child_changed', this._UidChangedCallback.child_changed, this);
@@ -405,36 +399,6 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
         this.set('dbitems.'+snapshot.key, snapshot.val());
         this.set('items.'+snapshot.key, Object.assign(snapshot.val(), {key$:snapshot.key}));
 
-        /*
-        let val = snapshot.val();
-
-        if( this.itemListOld.every(function(item){
-          return item.key != snapshot.key;
-        })) {
-          this.unshift('itemListOld',{
-            key: snapshot.key,
-            role: val.role,
-            name: val.name,
-            images: val.images,
-          }) - 1;
-        }
-
-        val.uid$ = uid;
-        MHA.setItem(snapshot.key,val);
-        */
-
-        /*
-        let itemRef = MHA.DB.ref('home')
-                            .child(uid)
-                            .child('items')
-                            .child(snapshot.key);
-
-        itemRef.child('name').on('value', nameSnapshot => {
-          this._setPhotoKeyProperty(snapshot.key, 'name', nameSnapshot.val());
-        });
-
-        */
-
       }, function(error){}, this);
     }
   }
@@ -458,12 +422,6 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     }
     this.set('routeData.itemKey', newKey);
 
-
-    //this.set('itemRole', e.model.item.name);
-    /*
-    this.set('itemKey', MHA.DB.ref('items').push().key);
-    this.set('itemRole',e.model.item.name);
-    */
   }
 
   _routeChanged(route) {

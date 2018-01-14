@@ -73,13 +73,13 @@
 
     _onMenuSelected(selected) {
       if (this.visible) {
-        this.set('selected', selected);
+        this.selected = selected;
       }
     }
 
     _visibleChanged(visible) {
       if (visible) {
-        this.set('menu', _MGListAppMenu);
+        this.menu = _MGListAppMenu;
       }
     }
 

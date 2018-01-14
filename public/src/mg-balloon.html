@@ -185,7 +185,7 @@ class MGBalloon extends Polymer.mixinBehaviors([Polymer.IronFitBehavior], Polyme
   }
 
   open() {
-    this.set('visible', true);
+    this.visible = true;
     this.style.display = 'block';
     this.style.opacity = 0;
     if (this._WillClose) {
@@ -200,7 +200,7 @@ class MGBalloon extends Polymer.mixinBehaviors([Polymer.IronFitBehavior], Polyme
   }
 
   close() {
-    this.set('visible', false);
+    this.visible = false;
     this.style.opacity = 0;
     Polymer.Async.timeOut.run(() => {
       this.style.display = 'none';

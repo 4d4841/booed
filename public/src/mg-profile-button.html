@@ -262,7 +262,7 @@ let memoizedTemplate;
     }
 
     _waitingChanged(waiting) {
-      this.set('spinnerActive',waiting);
+      this.spinnerActive = waiting;
     }
 
     _closeSubmenu(e) {
@@ -284,7 +284,7 @@ let memoizedTemplate;
         this._openProfile(e);
       } else if (!this.route.path.startsWith("/user/profile")) {
         if (sp) {
-          this.set('showPanel', true);
+          this.showPanel = true;
           Polymer.Async.timeOut.run(() => {
             this.$.panel.style.opacity = 1;
           }, 0);
@@ -292,7 +292,7 @@ let memoizedTemplate;
         else {
           this.$.panel.style.opacity = 0;
           Polymer.Async.timeOut.run(() => {
-            this.set('showPanel',!this.showPanel);
+            this.showPanel = !this.showPanel;
           }, 250);
         }
       }
