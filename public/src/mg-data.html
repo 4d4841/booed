@@ -461,7 +461,7 @@ class Moongom119 extends Polymer.Element {
       this.__dataHasPaths = true;
       if (this._setPendingProperty(/**@type{string}*/(path), value, shouldNotify)) {
 
-        /* computeLinkPaths */
+        /* Modified computeLinkPaths */
         let links = this.__dataLinkedPaths;
         if (links) {
           let link;
@@ -474,19 +474,17 @@ class Moongom119 extends Polymer.Element {
               link = Polymer.Path.translate(b, a, path);
               this._setPendingPropertyOrPath(link, value, true, true);
             } else if (a === path) {
-              link = Polymer.Path.translate(a, b, path);
-              let old = Polymer.Path.get(this, link);
+              let old = Polymer.Path.get(this, b);
               if (old !== value && (old === old || value === value)) {
-                Polymer.Path.set(this, link, value);
+                Polymer.Path.set(this, b, value);
               }
-              this._setPendingPropertyOrPath(link, value, true, true);
+              this._setPendingPropertyOrPath(b, value, true, true);
             } else if (b === path) {
-              link = Polymer.Path.translate(b, a, path);
-              let old = Polymer.Path.get(this, link);
+              let old = Polymer.Path.get(this, a);
               if (old !== value && (old === old || value === value)) {
-                Polymer.Path.set(this, link, value);
+                Polymer.Path.set(this, a, value);
               }
-              this._setPendingPropertyOrPath(link, value, true, true);
+              this._setPendingPropertyOrPath(a, value, true, true);
             }
           }
         }
