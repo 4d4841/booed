@@ -402,6 +402,29 @@ var MHA = {
       miner[pval] = value;
       return tree;
     },
+
+    itemPush(itemKey /* TODO ,ref,value */) {
+      return MHA.DB.ref('home').child(MHA.AU.currentUser.uid).child('items').child(itemKey).push();
+    },
+
+    /* Generate temp key */
+    localKey(ref) {
+      this._TempKeyMap = this._TempKeyMap || new Map();
+      let oldref = this._TempKeyMap.get(ref);
+      if (typeof oldref === 'string') {
+        this._TempKeyMap.delete(ref);
+        return oldref;
+      }
+      this._TempKeyIndex = this._TempKeyIndex || 0;
+      this._TempKeyIndex ++;
+      let idxStr = this._TempKeyIndex.toString();
+      console.assert(idxStr.length < 15, "I don't know you, but don't, just don't.");
+      let tmpKey = 'MGTMP'+'0'.repeat(14-idxStr.length) + idxStr + '$';
+      this._TempKeyMap.set(tmpKey, ref||'');
+
+      return tmpKey;
+    },
+
   },
 
 };
@@ -464,16 +487,15 @@ class Moongom119 extends Polymer.Element {
         /* Modified computeLinkPaths */
         let links = this.__dataLinkedPaths;
         if (links) {
-          let link;
           for (let a in links) {
             let b = links[a];
             if (Polymer.Path.isDescendant(a, path)) {
-              link = Polymer.Path.translate(a, b, path);
-              this._setPendingPropertyOrPath(link, value, true, true);
+              let link = Polymer.Path.translate(a, b, path);
+              this._setPendingPropertyOrPath(, value, true, true);
             } else if (Polymer.Path.isDescendant(b, path)) {
-              link = Polymer.Path.translate(b, a, path);
+              let link = Polymer.Path.translate(b, a, path);
               this._setPendingPropertyOrPath(link, value, true, true);
-            } else if (a === path) {
+            } else if (a === path) { /* Additional tests to sync pair */
               let old = Polymer.Path.get(this, b);
               if (old !== value && (old === old || value === value)) {
                 Polymer.Path.set(this, b, value);
