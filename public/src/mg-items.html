@@ -386,10 +386,22 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
         /* Appply new values */
         MHA.Path.deepAssign(this,'items.'+snapshot.key, snapshot.val());
 
-        /* Nullify deleted values, keeps local data */
+        /* Nullifies deleted values with undefined server counter-part but skips local data */
         MHA.Path.deepAssign(this,'items.'+snapshot.key, this.items[snapshot.key], (path,value) => {
-          let serverValue = this.get('db'+path);
-          if (!serverValue && value !== null && typeof value === 'object' && !value.MGLOCALDATA$) {
+
+          let allParts = path.split('.');
+          for (let i = 1, prop = this.items, part; part = allParts[i]; ++i) {
+            if (path.endsWith('$')) {
+              return {path:null};
+            }
+
+            prop = prop[part];
+            if (prop && prop.MGLOCALDATA$) {
+              return {path:null};
+            }
+          }
+
+          if (typeof this.get('db'+path) === 'undefined' && value !== null) {
             return {value:null};
           }
         });
