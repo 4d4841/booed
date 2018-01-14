@@ -130,7 +130,7 @@ class MGClipboardView extends MHA.Configurations(MGClipboard) {
 
   _onItemClick(e) {
     //Toggles deleted true and it won't be pasted.
-    let idx = this.clipboard.indexOf(e.model.item);
+    let idx = this.clipboard.indexOf(e.model.itemOrImage);
     this.set(['clipboard',idx,'deleted'], this.clipboard[idx].deleted ? false : true);
   }
 

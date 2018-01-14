@@ -163,7 +163,6 @@
     selected-item="{{childPositionTarget}}"
     hidden$="[[!opened]]"
     > <template is="dom-repeat" items="{{subvariantList}}" as="subvariant">
-      <!--XXX remove name here-->
     <mg-variant-cell
       name="[[subvariant.key$]]"
       variant-type="[[_computeType(selectedTypeDef.name,selectedTypeDef.custom)]]"

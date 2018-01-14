@@ -305,6 +305,7 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     let path = change.path;
     let value = change.value;
 
+    /* Update parent path on MGLOCALDATA$ turned off */
     if (path.endsWith('.MGLOCALDATA$') && value === false) {
       path = path.slice(0,-13); /* '.MGLOCALDATA$'.length */
       value = this.get(path);
