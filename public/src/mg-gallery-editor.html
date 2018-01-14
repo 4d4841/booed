@@ -142,7 +142,7 @@
   class="image-thumbnail"
   item="[[image]]"
   label="[[image.name]]"
-  selection-order="[[_computeSelectionOrder(image.key$, index, selectedImageKeys.*)]]"
+  selection-order="[[_computeSelectionOrder(image.key$, index, selectedImageKeys.splices)]]"
   on-click="_onItemClick"
 ></mg-item-image>
 
@@ -281,13 +281,12 @@ class MGGalleryEditor extends MGItemEditor {
     return selectedLen ? 'ก๊อปปี้ที่เลือก' : 'ก๊อปปี้แกลเลอรี่';
   }
 
-  _computeSelectionOrder(key, index, change) {
+  _computeSelectionOrder(key, index, splices) {
   /* This will also update a cache that match the actual listed result of
    * dom-repeat to avoid dealing with sorted/filtered results.
    */
-    let IndexImageCache = (this.IndexImageCache || (this.IndexImageCache = []));
-    IndexImageCache[index] = key;
 
+    (this.IndexImageCache || (this.IndexImageCache = []))[index] = key;
     return 1 + this.selectedImageKeys.indexOf(key); /* Selection order starts at 1 */
   }
 
