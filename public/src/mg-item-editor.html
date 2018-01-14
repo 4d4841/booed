@@ -113,7 +113,7 @@ MGItemEditor = class __MGItemEditor extends MHA.Configurations(Moongom119) {
   _itemChanged(change) { if (change) {
     if (change.path != 'item') {
       /* Turn MGLOCALDATA$ off */
-      if (!change.path.endsWith('$')) {
+      if (!change.path.endsWith('$') && this.item.MGLOCALDATA$) {
         this.set('item.MGLOCALDATA$', false);
       }
     }
