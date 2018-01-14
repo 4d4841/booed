@@ -366,41 +366,6 @@ class MGGalleryEditor extends MGItemEditor {
     }
   }
 
-  _indexImage(imageKey,cb,nacb) {
-    /* XXX optimize later
-    if (!this._ImageMap) {
-      this._ImageMap = newMap();
-    }
-
-    let idx = this._ImageMap.get(imageKey);
-    if (this.imageList.length > idx &&  this.imageList[idx].key == imageKey) {
-      return idx;
-    }
-    */
-
-    let i, data;
-    for (i = 0; data = this.imageList[i]; ++i) {
-      //this._ImageMap.set(data.key, i);
-      if (data.key == imageKey) {
-        if (cb) { cb(i,data); }
-
-        return i;
-      }
-    }
-
-    if (nacb) { nacb(cb);}
-    return -1;
-  }
-
-  _setPhotoKeyProperty(imageKey,prop,val) {
-    let idx = this._indexImage(imageKey);
-    if (idx !== -1) {
-      if (this.imageList[idx][prop] != val) {
-        this.set(['imageList',idx,prop],val);
-      }
-    }
-  }
-
   _uploadImageFiles(files) {
     if (!files || !files.length) {
       return;
@@ -443,8 +408,6 @@ class MGGalleryEditor extends MGItemEditor {
           MHA.set(['items',itemKey,'images',imageKey,'rep'], repKey);
         },
         progress: (repKey,progress) => {
-          //this._setPhotoKeyProperty(imageKey, 'progress$', (progress.bytesTransferred / progress.totalBytes * 100).toFixed(2));
-          //console.log((progress.bytesTransferred / progress.totalBytes * 100).toFixed(2));
           MHA.set(['items',itemKey,'images',imageKey,'progress$'], (progress.bytesTransferred / progress.totalBytes * 100).toFixed(2));
         },
         complete: (repKey,complete) => {
