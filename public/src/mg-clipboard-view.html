@@ -83,26 +83,14 @@
       > <paper-icon-button icon="editor:mode-edit" class="image-edit-button-icon" on-click="_onEditImage">
         </paper-icon-button>
       </mg-item-image>
-      <!--
-  <mg-item-image
-    key="[[item.key]]"
-    icon="[[_formatRoleIcon(item.role)]]"
-    class="copied-icon"
-    thumbnail="[[item.thumbnail]]"
-    rep="[[item.rep]]"
-    roi="[[item.roiThumbnail]]"
-    label="[[_formatLabel(item.item,item.name,item.role)]]"
-    deleted="[[item.deleted]]"
-    on-click="_onItemClick"
--->
     </template>
 
   </div>
 </iron-collapse>
 
 <mg-image-editor
-  id="image-editor"
-  data="{{editingData}}"
+  item="{{editingItem}}"
+  keys="{{editingImageKeys}}"
 ></mg-image-editor>
 
   </template>
@@ -111,7 +99,11 @@ class MGClipboardView extends MHA.Configurations(MGClipboard) {
   static get is() { return 'mg-clipboard-view'; }
 
   static get properties() { return {
-    editingData: Object,
+    editingItem: {
+      type: Object,
+      value: () => ({images:{}}),
+    },
+    editingImageKeys: Array,
   }}
 
   static get observers() { return [
@@ -135,9 +127,17 @@ class MGClipboardView extends MHA.Configurations(MGClipboard) {
   }
 
   _onEditImage(e) {
-    let data = e.model.item;
-    this.editingData = data;
     e.stopImmediatePropagation();
+
+    if (e.model.itemOrImage.role === 'gallery') {
+      this.set('editingItem.images', e.model.itemOrImage.images);
+      this.editingImageKeys = [...Object.keys(this.editingItem.images)];
+
+      return;
+    }
+
+    this.set('editingItem.images', {[e.model.itemOrImage.key$]:e.model.itemOrImage});
+    this.editingImageKeys = [e.model.itemOrImage.key$];
   }
 
 
