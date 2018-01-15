@@ -13,6 +13,7 @@
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
@@ -24,6 +25,32 @@
   <template strip-whitespace>
 <style include="mg-common-styles iron-flex iron-flex-alignment">
 :host {
+}
+
+div[name=help] {
+  height: 80vh;
+  @apply --layout-vertical;
+  @apply --layout-center;
+  @apply --layout-center-justified;
+}
+
+div[name=help] paper-card {
+  transform: rotate(2deg);
+  background-color: snow;
+  margin: 30px;
+  max-width: 600px;
+  min-width: 300px;
+  padding: 30px;
+  font-family: 'Henny Penny', cursive;
+  color: rebeccapurple;
+  --paper-card-header-image: {
+    --iron-image-height: 150px;
+    background-size: contain;
+  };
+}
+
+div[name=help] paper-card h2 {
+  text-align: center;
 }
 
 @media (max-width: 767px) {
@@ -56,10 +83,9 @@
     show inbox
   </div>
   <div name="help">
-    <center>
-    <img width="150px" src="images/logo-full.svg">
+    <paper-card image="images/logo-full.svg" >
+      <div class="card-content">
     <h2>Aide-toi, le ciel t'aidera.</h2>
-    <div style="width:400px">
 
     <h3>Booed</h3>
 
@@ -70,14 +96,21 @@
       products and categories, each user will be able to customize fronts
       for their own shops.
 
-    <h3>l10n</h3>
-    Thai,Korean,Japanese,English
+    <h3>L10n Targets</h3>
+    <ul>
+      <li> Thai </li>
+      <li> Hangul </li>
+      <li> Japanese </li>
+      <li> Chinese </li>
+      <li> English </li>
+    </ul>
 
     <h3>Source Code</h3>
     Source code is licensed under FreeBSD License.<br>
     Please visit <a href="https://github.com/4d4841/booed">https://github.com/4d4841/booed</a> for more information.
-    </div>
-   </center>
+      </div>
+    </paper-card>
+
   </div>
 </iron-pages>
 
