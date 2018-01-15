@@ -555,6 +555,16 @@ class MGGalleryEditor extends MGItemEditor {
       }
 
       for (let imageKey in this.item.images) {
+        if (this.item.images[imageKey].deleted) {
+          if (clipboardItem.order) {
+            let delIndex = clipboardItem.order.indexOf(imageKey);
+            if (delIndex !== -1) {
+              clipboardItem.order.splice(delIndex, 1);
+            }
+          }
+          continue;
+        }
+
         let newImageKey = MHA.Path.localKey();
         clipboardItem.images[newImageKey] = {...this.item.images[imageKey]};
         clipboardItem.images[newImageKey].key$ = newImageKey;
@@ -594,10 +604,7 @@ class MGGalleryEditor extends MGItemEditor {
     let cover = this.item.cover;
     let area = (250*250); /* Pixel area for creating thumbnail */
 
-    paste.forEach((data,index) => {
-      if (data.deleted || (data.role && data.role != 'photo')) return;
-      /* XXX Will pull data off item.gallery */
-
+    function pasteImage(data) {
       let imageKey =  MHA.Path.itemPush(itemKey).key;
       cover = cover || imageKey;
 
@@ -615,38 +622,40 @@ class MGGalleryEditor extends MGItemEditor {
 
           let imageLoader = new Image();
           imageLoader.crossOrigin="anonymous";
-          imageLoader.onload = e => {
-            let width = imageLoader.naturalWidth;
-            let height = imageLoader.naturalHeight;
 
-            /* Bake the loaded image to fit roiThumbnail */
-            let tl = width * data.roiThumbnail[0];
-            let tt = height * data.roiThumbnail[1];
-            let tw = width * data.roiThumbnail[2];
-            let th = height * data.roiThumbnail[3];
+            imageLoader.onload = e => {
+              let width = imageLoader.naturalWidth;
+              let height = imageLoader.naturalHeight;
 
-            let w = Math.ceil(Math.sqrt(area * tw/th));
-            let h = Math.ceil(area / w);
+              /* Bake the loaded image to fit roiThumbnail */
+              let tl = width * data.roiThumbnail[0];
+              let tt = height * data.roiThumbnail[1];
+              let tw = width * data.roiThumbnail[2];
+              let th = height * data.roiThumbnail[3];
 
-            let canvas = document.createElement('canvas');
-            canvas.width = w;
-            canvas.height = h;
+              let w = Math.ceil(Math.sqrt(area * tw/th));
+              let h = Math.ceil(area / w);
 
-            canvas.getContext('2d').drawImage(imageLoader, tl, tt, tw, th, 0, 0, w, h);
-            canvas.toBlob( thumbnailBlob => {
-              /* New thumbnail has been baked, register the generated blob to upload */
-              MHA.registerRepresentation( thumbnailBlob, {
-                key: thumbnail => {
-                  MHA.set(['items',itemKey,'images',imageKey,'thumbnail'],thumbnail);
-                  MHA.set(['items',itemKey,'images',imageKey,data.roiThumbnail],null);
-                },
-                complete: (thumbnail,complete) => {
-                  /* Upload complete, unset MGLOCALDATA$ */
-                  MHA.set(['items',itemKey,'images',imageKey,'MGLOCALDATA$'], false);
-                },
-              });
-            }, 'image/jpeg',0.8);
-          };
+              let canvas = document.createElement('canvas');
+              canvas.width = w;
+              canvas.height = h;
+
+              canvas.getContext('2d').drawImage(imageLoader, tl, tt, tw, th, 0, 0, w, h);
+              canvas.toBlob( thumbnailBlob => {
+                /* New thumbnail has been baked, register the generated blob to upload */
+                MHA.registerRepresentation( thumbnailBlob, {
+                  key: thumbnail => {
+                    MHA.set(['items',itemKey,'images',imageKey,'thumbnail'],thumbnail);
+                    MHA.set(['items',itemKey,'images',imageKey,data.roiThumbnail],null);
+                  },
+                  complete: (thumbnail,complete) => {
+                    /* Upload complete, unset MGLOCALDATA$ */
+                    MHA.set(['items',itemKey,'images',imageKey,'MGLOCALDATA$'], false);
+                  },
+                });
+              }, 'image/jpeg',0.8);
+            };
+
           imageLoader.src = src;
 
         }});
@@ -656,6 +665,24 @@ class MGGalleryEditor extends MGItemEditor {
         MHA.set(['items',itemKey,'images',imageKey,'thumbnail'], data.thumbnail);
         MHA.set(['items',itemKey,'images',imageKey,'MGLOCALDATA$'], false);
       }
+
+    }
+
+    paste.forEach((data,index) => {
+      if (data.role === 'gallery') {
+
+        let keys = data.order || [...Object.keys(data.images)];
+        keys.forEach(key => {
+          pasteImage(data.images[key]);
+        });
+
+        return;
+      }
+
+      if (data.deleted || (data.role && data.role !== 'photo')) return;
+      /* XXX Will pull data off item.gallery */
+      pasteImage(data);
+
     });
 
   }
