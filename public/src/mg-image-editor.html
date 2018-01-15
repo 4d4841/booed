@@ -59,6 +59,7 @@
   position: absolute;
   top: 0;
   left: 0;
+  @apply --layout-horizontal;
 }
 
 #thumbnail {
@@ -140,7 +141,13 @@
 
 <div class="control-panel horizontal layout justified">
 
-  <div style="width:120px"></div>
+  <div class="layout horizontal" style="max-width:450px">
+<template is="dom-repeat" items="[[sourceImages]]">
+  <mg-image style="border-radius:5px;margin:2px" on-click="_clickThumbnail" src="[[item]]" width="40" height="40"></mg-image>
+</template>
+  </div>
+
+  <!--<div style="width:120px"></div>-->
 
   <div class="navigator-buttons" hidden$="[[singleKey]]">
 <paper-icon-button id="skip-previous" icon="av:skip-previous" on-click="_setPreviousKey">
@@ -274,6 +281,11 @@ class MGImageEditor extends Polymer.GestureEventListeners(
       type: String,
       observer: '_srcChanged',
       value: null,
+    },
+
+    sourceImages: {
+      type: Array,
+      value: () => [],
     },
 
     thumbnailLoaded: {
@@ -738,6 +750,25 @@ class MGImageEditor extends Polymer.GestureEventListeners(
       this.image = this.item.images[keys[0]];
       this.linkPaths('item.images.'+keys[0], 'image');
       this.singleKey = keys.length == 1 ? true : false;
+
+      /* XXX Calculate with screen width */
+      this.sourceImages = [];
+      keys.forEach((key,index) => {
+        if (index < 6) {
+          this.push('sourceImages',null);
+        }
+      });
+
+      keys.forEach((key,index) => {
+        if (index < 6) {
+          MHA.registerRepresentation(this.item.images[key].thumbnail ||
+              this.item.images[key].rep, {src: (repKey,src) => {
+            let idx = keys.indexOf(key);
+            this.set('sourceImages.'+idx, src);
+          }});
+        }
+      });
+
     } else {
       this.image = undefined;
     }
@@ -880,6 +911,10 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
       });
     }, 'image/jpeg',0.8);
 
+  }
+
+  _clickThumbnail(e) {
+    this.keys = [...this.keys.slice(e.model.index),...this.keys.slice(0,e.model.index)];
   }
 
   _setPreviousKey(e) {
