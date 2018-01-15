@@ -158,7 +158,7 @@
 
 <mg-image-editor
   item="{{item}}"
-  keys="{{editorImageKeys}}"
+  keys="{{editingImageKeys}}"
 ></mg-image-editor>
 
   </template>
@@ -356,7 +356,6 @@ class MGGalleryEditor extends MGItemEditor {
     if (!files || !files.length) {
       return;
     }
-    let uid = MHA.AU.currentUser.uid;
     let itemKey = this.item.key$;
 
     if (!this.item.images) {
@@ -533,7 +532,7 @@ class MGGalleryEditor extends MGItemEditor {
   }
 
   _onEditButtonClick(e) {
-    this.editorImageKeys = [...this.selectedImageKeys];
+    this.editingImageKeys = [...this.selectedImageKeys];
     this.splice('selectedImageKeys',0,this.selectedImageKeys.length);
   }
 
@@ -556,9 +555,9 @@ class MGGalleryEditor extends MGItemEditor {
       }
 
       for (let imageKey in this.item.images) {
-        let newImageKey = MHA.DB.ref('home').child(MHA.AU.currentUser.uid)
-          .child(this.item.key$).child('images').push().key;
-        clipboardItem.images[newImageKey] = this.item.images[imageKey];
+        let newImageKey = MHA.Path.localKey();
+        clipboardItem.images[newImageKey] = {...this.item.images[imageKey]};
+        clipboardItem.images[newImageKey].key$ = newImageKey;
 
         if (!clipboardItem.cover || clipboardItem.cover === imageKey) {
           clipboardItem.cover = newImageKey;
@@ -572,11 +571,9 @@ class MGGalleryEditor extends MGItemEditor {
 
     /* Copy as image(s) */
     this.selectedImageKeys.forEach(imageKey => {
-      let clipboardImage = {
-        name: this.item.images[imageKey].name,
-        rep: this.item.images[imageKey].rep,
-        thumbnail: this.item.images[imageKey].thumbnail,
-      };
+      let clipboardImage = {...this.item.images[imageKey]};
+      clipboardImage.key$ = MHA.Path.localKey();
+      delete clipboardImage.deleted;
 
       this.push('clipboard', clipboardImage);
     });
@@ -592,37 +589,28 @@ class MGGalleryEditor extends MGItemEditor {
     let paste = this.clipboard.filter(item => { return item.deleted ? false : true; });
     console.assert(paste.length, "Empty pasted data");
 
-    let uid = MHA.AU.currentUser.uid;
-    let itemKey = this.key;
-    let path = 'home/'+uid+'/items/'+itemKey;
-    let ref = MHA.DB.ref('home').child(uid).child(itemKey).child('images');
-    let registerData = {
-      ['items/'+itemKey+'/public']: false,
-      ['items/'+itemKey+'/uid']: uid,
-      ['items/'+itemKey+'/role']: this.role,
-      ['items/'+itemKey+'/name']: this.name,
-      [path+'/role']: this.role,
-      [path+'/name']: this.name,
-    };
+    let itemKey = this.item.key$;
 
-    path+='/images/';
-    let cover = MHA.getItem({[itemKey]:{cover:null}});
+    let cover = this.item.cover;
     let area = (250*250); /* Pixel area for creating thumbnail */
-    let waitThumbnails = 0; /* waiting counter for all completions */
 
     paste.forEach((data,index) => {
-      if (data.deleted || data.role != 'photo') return;
+      if (data.deleted || (data.role && data.role != 'photo')) return;
       /* XXX Will pull data off item.gallery */
 
-
-      let imageKey = ref.push().key;
+      let imageKey =  MHA.Path.itemPush(itemKey).key;
       cover = cover || imageKey;
-      registerData[path+imageKey+'/name'] = data.name || null;
-      registerData[path+imageKey+'/rep'] = data.rep || null;
+
+      MHA.set(['items',itemKey,'images',imageKey], {
+        MGLOCALDATA$: true,
+        key$: imageKey,
+        name: data.name,
+        rep: data.rep,
+      });
 
       /* If thumbnails were virtually defined with ROIs, it bakes them first */
       if (data.roiThumbnail) {
-        waitThumbnails++;
+        /* Query and load the source of the thumbnail */
         MHA.registerRepresentation(data.rep,{src: (repKey,src) => {
 
           let imageLoader = new Image();
@@ -631,6 +619,7 @@ class MGGalleryEditor extends MGItemEditor {
             let width = imageLoader.naturalWidth;
             let height = imageLoader.naturalHeight;
 
+            /* Bake the loaded image to fit roiThumbnail */
             let tl = width * data.roiThumbnail[0];
             let tt = height * data.roiThumbnail[1];
             let tw = width * data.roiThumbnail[2];
@@ -645,30 +634,15 @@ class MGGalleryEditor extends MGItemEditor {
 
             canvas.getContext('2d').drawImage(imageLoader, tl, tt, tw, th, 0, 0, w, h);
             canvas.toBlob( thumbnailBlob => {
+              /* New thumbnail has been baked, register the generated blob to upload */
               MHA.registerRepresentation( thumbnailBlob, {
                 key: thumbnail => {
-                  /* Rather waits until upload complete, announces the
-                   * instances immediately to catch up with user actions.
-                   * Doing this will show empty loading thumbnails.
-                   * Since it will use a returned locally stored dataURI generated
-                   * from Blob it doesn't need the uploading process to complete.
-                   */
-                  MHA.setItem(itemKey, {
-                    images: {[imageKey]: {thumbnail: thumbnail, roiThumbnail: null}},
-                  });
+                  MHA.set(['items',itemKey,'images',imageKey,'thumbnail'],thumbnail);
+                  MHA.set(['items',itemKey,'images',imageKey,data.roiThumbnail],null);
                 },
                 complete: (thumbnail,complete) => {
-                  registerData[path+imageKey+'/thumbnail'] = thumbnail;
-
-                  waitThumbnails--;
-                  if (waitThumbnails == 0) {
-                    MHA.DB.ref().update(registerData, error => {
-                      if (!error) {
-                      } else {
-                        console.error("ERR",error);
-                      }
-                    });
-                  }
+                  /* Upload complete, unset MGLOCALDATA$ */
+                  MHA.set(['items',itemKey,'images',imageKey,'MGLOCALDATA$'], false);
                 },
               });
             }, 'image/jpeg',0.8);
@@ -678,26 +652,12 @@ class MGGalleryEditor extends MGItemEditor {
         }});
         let canvas = document.createElement('canvas');
 
-
-
       } else {
-        registerData[path+imageKey+'/thumbnail'] = data.thumbnail || null;
+        MHA.set(['items',itemKey,'images',imageKey,'thumbnail'], data.thumbnail);
+        MHA.set(['items',itemKey,'images',imageKey,'MGLOCALDATA$'], false);
       }
     });
 
-    registerData['home/'+uid+'/items/'+itemKey+'/cover'] = cover;
-
-    /* XXX Should it also update local? Or should it rely only on query events? */
-    /* XXX Need to try off-line. */
-
-    if (waitThumbnails == 0) {
-      MHA.DB.ref().update(registerData, error => {
-        if (!error) {
-        } else {
-          console.error("ERR",error);
-        }
-      });
-    }
   }
 
   _onEditImage(e) {
