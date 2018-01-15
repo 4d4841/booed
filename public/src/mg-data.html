@@ -404,7 +404,10 @@ var MHA = {
     },
 
     itemPush(itemKey /* TODO ,ref,value */) {
-      return MHA.DB.ref('home').child(MHA.AU.currentUser.uid).child('items').child(itemKey).push();
+      if (itemKey) {
+        return MHA.DB.ref('home').child(MHA.AU.currentUser.uid).child('items').child(itemKey).push();
+      }
+      return MHA.DB.ref('items').push();
     },
 
     /* Generate temp key */
@@ -491,7 +494,7 @@ class Moongom119 extends Polymer.Element {
             let b = links[a];
             if (Polymer.Path.isDescendant(a, path)) {
               let link = Polymer.Path.translate(a, b, path);
-              this._setPendingPropertyOrPath(, value, true, true);
+              this._setPendingPropertyOrPath(link, value, true, true);
             } else if (Polymer.Path.isDescendant(b, path)) {
               let link = Polymer.Path.translate(b, a, path);
               this._setPendingPropertyOrPath(link, value, true, true);
