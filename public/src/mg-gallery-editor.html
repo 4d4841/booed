@@ -26,7 +26,7 @@
   <template strip-whitespace>
 <style include="mg-item-editor mg-common-styles iron-flex iron-flex-alignment">
 
-#image-selector {
+.image-selector {
   @apply --layout-horizontal;
   @apply --layout-wrap;
   @apply --layout-flex;
@@ -38,15 +38,17 @@
   margin: 0 20px 50px 0;
 }
 
-:host([dropenter]) #image-selector {
-  border: 1px dashed tomato;
-}
-
-:host([idle]) #image-selector {
+:host([idle]) .image-selector {
   border: 1px dashed var(--disabled-text-color);
+  color: lightgray;
 }
 
-:host([nokey]) #image-selector {
+:host([dropenter]) .image-selector {
+  border: 1px dashed tomato;
+  color: tomato;
+}
+
+:host([nokey]) .image-selector {
   display: none;
 }
 
@@ -64,7 +66,7 @@
 }
 
 @media (max-width: 767px) {
-  #image-selector {
+  .image-selector {
     padding: 0;
   }
 
@@ -86,7 +88,7 @@
     </div>
 
     <div style="display:inline-block">
-  <paper-icon-button icon="[[copyIcon]]" on-click="_onCopyButtonClick"></paper-icon-button>
+  <paper-icon-button disabled="[[!imageList.length]]" icon="[[copyIcon]]" on-click="_onCopyButtonClick"></paper-icon-button>
   <paper-tooltip>{{localize(copyMethod)}}</paper-tooltip>
     </div>
 
@@ -129,8 +131,9 @@
   <input type="file" id="fileInput" on-change="_filesSelected" hidden multiple>
 </div>
 
+  <template is="dom-if" if="{{!idle}}">
 <iron-selector
-  id="image-selector"
+  class="image-selector"
   attr-for-selected="key"
   selected-values="{{selectedImageKeys}}"
   multi
@@ -155,6 +158,16 @@
 
   </template>
 </iron-selector>
+  </template>
+
+<template is="dom-if" if="{{idle}}">
+  <div class="image-selector layout vertical center center-justified">
+    <div on-click="_onAddButtonClick" class="layout vertical center">
+      <iron-icon icon="image:photo" style="--iron-icon-width:160px;--iron-icon-height:160px;"></iron-icon>
+      <div>Add or drop image here.</div>
+    </div>
+  </div>
+</template>
 
 <mg-image-editor
   item="{{item}}"
@@ -201,8 +214,10 @@ class MGGalleryEditor extends MGItemEditor {
 
     idle: {
       type: Boolean,
+      value: true,
       notify: true,
       reflectToAttribute: true,
+      computed: '_checkIdle(imageList.length, nokey)',
     },
 
     editingData: {
@@ -227,7 +242,6 @@ class MGGalleryEditor extends MGItemEditor {
   }}
 
   static get observers() { return [
-    '_checkIdle(imageList.length)',
     '_linkKeysArraySelection(item.images.*)',
     '_orderChanged(item.order)',
   ]}
@@ -235,21 +249,21 @@ class MGGalleryEditor extends MGItemEditor {
   connectedCallback() {
     super.connectedCallback();
     this.addEventListener('dragover', e => {
-      if (!this.key) {
+      if (!this.item || !this.item.key$ ) {
         return;
       }
       e.preventDefault();
       this.dropenter = true;
     });
     this.addEventListener('dragleave', e => {
-      if (!this.key) {
+      if (!this.item || !this.item.key$ ) {
         return;
       }
       e.preventDefault();
       this.dropenter = false;
     });
     this.addEventListener('drop', e => {
-      if (!this.key) {
+      if (!this.item || !this.item.key$ ) {
         return;
       }
       e.preventDefault();
@@ -276,8 +290,11 @@ class MGGalleryEditor extends MGItemEditor {
     return 1 + this.selectedImageKeys.indexOf(key); /* Selection order starts at 1 */
   }
 
-  _checkIdle(len) {
-    this.idle = len ? false:true;
+  _checkIdle(len, nokey) {
+    if (nokey) {
+      return false;
+    }
+    return len ? false:true;
   }
 
   _computeImageOrder(a,b) {
