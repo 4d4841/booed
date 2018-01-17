@@ -45,12 +45,12 @@
 
       <div style="display:inline-block">
     <paper-icon-button icon="booed:add-gallery" on-click="_onAddGalleryClick"></paper-icon-button>
-    <paper-tooltip>เพิ่มแกลเลอรี่</paper-tooltip>
+    <paper-tooltip>{{localize('add gallery')}}</paper-tooltip>
       </div>
 
       <div style="display:inline-block">
     <paper-icon-button disabled="[[!clipboard.length]]" icon="content-paste" on-click="_onPasteButtonClick"></paper-icon-button>
-    <paper-tooltip>แปะ</paper-tooltip>
+    <paper-tooltip>{{localize('paste')}}</paper-tooltip>
       </div>
 
   </div>
