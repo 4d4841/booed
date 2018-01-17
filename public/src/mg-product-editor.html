@@ -64,20 +64,16 @@
   ></mg-variant-editor>
 
 </div>
-<!--
 <mg-gallery-editor
-  id="gallery-editor"
-  key="{{gallery}}"
-  clipboard="{{clipboard}}"
+  item="{{galleryItem}}"
 ></mg-gallery-editor>
--->
 
   </template>
   <script>
 (function() {
 let memoizedTemplate;
 
-class MGProductEditor extends MGItemEditor {
+class MGProductEditor extends MHA.Items(MGItemEditor) {
   static get is() { return 'mg-product-editor'; }
 
   static get template() {
@@ -110,13 +106,13 @@ class MGProductEditor extends MGItemEditor {
       }
     },
 
-    gallery: {
-      type: String,
-      observer: '_galleryChanged',
+    galleryItem: {
+      type: Object,
     },
   }}
 
   static get observers() { return [
+    '_galleryChanged(item.gallery,items.*)',
   ]}
 
   _formatVariantLabel(label) {
@@ -124,13 +120,28 @@ class MGProductEditor extends MGItemEditor {
   }
 
   _galleryChanged(gallery) {
-    if (gallery && this.role == 'product') {
-      //MHA.setItem(this.key, {gallery: gallery, role: 'product'}, true);
+    if (this.galleryItem && gallery !== this.galleryItem.key$) {
+      this.unlinkPaths('items.'+this.galleryItem.key$);
+      this.galleryItem = undefined;
+    }
+
+    if (gallery && this.items[gallery]) {
+      this.galleryItem = this.items[gallery];
+      this.linkPaths('items.'+gallery, 'galleryItem');
+      //this.set('galleryItem.parent', this.item.key$);
     }
   }
 
   _onAddGalleryClick(e) {
-    this.$['gallery-editor'].newItem('แกลเลอรี่'+this.name);
+    if (this.galleryItem) {
+      this.set('galleryItem.parent',null);
+      this.unlinkPaths('items.'+this.galleryItem.key$);
+      this.galleryItem = undefined;
+    }
+
+    let newKey = MHA.DB.ref('items').push().key;
+    this.set('items.'+newKey, {MGLOCALDATA$:true, key$:newKey, role:'gallery', parent:this.item.key$ });
+    this.set('item.gallery',newKey);
   }
 
   _onPasteButtonClick(e) {
