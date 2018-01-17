@@ -627,8 +627,8 @@ class MGData extends Polymer.Element {
 
   connectedCallback() {
     super.connectedCallback();
-    MHA.addInstance(this, 'items');
-    MHA.addInstance(this, 'configurations');
+    MHA.addInstanceObserver(this, 'items');
+    MHA.addInstanceObserver(this, 'configurations');
   }
 
   disconnectedCallback() {
@@ -838,7 +838,7 @@ MHA.Configurations = (superClass) => { return class extends Polymer.mixinBehavio
 
   connectedCallback() {
     super.connectedCallback();
-    MHA.addInstance(this, 'configurations');
+    MHA.addInstanceObserver(this, 'configurations');
   }
 
   disconnectedCallback() {
@@ -870,7 +870,7 @@ MHA.Items = (superClass) => { return class extends superClass {
 
   connectedCallback() {
     super.connectedCallback();
-    MHA.addInstance(this, 'items');
+    MHA.addInstanceObserver(this, 'items');
   }
 
   disconnectedCallback() {
