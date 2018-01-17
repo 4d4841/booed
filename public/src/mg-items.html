@@ -309,6 +309,11 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     if (path.endsWith('.MGLOCALDATA$') && value === false) {
       path = path.slice(0,-13); /* '.MGLOCALDATA$'.length */
       value = this.get(path);
+      console.log('Will sync', path, value);
+    }
+
+    if (typeof value === 'undefined') {
+      return;
     }
 
     let allParts = path.split('.');
@@ -410,7 +415,8 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
       }, function(error){}, this);
       this._UidChangedCallback.child_added = this._UidChangedCallback.ref.on('child_added', function(snapshot) {
         this.set('dbitems.'+snapshot.key, snapshot.val());
-        this.set('items.'+snapshot.key, Object.assign(snapshot.val(), {key$:snapshot.key}));
+
+        MHA.Path.deepAssign(this,'items.'+snapshot.key, snapshot.val());
 
       }, function(error){}, this);
     }
