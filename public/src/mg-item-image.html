@@ -165,7 +165,7 @@ class MGItemImage extends Polymer.Element {
   /* Item is an mg-item */
   _coverChanged(cover) {
     if (cover) {
-      if (this.item.images[cover]) {
+      if (this.item.images && this.item.images[cover]) {
         if (this.item.images[cover].thumbnail) {
           let cachedSrc = false;
           MHA.registerRepresentation(this.item.images[cover].thumbnail, { src: (key,src) => {
@@ -175,15 +175,6 @@ class MGItemImage extends Polymer.Element {
           if (!cachedSrc) {
             this.src = undefined;
           }
-        }
-      } else { /* cover is a rep */
-        let cachedSrc = false;
-        MHA.registerRepresentation(cover, { src: (key,src) => {
-          cachedSrc = true;
-          this.src = src;
-        }});
-        if (!cachedSrc) {
-          this.src = undefined;
         }
       }
     }
