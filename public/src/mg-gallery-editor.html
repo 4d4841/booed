@@ -82,47 +82,47 @@
   <div id="control-panel" class="horizontal layout wrap end" hidden$="[[nokey]]">
     <div style="display:inline-block">
   <paper-icon-button icon="booed:add-photo" on-click="_onAddButtonClick"></paper-icon-button>
-  <paper-tooltip>เพิ่มรูป</paper-tooltip>
+  <paper-tooltip>{{localize('add photo')}}</paper-tooltip>
     </div>
 
     <div style="display:inline-block">
   <paper-icon-button icon="[[copyIcon]]" on-click="_onCopyButtonClick"></paper-icon-button>
-  <paper-tooltip>[[copyMethod]]</paper-tooltip>
+  <paper-tooltip>{{localize(copyMethod)}}</paper-tooltip>
     </div>
 
     <div style="display:inline-block">
   <paper-icon-button disabled="[[!clipboard.length]]" icon="content-paste" on-click="_onPasteButtonClick"></paper-icon-button>
-  <paper-tooltip>แปะ</paper-tooltip>
+  <paper-tooltip>{{localize('paste')}}</paper-tooltip>
     </div>
 
     <div style="display:inline-block">
   <paper-icon-button disabled="[[!clipboard.length]]" icon="booed:content-clear" on-click="_onClearButtonClick"></paper-icon-button>
-  <paper-tooltip>ล้าง</paper-tooltip>
+  <paper-tooltip>{{localize('clear clipboard')}}</paper-tooltip>
     </div>
 
     <div style="display:inline-block">
   <paper-icon-button disabled="[[!imageList.length]]" icon="select-all" on-click="_onSelectAllButtonClick"></paper-icon-button>
-  <paper-tooltip>เลือกหมด</paper-tooltip>
+  <paper-tooltip>{{localize('select all')}}</paper-tooltip>
     </div>
 
     <div style="display:inline-block">
   <paper-icon-button disabled="[[!selectedImageKeys.length]]" icon="delete" on-click="_onDeleteButtonClick"></paper-icon-button>
-  <paper-tooltip>ลบรูป</paper-tooltip>
+  <paper-tooltip>{{localize('delete')}}</paper-tooltip>
     </div>
 
     <div style="display:inline-block">
   <paper-icon-button disabled="[[!selectedImageKeys.length]]" icon="editor:mode-edit" on-click="_onEditButtonClick"></paper-icon-button>
-  <paper-tooltip>แก้ไข</paper-tooltip>
+  <paper-tooltip>{{localize('edit')}}</paper-tooltip>
     </div>
 
     <div style="display:inline-block">
   <paper-icon-button disabled="[[!selectedImageKeys.length]]" icon="reorder" on-click="_onReorderButtonClick"></paper-icon-button>
-  <paper-tooltip>เรียง</paper-tooltip>
+  <paper-tooltip>{{localize('sort')}}</paper-tooltip>
     </div>
 
     <div style="display:inline-block">
   <paper-icon-button disabled="[[!selectedImageKeys.length]]" icon="cancel" on-click="_onCancelButtonClick"></paper-icon-button>
-  <paper-tooltip>ยกเลือกที่เลือก</paper-tooltip>
+  <paper-tooltip>{{localize('cancel')}}</paper-tooltip>
     </div>
 
   </div>
@@ -264,7 +264,7 @@ class MGGalleryEditor extends MGItemEditor {
   }
 
   _computeCopyMethod(selectedLen) {
-    return selectedLen ? 'ก๊อปปี้ที่เลือก' : 'ก๊อปปี้แกลเลอรี่';
+    return selectedLen ? 'copy selection' : 'copy gallery';
   }
 
   _computeSelectionOrder(key, index, splices) {
