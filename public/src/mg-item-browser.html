@@ -16,6 +16,7 @@
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-spinner/paper-spinner.html">
 <link rel="import" href="mg-data.html">
 <link rel="import" href="mg-common-styles.html">
 <link rel="import" href="mg-icons.html">
@@ -26,6 +27,11 @@
   <template strip-whitespace>
 <style include="mg-common-styles iron-flex iron-flex-alignment">
 :host {
+  @apply --layout-vertical;
+  @apply --layout-center;
+}
+
+.selector {
   @apply --layout-horizontal;
   @apply --layout-wrap;
 }
@@ -38,28 +44,49 @@
   }
 }
 
-@media (max-width: 767px) {
-  .item {
+.item.child {
+  margin-left: 80px;
+  margin-bottom: 10px;
+  margin-top: -10px;
+  --mg-image: {
     width: 100px;
     height: 100px;
+  }
+}
+
+@media (max-width: 767px) {
+  .item {
     --mg-image: {
       width: 100px;
       height: 100px;
     }
   }
+
+  .item.child {
+    margin-left: 35px;
+    --mg-image: {
+      width: 60px;
+      height: 60px;
+    }
+  }
 }
 </style>
 
-<iron-selector attr-for-selected="key" selected="{{selectedKey}}">
-    <template is="dom-repeat" sort="{{_sortItem}}" items="{{itemList}}">
+<iron-selector
+  class="selector"
+  attr-for-selected="key"
+  selected="{{selectedKey}}"
+>   <template is="dom-repeat" sort="{{_sortItem}}" observe="parent" items="{{itemList}}">
   <mg-item-image
     key="[[item.key$]]"
-    class="item"
+    class$="[[_formatItemClass(item)]]"
     item="{{item}}"
     label="{{_formatItemLabel(item.images, item.name, item.role, language)}}"
   ></mg-item-image>
     </template>
 </iron-selector>
+
+<paper-spinner active="[[!itemList.length]]"></paper-spinner>
 
   </template>
   <script>
@@ -123,7 +150,15 @@ class MGItemBrowser extends MHA.Configurations(MHA.Items(Moongom119)) {
   }}
 
   _sortItem(a,b) {
-    if (a.key$ > b.key$) {
+    let aKey = a.key$;
+    let bKey = b.key$;
+    if (a.parent) {
+      aKey = a.parent;
+    }
+    if (b.parent) {
+      bKey = b.parent;
+    }
+    if (aKey > bKey) {
       return -1;
     }
     return 1;
@@ -131,6 +166,13 @@ class MGItemBrowser extends MHA.Configurations(MHA.Items(Moongom119)) {
 
   _formatRoleIcon(role) {
     return MGIconForRole(role);
+  }
+
+  _formatItemClass(item) {
+    if (item.parent) {
+      return "item child";
+    }
+    return "item";
   }
 
   _formatItemLabel(images, str, role) {
