@@ -358,19 +358,16 @@ class MGGalleryEditor extends MGItemEditor {
     }
     let itemKey = this.item.key$;
 
-    if (!this.item.images) {
-      this.set('item.images', {});
-    }
-
     Array.from(files).forEach((imgFile,fileIndex) => {
       let imageKey =  MHA.DB.ref('items').push().key;
       let imageName = imgFile.name.split('.')[0];
 
-      MHA.set(['items',itemKey,'images',imageKey], {
-        MGLOCALDATA$: true,
-        key$: imageKey,
-        name: imageName,
-      });
+      let image = { MGLOCALDATA$: true, key$: imageKey, name: imageName };
+      if (!this.item.images) {
+        this.set('item.images',{[imageKey]: image});
+      } else {
+        this.set('item.images.'+imageKey, image);
+      }
 
         let repOrThumbnailComplete = false;
         function checkUpdateReady() {
