@@ -156,6 +156,14 @@ mg-item-image iron-icon {
 
 <iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
 
+<app-route
+  active="{{routeActive}}"
+  route="{{route}}"
+  pattern="/:itemKey"
+  data="{{routeData}}"
+  tail="{{subroute}}"
+></app-route>
+
   <div class="side-bar">
 <paper-button
   id="new-item-button"
@@ -165,7 +173,7 @@ mg-item-image iron-icon {
     {{localize('create item')}}
   </template>
   <template is="dom-if" if="{{smallScreen}}">
-    {{localize('create')}}
+    <iron-icon icon="device:widgets"></iron-icon>
   </template>
 </paper-button>
 
@@ -207,15 +215,6 @@ mg-item-image iron-icon {
 ></mg-gallery-editor>
 -->
   </div>
-
-<app-route
-  active="{{routeActive}}"
-  route="{{route}}"
-  pattern="/:itemKey"
-  data="{{routeData}}"
-  tail="{{subroute}}"
-></app-route>
-
   </template>
   <script>
 class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
@@ -242,20 +241,20 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     menu: {
       type: Object,
       value: { entries: [
+        {name:"galleries", icon:"photo-library", title:"แกลเลอรี่" },
         {name:"products", icon:"local-mall", title:"สินค้า" },
         {name:"articles", icon:"local-library", title:"อาร์ติเคิล" },
         {name:"collections", icon:"group-work", title:"คอลเลคชั่น" },
-        {name:"galleries", icon:"photo-library", title:"แกลเลอรี่" },
       ]}
     },
     newItemMenu: {
       type: Object,
       value: {
         entries: [
+          {name:"gallery", icon:"image:photo-library", title:"แกลเลอรี่" },
           {name:"product", icon:"maps:local-mall", title:"สินค้า" },
           {name:"article", icon:"maps:local-library", title:"อาร์ติเคิล" },
           {name:"collection", icon:"group-work", title:"คอลเลคชั่น" },
-          {name:"gallery", icon:"image:photo-library", title:"แกลเลอรี่" },
         ],
       }
     },
@@ -281,7 +280,7 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
   connectedCallback() {
     super.connectedCallback();
     window.addEventListener('close-contextual-menu', this._closeSubmenu.bind(this));
-    this.menu.action = e => this._onSelectedItemType(e);
+    /*this.menu.action = e => this._onSelectedItemType(e);*/
     this.newItemMenu.action = e => this._onNewItem(e);
   }
 
