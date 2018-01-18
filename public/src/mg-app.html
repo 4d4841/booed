@@ -802,6 +802,12 @@ class MGApp extends MHA.Configurations(Polymer.Element) {
     });
 
     this._notifyNetworkStatus();
+
+    MHA.AU.onAuthStateChanged(user => {
+      this.set('configurations.me', {
+        user:user,
+      });
+    });
   }
 
   disconnectedCallback() {
