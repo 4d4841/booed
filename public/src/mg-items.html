@@ -183,6 +183,7 @@ mg-item-image iron-icon {
   selected-key="{{routeData.itemKey}}"
   selected-item="{{selectedItem}}"
   class="items-container"
+  filter="[[storeFilter]]"
 ></mg-item-browser>
   </div>
 
@@ -268,6 +269,13 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     routeData: Object,
     subroute: Object,
 
+    storeFilter: {
+      type: Function,
+      value: () => { return function(item) {
+        if (item.role === 'store') return false;
+        return true;
+      }},
+    },
   }}
 
   static get observers() { return [

@@ -19,6 +19,7 @@
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="mg-profile.html">
 <link rel="import" href="mg-items.html">
+<link rel="import" href="mg-stores.html">
 <link rel="import" href="mg-image.html">
 
     <dom-module id="mg-user">
@@ -76,9 +77,12 @@ div[name=help] paper-card h2 {
     me="[[me]]"
     route="{{subroute}}"
   ></mg-items>
-  <div name="store">
-    show store
-  </div>
+  <mg-stores
+    id="stores"
+    name="stores"
+    me="[[me]]"
+    route="{{subroute}}"
+  ></mg-stores>
   <div name="inbox">
     show inbox
   </div>

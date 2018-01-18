@@ -44,6 +44,7 @@
   }
 }
 
+/* XXX On horizontal child would need a better display*/
 .item.child {
   margin-left: 80px;
   margin-bottom: 10px;
@@ -76,14 +77,19 @@
   class="selector"
   attr-for-selected="key"
   selected="{{selectedKey}}"
->   <template is="dom-repeat" sort="{{_sortItem}}" observe="parent" items="{{itemList}}">
-  <mg-item-image
-    key="[[item.key$]]"
-    class$="[[_formatItemClass(item)]]"
-    item="{{item}}"
-    label="{{_formatItemLabel(item.images, item.name, item.role, language)}}"
-  ></mg-item-image>
-    </template>
+> <template
+    is="dom-repeat"
+    sort="{{_sortItem}}"
+    filter="[[filter]]"
+    observe="parent role"
+    items="{{itemList}}"
+  > <mg-item-image
+      key="[[item.key$]]"
+      class$="[[_formatItemClass(item)]]"
+      item="{{item}}"
+      label="{{_formatItemLabel(item.images, item.name, item.role, language)}}"
+    ></mg-item-image>
+  </template>
 </iron-selector>
 
 <paper-spinner active="[[!itemList.length]]"></paper-spinner>
@@ -110,10 +116,14 @@ class MGItemBrowser extends MHA.Configurations(MHA.Items(Moongom119)) {
       notify: true,
     },
 
+    filter: {
+      type: Function,
+    },
+
   }}
 
   static get observers() { return [
-    '_linkKeysArraySelection(items.*,"items","itemList")',
+    '_linkKeysArraySelection(items.*,"items","itemList",filter)',
   ]}
 
   _selectedKeyChanged(key, oldKey) {
@@ -131,8 +141,8 @@ class MGItemBrowser extends MHA.Configurations(MHA.Items(Moongom119)) {
     }
   }
 
-  _linkKeysArraySelection(change,keyPrefix,arrayPrefix) { if (change) {
-    super._linkKeysArraySelection(change,keyPrefix,arrayPrefix);
+  _linkKeysArraySelection(change,keyPrefix,arrayPrefix,filter) { if (change) {
+    super._linkKeysArraySelection(change,keyPrefix,arrayPrefix,filter);
 
     switch(change.path.length) {
     case 5: { /* items */
