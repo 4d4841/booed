@@ -13,7 +13,6 @@
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
-<link rel="import" href="../bower_components/app-layout/app-layout.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="mg-item-editor.html">
@@ -201,9 +200,9 @@ class MGProductEditor extends MHA.Items(MGItemEditor) {
     let entries = [];
 
     let mapVariant = (props, variant) => {
-      types.add(variant.type);
       let key;
       for (key in variant.variants) {
+        types.add(variant.type);
         mapVariant({...props,[variant.type]:variant.variants[key].value}, variant.variants[key]);
       }
       if (!key) {
@@ -211,20 +210,24 @@ class MGProductEditor extends MHA.Items(MGItemEditor) {
       }
     }
 
-    if (this.item && this.item.variant) {
+    this._BuildTableDebouncer =
+    Polymer.Debouncer.debounce( this._BuildTableDebouncer, Polymer.Async.timeOut.after(0),
+    () => {
       this.splice('variantEntries', 0, this.variantEntries.length);
-      mapVariant({}, this.item.variant);
-      this.set('variantHeaders',Array.from(types));
+      if (this.item && this.item.variant) {
+        mapVariant({}, this.item.variant);
+        this.set('variantHeaders',Array.from(types));
 
-      entries.forEach(entry => {
-        let row = [];
-        types.forEach(title => {
-          row.push(entry[title]||'');
+        entries.forEach(entry => {
+          let row = [];
+          types.forEach(title => {
+            row.push(entry[title]||'');
+          });
+
+          this.push('variantEntries', row);
         });
-
-        this.push('variantEntries', row);
-      })
-    }
+      }
+    });
   }
 
   _formatVariantLabel(label) {

@@ -123,7 +123,7 @@ class MGItemBrowser extends MHA.Configurations(MHA.Items(Moongom119)) {
   }}
 
   static get observers() { return [
-    '_linkKeyedArrayPaths(items.*,"items","itemList",filter)',
+    '_linkKeyedArrayPaths(items.*,"items","itemList")',
   ]}
 
   _selectedKeyChanged(key, oldKey) {
@@ -141,8 +141,8 @@ class MGItemBrowser extends MHA.Configurations(MHA.Items(Moongom119)) {
     }
   }
 
-  _linkKeyedArrayPaths(change,keyPrefix,arrayPrefix,filter) { if (change) {
-    super._linkKeyedArrayPaths(change,keyPrefix,arrayPrefix,filter);
+  _linkKeyedArrayPaths(change,keyPrefix,arrayPrefix) { if (change) {
+    super._linkKeyedArrayPaths(change,keyPrefix,arrayPrefix);
 
     switch(change.path.length) {
     case 5: { /* items */

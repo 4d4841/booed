@@ -564,8 +564,8 @@ class Moongom119 extends Polymer.Element {
       for (let i = 0, v; v = this[arrayPrefix][i]; ++i) {
         this.linkPaths(keyPrefix+'.'+v.key$, arrayPrefix+'.'+i);
       }
-    } else if (change.path.length === keyPrefix.length + 21) {
-      let key = change.path.slice(-20);
+    } else if (change.path.length === keyPrefix.length + 1 + /*key size*/20) {
+      let key = change.path.slice(-/*key size*/20);
       if (!change.value) {
         let i = /\d+$/.exec(this.__dataLinkedPaths[change.path])[0];
         this.unlinkPaths(change.path);
@@ -587,6 +587,11 @@ class Moongom119 extends Polymer.Element {
       }
     }
   }}
+
+  /*
+  _linkArraySelectedPaths(arraySplices,arrayPrefix,selectorSplices,selectedPrefix) {
+  }
+  */
 
   /* This should rely on sorting */
   _orderArrayItem(arrayPrefix, value) {
