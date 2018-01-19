@@ -71,8 +71,14 @@
 
 </style>
 
-<iron-collapse class="copied-collapse vertical layout" opened="[[clipboard.length]]">
-  <div class="copied-container">
+<iron-collapse class="copied-collapse horizontal layout" opened="[[clipboard.length]]">
+
+  <div><div>
+<paper-icon-button icon="booed:content-clear" on-click="_onClearButtonClick"></paper-icon-button>
+<paper-tooltip>{{localize('clear clipboard')}}</paper-tooltip>
+  </div></div>
+
+  <div class="copied-container flex layout">
 
     <template is="dom-repeat" items="{{clipboard}}" as="itemOrImage">
       <mg-item-image
@@ -140,6 +146,9 @@ class MGClipboardView extends MHA.Configurations(MGClipboard) {
     this.editingImageKeys = [e.model.itemOrImage.key$];
   }
 
+  _onClearButtonClick(e) {
+    this.splice('clipboard', 0, this.clipboard.length);
+  }
 
 }
 
