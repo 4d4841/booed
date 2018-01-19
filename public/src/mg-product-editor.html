@@ -36,26 +36,58 @@
   margin: 0;
 }
 
+table {
+    border-collapse: collapse;
+    margin-top: 30px;
+    margin-left: 20px;
+}
+
+thead {
+  background-color: tomato;
+  color: white;
+}
+
+table, th, td {
+  border: 1px solid black;
+  padding: 0 10px;
+}
+
+tbody tr:nth-child(odd) {
+   background-color: whitesmoke;
+}
+
+td {
+  background-color: white;
+  color: black;
+}
+
+paper-checkbox {
+  margin-left: 10px;
+}
+
 </style>
 
 <mg-clipboard clipboard="{{clipboard}}"></mg-clipboard>
 
 <div id="product-editor" class="vertical layout" hidden$="[[!key]]">
 
-  <div id="control-panel" class="horizontal layout wrap end" >
-
-      <div style="display:inline-block">
-    <paper-icon-button icon="booed:add-gallery" on-click="_onAddGalleryClick"></paper-icon-button>
-    <paper-tooltip>{{localize('add gallery')}}</paper-tooltip>
-      </div>
-
-      <div style="display:inline-block">
-    <paper-icon-button disabled="[[!clipboard.length]]" icon="content-paste" on-click="_onPasteButtonClick"></paper-icon-button>
-    <paper-tooltip>{{localize('paste')}}</paper-tooltip>
-      </div>
-
+    <app-toolbar>
+  <div style="display:inline-block">
+<paper-icon-button icon="booed:add-gallery" on-click="_onAddGalleryClick"></paper-icon-button>
+<paper-tooltip>{{localize('add gallery')}}</paper-tooltip>
   </div>
 
+  <div style="display:inline-block">
+<paper-icon-button disabled="[[!clipboard.length]]" icon="content-paste" on-click="_onPasteButtonClick"></paper-icon-button>
+<paper-tooltip>{{localize('paste')}}</paper-tooltip>
+  </div>
+
+  <div style="display:inline-block">
+<paper-checkbox checked="{{viewAlternatives}}">{{localize('view alternatives')}}</paper-checkbox>
+  </div>
+  </app-toolbar>
+
+    <template is="dom-if" if="[[!viewAlternatives]]">
   <mg-variant-editor
     id="variant-editor"
     label="[[_formatVariantLabel(item.name,language)]]"
@@ -63,8 +95,31 @@
     variant="{{item.variant}}"
     xxx-position-target="root"
   ></mg-variant-editor>
+    </template>
+
+    <template is="dom-if" if="[[viewAlternatives]]">
+  <table>
+<thead>
+  <tr>
+<template is="dom-repeat" items="[[variantHeaders]]">
+  <th> [[item]] </th>
+</template>
+  </tr>
+</thead>
+<tbody>
+  <template is="dom-repeat" items="[[variantEntries]]" as="row">
+    <tr>
+  <template is="dom-repeat" items="[[row]]">
+<th> [[item]] </th>
+  </template>
+    </tr>
+  </template>
+</tbody>
+  </table>
+    </template>
 
 </div>
+
 <mg-gallery-editor
   item="{{galleryItem}}"
 ></mg-gallery-editor>
@@ -107,6 +162,16 @@ class MGProductEditor extends MHA.Items(MGItemEditor) {
       }
     },
 
+    variantHeaders: {
+      type: Array,
+      value: () => [],
+    },
+
+    variantEntries: {
+      type: Array,
+      value: () => [],
+    },
+
     galleryItem: {
       type: Object,
     },
@@ -114,11 +179,8 @@ class MGProductEditor extends MHA.Items(MGItemEditor) {
 
   static get observers() { return [
     '_galleryChanged(item.gallery,items.*)',
+    '_variantChanged(item.key$, item.variant.*)',
   ]}
-
-  _formatVariantLabel(label) {
-    return label ? label : this.localize('noname');
-  }
 
   _galleryChanged(gallery) {
     if (this.galleryItem && gallery !== this.galleryItem.key$) {
@@ -131,6 +193,42 @@ class MGProductEditor extends MHA.Items(MGItemEditor) {
       this.linkPaths('items.'+gallery, 'galleryItem');
       //this.set('galleryItem.parent', this.item.key$);
     }
+  }
+
+  _variantChanged(key, change) {
+
+    let types = new Set();
+    let entries = [];
+
+    let mapVariant = (props, variant) => {
+      types.add(variant.type);
+      let key;
+      for (key in variant.variants) {
+        mapVariant({...props,[variant.type]:variant.variants[key].value}, variant.variants[key]);
+      }
+      if (!key) {
+        entries.push(props);
+      }
+    }
+
+    if (this.item && this.item.variant) {
+      this.splice('variantEntries', 0, this.variantEntries.length);
+      mapVariant({}, this.item.variant);
+      this.set('variantHeaders',Array.from(types));
+
+      entries.forEach(entry => {
+        let row = [];
+        types.forEach(title => {
+          row.push(entry[title]||'');
+        });
+
+        this.push('variantEntries', row);
+      })
+    }
+  }
+
+  _formatVariantLabel(label) {
+    return label ? label : this.localize('noname');
   }
 
   _onAddGalleryClick(e) {
