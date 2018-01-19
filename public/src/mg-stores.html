@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<!--
+ .................................................................................................
+:::BSDB'::BSDB'::BSDB':::::BSDB':::BSDBS'::BSDBS'::BSDB'::::BSD'::BSDBS'::BSDBS'::BSDB'::::::BSD'::
+::BSDBSD BSDBSD :.BSDBS':BSDBS .:BSD ..BSD  ...BSD 'BSDBS':BSD .BSD ..BSD  ...BSD :BSDBS'::BSDB .::
+::COPYRIGHT2017 ::.BS BSDB .BS :BSD .::.BSD :::.BSD :BS .BSDB .BSD .:::BSD ::::BSD :BS BSDB BS .:::
+:::BSDSTYLEBSD .:::BS  BS .:BS :BSD ::::BSD ::::BSD :BS ::BSD :BSD :::::...::::BSD :BS :BS  BS ::::
+::::.LICENSE .::::BSD .:..::BS 'BSD ::::BSD ::::BSD :BS :::BS :BSD ::BSDBS'::::BSD :BS ::..:BS ':::
+:::::::BSD .::::BSDB .::::::BSD 'BSD'::BSD .:::BSD .BSD :::BSD':BSD'::.BSD :::BSD .BSD :::::BSDB'::
+::::::::B .::::::BS .:::::::.BSD ::BSDBS .:BSDBS  :BSD .::::BSD :.BSDBS BS BSDB .:BSD .:::::.BS .::
+`::::::::.::::::::..::::::::::...:::.....:::.....:::...::::::...:::.............:::...::::::::..::'
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="mg-data.html">
+<link rel="import" href="mg-common-styles.html">
+<link rel="import" href="mg-item-browser.html">
+<link rel="import" href="mg-icons.html">
+<link rel="import" href="mg-balloon.html">
+<link rel="import" href="mg-menu.html">
+<link rel="import" href="mg-product-editor.html">
+<link rel="import" href="mg-gallery-editor.html">
+<link rel="import" href="mg-item-image.html">
+
+
+    <dom-module id="mg-stores">
+  <template strip-whitespace>
+<style include="mg-common-styles iron-flex iron-flex-alignment">
+:host {
+  @apply --layout-horizontal;
+}
+
+#new-item-button {
+  margin-left: 25px;
+  width: 180px;
+  padding:0;
+  height:40px;
+  box-shadow: 1px 1px 2px var(--booed-shadow-color);
+  --paper-button: {
+    font-family: 'Mitr', sans-serif;
+    font-size: 16px;
+    background-color: tomato;
+    color: white;
+  }
+}
+
+.side-bar {
+  position:relative;
+  @apply --layout-vertical;
+  width: 250px;
+  height: calc(100vh - 100px);
+  /*border-right:1px dashed tomato;*/
+}
+
+.items-container {
+  @apply --layout-vertical;
+  padding: 20px;
+  height: calc(100vh - 215px);
+  margin-top: 10px;
+  overflow-y: auto;
+}
+
+.item {
+  margin-bottom: 10px;
+  --mg-image: {
+    width: 180px;
+    height: 150px;
+  }
+}
+
+.editor-container {
+  margin-left: 20px;
+  @apply --layout-vertical;
+  width: calc(100vw - 250px);
+  height: calc(100vh - 100px);
+}
+
+.editor {
+  margin: 0 20px 20px 20px;
+  @apply --layout-flex;
+}
+
+.editor[norole] {
+  display: none;
+}
+
+a {
+  text-decoration: none;
+}
+
+/*
+#top-smooth-edge {
+  width: calc(100% - 15px);
+  height: 10px;
+  position:absolute;
+  top: 48px;
+  z-index: 2;
+  background: linear-gradient(to bottom, white 2px, transparent 10px);
+  pointer-events: none;
+}
+*/
+
+@media (max-width: 767px) {
+  #new-item-button {
+    margin-left: 25px;
+    width: 100px;
+  }
+
+  .item {
+    width: 100px;
+    height: 100px;
+    --mg-image: {
+      width: 100px;
+      height: 100px;
+    }
+  }
+
+  .side-bar {
+    width: 170px;
+    height: calc(100vh - 70px);
+  }
+
+  .items-container {
+    height: calc(100vh - 140px);
+  }
+
+  .editor-container {
+    height: calc(100vh - 70px);
+    width: calc(100vw - 150px);
+  }
+
+}
+
+/*
+mg-item-image iron-icon {
+  margin-left: 10px;
+}
+*/
+
+</style>
+
+<iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
+
+  <div class="side-bar">
+<paper-button
+  id="new-item-button"
+  on-click="_onNewStore"
+> <iron-icon icon="add"></iron-icon>
+  <template is="dom-if" if="{{!smallScreen}}">
+    {{localize('create store')}}
+  </template>
+  <template is="dom-if" if="{{smallScreen}}">
+    <iron-icon icon="store"></iron-icon>
+  </template>
+</paper-button>
+
+<mg-item-browser
+  selected-key="{{routeData.itemKey}}"
+  selected-item="{{selectedStore}}"
+  class="items-container"
+  filter="[[storeFilter]]"
+></mg-item-browser>
+  </div>
+
+  <div class="editor-container">
+<mg-item-editor
+  item="{{selectedStore}}"
+  class="editor"
+  editor-role="store"
+></mg-item-editor>
+  </div>
+
+<app-route
+  active="{{routeActive}}"
+  route="{{route}}"
+  pattern="/:itemKey"
+  data="{{routeData}}"
+  tail="{{subroute}}"
+></app-route>
+
+  </template>
+  <script>
+class MGStores extends MHA.Configurations(MHA.Items(Polymer.Element)) {
+  static get is() { return 'mg-stores'; }
+  static get properties() { return {
+    me: Object,
+
+    itemKey: {
+      type: String,
+    },
+
+    selectedStore: {
+      type: Object,
+    },
+
+    route: {
+      type: Object,
+      notify: true,
+      observer: '_routeChanged',
+    },
+    routeActive: Boolean,
+    routeData: Object,
+    subroute: Object,
+
+    storeFilter: {
+      type: Function,
+      value: () => { return function(item) {
+        if (item.role !== 'store') return false;
+        return true;
+      }},
+    },
+  }}
+
+  static get observers() { return [
+    '_routeDataItemKeyChanged(routeData.itemKey)',
+    '_visibleChanged(visible)',
+  ]}
+
+  _routeDataItemKeyChanged(itemKey) {
+    if (itemKey) {
+      if (this.routeActive) {
+        this.itemKey = itemKey;
+      } else {
+        this.set('route.path',itemKey);
+      }
+    }
+  }
+
+  _visibleChanged(visible) {
+  }
+
+  _onNewStore(e) {
+    let newKey = MHA.DB.ref('items').push().key;
+
+    this.set('items.'+newKey, {MGLOCALDATA$:true, key$:newKey, role:'store'});
+
+    if (!this.routeActive) {
+      this.set('route.path','/');
+    }
+    this.set('routeData.itemKey', newKey);
+
+  }
+
+  _routeChanged(route) {
+    return;
+    if (route.prefix == '/user/stores') {
+      let key = this.itemKey || this._CurrentItemKey;
+      if (key && !route.path) {
+        delete this._CurrentItemKey; /* Delete or it will keep bouncing back trying */
+        this.set('route.path', key);
+      }
+    }
+  }
+}
+customElements.define(MGStores.is, MGStores);
+  </script>
+    </dom-module>

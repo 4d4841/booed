@@ -12,7 +12,7 @@
 -->
 
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
-<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
+<link rel="import" href="../bower_components/app-layout/app-layout.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="mg-clipboard.html">
 <link rel="import" href="mg-item-editor.html">
@@ -79,53 +79,53 @@
 
 <div id="gallery-container" ondrop="_onDrop" class="vertical layout">
 
-  <div id="control-panel" class="horizontal layout wrap end" hidden$="[[nokey]]">
-    <div style="display:inline-block">
-  <paper-icon-button icon="booed:add-photo" on-click="_onAddButtonClick"></paper-icon-button>
-  <paper-tooltip>{{localize('add photo')}}</paper-tooltip>
-    </div>
-
-    <div style="display:inline-block">
-  <paper-icon-button disabled="[[!imageList.length]]" icon="[[copyIcon]]" on-click="_onCopyButtonClick"></paper-icon-button>
-  <paper-tooltip>{{localize(copyMethod)}}</paper-tooltip>
-    </div>
-
-    <div style="display:inline-block">
-  <paper-icon-button disabled="[[!clipboard.length]]" icon="content-paste" on-click="_onPasteButtonClick"></paper-icon-button>
-  <paper-tooltip>{{localize('paste')}}</paper-tooltip>
-    </div>
-
-    <div style="display:inline-block">
-  <paper-icon-button disabled="[[!clipboard.length]]" icon="booed:content-clear" on-click="_onClearButtonClick"></paper-icon-button>
-  <paper-tooltip>{{localize('clear clipboard')}}</paper-tooltip>
-    </div>
-
-    <div style="display:inline-block">
-  <paper-icon-button disabled="[[!imageList.length]]" icon="select-all" on-click="_onSelectAllButtonClick"></paper-icon-button>
-  <paper-tooltip>{{localize('select all')}}</paper-tooltip>
-    </div>
-
-    <div style="display:inline-block">
-  <paper-icon-button disabled="[[!selectedImageKeys.length]]" icon="delete" on-click="_onDeleteButtonClick"></paper-icon-button>
-  <paper-tooltip>{{localize('delete')}}</paper-tooltip>
-    </div>
-
-    <div style="display:inline-block">
-  <paper-icon-button disabled="[[!selectedImageKeys.length]]" icon="editor:mode-edit" on-click="_onEditButtonClick"></paper-icon-button>
-  <paper-tooltip>{{localize('edit')}}</paper-tooltip>
-    </div>
-
-    <div style="display:inline-block">
-  <paper-icon-button disabled="[[!selectedImageKeys.length]]" icon="reorder" on-click="_onReorderButtonClick"></paper-icon-button>
-  <paper-tooltip>{{localize('sort')}}</paper-tooltip>
-    </div>
-
-    <div style="display:inline-block">
-  <paper-icon-button disabled="[[!selectedImageKeys.length]]" icon="cancel" on-click="_onCancelButtonClick"></paper-icon-button>
-  <paper-tooltip>{{localize('cancel')}}</paper-tooltip>
-    </div>
-
+    <app-toolbar>
+  <div style="display:inline-block">
+<paper-icon-button icon="booed:add-photo" on-click="_onAddButtonClick"></paper-icon-button>
+<paper-tooltip>{{localize('add photo')}}</paper-tooltip>
   </div>
+
+  <div style="display:inline-block">
+<paper-icon-button disabled="[[!imageList.length]]" icon="[[copyIcon]]" on-click="_onCopyButtonClick"></paper-icon-button>
+<paper-tooltip>{{localize(copyMethod)}}</paper-tooltip>
+  </div>
+
+  <div style="display:inline-block">
+<paper-icon-button disabled="[[!clipboard.length]]" icon="content-paste" on-click="_onPasteButtonClick"></paper-icon-button>
+<paper-tooltip>{{localize('paste')}}</paper-tooltip>
+  </div>
+
+  <div style="display:inline-block">
+<paper-icon-button disabled="[[!clipboard.length]]" icon="booed:content-clear" on-click="_onClearButtonClick"></paper-icon-button>
+<paper-tooltip>{{localize('clear clipboard')}}</paper-tooltip>
+  </div>
+
+  <div style="display:inline-block">
+<paper-icon-button disabled="[[!imageList.length]]" icon="select-all" on-click="_onSelectAllButtonClick"></paper-icon-button>
+<paper-tooltip>{{localize('select all')}}</paper-tooltip>
+  </div>
+
+  <div style="display:inline-block">
+<paper-icon-button disabled="[[!selectedImageKeys.length]]" icon="delete" on-click="_onDeleteButtonClick"></paper-icon-button>
+<paper-tooltip>{{localize('delete')}}</paper-tooltip>
+  </div>
+
+  <div style="display:inline-block">
+<paper-icon-button disabled="[[!selectedImageKeys.length]]" icon="editor:mode-edit" on-click="_onEditButtonClick"></paper-icon-button>
+<paper-tooltip>{{localize('edit')}}</paper-tooltip>
+  </div>
+
+  <div style="display:inline-block">
+<paper-icon-button disabled="[[!selectedImageKeys.length]]" icon="reorder" on-click="_onReorderButtonClick"></paper-icon-button>
+<paper-tooltip>{{localize('sort')}}</paper-tooltip>
+  </div>
+
+  <div style="display:inline-block">
+<paper-icon-button disabled="[[!selectedImageKeys.length]]" icon="cancel" on-click="_onCancelButtonClick"></paper-icon-button>
+<paper-tooltip>{{localize('cancel')}}</paper-tooltip>
+  </div>
+    </app-toolbar>
+
   <input type="file" id="fileInput" on-change="_filesSelected" hidden multiple>
 </div>
 
