@@ -17,6 +17,7 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="mg-clipboard-view.html">
 <link rel="import" href="mg-profile.html">
 <link rel="import" href="mg-items.html">
 <link rel="import" href="mg-stores.html">
@@ -26,6 +27,7 @@
   <template strip-whitespace>
 <style include="mg-common-styles iron-flex iron-flex-alignment">
 :host {
+  @apply --layout-vertical;
 }
 
 div[name=help] {
@@ -54,10 +56,15 @@ div[name=help] paper-card h2 {
   text-align: center;
 }
 
+mg-clipboard-view {
+  margin: 20px;
+}
+
 @media (max-width: 767px) {
 }
 </style>
 
+<mg-clipboard-view></mg-clipboard-view>
 <iron-pages
   selected="[[page]]"
   attr-for-selected="name"
