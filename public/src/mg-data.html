@@ -549,7 +549,7 @@ class Moongom119 extends Polymer.Element {
 
   /* TODO Managing selection. */
   /* Utility method to autolink key => array.index */
-  _linkKeysArraySelection(change,keyPrefix,arrayPrefix) { if (change) {
+  _linkKeyedArrayPaths(change,keyPrefix,arrayPrefix) { if (change) {
     if (change.path.length === keyPrefix.length) {
       this.splice(arrayPrefix, 0, this[arrayPrefix].length);
       for (let link in this.__dataLinkedPaths) {

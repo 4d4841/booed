@@ -240,7 +240,7 @@ class MGGalleryEditor extends MGItemEditor {
   }}
 
   static get observers() { return [
-    '_linkKeysArraySelection(item.images.*)',
+    '_linkKeyedArrayPaths(item.images.*)',
     '_orderChanged(item.order)',
   ]}
 
@@ -455,7 +455,7 @@ class MGGalleryEditor extends MGItemEditor {
     this._uploadImageFiles(e.target.files);
   }
 
-  _linkKeysArraySelection(change) {
+  _linkKeyedArrayPaths(change) {
     switch(change.path.length) {
     case 11: { /* item.images */
       this.splice('selectedImageKeys',0,this.selectedImageKeys.length);
@@ -469,7 +469,7 @@ class MGGalleryEditor extends MGItemEditor {
       //console.log('DEBUG', change);
     }}
 
-    super._linkKeysArraySelection(change,"item.images","imageList");
+    super._linkKeyedArrayPaths(change,"item.images","imageList");
   }
 
   _orderChanged(order) { if (order) {

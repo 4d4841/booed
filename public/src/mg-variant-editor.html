@@ -285,7 +285,7 @@ class MGVariantsEditor extends MHA.Configurations(Polymer.mixinBehaviors([Polyme
 
   static get observers() { return [
     '_selectedTypeDefChanged(selectedTypeDef.name,selectedTypeDef.custom)',
-    '_linkKeysArraySelection(variant.variants.*)',
+    '_linkKeyedArrayPaths(variant.variants.*)',
     '_variantTypeChanged(variant.type)',
     '_languageChanged(language, variant.type)',
     /*'_positionTargetChanged(positionTarget)',*/
@@ -382,8 +382,8 @@ class MGVariantsEditor extends MHA.Configurations(Polymer.mixinBehaviors([Polyme
     }
   }
 
-  _linkKeysArraySelection(change) { if (change) {
-    super._linkKeysArraySelection(change,"variant.variants","subvariantList");
+  _linkKeyedArrayPaths(change) { if (change) {
+    super._linkKeyedArrayPaths(change,"variant.variants","subvariantList");
 
     /* change.path : 'variant.variants.${key}.selected$'
      *
