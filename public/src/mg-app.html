@@ -470,7 +470,6 @@
   <mg-profile-button
     id="profile-button"
     route="{{route}}"
-    me="[[me]]"
     menu="[[profileMenu]]"
   ></mg-profile-button>
     </div>
@@ -560,8 +559,8 @@
   <div id="drawer-contents">
 <!--<div id="profile-container" style$="[[_computeProfileContainerStyleWithPhoto(me.user.photoURL)]]">-->
 <div id="profile-container">
-  <paper-icon-button class="photo-button" on-click="_openProfile" icon$="[[_computeMeIcon(me.user.photoURL)]]" src="[[me.user.photoURL]]"></paper-icon-button>
-  <h3 class="self-center">[[me.user.displayName]]</h3>
+  <paper-icon-button class="photo-button" on-click="_openProfile" icon$="[[_computeMeIcon(configurations.me.user.photoURL)]]" src="[[configurations.me.user.photoURL]]"></paper-icon-button>
+  <h3 class="self-center">[[configurations.me.user.displayName]]</h3>
 </div>
 <mg-menu path="{{route.path}}" id="profile-menu" menu="[[profileMenu]]"></mg-menu>
 <mg-menu path="{{route.path}}" id="app-menu" menu="[[menu]]"></mg-menu>
@@ -584,7 +583,6 @@
     menu="{{menu}}"
     profile-menu="{{profileMenu}}"
     name="user"
-    me="{{me}}"
     route="{{subroute}}"
     ></mg-user>
   <mg-about name="about" route="{{subroute}}"></mg-about>
@@ -678,10 +676,6 @@ class MGApp extends MHA.Configurations(Polymer.Element) {
   static get is() { return 'mg-app'; }
 
   static get properties() { return {
-    me: {
-      type: Object,
-    },
-
     route: {
       type: Object,
     },
@@ -805,9 +799,7 @@ class MGApp extends MHA.Configurations(Polymer.Element) {
     this._notifyNetworkStatus();
 
     MHA.AU.onAuthStateChanged(user => {
-      this.set('configurations.me', {
-        user:user,
-      });
+      this.set('configurations.me', { user:user });
     });
   }
 
@@ -1025,13 +1017,6 @@ class MGApp extends MHA.Configurations(Polymer.Element) {
   _onClearCart() {
     this.$.cart.clearCart();
     this._announce('Cart cleared');
-  }
-
-  _onUserLogin(e) {
-    /*
-    this.$.me.setEmail(e.detail.accountEmail);
-    this.$.me.setHash(e.detail.accountHash);
-    */
   }
 
   // Elements in the app can notify a change to be a11y announced.

@@ -202,22 +202,12 @@ mg-item-image iron-icon {
   item="{{selectedItem}}"
   class="editor"
 ></mg-gallery-editor>
-<!--
-<mg-gallery-editor
-  key="[[itemKey]]"
-  role="[[itemRole]]"
-  class="editor"
-  me="[[me]]"
-></mg-gallery-editor>
--->
   </div>
   </template>
   <script>
 class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
   static get is() { return 'mg-items'; }
   static get properties() { return {
-    me: Object,
-
     /* Tracking server side data, used for dirty checking values if they
      * are needed to be updated on the server side or not.
      */
@@ -276,7 +266,7 @@ class MGItems extends MHA.Configurations(MHA.Items(Polymer.Element)) {
   static get observers() { return [
     '_itemsChanged(items.*)',
     '_routeDataItemKeyChanged(routeData.itemKey)',
-    '_userChanged(me.user.uid)',
+    '_userChanged(configurations.me.user.uid)',
     '_visibleChanged(visible)',
   ]}
 

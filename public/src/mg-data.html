@@ -431,21 +431,27 @@ var MHA = {
   },
 
   User: {
-    signInGoogle () {
+    signInGoogle (redirect) {
+      MHA.set('configurations.me', { waiting:true });
       MHA.AU.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(
         function() {
           var provider = new firebase.auth.GoogleAuthProvider();
-          return MHA.AU.signInWithRedirect(provider);
+          if (redirect) {
+            return MHA.AU.signInWithRedirect(provider);
+          } else {
+            return MHA.AU.signInWithPopup(provider);
+          }
         })
         .catch(function(error) {
           var errorCode = error.code;
           var errorMessage = error.message;
           console.log("Error", error);
+          MHA.set('configurations.me', { waiting:false });
         }
       );
     },
 
-    signOut(e) {
+    signOut() {
       MHA.AU.signOut();
     },
 

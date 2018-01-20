@@ -266,7 +266,7 @@ h3 iron-icon {
     </div>
     <div state="init" class="center end-justified vertical layout">
       <!-- Begin: init -->
-        <dom-if if="[[!me.user.email]]">
+        <dom-if if="[[!email]]">
       <template>
         <!-- Begin: login panel -->
 
@@ -310,16 +310,16 @@ h3 iron-icon {
       </template>
         </dom-if>
 
-        <dom-if if="[[me.user.email]]">
+        <dom-if if="[[email]]">
       <template>
         <!-- begin: user panel -->
           <iron-image
             class="photo"
-            src="[[me.user.photoURL]]"
+            src="[[photoURL]]"
             sizing="cover"
           ></iron-image>
           <div class="under-photo">
-            <h3>[[me.user.email]]<br>[[me.user.displayName]]</h3>
+            <h3>[[email]]<br>[[displayName]]</h3>
           </div>
 
           <paper-button
@@ -342,13 +342,13 @@ h3 iron-icon {
       </template>
         </dom-if>
 
-        <dom-if if="[[me.user.email]]">
+        <dom-if if="[[email]]">
       <template>
         <!-- begin: user panel -->
           <div class="under-photo">
-            <h3>[[me.user.email]]<br>[[me.user.displayName]]</h3>
+            <h3>[[email]]<br>[[displayName]]</h3>
           </div>
-          <iron-image class="photo" src="[[me.user.photoURL]]" sizing="cover"></iron-image>
+          <iron-image class="photo" src="[[photoURL]]" sizing="cover"></iron-image>
 
           <paper-button class="button" on-click="_signOut" class="layout horizontal center-justified">
           <iron-icon icon="maps:local-cafe" style="color:tomato"></iron-icon> ออกจากระบบ
@@ -374,7 +374,7 @@ h3 iron-icon {
 <div
   on-click="_toggleInfo"
   class="main-info center enter vertical end-justified layout"
-  hidden$="[[_shouldHideInfoPanel(me.user.email,state)]]"
+  hidden$="[[_shouldHideInfoPanel(email,state)]]"
 > <iron-collapse opened="[[expand]]">
 
     <p style="font-size:13px; padding: 0 10px 0 10px;text-align:justify;text-align-last:center">
@@ -409,35 +409,49 @@ class MGProfile extends MHA.Configurations(Polymer.Element) {
       value: false
     },
 
-    me: {
-      type: Object,
-      value: {waiting: true},
-      notify: true,
-    },
-
     admin: {
       type: Boolean,
       value: false
     },
 
+    photoURL: String,
+    displayName: String,
+    email: {
+      type: String,
+      value: null,
+    }
   }}
 
   static get observers() { return [
     '_visibleChanged(visible)',
-    '_waitingChanged(me.waiting)',
+    '_waitingChanged(configurations.me.waiting)',
+    '_photoURLChanged(configurations.me.user.photoURL)',
+    '_displayNameChanged(configurations.me.user.displayName)',
+    '_emailChanged(configurations.me.user.email)',
   ]}
 
   connectedCallback() {
     super.connectedCallback();
     this.__validWaiting = true;
-    MHA.AU.onAuthStateChanged(this._onAuthStateChanged.bind(this));
+  }
+
+  _photoURLChanged(photoURL) {
+    this.photoURL = photoURL;
+  }
+
+  _displayNameChanged(displayName) {
+    this.displayName = displayName;
+  }
+
+  _emailChanged(email) {
+    this.email = email;
   }
 
   _visibleChanged(visible) {
     if (this.visible) {
       this.dispatchEvent(new CustomEvent('change-section', {
         bubbles: true, composed: true, detail: {title: 'Profile'}}));
-      if (this.me.waiting) {
+      if (this.configurations.me.waiting) {
         this.state = 'waiting';
       }
     }
@@ -451,11 +465,6 @@ class MGProfile extends MHA.Configurations(Polymer.Element) {
     }
   }
 
-  _onAuthStateChanged(user) {
-    this.set('me.user', user);
-    this.set('me.waiting',false);
-  }
-
   _shouldHideInfoPanel(email,state) {
     return email || state == "waiting" || state == "error";
   }
@@ -466,21 +475,11 @@ class MGProfile extends MHA.Configurations(Polymer.Element) {
 
   _googleSignIn(e) {
     this.state = 'waiting';
-
-    MHA.AU.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(
-      function() {
-        var provider = new firebase.auth.GoogleAuthProvider();
-        return MHA.AU.signInWithRedirect(provider);
-      })
-      .catch(function(error) {
-        var errorCode = error.code;
-        var errorMessage = error.message;
-        console.log("Error", error);
-      });
+    MHA.User.signInGoogle();
   }
 
   _signOut(e) {
-    MHA.AU.signOut();
+    MHA.User.signOut();
     this.state = "init";
   }
 

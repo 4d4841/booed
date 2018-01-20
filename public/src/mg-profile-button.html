@@ -142,7 +142,7 @@ a:link {
 
   <paper-card id="id-card">
 <div class="under-photo">
-  <h3>[[me.user.email]]<br>[[me.user.displayName]]</h3>
+  <h3>[[configurations.me.user.email]]<br>[[configurations.me.user.displayName]]</h3>
 </div>
 <paper-button style="padding:0;margin:0" on-click="_openProfile">
 <iron-image
@@ -184,7 +184,7 @@ a:link {
 (function() {
 let memoizedTemplate;
 
-  class MGProfileButton extends MGBadgeButton {
+  class MGProfileButton extends MHA.Configurations(MGBadgeButton) {
     static get is() { return 'mg-profile-button'; }
 
     static get template() {
@@ -210,9 +210,6 @@ let memoizedTemplate;
         type: Boolean,
         value: false,
       },
-      me: {
-        type: Object,
-      },
       route: {
         type: Object,
         notify: true
@@ -221,8 +218,8 @@ let memoizedTemplate;
     }}
 
     static get observers() { return [
-      '_avatarChanged(me.user.photoURL)',
-      '_waitingChanged(me.waiting)',
+      '_avatarChanged(configurations.me.user.photoURL)',
+      '_waitingChanged(configurations.me.waiting)',
     ]}
 
     connectedCallback() {
@@ -280,7 +277,7 @@ let memoizedTemplate;
 
     _onButtonClick(e) {
       let sp = !this.showPanel;
-      if (!this.me || !this.me.user) {
+      if (!this.configurations.me || !this.configurations.me.user) {
         this._openProfile(e);
       } else if (!this.route.path.startsWith("/user/profile")) {
         if (sp) {
