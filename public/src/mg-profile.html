@@ -475,7 +475,7 @@ class MGProfile extends MHA.Configurations(Polymer.Element) {
 
   _googleSignIn(e) {
     this.state = 'waiting';
-    MHA.User.signInGoogle();
+    MHA.User.signInGoogle(true);
   }
 
   _signOut(e) {

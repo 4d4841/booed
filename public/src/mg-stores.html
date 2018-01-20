@@ -144,6 +144,14 @@ mg-item-image iron-icon {
 
 </style>
 
+<app-route
+  active="{{routeActive}}"
+  route="{{route}}"
+  pattern="/:itemKey"
+  data="{{routeData}}"
+  tail="{{subroute}}"
+></app-route>
+
 <iron-media-query query="max-width: 767px" query-matches="{{smallScreen}}"></iron-media-query>
 
   <div class="side-bar">
@@ -173,15 +181,16 @@ mg-item-image iron-icon {
   class="editor"
   editor-role="store"
 ></mg-item-editor>
+
+<mg-item-browser
+  selected-keys="{{selectedProductKeys}}"
+  class="items-container"
+  filter="[[productFilter]]"
+  multi
+></mg-item-browser>
+
   </div>
 
-<app-route
-  active="{{routeActive}}"
-  route="{{route}}"
-  pattern="/:itemKey"
-  data="{{routeData}}"
-  tail="{{subroute}}"
-></app-route>
 
   </template>
   <script>
@@ -212,12 +221,44 @@ class MGStores extends MHA.Configurations(MHA.Items(Polymer.Element)) {
         return true;
       }},
     },
+
+    productFilter: {
+      type: Function,
+      value: () => { return function(item) {
+        if (item.role === 'product') return true;
+        return false;
+      }},
+    },
+
+    selectedProductKeys: {
+      type: Array,
+      value: () => [],
+    }
   }}
 
   static get observers() { return [
     '_routeDataItemKeyChanged(routeData.itemKey)',
     '_visibleChanged(visible)',
+    '_selectedProductKeysChanged(selectedProductKeys.splices)',
+    '_storeProductsChanged(selectedStore.products)'
   ]}
+
+  _storeProductsChanged(products) {
+    if (products) {
+      this.selectedProductKeys = [...products];
+    } else {
+      this.selectedProductKeys = [];
+    }
+  }
+
+  _selectedProductKeysChanged(splice) {
+    if (this.selectedProductKeys.length) {
+      if (!this.selectedStore.products
+        || this.selectedStore.products.join(',') !== this.selectedProductKeys.join(',')) {
+        this.set('selectedStore.products', [...this.selectedProductKeys]);
+      }
+    }
+  }
 
   _routeDataItemKeyChanged(itemKey) {
     if (itemKey) {

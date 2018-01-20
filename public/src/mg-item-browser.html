@@ -77,6 +77,8 @@
   class="selector"
   attr-for-selected="key"
   selected="{{selectedKey}}"
+  selected-values="{{selectedKeys}}"
+  multi="[[multi]]"
 > <template
     is="dom-repeat"
     sort="{{_sortItem}}"
@@ -87,6 +89,7 @@
       key="[[item.key$]]"
       class$="[[_formatItemClass(item)]]"
       item="{{item}}"
+      selection-order="[[_computeSelectionOrder(item.key$, selectedKeys.splices)]]"
       label="{{_formatItemLabel(item.images, item.name, item.role, language)}}"
     ></mg-item-image>
   </template>
@@ -116,9 +119,17 @@ class MGItemBrowser extends MHA.Configurations(MHA.Items(Moongom119)) {
       notify: true,
     },
 
+    selectedKeys: {
+      type: Array,
+      notify: true,
+      value: () => [],
+    },
+
     filter: {
       type: Function,
     },
+
+    multi: Boolean,
 
   }}
 
@@ -209,6 +220,12 @@ class MGItemBrowser extends MHA.Configurations(MHA.Items(Moongom119)) {
     }
   }
 
+  _computeSelectionOrder(key, splices) {
+    if (this.multi && this.selectedKeys) {
+      return this.selectedKeys.indexOf(key)+1;
+    }
+    return 0;
+  }
 }
 customElements.define(MGItemBrowser.is, MGItemBrowser);
   </script>
