@@ -385,22 +385,17 @@ class MGVariantsEditor extends MHA.Configurations(Polymer.mixinBehaviors([Polyme
   _linkKeyedArrayPaths(change) { if (change) {
     super._linkKeyedArrayPaths(change,"variant.variants","subvariantList");
 
-    /* change.path : 'variant.variants.${key}.selected$'
-     *
-     * "variant.variants" : 16
-     * ${key} : 20
-     * "selected$" : 9
-     */
-
-    switch(change.path.length) {
-    case 16: {
+    let parts = change.path.split('.');
+    switch(parts.length) {
+    case 2: {
+      console.assert(change.path === 'variant.variants');
       this.selectedKey = null;
     } break;
-    case 47: if (change.path.endsWith('.selected$')) {
+    case 4: if (parts[3] === '.selected$') {
       /* variant.variants.${key}.selected$ */
       /* Selected status set by cells */
       if (change.value) {
-        this.selectedKey = change.path.slice(17,37);
+        this.selectedKey = parts[2];
       }
     } break;
     default: {

@@ -108,8 +108,14 @@ paper-checkbox {
 <tbody>
   <template is="dom-repeat" items="[[variantEntries]]" as="row">
     <tr>
-  <template is="dom-repeat" items="[[row]]">
-<th> [[item]] </th>
+  <template is="dom-repeat" items="[[row]]" as="cell">
+<td style="line-height:20px">
+  <template is="dom-if" if="[[_cellIsColor(index)]]">
+    <div style$="display:inline-block;vertical-align:text-top;border:1px solid black;width:14px;height:14px;background-color:[[cell]]">
+    </div>
+  </template>
+  [[cell]]
+</td>
   </template>
     </tr>
   </template>
@@ -203,7 +209,9 @@ class MGProductEditor extends MHA.Items(MGItemEditor) {
       let key;
       for (key in variant.variants) {
         types.add(variant.type);
-        mapVariant({...props,[variant.type]:variant.variants[key].value}, variant.variants[key]);
+        if (variant.variants[key]) {
+          mapVariant({...props,[variant.type]:variant.variants[key].value}, variant.variants[key]);
+        }
       }
       if (!key) {
         entries.push(props);
@@ -216,7 +224,7 @@ class MGProductEditor extends MHA.Items(MGItemEditor) {
       this.splice('variantEntries', 0, this.variantEntries.length);
       if (this.item && this.item.variant) {
         mapVariant({}, this.item.variant);
-        this.set('variantHeaders',Array.from(types));
+        this.variantHeaders = Array.from(types);
 
         entries.forEach(entry => {
           let row = [];
@@ -228,6 +236,10 @@ class MGProductEditor extends MHA.Items(MGItemEditor) {
         });
       }
     });
+  }
+
+  _cellIsColor(index) {
+    return this.variantHeaders[index].startsWith('color') ? true : false;
   }
 
   _formatVariantLabel(label) {

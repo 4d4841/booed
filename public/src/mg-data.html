@@ -554,42 +554,50 @@ class Moongom119 extends Polymer.Element {
     return false;
   }
 
-  /* TODO Managing selection. */
+  /* TODO
+   * - Managing selection.
+   */
   /* Utility method to autolink key => array.index */
-  _linkKeyedArrayPaths(change,keyPrefix,arrayPrefix) { if (change) {
-    if (change.path.length === keyPrefix.length) {
+  _linkKeyedArrayPaths(keyChange,keyPrefix,arrayPrefix) { if (keyChange) {
+    if (keyChange.path.length === keyPrefix.length) {
       this.splice(arrayPrefix, 0, this[arrayPrefix].length);
       for (let link in this.__dataLinkedPaths) {
         if (link.startsWith(keyPrefix)) {
           this.unlinkPaths(link);
         }
       }
-      for (let key in change.value) {
-        change.value[key].key$ = key;
-        this._orderArrayItem(arrayPrefix, change.value[key]);
+      for (let key in keyChange.value) {
+        /* XXX Old deleted values could leave null'ed keys around.*/
+        if (keyChange.value[key] !== null) {
+          keyChange.value[key].key$ = key;
+          this._orderArrayItem(arrayPrefix, keyChange.value[key]);
+        }
       }
       for (let i = 0, v; v = this[arrayPrefix][i]; ++i) {
         this.linkPaths(keyPrefix+'.'+v.key$, arrayPrefix+'.'+i);
       }
-    } else if (change.path.length === keyPrefix.length + 1 + /*key size*/20) {
-      let key = change.path.slice(-/*key size*/20);
-      if (!change.value) {
-        let i = /\d+$/.exec(this.__dataLinkedPaths[change.path])[0];
-        this.unlinkPaths(change.path);
-        this.splice(arrayPrefix,i,1);
-        while (i < this[arrayPrefix].length) {
-          this.linkPaths(keyPrefix+'.'+this[arrayPrefix][i].key$, arrayPrefix+'.'+i);
-          i++;
-        }
-        if (i === 0) {
-          this.keyPrefix = null;
-        }
-      } else if (!this.__dataLinkedPaths || !this.__dataLinkedPaths[change.path]) {
-        change.value.key$ = key;
-        let i = this._orderArrayItem(arrayPrefix, change.value);
-        while (i < this[arrayPrefix].length) {
-          this.linkPaths(keyPrefix+'.'+this[arrayPrefix][i].key$, arrayPrefix+'.'+i);
-          i++;
+    } else {
+      let parts = keyChange.path.split('.');
+      let key = parts.pop();
+      if (parts.join('.') === keyPrefix) {
+        if (!keyChange.value) {
+          let i = /\d+$/.exec(this.__dataLinkedPaths[keyChange.path])[0];
+          this.unlinkPaths(keyChange.path);
+          this.splice(arrayPrefix,i,1);
+          while (i < this[arrayPrefix].length) {
+            this.linkPaths(keyPrefix+'.'+this[arrayPrefix][i].key$, arrayPrefix+'.'+i);
+            i++;
+          }
+          if (i === 0) {
+            this.keyPrefix = null;
+          }
+        } else if (!this.__dataLinkedPaths || !this.__dataLinkedPaths[keyChange.path]) {
+          keyChange.value.key$ = key;
+          let i = this._orderArrayItem(arrayPrefix, keyChange.value);
+          while (i < this[arrayPrefix].length) {
+            this.linkPaths(keyPrefix+'.'+this[arrayPrefix][i].key$, arrayPrefix+'.'+i);
+            i++;
+          }
         }
       }
     }
