@@ -78,7 +78,7 @@
 
 <div id="gallery-container" ondrop="_onDrop" class="vertical layout">
 
-    <app-toolbar>
+    <app-toolbar hidden$="[[nokey]]">
   <div>
 <paper-icon-button icon="booed:add-photo" on-click="_onAddButtonClick"></paper-icon-button>
 <paper-tooltip>{{localize('add photo')}}</paper-tooltip>
