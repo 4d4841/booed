@@ -333,6 +333,7 @@ class MGUser extends MHA.Configurations(Polymer.Element) {
     MHA.AU.signOut();
   }
 
+  /* No anonymous access for some pages */
   _computePage(page,user) {
     if (user || page === 'help' || page === 'profile') {
       return page;
