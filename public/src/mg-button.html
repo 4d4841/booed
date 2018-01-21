@@ -1,62 +1,54 @@
-<link href="https://fonts.googleapis.com/css?family=Athiti" rel="stylesheet">
-<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<!DOCTYPE html>
+<!--
+ .................................................................................................
+:::BSDB'::BSDB'::BSDB':::::BSDB':::BSDBS'::BSDBS'::BSDB'::::BSD'::BSDBS'::BSDBS'::BSDB'::::::BSD'::
+::BSDBSD BSDBSD :.BSDBS':BSDBS .:BSD ..BSD  ...BSD 'BSDBS':BSD .BSD ..BSD  ...BSD :BSDBS'::BSDB .::
+::COPYRIGHT2017 ::.BS BSDB .BS :BSD .::.BSD :::.BSD :BS .BSDB .BSD .:::BSD ::::BSD :BS BSDB BS .:::
+:::BSDSTYLEBSD .:::BS  BS .:BS :BSD ::::BSD ::::BSD :BS ::BSD :BSD :::::...::::BSD :BS :BS  BS ::::
+::::.LICENSE .::::BSD .:..::BS 'BSD ::::BSD ::::BSD :BS :::BS :BSD ::BSDBS'::::BSD :BS ::..:BS ':::
+:::::::BSD .::::BSDB .::::::BSD 'BSD'::BSD .:::BSD .BSD :::BSD':BSD'::.BSD :::BSD .BSD :::::BSDB'::
+::::::::B .::::::BS .:::::::.BSD ::BSDBS .:BSDBS  :BSD .::::BSD :.BSDBS BS BSDB .:BSD .:::::.BS .::
+`::::::::.::::::::..::::::::::...:::.....:::.....:::...::::::...:::.............:::...::::::::..::'
+-->
+
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="mg-ripple.html">
 
     <dom-module id="mg-button">
-  <template>
-<style>
-
-  mg-button {
-    display: inline-block;
-  }
-
-  mg-button > * {
-    display: inline-block;
-    box-sizing: border-box;
-    border: 1px solid #555;
-    color: var(--booed-primary-color);
-    text-align: center;
-    text-decoration: none;
-    outline: none;
-    -webkit-appearance: none;
-  }
-
-  mg-button > *:focus {
-    background-color: #c5cad3;
-  }
-
-  mg-button > *:active {
-    background-color: #000;
-    color: #FFF;
-  }
-
-  @media (max-width: 767px) {
-
-    /* Responsive buttons are used in mg-detail, mg-cart and mg-checkout */
-    mg-button[responsive] {
-      @apply --layout-fixed-bottom;
-      height: 64px;
-      z-index: 1;
-      right: 5%;
-      left: 5%;
-    }
-
-    mg-button[responsive] > * {
-      background-color: rgba(255,255,255,0.9);
-      border-radius: 10px 10px 0 0;
-      border-bottom: none;
-      color: black;
-      padding: 20px;
-      height: 100%;
-      width: 100%;
-      font-size: 15px;
-    }
-
-    mg-button[responsive] > *:focus {
-      background-color: var(--booed-accent-color);
-    }
-
-  }
-
+  <template strip-whitespace>
+<style include="paper-button">
+mg-ripple {
+  color: pink;
+}
 </style>
+<slot></slot>
   </template>
+  <script>
+class MGButton extends Polymer.mixinBehaviors([Polymer.PaperButtonBehavior],Polymer.Element) {
+  static get is() { return 'mg-button'; }
+  static get properties() { return {
+    raised: {
+      type: Boolean,
+      reflectToAttribute: true,
+      value: false,
+      observer: '_calculateElevation'
+    },
+  }}
+
+  _calculateElevation() {
+    if (!this.raised) {
+      this._setElevation(0);
+    } else {
+      Polymer.PaperButtonBehaviorImpl._calculateElevation.apply(this);
+    }
+  }
+
+  _createRipple() {
+    var element = document.createElement('mg-ripple');
+    return element;
+  }
+}
+
+customElements.define(MGButton.is, MGButton);
+  </script>
     </dom-module>

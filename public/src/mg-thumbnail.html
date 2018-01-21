@@ -13,10 +13,10 @@
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../bower_components/neon-animation/web-animations.html">
 <link rel="import" href="mg-common-styles.html">
+<link rel="import" href="mg-button.html">
 <link rel="import" href="mg-icons.html">
 <link rel="import" href="mg-image.html">
 
@@ -26,7 +26,7 @@
 :host {
 }
 
-:host([deleted]) paper-button {
+:host([deleted]) mg-button {
   opacity: 0.3;
 }
 
@@ -107,7 +107,7 @@
 }
 </style>
 
-<paper-button class="photo-frame">
+<mg-button class="photo-frame">
   <mg-image
     width="[[width]]"
     height="[[height]]"
@@ -142,7 +142,7 @@
 
   </mg-image>
 
-</paper-button>
+</mg-button>
 <paper-tooltip id="tooltip" animation-delay="0">
   [[label]]
 </paper-tooltip>
