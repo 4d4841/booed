@@ -182,12 +182,14 @@ mg-item-image iron-icon {
   editor-role="store"
 ></mg-item-editor>
 
+  <template is="dom-if" if="[[selectedStore]]">
 <mg-item-browser
   selected-keys="{{selectedProductKeys}}"
   class="items-container"
   filter="[[productFilter]]"
   multi
 ></mg-item-browser>
+  </template>
 
   </div>
 
