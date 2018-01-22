@@ -182,7 +182,7 @@ mg-item-image iron-icon {
   editor-role="store"
 ></mg-item-editor>
 
-  <template is="dom-if" if="[[selectedStore]]">
+  <template is="dom-if" if="[[_storeSelected(selectedStore)]]">
 <mg-item-browser
   selected-keys="{{selectedProductKeys}}"
   class="items-container"
@@ -285,6 +285,13 @@ class MGStores extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     }
     this.set('routeData.itemKey', newKey);
 
+  }
+
+  _storeSelected(store) {
+    if (!store || store.role !== 'store') {
+      return false;
+    }
+    return true;
   }
 
   _routeChanged(route) {
