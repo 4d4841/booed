@@ -142,7 +142,7 @@
   class="image-thumbnail"
   item="[[image]]"
   label="[[image.name]]"
-  selection-order="[[_computeSelectionOrder(image.key$, index, selectedImageKeys.splices)]]"
+  selection-order="[[_computeSelectionOrder(image.key$, selectedImageKeys.splices)]]"
   on-click="_onItemClick"
 ></mg-item-image>
 
@@ -278,12 +278,11 @@ class MGGalleryEditor extends MGItemEditor {
     return selectedLen ? 'copy selection' : 'copy gallery';
   }
 
-  _computeSelectionOrder(key, index, splices) {
+  _computeSelectionOrder(key, /*index,*/ splices) {
   /* This will also update a cache that match the actual listed result of
    * dom-repeat to avoid dealing with sorted/filtered results.
    */
 
-    (this.IndexImageCache || (this.IndexImageCache = []))[index] = key;
     return 1 + this.selectedImageKeys.indexOf(key); /* Selection order starts at 1 */
   }
 
@@ -340,16 +339,21 @@ class MGGalleryEditor extends MGItemEditor {
 
       /* Finds if the last click was de/selection. */
       let selecting = true;
-      if (this.selectedImageKeys.length && this._LastClickIndex > -1
-        && this.selectedImageKeys.indexOf(this.IndexImageCache[this._LastClickIndex])
-           == -1) {
-        selecting = false;
+      if (this.selectedImageKeys.length && this._LastClickIndex > -1) {
+        let lastClickedKey = this.shadowRoot.querySelector(
+          `.image-thumbnail:nth-child(${1+this._LastClickIndex})`
+        ).item.key$;
+
+        if (this.selectedImageKeys.indexOf(lastClickedKey) == -1) {
+          selecting = false;
+        }
       }
 
       for (let i = this._LastClickIndex + inc;
         inc > 0 ? i <= e.model.index : i >= e.model.index; i += inc) {
 
-        let ikey = this.IndexImageCache[i];
+        let ikey = this.shadowRoot.querySelector(`.image-thumbnail:nth-child(${i+1})`).item.key$;
+
         let oldIndex = this.selectedImageKeys.indexOf(ikey);
         if (oldIndex > -1) {
           this.splice('selectedImageKeys',oldIndex,1);
@@ -364,6 +368,7 @@ class MGGalleryEditor extends MGItemEditor {
     } else {
       this._LastClickIndex = -1;
     }
+
   }
 
   _uploadImageFiles(files) {
@@ -527,7 +532,7 @@ class MGGalleryEditor extends MGItemEditor {
 
   _onSelectAllButtonClick(e) {
     for (let i = 0; i < this.imageList.length; i++) {
-      let imageKey = this.IndexImageCache[i];
+      let imageKey = this.shadowRoot.querySelector(`.image-thumbnail:nth-child(${i+1})`).item.key$;
       let oldIndex = this.selectedImageKeys.indexOf(imageKey);
       if (oldIndex > -1) {
         this.splice('selectedImageKeys',oldIndex,1);
