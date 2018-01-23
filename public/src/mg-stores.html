@@ -190,7 +190,6 @@ mg-item-image iron-icon {
   multi
 ></mg-item-browser>
   </template>
-
   </div>
 
 
@@ -235,7 +234,8 @@ class MGStores extends MHA.Configurations(MHA.Items(Polymer.Element)) {
     selectedProductKeys: {
       type: Array,
       value: () => [],
-    }
+    },
+
   }}
 
   static get observers() { return [
@@ -288,7 +288,8 @@ class MGStores extends MHA.Configurations(MHA.Items(Polymer.Element)) {
   }
 
   _storeSelected(store) {
-    if (!store || store.role !== 'store') {
+    if (!store || (store.role && store.role !== 'store')) {
+      this.selectedStore = undefined;
       return false;
     }
     return true;
@@ -304,6 +305,7 @@ class MGStores extends MHA.Configurations(MHA.Items(Polymer.Element)) {
       }
     }
   }
+
 }
 customElements.define(MGStores.is, MGStores);
   </script>
