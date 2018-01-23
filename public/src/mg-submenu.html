@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<!--
+ .................................................................................................
+:::BSDB'::BSDB'::BSDB':::::BSDB':::BSDBS'::BSDBS'::BSDB'::::BSD'::BSDBS'::BSDBS'::BSDB'::::::BSD'::
+::BSDBSD BSDBSD :.BSDBS':BSDBS .:BSD ..BSD  ...BSD 'BSDBS':BSD .BSD ..BSD  ...BSD :BSDBS'::BSDB .::
+::COPYRIGHT2017 ::.BS BSDB .BS :BSD .::.BSD :::.BSD :BS .BSDB .BSD .:::BSD ::::BSD :BS BSDB BS .:::
+:::BSDSTYLEBSD .:::BS  BS .:BS :BSD ::::BSD ::::BSD :BS ::BSD :BSD :::::...::::BSD :BS :BS  BS ::::
+::::.LICENSE .::::BSD .:..::BS 'BSD ::::BSD ::::BSD :BS :::BS :BSD ::BSDBS'::::BSD :BS ::..:BS ':::
+:::::::BSD .::::BSDB .::::::BSD 'BSD'::BSD .:::BSD .BSD :::BSD':BSD'::.BSD :::BSD .BSD :::::BSDB'::
+::::::::B .::::::BS .:::::::.BSD ::BSDBS .:BSDBS  :BSD .::::BSD :.BSDBS BS BSDB .:BSD .:::::.BS .::
+`::::::::.::::::::..::::::::::...:::.....:::.....:::...::::::...:::.............:::...::::::::..::'
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="mg-common-styles.html">
+
+    <dom-module id="mg-submenu">
+  <template strip-whitespace>
+<style include="paper-material-styles mg-common-styles iron-flex iron-flex-alignment">
+:host {
+  width: auto;
+  height: auto;
+  @apply --layout-horizontal;
+  @apply --layout-start-justified;
+  box-sizing: content-box;
+  background-color: white;
+}
+
+#submenu-selector {
+  overflow-y: auto;
+  padding: 2px;
+}
+
+#submenu-container {
+  padding: 5px;
+  margin: 5px;
+  border-radius: 5px;
+}
+
+#value-container {
+  @apply --paper-font-caption;
+  height: 20px;
+  border-bottom: 1px dotted gainsboro;
+}
+
+:host(:not([opened])) #value-container {
+  border: none;
+}
+
+#value-container iron-icon {
+  --iron-icon-height: 14px;
+}
+
+#type-name {
+  width: 95px;
+  margin-right: 10px;
+}
+
+#type-custom {
+  width: 95px;
+}
+
+paper-icon-item.iron-selected {
+  background-color: aliceblue;
+}
+
+.visibility-button:active {
+  color: tomato;
+}
+
+</style>
+
+  <div class="vertical layout">
+<div
+  id="submenus-container"
+  class="paper-material vertical layout start-justified"
+  elevation="1"
+>
+
+  <!-- Children List -->
+    <template is="dom-if" if="[[submenuList.length]]">
+  <iron-selector
+    id="submenu-selector"
+    attr-for-selected="name"
+    selected-attribute="selected"
+    selected="{{selectedKey}}"
+    selected-item="{{childPositionTarget}}"
+    hidden$="[[!opened]]"
+    > <template is="dom-repeat" items="{{submenuList}}" as="submenu">
+    <paper-icon-item
+      name="[[submenu.key$]]"
+      submenu="{{submenu}}"
+    > <iron-icon slot="item-icon" icon="store"></iron-icon>
+      <span class="flex">[[submenu.title]]</span>
+      <template is="dom-if" if="[[submenu.submenus]]">
+        <iron-icon style="color:tomato" icon="chevron-right"></iron-icon>
+      </template>
+    </paper-icon-item>
+      </template>
+  </iron-selector>
+    </template>
+
+</div>
+  </div>
+
+  <!-- Child editor -->
+  <template is="dom-if" if="[[selectedSubmenu]]">
+<mg-submenu
+  style="z-index:1"
+  menu="{{selectedSubmenu}}"
+  position-target="[[childPositionTarget]]"
+  vertical-align="top"
+  horizontal-align="left"
+  dynamic-align
+></mg-submenu>
+  </template>
+
+  </template>
+  <script>
+
+class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronFitBehavior], Moongom119)) {
+  static get is() { return 'mg-submenu'; }
+
+  static get properties() { return {
+
+    menu: {
+      type: Object,
+      notify: true,
+    },
+
+    submenuList: {
+      type: Array,
+      value: function(){return [];},
+    },
+
+    selectedSubmenu: {
+      type: Object,
+    },
+
+    selectedVariants: {
+      type: Array,
+      value: function(){return {};},
+    },
+
+    selectedKey: {
+      type: String,
+      observer: '_selectedKeyChanged',
+    },
+
+    label: String,
+
+    opened: {
+      type: Boolean,
+      value: true,
+      reflectToAttribute: true,
+    },
+
+  }}
+
+  static get observers() { return [
+    '_linkKeyedArrayPaths(menu.submenus.*)',
+    '_positionTargetChanged(positionTarget)',
+  ]}
+
+  _positionTargetChanged(positionTarget) {
+    if (positionTarget != 'root') {
+      if (positionTarget) {
+        this.horizontalOffset = positionTarget.offsetWidth;
+        Polymer.RenderStatus.beforeNextRender(this, function() {
+          this.refit();
+        });
+      }
+    }
+  }
+
+  _selectedKeyChanged(key,oldKey) {
+    if (oldKey) {
+      this.unlinkPaths(this.__dataLinkedPaths['menu.submenus.'+oldKey]);
+    }
+
+    this.selectedSubmenu = undefined;
+
+    if (key) {
+      this.selectedSubmenu = this.menu.submenus[key];
+      this.linkPaths(this.__dataLinkedPaths['menu.submenus.'+key],'selectedSubmenu');
+    } else if (key === null) {
+      /* close all submenu */
+      let child = this.shadowRoot.querySelector('mg-submenu');
+      if (child) {
+        child.set('selectedKey',null);
+      }
+    }
+  }
+
+  _linkKeyedArrayPaths(change) { if (change) {
+    super._linkKeyedArrayPaths(change,"menu.submenus","submenuList");
+    let parts = change.path.split('.');
+
+    switch(parts.length) {
+    case 2: {
+      /* menu.submenus */
+      this.selectedKey = null;
+    } break;
+    case 4: if (parts[3] === '.selected$') {
+      if (change.value) {
+        this.selectedKey = parts[2];
+      }
+    } break;
+    default: {
+      //console.log('DEBUG', change);
+    }}
+  }}
+
+}
+
+customElements.define(MGSubmenu.is, MGSubmenu);
+  </script>
+    </dom-module>
