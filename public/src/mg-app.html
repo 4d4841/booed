@@ -490,16 +490,6 @@
   <paper-button><iron-icon  icon="maps:add-location"></iron-icon> Location Settings</paper-button>
 </mg-balloon>
 
-<mg-balloon
-  id="balloon"
-  no-overlap
-  dynamic-align
-  vertical-align="top"
-  horizontal-align="auto"
-  hidden$="[[smallScreen]]"
-> <mg-menu path="{{route.path}}" style="min-width:200px; padding:0" menu="[[submenu]]"></mg-menu>
-</mg-balloon>
-
 </div>
 <div class="menu-bar" hidden$="[[!_shouldShowTabs]]">
       <dom-if if="[[_shouldRenderTabs]]">
