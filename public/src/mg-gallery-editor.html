@@ -460,13 +460,15 @@ class MGGalleryEditor extends MGItemEditor {
   }
 
   _linkKeyedArrayPaths(change) {
-    switch(change.path.length) {
-    case 11: { /* item.images */
+    let parts = change.path.split('.');
+
+    switch(parts.length) {
+    case 2: { /* item.images */
       this.splice('selectedImageKeys',0,this.selectedImageKeys.length);
     } break;
-    case 32: { /* item.images.< 20 chars new key > */
+    case 3: { /* item.images.< 20 chars new key > */
       if (!change.value) {
-        this.splice('selectedImageKeys',this.selectedImageKeys.indexOf(change.path.slice(-20)),1);
+        this.splice('selectedImageKeys',this.selectedImageKeys.indexOf(parts[2]),1);
       }
     } break;
     default: {
