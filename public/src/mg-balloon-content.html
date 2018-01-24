@@ -48,7 +48,20 @@ class MGBalloonContent extends Polymer.mixinBehaviors([Polymer.IronFitBehavior],
   static get properties() { return {
     positionTarget: Object,
   }}
+
+  refit() {
+    super.refit();
+    this.shadowRoot.querySelector('slot')
+      .assignedNodes({flatten:true})
+      .filter(n => n.nodeType === Node.ELEMENT_NODE)
+      .forEach(node => {
+        if(typeof node.refit === 'function') {
+          node.refit();
+        }
+      });
+  }
 }
+
 customElements.define(MGBalloonContent.is, MGBalloonContent);
   </script>
     </dom-module>

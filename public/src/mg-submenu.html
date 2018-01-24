@@ -25,8 +25,6 @@
 :host {
   width: auto;
   height: auto;
-  @apply --layout-horizontal;
-  @apply --layout-start-justified;
   box-sizing: content-box;
   background-color: white;
 }
@@ -34,35 +32,6 @@
 #submenu-selector {
   overflow-y: auto;
   padding: 2px;
-}
-
-#submenu-container {
-  padding: 5px;
-  margin: 5px;
-  border-radius: 5px;
-}
-
-#value-container {
-  @apply --paper-font-caption;
-  height: 20px;
-  border-bottom: 1px dotted gainsboro;
-}
-
-:host(:not([opened])) #value-container {
-  border: none;
-}
-
-#value-container iron-icon {
-  --iron-icon-height: 14px;
-}
-
-#type-name {
-  width: 95px;
-  margin-right: 10px;
-}
-
-#type-custom {
-  width: 95px;
 }
 
 paper-icon-item.iron-selected {
@@ -95,10 +64,12 @@ paper-icon-item.iron-selected {
     <paper-icon-item
       name="[[submenu.key$]]"
       submenu="{{submenu}}"
-    > <iron-icon slot="item-icon" icon="store"></iron-icon>
-      <span class="flex">[[submenu.title]]</span>
+    > <template is="dom-if" if="[[submenu.icon]]">
+        <iron-icon slot="item-icon" icon="[[submenu.icon]]"></iron-icon>
+      </template>
+      <span style="white-space:nowrap" class="flex">[[submenu.title]]</span>
       <template is="dom-if" if="[[submenu.submenus]]">
-        <iron-icon style="color:tomato" icon="chevron-right"></iron-icon>
+        <iron-icon icon="chevron-right"></iron-icon>
       </template>
     </paper-icon-item>
       </template>
@@ -115,8 +86,10 @@ paper-icon-item.iron-selected {
   menu="{{selectedSubmenu}}"
   position-target="[[childPositionTarget]]"
   vertical-align="top"
+  vertical-offset="15"
   horizontal-align="left"
   dynamic-align
+  is-child
 ></mg-submenu>
   </template>
 
@@ -127,6 +100,11 @@ class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronF
   static get is() { return 'mg-submenu'; }
 
   static get properties() { return {
+
+    isChild: {
+      type: Boolean,
+      value: false,
+    },
 
     menu: {
       type: Object,
@@ -140,6 +118,7 @@ class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronF
 
     selectedSubmenu: {
       type: Object,
+      observer: '_selectedSubmenuChanged',
     },
 
     selectedVariants: {
@@ -150,6 +129,7 @@ class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronF
     selectedKey: {
       type: String,
       observer: '_selectedKeyChanged',
+      notify: true,
     },
 
     label: String,
@@ -165,16 +145,47 @@ class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronF
   static get observers() { return [
     '_linkKeyedArrayPaths(menu.submenus.*)',
     '_positionTargetChanged(positionTarget)',
+    '_menuChanged(menu.*)',
   ]}
 
+  connectedCallback() {
+    super.connectedCallback();
+
+  }
+
+  _menuChanged(change) {
+    if (!this.isChild) {
+      console.log(change.path, change.value);
+    }
+  }
+
+  _selectedSubmenuChanged(selectedSubmenu, old) {
+    if (old) {
+      this.set('menu.submenus.'+old.key$+'.selected$', false);
+    }
+
+    if (selectedSubmenu) {
+      this.set('menu.submenus.'+selectedSubmenu.key$+'.selected$', true);
+    }
+  }
+
   _positionTargetChanged(positionTarget) {
-    if (positionTarget != 'root') {
-      if (positionTarget) {
-        this.horizontalOffset = positionTarget.offsetWidth;
-        Polymer.RenderStatus.beforeNextRender(this, function() {
-          this.refit();
-        });
+    if (this.isChild && positionTarget) {
+      Polymer.RenderStatus.beforeNextRender(this, () => this.refit());
+    }
+  }
+
+  refit() {
+    if (this.isChild) {
+      if (this.positionTarget) {
+        this.horizontalOffset = this.positionTarget.getBoundingClientRect().width;
+        super.refit();
       }
+    }
+
+    let child = this.shadowRoot.querySelector('mg-submenu');
+    if (child) {
+      child.refit();
     }
   }
 
@@ -219,5 +230,6 @@ class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronF
 }
 
 customElements.define(MGSubmenu.is, MGSubmenu);
+
   </script>
     </dom-module>

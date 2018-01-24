@@ -33,6 +33,7 @@
 <link rel="import" href="../bower_components/iron-icons/notification-icons.html">
 <link rel="import" href="../bower_components/iron-icons/places-icons.html">
 <link rel="import" href="../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="mg-balloon.html">
 <link rel="import" href="mg-submenu.html">
 
 <link rel="import" href="mg-icons.html">
@@ -41,7 +42,7 @@
 
     <dom-module id="mg-about">
   <template>
-<style include="iron-flex iron-flex-alignment">
+<style include="mg-common-styles iron-flex iron-flex-alignment">
 
 :host {
   color: var(--booed-secondary-color);
@@ -155,6 +156,19 @@ mg-sections {
   border-bottom:1px dashed var(--booed-shadow-color)
 }
 
+#submenu-button {
+  width: 180px;
+  padding:0;
+  height:40px;
+  box-shadow: 1px 1px 2px var(--booed-shadow-color);
+  --paper-button: {
+    font-family: 'Mitr', sans-serif;
+    font-size: 16px;
+    background-color: tomato;
+    color: white;
+  }
+}
+
 </style>
 
 <iron-pages
@@ -175,8 +189,21 @@ mg-sections {
 
   <div name="submenu">
 
-    <mg-submenu position-target='root' menu="{{testMenuData}}">
-    </mg-submenu>
+<paper-button
+  id="submenu-button"
+  on-click="_openSubmenu"
+> Submenu
+</paper-button>
+
+<mg-balloon
+  id="new-submenu-balloon"
+  no-overlap
+  vertical-align="top"
+  dynamic-align
+  horizontal-align="auto"
+  opened="{{balloonOpenedChanged}}"
+> <mg-submenu menu="{{testMenuData}}" selected-key="{{selectedSubmenuKey}}"> </mg-submenu>
+</mg-balloon>
 
   </div>
 
@@ -242,7 +269,7 @@ mg-sections {
 
   </template>
   <script>
-class MGAbout extends Polymer.Element {
+class MGAbout extends Moongom119 {
 
   static get is() { return 'mg-about'; }
 
@@ -290,93 +317,41 @@ class MGAbout extends Polymer.Element {
       type: Array,
       value: function(){return []},
     },
-    
+
+    balloonOpenedChanged: {
+      type: Boolean,
+      observer: '_balloonOpenedChanged',
+    },
+
     testMenuData: {
       type: Object,
       value: () => { return {
         submenus:{
-          entry1: {
-            title: 'Aha',
-            submenus:{
-              entry1: {
-                title: 'SubAha',
-
-                submenus:{
-                  entry1: {
-                    title: 'Aha',
-                    submenus:{
-                      entry1: {
-                        title: 'SubAha',
-                      },
-                      entry2: {
-                        title: 'SubAhaAha',
-                      },
-                    },
-                  },
-                  entry2: {
-                    title: 'Blah',
-                    submenus:{
-                      entry1: {
-                        title: 'SubBlah',
-                      },
-                      entry2: {
-                        title: 'SubBlahBlah',
-
-                        submenus:{
-                          entry1: {
-                            title: 'Aha',
-                            submenus:{
-                              entry1: {
-                                title: 'SubAha',
-                              },
-                              entry2: {
-                                title: 'SubAhaAha',
-                              },
-                            },
-                          },
-                          entry2: {
-                            title: 'Blah',
-                            submenus:{
-                              entry1: {
-                                title: 'SubBlah',
-                              },
-                              entry2: {
-                                title: 'SubBlahBlah',
-
-
-
-                              },
-                            },
-                          },
-                        }
-
-
-
-                      },
-                    },
-                  },
-                }
-
-              },
-              entry2: {
-                title: 'SubAhaAha',
-              },
-            },
-          },
-          entry2: {
-            title: 'Blah',
-            submenus:{
-              entry1: {
-                title: 'SubBlah',
-              },
-              entry2: {
-                title: 'SubBlahBlah',
-              },
-            },
-          },
-        }
+          entry1: { icon:"booed:moon", title: 'Moon HyunA', submenus:{
+              entry1: { icon:"social:cake", title: 'Birthday', submenus:{
+                  entry1: { title: '1987', submenus:{
+                      entry1: { title: 'Janary', submenus:{
+                          entry1: { title: '19th', }
+              }}}}}},
+              entry2: { icon:"pets", title: 'Cats', submenus:{
+                  entry1: { icon:"pets", title: 'Moya', },
+                  entry2: { icon:"pets", title: 'Hoya', },
+                  entry3: { icon:"pets", title: 'Spikey', },
+              }},
+          }},
+          entry2: { title: 'Social Medias', submenus:{
+              entry1: { title: 'Instagram', submenus:{
+                  entry1: { icon:"booed:instagram", title: 'https://instagram.com/moongom119', },
+                  entry2: { icon:"booed:instagram", title: 'https://instagram.com/moyahoyaya', },
+                  entry3: { icon:"booed:instagram", title: 'https://instagram.com/filmby_moon', },
+                  entry4: { icon:"booed:instagram", title: 'https://instagram.com/bbd_life_', },
+              }},
+              entry2: { title: 'Twitter', submenus:{
+                  entry1: { title: 'https://twitter.com/moongom119', }
+              }},
+        }}}
       }},
-    }
+    },
 
   }}
 
@@ -523,6 +498,21 @@ class MGAbout extends Polymer.Element {
     */
     this._willSearchChanged(this.willSearch);
     return true;
+  }
+
+  _balloonOpenedChanged(opened) {
+    if (!opened) {
+      this.selectedSubmenuKey = null;
+    }
+  }
+
+  _openSubmenu(e) {
+    this.dispatchEvent(new CustomEvent('close-contextual-menu', {
+      bubbles: true, composed: true, detail:{sender:this}
+    }));
+
+    this.$['new-submenu-balloon'].positionTarget = this.$['submenu-button'];
+    this.$['new-submenu-balloon'].toggle();
   }
 
 }

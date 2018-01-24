@@ -104,7 +104,7 @@ class MGBalloon extends Polymer.mixinBehaviors([Polymer.IronFitBehavior], Polyme
       observer: '_positionTargetChanged'
     },
 
-    visible: {
+    opened: {
       type: Boolean,
       notify: true,
     },
@@ -150,9 +150,12 @@ class MGBalloon extends Polymer.mixinBehaviors([Polymer.IronFitBehavior], Polyme
   }
 
   _positionTargetChanged(target) {
+    /*
     Polymer.Async.timeOut.run(() => {
       this._refit();
     }, 0);
+    */
+    Polymer.RenderStatus.beforeNextRender(this, () => this.refit());
   }
 
   _refit() {
@@ -185,22 +188,30 @@ class MGBalloon extends Polymer.mixinBehaviors([Polymer.IronFitBehavior], Polyme
   }
 
   open() {
-    this.visible = true;
+    this.opened = true;
     this.style.display = 'block';
     this.style.opacity = 0;
     if (this._WillClose) {
       this._WillClose.cancel();
       delete this._WillClose;
     }
+    /*
     Polymer.Async.timeOut.run(() => {
       this.refit();
       this.style.opacity = 1;
       this.$.content.focus();
     }, 0);
+    */
+
+    Polymer.RenderStatus.beforeNextRender(this, () => {
+      this.refit()
+      this.style.opacity = 1;
+      this.$.content.focus();
+    });
   }
 
   close() {
-    this.visible = false;
+    this.opened = false;
     this.style.opacity = 0;
     Polymer.Async.timeOut.run(() => {
       this.style.display = 'none';

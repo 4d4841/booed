@@ -771,10 +771,8 @@ class MGApp extends MHA.Configurations(Polymer.Element) {
     window.addEventListener('scroll', this._onScroll.bind(this));
     window.addEventListener('resize', this._onResize.bind(this));
 
-    this.addEventListener('add-cart-item', (e)=>this._onAddCartItem(e));
     this.addEventListener('announce', (e)=>this._onAnnounce(e));
     this.addEventListener('change-section', (e)=>this._onChangeSection(e));
-    this.addEventListener('clear-cart', (e)=>this._onClearCart(e));
     this.addEventListener('dom-change', (e)=>this._domChange(e));
     this.addEventListener('set-cart-item', (e)=>this._onSetCartItem(e));
     this.addEventListener('show-invalid-url-warning', (e)=>this._onFallbackSelectionTriggered(e));
@@ -931,7 +929,7 @@ class MGApp extends MHA.Configurations(Polymer.Element) {
   _openModelSubmenu(model,expand) {
     for(let i = 0, sub; sub = this.menu.entries[i]; ++i) {
       if (sub.name == model.item.name && sub.submenu) {
-        if (this.submenu === sub.submenu && this.$.balloon.visible) {
+        if (this.submenu === sub.submenu && this.$.balloon.opened) {
           this._closeSubmenu();
 
         } else if (expand || this.menu.selected == model.item.name) {
