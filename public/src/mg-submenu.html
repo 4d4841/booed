@@ -34,7 +34,11 @@
   padding: 2px;
 }
 
-paper-icon-item.iron-selected {
+.menu-item[separator] {
+  border-top: 1px solid var(--booed-shadow-color);
+}
+
+.menu-item.iron-selected {
   background-color: aliceblue;
 }
 
@@ -63,6 +67,8 @@ paper-icon-item.iron-selected {
     > <template is="dom-repeat" items="{{submenuList}}" as="submenu">
 
     <paper-icon-item
+      class="menu-item"
+      separator$="[[_formatItemSeparator(submenu.separator)]]"
       on-click="_onItemClick"
       name="[[submenu.key$]]"
       submenu="{{submenu}}"
@@ -241,6 +247,10 @@ class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronF
         window.location.href = e.model.submenu.url;
       }
     }
+  }
+
+  _formatItemSeparator(separator) {
+    return separator ? true : false;
   }
 
 }
