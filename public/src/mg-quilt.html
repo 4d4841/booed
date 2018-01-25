@@ -63,13 +63,13 @@
   mutable-data
 > <template is="dom-if" if="[[_itemInOffsetRange(item)]]">
     <mg-thumbnail
-     class="quilt-image"
-     src="[[item.photo]]"
-     width="[[_computePixel(item.w,unitWidth,2)]]"
-     height="[[_computePixel(item.h,unitWidth,2)]]"
-     style$="[[_computeLocation(item.x,item.y,unitWidth,index,2)]]"
-     icons="[[_formatIconsForTags(item.tags)]]"
-     label="[[_formatLabel(item.tags,language)]]"
+      class="quilt-image"
+      src="[[item.photo]]"
+      width="[[_computePixel(item.w,unitWidth,2)]]"
+      height="[[_computePixel(item.h,unitWidth,2)]]"
+      style$="[[_computeLocation(item.x,item.y,unitWidth,index,2)]]"
+      icons="[[_formatIconsForTags(item.tags)]]"
+      label="[[_formatLabel(item.tags,language)]]"
     ></mg-thumbnail>
   </template>
 </template>
