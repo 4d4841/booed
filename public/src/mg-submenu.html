@@ -61,17 +61,20 @@ paper-icon-item.iron-selected {
     selected-item="{{childPositionTarget}}"
     hidden$="[[!opened]]"
     > <template is="dom-repeat" items="{{submenuList}}" as="submenu">
+
     <paper-icon-item
+      on-click="_onItemClick"
       name="[[submenu.key$]]"
       submenu="{{submenu}}"
     > <template is="dom-if" if="[[submenu.icon]]">
         <iron-icon slot="item-icon" icon="[[submenu.icon]]"></iron-icon>
       </template>
-      <span style="white-space:nowrap" class="flex">[[submenu.title]]</span>
+      <span style="white-space:nowrap" class="flex">[[_formatSubmenuTitle(submenu)]]</span>
       <template is="dom-if" if="[[submenu.submenus]]">
         <iron-icon icon="chevron-right"></iron-icon>
       </template>
     </paper-icon-item>
+
       </template>
   </iron-selector>
     </template>
@@ -145,18 +148,11 @@ class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronF
   static get observers() { return [
     '_linkKeyedArrayPaths(menu.submenus.*)',
     '_positionTargetChanged(positionTarget)',
-    '_menuChanged(menu.*)',
   ]}
 
   connectedCallback() {
     super.connectedCallback();
 
-  }
-
-  _menuChanged(change) {
-    if (!this.isChild) {
-      console.log(change.path, change.value);
-    }
   }
 
   _selectedSubmenuChanged(selectedSubmenu, old) {
@@ -226,6 +222,26 @@ class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronF
       //console.log('DEBUG', change);
     }}
   }}
+
+  _formatSubmenuTitle(submenu) {
+    if (submenu.title) {
+      return submenu.title;
+    }
+    if (submenu.url) {
+      return submenu.url;
+    }
+    return '';
+  }
+
+  _onItemClick(e) {
+    if (e.model.submenu.url) {
+      if (e.model.submenu.name) {
+        window.open(e.model.submenu.url, e.model.submenu.name);
+      } else {
+        window.location.href = e.model.submenu.url;
+      }
+    }
+  }
 
 }
 

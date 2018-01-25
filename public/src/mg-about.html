@@ -157,8 +157,7 @@ mg-sections {
 }
 
 #submenu-button {
-  width: 180px;
-  padding:0;
+  padding:0 20px;
   height:40px;
   box-shadow: 1px 1px 2px var(--booed-shadow-color);
   --paper-button: {
@@ -192,7 +191,7 @@ mg-sections {
 <paper-button
   id="submenu-button"
   on-click="_openSubmenu"
-> Submenu
+> Submenu [[testGreeting]]
 </paper-button>
 
 <mg-balloon
@@ -340,14 +339,14 @@ class MGAbout extends Moongom119 {
               }},
           }},
           entry2: { title: 'Social Medias', submenus:{
-              entry1: { title: 'Instagram', submenus:{
-                  entry1: { icon:"booed:instagram", title: 'https://instagram.com/moongom119', },
-                  entry2: { icon:"booed:instagram", title: 'https://instagram.com/moyahoyaya', },
-                  entry3: { icon:"booed:instagram", title: 'https://instagram.com/filmby_moon', },
-                  entry4: { icon:"booed:instagram", title: 'https://instagram.com/bbd_life_', },
+              entry1: { icon:"editor:insert-link", title: 'Instagrams', submenus:{
+                  entry1: { icon:"booed:instagram", name:'_blank', url:'https://instagram.com/moongom119', },
+                  entry2: { icon:"booed:instagram", name:'_blank', url:'https://instagram.com/moyahoyaya', },
+                  entry3: { icon:"booed:instagram", name:'_blank', url:'https://instagram.com/filmby_moon', },
+                  entry4: { icon:"booed:instagram", name:'_blank', url:'https://instagram.com/bbd_life_', },
               }},
-              entry2: { title: 'Twitter', submenus:{
-                  entry1: { title: 'https://twitter.com/moongom119', }
+              entry2: { icon:"editor:insert-link", title: 'Twitter Account', submenus:{
+                  entry1: { icon:"booed:twitter", url:'https://twitter.com/moongom119', }
               }},
         }}}
       }},
@@ -356,6 +355,7 @@ class MGAbout extends Moongom119 {
   }}
 
   static get observers() { return [
+    '_testMenuDataChanged(testMenuData.*)',
   ]}
 
   connectedCallback() {
@@ -514,6 +514,17 @@ class MGAbout extends Moongom119 {
     this.$['new-submenu-balloon'].positionTarget = this.$['submenu-button'];
     this.$['new-submenu-balloon'].toggle();
   }
+
+  _testMenuDataChanged(change) {
+    if (change.value && change.path.endsWith('.selected$')) {
+      let submenu = this.get(change.path.slice(0, -10));
+      this.testGreeting = submenu.title;
+      if (!submenu.submenus) {
+        this.$['new-submenu-balloon'].close();
+      }
+    }
+  }
+
 
 }
 customElements.define(MGAbout.is, MGAbout);
