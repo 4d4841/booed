@@ -6,7 +6,11 @@ A simple shop app aims to provide an example which allows collaborations from sm
 
 This is still a work in progress.
 
+##Visuals
 
+<iframe src="https://docs.google.com/presentation/d/e/2PACX-1vQjZOQfhy__DmaiYRqpcax77tBzAzFRf65GJIGsl3LvGQNhoQnJ6ctE6cB23mnAf6_SKAH5Lou9h0Ao/embed?start=false&loop=false&delayms=3000" frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+
+## Demo
 * [Live Demo](https://be-booed.firebaseapp.com/)
 
 ## Built With
