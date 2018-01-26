@@ -163,9 +163,17 @@ mg-sections {
   --paper-button: {
     font-family: 'Mitr', sans-serif;
     font-size: 16px;
-    background-color: tomato;
+    background-color: var(--paper-purple-200);
     color: white;
   }
+}
+
+#submenu-balloon {
+  --mg-balloon-container: {
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+  };
 }
 
 </style>
@@ -195,7 +203,7 @@ mg-sections {
 </paper-button>
 
 <mg-balloon
-  id="new-submenu-balloon"
+  id="submenu-balloon"
   no-overlap
   vertical-align="top"
   dynamic-align
@@ -338,7 +346,7 @@ class MGAbout extends Moongom119 {
                   entry3: { icon:"pets", title: 'Spikey', },
               }},
           }},
-          entry2: { title: 'Social Medias', submenus:{
+          entry2: { icon:"", title: 'Social Medias', submenus:{
               entry1: { icon:"editor:insert-link", title: 'Instagrams', submenus:{
                   entry1: { icon:"booed:instagram", name:'_blank', url:'https://instagram.com/moongom119', },
                   entry2: { icon:"booed:instagram", name:'_blank', url:'https://instagram.com/moyahoyaya', },
@@ -351,6 +359,7 @@ class MGAbout extends Moongom119 {
           }},
           entry3: { separator: true, title: 'See mg-submenu on GitHub.', name:'_blank', url:'https://github.com/4d4841/booed/blob/master/public/src/mg-submenu.html'},
           entry4: { title: 'See mg-about for usage and menu data.', name:'_blank', url:'https://github.com/4d4841/booed/blob/master/public/src/mg-about.html'},
+          entry5: { checked: false, title: 'Check Me'},
         }
       }},
     },
@@ -514,16 +523,16 @@ class MGAbout extends Moongom119 {
       bubbles: true, composed: true, detail:{sender:this}
     }));
 
-    this.$['new-submenu-balloon'].positionTarget = this.$['submenu-button'];
-    this.$['new-submenu-balloon'].toggle();
+    this.$['submenu-balloon'].positionTarget = this.$['submenu-button'];
+    this.$['submenu-balloon'].toggle();
   }
 
   _testMenuDataChanged(change) {
     if (change.value && change.path.endsWith('.selected$')) {
       let submenu = this.get(change.path.slice(0, -10));
-      this.testGreeting = submenu.title;
-      if (!submenu.submenus) {
-        this.$['new-submenu-balloon'].close();
+      this.testGreeting = submenu.title || '';
+      if (!submenu.submenus && typeof submenu.checked !== 'boolean') {
+        this.$['submenu-balloon'].close();
       }
     }
   }

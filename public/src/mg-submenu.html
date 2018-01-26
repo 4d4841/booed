@@ -31,11 +31,9 @@
 
 #submenu-selector {
   overflow-y: auto;
-  padding: 2px;
 }
 
-.menu-item[separator] {
-  border-top: 1px solid var(--booed-shadow-color);
+.menu-item {
 }
 
 .menu-item.iron-selected {
@@ -44,6 +42,13 @@
 
 .visibility-button:active {
   color: tomato;
+}
+
+div.separator {
+  height: 1px;
+  padding: 0;
+  margin: 0;
+	border-top: 1px solid var(--booed-shadow-color);
 }
 
 </style>
@@ -64,22 +69,45 @@
     selected="{{selectedKey}}"
     selected-item="{{childPositionTarget}}"
     hidden$="[[!opened]]"
+    selectable=".menu-item"
     > <template is="dom-repeat" items="{{submenuList}}" as="submenu">
 
-    <paper-icon-item
-      class="menu-item"
-      separator$="[[_formatItemSeparator(submenu.separator)]]"
-      on-click="_onItemClick"
-      name="[[submenu.key$]]"
-      submenu="{{submenu}}"
-    > <template is="dom-if" if="[[submenu.icon]]">
-        <iron-icon slot="item-icon" icon="[[submenu.icon]]"></iron-icon>
-      </template>
-      <span style="white-space:nowrap" class="flex">[[_formatSubmenuTitle(submenu)]]</span>
-      <template is="dom-if" if="[[submenu.submenus]]">
-        <iron-icon icon="chevron-right"></iron-icon>
-      </template>
-    </paper-icon-item>
+    <template is="dom-if" if="[[_itemIsSeparator(submenu.separator)]]" >
+      <div class="separator"></div>
+    </template>
+
+    <template is="dom-if" if="[[_itemHasIcon(submenu.*)]]">
+      <paper-icon-item
+        class="menu-item"
+        on-click="_onItemClick"
+        name="[[submenu.key$]]"
+        submenu="{{submenu}}"
+      >
+        <template is="dom-if" if="[[submenu.checked]]">
+          <iron-icon slot="item-icon" icon="check"></iron-icon>
+        </template>
+        <template is="dom-if" if="[[submenu.icon]]">
+          <iron-icon slot="item-icon" icon="[[submenu.icon]]"></iron-icon>
+        </template>
+        <span style="white-space:nowrap" class="flex">[[_formatSubmenuTitle(submenu)]]</span>
+        <template is="dom-if" if="[[submenu.submenus]]">
+          <iron-icon icon="chevron-right"></iron-icon>
+        </template>
+      </paper-icon-item>
+    </template>
+    <!-- Else, no icon, uses paper-item instead. -->
+    <template is="dom-if" if="[[!_itemHasIcon(submenu.*)]]">
+      <paper-item
+        class="menu-item"
+        on-click="_onItemClick"
+        name="[[submenu.key$]]"
+        submenu="{{submenu}}"
+      > <span style="white-space:nowrap" class="flex">[[_formatSubmenuTitle(submenu)]]</span>
+        <template is="dom-if" if="[[submenu.submenus]]">
+          <iron-icon icon="chevron-right"></iron-icon>
+        </template>
+      </paper>
+    </template>
 
       </template>
   </iron-selector>
@@ -130,9 +158,9 @@ class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronF
       observer: '_selectedSubmenuChanged',
     },
 
-    selectedVariants: {
+    selectedSubmenus: {
       type: Array,
-      value: function(){return {};},
+      value: () => [],
     },
 
     selectedKey: {
@@ -155,11 +183,6 @@ class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronF
     '_linkKeyedArrayPaths(menu.submenus.*)',
     '_positionTargetChanged(positionTarget)',
   ]}
-
-  connectedCallback() {
-    super.connectedCallback();
-
-  }
 
   _selectedSubmenuChanged(selectedSubmenu, old) {
     if (old) {
@@ -247,10 +270,24 @@ class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronF
         window.location.href = e.model.submenu.url;
       }
     }
+
+    if (typeof e.model.submenu.checked === 'boolean') {
+      this.set('menu.submenus.'+e.model.submenu.key$+'.checked', !e.model.submenu.checked);
+    }
   }
 
-  _formatItemSeparator(separator) {
+  _itemIsSeparator(separator) {
     return separator ? true : false;
+  }
+
+  _itemHasIcon(changed) {
+    if (changed) {
+      let item = changed.base;
+      if (item.icon || item.icon === '' || typeof item.checked === 'boolean') {
+        return true;
+      }
+    }
+    return false;
   }
 
 }
