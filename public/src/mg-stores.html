@@ -180,9 +180,10 @@ mg-item-image iron-icon {
   item="{{selectedStore}}"
   class="editor"
   editor-role="store"
+  norole="{{norole}}"
 ></mg-item-editor>
 
-  <template is="dom-if" if="[[_storeSelected(selectedStore)]]">
+  <template is="dom-if" if="[[_storeSelected(selectedStore,norole)]]">
 <mg-item-browser
   selected-keys="{{selectedProductKeys}}"
   class="items-container"
@@ -287,9 +288,8 @@ class MGStores extends MHA.Configurations(MHA.Items(Polymer.Element)) {
 
   }
 
-  _storeSelected(store) {
-    if (!store || (store.role && store.role !== 'store')) {
-      this.selectedStore = undefined;
+  _storeSelected(store,norole) {
+    if (norole || !store || (store.role && store.role !== 'store')) {
       return false;
     }
     return true;

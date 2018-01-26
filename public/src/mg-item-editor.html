@@ -116,7 +116,7 @@ MGItemEditor = class __MGItemEditor extends MHA.Configurations(Moongom119) {
   ]}
 
   _itemChanged(change) { if (change) {
-    if (change.path != 'item') {
+    if (change.path != 'item' && this.item && this.item.role === this.editorRole) {
       /* Turn MGLOCALDATA$ off */
       if (!change.path.endsWith('$') && this.item.MGLOCALDATA$) {
         this.set('item.MGLOCALDATA$', false);
