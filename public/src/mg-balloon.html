@@ -15,7 +15,7 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../bower_components/iron-fit-behavior/iron-fit-behavior.html">
-<link rel="import" href="mg-balloon-content.html">
+<link rel="import" href="mg-balloon-container.html">
 
     <dom-module id="mg-balloon">
   <template>
@@ -69,7 +69,7 @@
   </div>
 
 <!--XXX Try to fix horizontal-align to be center, now it fall off-screen -->
-<mg-balloon-content
+<mg-balloon-container
   id="content"
   no-overlap
   auto-fit-on-attach
@@ -81,7 +81,7 @@
   on-mousedown="_hackRefocusXXX"
 ><slot></slot>
 <a href="#" style="opacity:0;position:absolute;" tabindex="1" id="focusMe"></a>
-</mg-balloon-content>
+</mg-balloon-container>
 
   </template>
   <script>
