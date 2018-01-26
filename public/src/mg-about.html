@@ -351,6 +351,11 @@ class MGAbout extends Moongom119 {
                   entry2: { icon:"pets", title: 'Hoya', },
                   entry3: { icon:"pets", title: 'Spikey', },
               }},
+              entry3radio:{radio:[
+                {name:'value1', title:'Remedy'},
+                {name:'value2', title:'Cricket Song'},
+                {name:'value3', title:'Doong Doong'},
+              ]},
           }},
           entry2: { icon:"", title: 'Social Medias', submenus:{
               entry1: { icon:"editor:insert-link", title: 'Instagrams', submenus:{
@@ -365,7 +370,14 @@ class MGAbout extends Moongom119 {
           }},
           entry3: { separator: true, title: 'See mg-submenu on GitHub.', name:'_blank', url:'https://github.com/4d4841/booed/blob/master/public/src/mg-submenu.html'},
           entry4: { title: 'See mg-about for usage and menu data.', name:'_blank', url:'https://github.com/4d4841/booed/blob/master/public/src/mg-about.html'},
-          entry5checkLoveMHA: { checked: false, title: 'Check, if you love Moon HyunA.'},
+          entry5checkLoveMHA: { separator: true, checked: false, title: 'Check, if you love Moon HyunA.'},
+          entry6checkLoveMHA: { checked: false, title: 'Check, if you love Moya.'},
+          entry7checkLoveMHA: { checked: false, title: 'Check, if you love Hoya.'},
+          entry8radio:{ separator: true, radio:[
+            {name:'value1', title:'Moya'},
+            {name:'value2', title:'Hoya'},
+            {name:'value3', title:'Spikey'},
+          ]},
         }
       }},
     },
@@ -536,6 +548,9 @@ class MGAbout extends Moongom119 {
   _testMenuDataChanged(change) {
     if (change.value && change.path.endsWith('.selected$')) {
       let submenu = this.get(change.path.slice(0, -10));
+      if (!submenu) {
+        console.log(change.path);
+      }
       this.testGreeting = submenu.title || '';
       if (!submenu.submenus && typeof submenu.checked !== 'boolean') {
         this.$['submenu-balloon'].close();

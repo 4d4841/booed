@@ -23,14 +23,29 @@
   <template strip-whitespace>
 <style include="paper-material-styles mg-common-styles iron-flex iron-flex-alignment">
 :host {
-  width: auto;
-  height: auto;
   box-sizing: content-box;
   background-color: white;
 }
 
 #submenu-selector {
-  overflow-y: auto;
+}
+
+.menu-item:hover {
+  --paper-item: {
+    background-color: rgba(240, 248, 255, 0.5);
+  };
+}
+
+.radio-item:hover {
+  --paper-item: {
+    background-color: rgba(240, 248, 255, 0.5);
+  };
+}
+
+.checked-item:hover {
+  --paper-item: {
+    background-color: rgba(240, 248, 255, 0.5);
+  };
 }
 
 .menu-item.iron-selected {
@@ -76,12 +91,33 @@ div.separator {
       <div class="separator"></div>
     </template>
 
-    <template is="dom-if" if="{{_itemHasIcon(submenu.icon,submenu.checked)}}">
+    <template is="dom-if" if="[[submenu.radio]]" >
+        <iron-selector
+          attr-for-selected="name"
+          selected-attributed="selected"
+          selected="{{submenu.value}}"
+        >
+          <template is="dom-repeat" items="[[submenu.radio]]" as="radioItem">
+            <paper-icon-item
+              class="radio-item"
+              on-click="_onRadioClick"
+              name="[[radioItem.name]]"
+            >
+              <iron-icon slot="item-icon" icon="[[_formatRadioIcon(radioItem.name,submenu.value)]]"></iron-icon>
+              <span style="white-space:nowrap" class="flex">[[radioItem.title]]</span>
+            </paper-icon-item>
+          </template>
+
+        </iron-selector>
+
+    </template>
+
+      <template is="dom-if" if="[[!submenu.radio]]" >
+    <template is="dom-if" if="[[_itemHasIcon(submenu.icon,submenu.checked)]]">
       <paper-icon-item
-        class="menu-item"
+        class$="[[_formatSubmenuClass(submenu.checked)]]"
         on-click="_onItemClick"
         name="[[submenu.key$]]"
-        submenu="{{submenu}}"
       >
         <template is="dom-if" if="[[submenu.checked]]">
           <iron-icon slot="item-icon" icon="check"></iron-icon>
@@ -96,18 +132,18 @@ div.separator {
       </paper-icon-item>
     </template>
     <!-- Else, no icon. -->
-    <template is="dom-if" if="{{!_itemHasIcon(submenu.icon,submenu.checked)}}">
+    <template is="dom-if" if="[[!_itemHasIcon(submenu.icon,submenu.checked)]]">
       <paper-item
         class="menu-item"
         on-click="_onItemClick"
         name="[[submenu.key$]]"
-        submenu="{{submenu}}"
       > <span style="white-space:nowrap" class="flex">[[_formatSubmenuTitle(submenu)]]</span>
         <template is="dom-if" if="[[submenu.submenus]]">
           <iron-icon icon="chevron-right"></iron-icon>
         </template>
       </paper-item>
     </template>
+      </template>
 
       </template>
   </iron-selector>
@@ -263,6 +299,9 @@ class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronF
     return '';
   }
 
+  _onRadioClick(e) {
+  }
+
   _onItemClick(e) {
     if (e.model.submenu.url) {
       if (e.model.submenu.name) {
@@ -286,6 +325,17 @@ class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronF
       return true;
     }
     return false;
+  }
+
+  _formatRadioIcon(name,value) {
+    if (name === value) {
+      return "radio-button-checked"
+    }
+    return "radio-button-unchecked"
+  }
+
+  _formatSubmenuClass(checked) {
+    return checked ? 'checked-item':'menu-item';
   }
 
 }
