@@ -33,11 +33,11 @@
   overflow-y: auto;
 }
 
-.menu-item {
-}
-
 .menu-item.iron-selected {
   background-color: aliceblue;
+  --paper-item-selected: {
+    background-color: aliceblue;
+  };
 }
 
 .visibility-button:active {
@@ -76,7 +76,7 @@ div.separator {
       <div class="separator"></div>
     </template>
 
-    <template is="dom-if" if="[[_itemHasIcon(submenu.*)]]">
+    <template is="dom-if" if="{{_itemHasIcon(submenu.icon,submenu.checked)}}">
       <paper-icon-item
         class="menu-item"
         on-click="_onItemClick"
@@ -95,8 +95,8 @@ div.separator {
         </template>
       </paper-icon-item>
     </template>
-    <!-- Else, no icon, uses paper-item instead. -->
-    <template is="dom-if" if="[[!_itemHasIcon(submenu.*)]]">
+    <!-- Else, no icon. -->
+    <template is="dom-if" if="{{!_itemHasIcon(submenu.icon,submenu.checked)}}">
       <paper-item
         class="menu-item"
         on-click="_onItemClick"
@@ -106,7 +106,7 @@ div.separator {
         <template is="dom-if" if="[[submenu.submenus]]">
           <iron-icon icon="chevron-right"></iron-icon>
         </template>
-      </paper>
+      </paper-item>
     </template>
 
       </template>
@@ -119,6 +119,7 @@ div.separator {
   <!-- Selected Child -->
   <template is="dom-if" if="[[selectedSubmenu]]">
 <mg-submenu
+  id="child-menu"
   style="z-index:1"
   menu="{{selectedSubmenu}}"
   position-target="[[childPositionTarget]]"
@@ -280,12 +281,9 @@ class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronF
     return separator ? true : false;
   }
 
-  _itemHasIcon(changed) {
-    if (changed) {
-      let item = changed.base;
-      if (item.icon || item.icon === '' || typeof item.checked === 'boolean') {
-        return true;
-      }
+  _itemHasIcon(icon,checked) {
+    if (icon || icon === '' || typeof checked === 'boolean') {
+      return true;
     }
     return false;
   }
