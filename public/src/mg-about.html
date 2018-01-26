@@ -199,7 +199,12 @@ mg-sections {
 <paper-button
   id="submenu-button"
   on-click="_openSubmenu"
-> Submenu [[testGreeting]]
+>
+  <template is="dom-if" if="[[testMenuData.submenus.entry5checkLoveMHA.checked]]">
+    <iron-icon style="padding-right:20px;color:gold" icon="booed:moon"><iron-icon>
+  </template>
+
+  Submenu [[testGreeting]]
 </paper-button>
 
 <mg-balloon
@@ -211,6 +216,7 @@ mg-sections {
   opened="{{balloonOpenedChanged}}"
 > <mg-submenu menu="{{testMenuData}}" selected-key="{{selectedSubmenuKey}}"> </mg-submenu>
 </mg-balloon>
+
 
   </div>
 
@@ -359,7 +365,7 @@ class MGAbout extends Moongom119 {
           }},
           entry3: { separator: true, title: 'See mg-submenu on GitHub.', name:'_blank', url:'https://github.com/4d4841/booed/blob/master/public/src/mg-submenu.html'},
           entry4: { title: 'See mg-about for usage and menu data.', name:'_blank', url:'https://github.com/4d4841/booed/blob/master/public/src/mg-about.html'},
-          entry5: { checked: false, title: 'Check Me'},
+          entry5checkLoveMHA: { checked: false, title: 'Check, if you love Moon HyunA.'},
         }
       }},
     },
