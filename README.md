@@ -6,6 +6,7 @@ A simple shop app aims to provide an example which allows collaborations from sm
 
 This is still a work in progress.
 
+## Visuals
 
 * [Live Demo](https://be-booed.firebaseapp.com/)
 
