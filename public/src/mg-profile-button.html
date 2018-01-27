@@ -200,7 +200,7 @@ let memoizedTemplate;
     static get properties() { return {
       icon: {
         type: String,
-        value: "booed:pumpkin"
+        value: "booed:booed"
       },
       pathStyle: {
         type: String,
@@ -246,7 +246,7 @@ let memoizedTemplate;
         this.$.arrow.setAttributeNS('http://www.w3.org/1999/xlink','href', photoURL);
       }
       else {
-        this.icon = "booed:pumpkin";
+        this.icon = "booed:booed";
         this.image = '';
         this.$.button.style.color = "var(--booed-primary-color)";
         this.$.arrow.setAttributeNS('http://www.w3.org/1999/xlink','href', '');
