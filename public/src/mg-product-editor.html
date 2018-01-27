@@ -60,8 +60,13 @@ td {
   color: black;
 }
 
-paper-checkbox {
+#view-alternatives {
   margin-left: 10px;
+}
+
+.cell-icon {
+  --iron-icon-width:20px;
+  --iron-icon-height:20px;
 }
 
 </style>
@@ -82,7 +87,7 @@ paper-checkbox {
   </div>
 
   <div style="display:inline-block">
-<paper-checkbox checked="{{viewAlternatives}}">{{localize('view alternatives')}}</paper-checkbox>
+<paper-checkbox id="view-alternatives" checked="{{viewAlternatives}}">{{localize('view alternatives')}}</paper-checkbox>
   </div>
   </app-toolbar>
 
@@ -109,13 +114,24 @@ paper-checkbox {
   <template is="dom-repeat" items="[[variantEntries]]" as="row">
     <tr>
   <template is="dom-repeat" items="[[row]]" as="cell">
-<td style="line-height:20px">
-  <template is="dom-if" if="[[_cellIsColor(index,variantHeaders)]]">
-    <div style$="display:inline-block;vertical-align:text-top;border:1px solid black;width:14px;height:14px;background-color:[[cell]]">
-    </div>
+<template is="dom-if" if="[[cell.value]]">
+  <td style="line-height:20px">
+  <template is="dom-if" if="[[cell.isColor]]">
+    <iron-icon
+      style$="color:[[cell.value]];--iron-icon-stroke-color:var(--booed-shadow-color)"
+      icon="label"
+      class="cell-icon"
+    ></iron-icon>
   </template>
-  [[cell]]
-</td>
+  [[cell.value]]
+  </td>
+</template>
+<!-- Else, no cell value-->
+<template is="dom-if" if="[[!cell.value]]">
+  <td align="center" style="line-height:20px">
+  <iron-icon class="cell-icon" icon="add" on-click="_addCell"></iron-icon>
+  </td>
+</template>
   </template>
     </tr>
   </template>
@@ -230,8 +246,13 @@ class MGProductEditor extends MHA.Items(MGItemEditor) {
 
         mapped_entries.forEach(entry => {
           let row = [];
-          types.forEach(title => {
-            row.push(entry[title]||'');
+          let idx = 0;
+          types.forEach(header => {
+            row.push({
+              isColor: this.variantHeaders[idx].startsWith('color'),
+              value: entry[header]||'',
+            });
+            idx++;
           });
 
           this.push('variantEntries', row);
@@ -240,9 +261,8 @@ class MGProductEditor extends MHA.Items(MGItemEditor) {
     });
   }
 
-  _cellIsColor(index,header) {
-    if (!header || !header[index]) return false;
-    return header[index].startsWith('color') ? true : false;
+  _addCell(e) {
+    console.log(e);
   }
 
   _formatVariantLabel(label) {
