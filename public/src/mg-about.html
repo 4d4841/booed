@@ -163,8 +163,8 @@ mg-sections {
   --paper-button: {
     font-family: 'Mitr', sans-serif;
     font-size: 16px;
-    background-color: var(--paper-purple-200);
-    color: white;
+    background-color: var(--paper-purple-100);
+    color: black;
   }
 }
 
@@ -202,6 +202,12 @@ mg-sections {
 >
   <template is="dom-if" if="[[testMenuData.submenus.entry5checkLoveMHA.checked]]">
     <iron-icon style="padding-right:20px;color:gold" icon="booed:moon"><iron-icon>
+  </template>
+  <template is="dom-if" if="[[testMenuData.submenus.entry6checkLoveMoya.checked]]">
+    <iron-icon style="padding-right:20px;color:white" icon="pets"><iron-icon>
+  </template>
+  <template is="dom-if" if="[[testMenuData.submenus.entry7checkLoveHoya.checked]]">
+    <iron-icon style="padding-right:20px;color:peru" icon="pets"><iron-icon>
   </template>
 
   Submenu [[testGreeting]]
@@ -371,8 +377,8 @@ class MGAbout extends Moongom119 {
           entry3: { separator: true, title: 'See mg-submenu on GitHub.', name:'_blank', url:'https://github.com/4d4841/booed/blob/master/public/src/mg-submenu.html'},
           entry4: { title: 'See mg-about for usage and menu data.', name:'_blank', url:'https://github.com/4d4841/booed/blob/master/public/src/mg-about.html'},
           entry5checkLoveMHA: { separator: true, checked: false, title: 'Check, if you love Moon HyunA.'},
-          entry6checkLoveMHA: { checked: false, title: 'Check, if you love Moya.'},
-          entry7checkLoveMHA: { checked: false, title: 'Check, if you love Hoya.'},
+          entry6checkLoveMoya: { checked: false, title: 'Check, if you love Moya.'},
+          entry7checkLoveHoya: { checked: false, title: 'Check, if you love Hoya.'},
           entry8radio:{ separator: true, radio:[
             {name:'value1', title:'Moya'},
             {name:'value2', title:'Hoya'},
