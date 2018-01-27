@@ -81,10 +81,11 @@ div.separator {
     id="submenu-selector"
     attr-for-selected="name"
     selected-attribute="selected"
-    selected="{{selectedKey}}"
-    selected-item="{{childPositionTarget}}"
+    selected-values="{{selectedKeyList}}"
+    selected-items="{{selectedItemList}}"
     hidden$="[[!opened]]"
     selectable=".menu-item"
+    multi
     > <template is="dom-repeat" items="{{submenuList}}" as="submenu">
 
     <template is="dom-if" if="[[_itemIsSeparator(submenu.separator)]]" >
@@ -204,6 +205,12 @@ class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronF
       type: String,
       observer: '_selectedKeyChanged',
       notify: true,
+      readOnly: true,
+    },
+
+    selectedKeyList: {
+      type: Array,
+      value: () => [],
     },
 
     label: String,
@@ -219,7 +226,28 @@ class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronF
   static get observers() { return [
     '_linkKeyedArrayPaths(menu.submenus.*)',
     '_positionTargetChanged(positionTarget)',
+    '_selectedKeyListChanged(selectedKeyList.splices)',
+    '_selectedItemListChanged(selectedItemList.splices)',
   ]}
+
+  _selectedKeyListChanged(splices) {
+    if (this.selectedKeyList.length) {
+      this.setProperties({selectedKey:this.selectedKeyList[this.selectedKeyList.length - 1]},true);
+      if (this.selectedKeyList.length > 1) {
+        this.selectedKeyList = [this.selectedKey];
+      }
+    } else {
+      this.setProperties({selectedKey:null},true);
+    }
+  }
+
+  _selectedItemListChanged(splices) {
+    if (this.selectedItemList.length) {
+      this.childPositionTarget = this.selectedItemList[this.selectedItemList.length - 1];
+    } else {
+      this.childPositionTarget = undefined;
+    }
+  }
 
   _selectedSubmenuChanged(selectedSubmenu, old) {
     if (old) {
@@ -265,7 +293,7 @@ class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronF
       /* close all submenu */
       let child = this.shadowRoot.querySelector('mg-submenu');
       if (child) {
-        child.set('selectedKey',null);
+        child.splice('selectedKeyList',0,child.selectedKeyList.length);
       }
     }
   }
@@ -277,11 +305,11 @@ class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronF
     switch(parts.length) {
     case 2: {
       /* menu.submenus */
-      this.selectedKey = null;
+      this.splice('selectedKeyList',0,this.selectedKeyList.length);
     } break;
     case 4: if (parts[3] === '.selected$') {
       if (change.value) {
-        this.selectedKey = parts[2];
+        this.splice('selectedKeyList',0,this.selectedKeyList.length,parts[2]);
       }
     } break;
     default: {
