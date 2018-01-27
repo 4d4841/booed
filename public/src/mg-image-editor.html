@@ -35,7 +35,7 @@
   @apply --layout-vertical;
   @apply --layout-center-justified;
   @apply --layout-center;
-  background-color: black;
+  background-color: rgba(0,0,0,0.95);
   opacity: 0;
   transition: opacity 0.25s;
   z-index:-1;
@@ -112,6 +112,7 @@
 #view {
   background-size: contain;
   pointer-events: none;
+  box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
 }
 
 /*
@@ -143,7 +144,12 @@
 
   <div class="layout horizontal" style="max-width:450px">
 <template is="dom-repeat" items="[[sourceImages]]">
-  <mg-image style="border-radius:5px;margin:2px" on-click="_clickThumbnail" src="[[item]]" width="40" height="40"></mg-image>
+  <mg-image
+    style$="[[_formatPickerStyle(index)]]"
+    on-click="_clickThumbnail"
+    src="[[item]]"
+    width="40" height="40"
+  ></mg-image>
 </template>
   </div>
 
@@ -923,6 +929,10 @@ gsutil cors set <( echo '[{"maxAgeSeconds": 3600, "method": ["GET"], "origin": [
 
   _setNextKey(e) {
     this.keys = this.keys.slice(1).concat(this.keys.slice(0,1));
+  }
+
+  _formatPickerStyle(index) {
+    return `opacity:${(6-index)/6};border-radius:5px;margin:2px`;
   }
 }
 
