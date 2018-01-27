@@ -220,7 +220,7 @@ mg-sections {
   dynamic-align
   horizontal-align="auto"
   opened="{{balloonOpenedChanged}}"
-> <mg-submenu menu="{{testMenuData}}" selected-key="{{selectedSubmenuKey}}"> </mg-submenu>
+> <mg-submenu id="submenu" menu="{{testMenuData}}"> </mg-submenu>
 </mg-balloon>
 
 
@@ -357,7 +357,7 @@ class MGAbout extends Moongom119 {
                   entry2: { icon:"pets", title: 'Hoya', },
                   entry3: { icon:"pets", title: 'Spikey', },
               }},
-              entry3radio:{radio:[
+              entry3radio:{ title:"Songs...", horizontal: true, radio:[
                 {name:'value1', title:'Remedy'},
                 {name:'value2', title:'Cricket Song'},
                 {name:'value3', title:'Doong Doong'},
@@ -379,7 +379,7 @@ class MGAbout extends Moongom119 {
           entry5checkLoveMHA: { separator: true, checked: false, title: 'Check, if you love Moon HyunA.'},
           entry6checkLoveMoya: { checked: false, title: 'Check, if you love Moya.'},
           entry7checkLoveHoya: { checked: false, title: 'Check, if you love Hoya.'},
-          entry8radio:{ separator: true, radio:[
+          entry8radio:{ title:"Cats", separator: true, radio:[
             {name:'value1', title:'Moya'},
             {name:'value2', title:'Hoya'},
             {name:'value3', title:'Spikey'},
@@ -538,7 +538,7 @@ class MGAbout extends Moongom119 {
 
   _balloonOpenedChanged(opened) {
     if (!opened) {
-      this.selectedSubmenuKey = null;
+      this.$.submenu.splice('selectedKeyList',0,this.$.submenu.selectedKeyList.length);
     }
   }
 

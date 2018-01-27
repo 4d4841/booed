@@ -93,23 +93,29 @@ div.separator {
     </template>
 
     <template is="dom-if" if="[[submenu.radio]]" >
-        <iron-selector
-          attr-for-selected="name"
-          selected-attributed="selected"
-          selected="{{submenu.value}}"
-        >
-          <template is="dom-repeat" items="[[submenu.radio]]" as="radioItem">
-            <paper-icon-item
-              class="radio-item"
-              on-click="_onRadioClick"
-              name="[[radioItem.name]]"
-            >
-              <iron-icon slot="item-icon" icon="[[_formatRadioIcon(radioItem.name,submenu.value)]]"></iron-icon>
-              <span style="white-space:nowrap" class="flex">[[radioItem.title]]</span>
-            </paper-icon-item>
-          </template>
+      <template is="dom-if" if="[[submenu.title]]" >
+        <paper-item
+          class="radio-title"
+        > <span style="white-space:nowrap" class="flex">[[_formatSubmenuTitle(submenu)]]</span>
+        </paper-item>
+      </template>
+      <iron-selector
+        attr-for-selected="name"
+        selected-attributed="selected"
+        selected="{{submenu.value}}"
+        class$="[[_formatRadioContainerClass(submenu)]]"
+      > <template is="dom-repeat" items="[[submenu.radio]]" as="radioItem">
+          <paper-icon-item
+            class="radio-item"
+            on-click="_onRadioClick"
+            name="[[radioItem.name]]"
+          >
+            <iron-icon slot="item-icon" icon="[[_formatRadioIcon(radioItem.name,submenu.value)]]"></iron-icon>
+            <span style="white-space:nowrap" class="flex">[[radioItem.title]]</span>
+          </paper-icon-item>
+        </template>
 
-        </iron-selector>
+      </iron-selector>
 
     </template>
 
