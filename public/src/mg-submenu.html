@@ -25,9 +25,24 @@
 :host {
   box-sizing: content-box;
   background-color: white;
+  --paper-icon-item: {
+    padding-left: 16px;
+  };
 }
 
 #submenu-selector {
+}
+
+.menu-item {
+  --paper-item-icon-width: 40px;
+}
+
+.radio-item {
+  --paper-item-icon-width: 40px;
+}
+
+.checked-item {
+  --paper-item-icon-width: 40px;
 }
 
 .menu-item:hover {
@@ -64,6 +79,12 @@ div.separator {
   padding: 0;
   margin: 0;
 	border-top: 1px solid var(--booed-shadow-color);
+}
+
+iron-selector.horizontal .radio-item:not(:first-child) {
+  --paper-icon-item: {
+    padding-left: 0;
+  };
 }
 
 </style>
@@ -231,7 +252,6 @@ class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronF
 
   static get observers() { return [
     '_linkKeyedArrayPaths(menu.submenus.*)',
-    '_positionTargetChanged(positionTarget)',
     '_selectedKeyListChanged(selectedKeyList.splices)',
     '_selectedItemListChanged(selectedItemList.splices)',
   ]}
@@ -251,8 +271,9 @@ class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronF
     if (this.selectedItemList.length) {
       this.childPositionTarget = this.selectedItemList[this.selectedItemList.length - 1];
     } else {
-      this.childPositionTarget = undefined;
+      this.childPositionTarget = null;
     }
+    this.refit();
   }
 
   _selectedSubmenuChanged(selectedSubmenu, old) {
@@ -265,24 +286,18 @@ class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronF
     }
   }
 
-  _positionTargetChanged(positionTarget) {
-    if (this.isChild && positionTarget) {
-      Polymer.RenderStatus.beforeNextRender(this, () => this.refit());
-    }
-  }
-
   refit() {
-    if (this.isChild) {
-      if (this.positionTarget) {
+    Polymer.RenderStatus.beforeNextRender(this, () => {
+      if (this.isChild && this.positionTarget) {
         this.horizontalOffset = this.positionTarget.getBoundingClientRect().width;
         super.refit();
       }
-    }
 
-    let child = this.shadowRoot.querySelector('mg-submenu');
-    if (child) {
-      child.refit();
-    }
+      let child = this.shadowRoot.querySelector('mg-submenu');
+      if (child) {
+        child.refit();
+      }
+    });
   }
 
   _selectedKeyChanged(key,oldKey) {
@@ -370,6 +385,13 @@ class MGSubmenu extends MHA.Configurations(Polymer.mixinBehaviors([Polymer.IronF
 
   _formatSubmenuClass(checked) {
     return checked ? 'checked-item':'menu-item';
+  }
+
+  _formatRadioContainerClass(submenu) {
+    if (submenu.horizontal) {
+      return "layout horizontal"
+    }
+    return "";
   }
 
 }
