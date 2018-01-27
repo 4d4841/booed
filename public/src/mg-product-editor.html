@@ -110,7 +110,7 @@ paper-checkbox {
     <tr>
   <template is="dom-repeat" items="[[row]]" as="cell">
 <td style="line-height:20px">
-  <template is="dom-if" if="[[_cellIsColor(index)]]">
+  <template is="dom-if" if="[[_cellIsColor(index,variantHeaders)]]">
     <div style$="display:inline-block;vertical-align:text-top;border:1px solid black;width:14px;height:14px;background-color:[[cell]]">
     </div>
   </template>
@@ -201,32 +201,34 @@ class MGProductEditor extends MHA.Items(MGItemEditor) {
   }
 
   _variantChanged(key, change) {
-
-    let types = new Set();
-    let entries = [];
-
-    let mapVariant = (props, variant) => {
-      let key;
-      for (key in variant.variants) {
-        types.add(variant.type);
-        if (variant.variants[key]) {
-          mapVariant({...props,[variant.type]:variant.variants[key].value}, variant.variants[key]);
-        }
-      }
-      if (!key) {
-        entries.push(props);
-      }
-    }
-
     this._BuildTableDebouncer =
     Polymer.Debouncer.debounce( this._BuildTableDebouncer, Polymer.Async.timeOut.after(0),
     () => {
-      this.splice('variantEntries', 0, this.variantEntries.length);
+      let types;
+      let mapped_entries;
+
+        let mapVariant = (props, variant) => {
+          let key;
+          for (key in variant.variants) {
+            types.add(variant.type);
+            if (variant.variants[key]) {
+              mapVariant({...props,[variant.type]:variant.variants[key].value}, variant.variants[key]);
+            }
+          }
+          if (!key) {
+            mapped_entries.push(props);
+          }
+        }
+
+      types  = new Set();
+      mapped_entries = [];
+      this.variantHeaders = [];
+      this.variantEntries = [];
       if (this.item && this.item.variant) {
         mapVariant({}, this.item.variant);
         this.variantHeaders = Array.from(types);
 
-        entries.forEach(entry => {
+        mapped_entries.forEach(entry => {
           let row = [];
           types.forEach(title => {
             row.push(entry[title]||'');
@@ -238,8 +240,9 @@ class MGProductEditor extends MHA.Items(MGItemEditor) {
     });
   }
 
-  _cellIsColor(index) {
-    return this.variantHeaders[index].startsWith('color') ? true : false;
+  _cellIsColor(index,header) {
+    if (!header || !header[index]) return false;
+    return header[index].startsWith('color') ? true : false;
   }
 
   _formatVariantLabel(label) {
